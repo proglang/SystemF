@@ -33,7 +33,6 @@ Scope = List (Sort bind)
 variable 
   a a' a'' a₁ a₂ a₃ : Bindable
   s s' s'' s₁ s₂ s₃ : Sort a
-  b b' b'' b₁ b₂ b₃ : Sort bind
   S S' S'' S₁ S₂ S₃ : Scope
   x x' x'' x₁ x₂ x₃ : eₛ ∈ S
 ```
@@ -45,9 +44,7 @@ infixr 3 _⊢_∶_ _↪_ _⊢*_∶_
 infixr 4 ∀α_  ƛ[_]_
 infixr 5 _⇒_
 infixl 5 _·[_]_ 
--- infixl  5  _,ₖ_  _,ₛ_  _,ᵣ_  _,,_
 infix  5 _→ₛ_ _→ᵣ_
--- infixl  5  _⋯_  _⋯ₛ_  _⋯ᵣ_  _⋯ₜ_  _⋯ₜₛ_  _⋯ₜᵣ_
 infixl 6 _↑_
 infix  7 `_
 
@@ -113,7 +110,7 @@ instance kitₛ : Kit
 Kit.Elem kitₛ   = Term
 Kit.↑ⱽ   kitₛ _ = `_
 Kit.↓ᵀ   kitₛ _ = id
-Kit.wk   kitₛ t = _⋯ wk
+Kit.wk   kitₛ _ = _⋯ wk
 
 _→ᵣ_ : Scope → Scope → Set
 _→ᵣ_ = _-[ kitᵣ ]→_
@@ -126,7 +123,7 @@ idₖ {{K}} = Kit.↑ⱽ K
 
 newₖ : {{K : Kit}} → S₁ -[ K ]→ S₂ → Elem S₂ s → (S₁ ▷ s) -[ K ]→ S₂
 newₖ K t _ (here refl) = t
-newₖ K t _ (there x)   = K _ x
+newₖ K _ _ (there x)   = K _ x
 
 [_] : Term S s → (S ▷ s) →ₛ S
 [_] = newₖ idₖ
@@ -192,17 +189,17 @@ _⊢*_∶_ {S₁ = S₁} Γ₂ σ Γ₁ = ∀ {s₁} → (x : Var S₁ s₁) →
 # Semantics
 
 ```
-data Val : Term S b → Set where
-  v-ƛ : Val (ƛ[ b ] e)
+data Val : Term S s → Set where
+  v-ƛ : Val (ƛ[ s ] e)
   v-τ : Val τ
 
 data _↪_ : Term S eₛ → Term S eₛ → Set where
-  β-ƛ  : ∀ {t₂ : Term S b} →
+  β-ƛ  : ∀ {t₂ : Term S s} →
     Val t₂ →
-    (ƛ[ b ] e₁) ·[ b ] t₂ ↪ (e₁ ⋯ [ t₂ ])
-  ξ-·₁ : ∀ {t₂ : Term S b} →
+    (ƛ[ s ] e₁) ·[ s ] t₂ ↪ (e₁ ⋯ [ t₂ ])
+  ξ-·₁ : ∀ {t₂ : Term S s} →
     e₁ ↪ e →
-    e₁ ·[ b ] t₂ ↪ e ·[ b ] t₂
+    e₁ ·[ s ] t₂ ↪ e ·[ s ] t₂
   ξ-·₂ :
     e₂ ↪ e →
     Val e₁ →
