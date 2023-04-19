@@ -35,7 +35,7 @@ module try1 where
   ⟦_⟧ : Type n → (l : ℕ) → Vec (Set (lof l)) n → Set (lof l)
   ⟦ ` x ⟧ l η = Data.Vec.lookup η x
   ⟦ T₁ ⇒ T₂ ⟧ l η = ⟦ T₁ ⟧ l η → ⟦ T₂ ⟧ l η
-  ⟦ `∀α, T ⟧ ℕ.zero η = {!!}
+  ⟦ `∀α, T ⟧ ℕ.zero η = {! !}
   ⟦ `∀α, T ⟧ (ℕ.suc l) η = (α : Set (lof l)) → ⟦ T ⟧ (ℕ.suc l) ({!!} ∷ η)
   ⟦ 𝟙 ⟧ l η = ⊤
 
@@ -64,14 +64,19 @@ module try2 where
   level (`∀α q , T) = Level.suc (lof q) Level.⊔ level T
   level 𝟙 = Level.zero
 
+  -- environment mapping type variables to Agda types
   Env* : LEnv → Setω
   Env* Δ = ∀ {l} → l ∈ Δ → Set (lof l)
+
+  extend-η : ∀ {l} {Δ : LEnv} → Set (lof l) → Env* Δ → Env* (l ∷ Δ)
+  extend-η α η here = α
+  extend-η α η (there x) = η x
 
   -- the meaning of a stratified type in terms of Agda universes
   ⟦_⟧ : (T : Type Δ) → Env* Δ → Set (level T)
   ⟦ ` x ⟧ η = η x
   ⟦ T₁ ⇒ T₂ ⟧ η = ⟦ T₁ ⟧ η → ⟦ T₂ ⟧ η
-  ⟦ `∀α lev , T ⟧ η = (α : Set (lof lev)) → ⟦ T ⟧ λ{ here → α ; (there x) → η x}
+  ⟦ `∀α lev , T ⟧ η = (α : Set (lof lev)) → ⟦ T ⟧ (extend-η α η)
   ⟦ 𝟙 ⟧ η = ⊤
 
   -- renaming on types
@@ -100,9 +105,6 @@ module try2 where
 
   idₛ : Sub Δ Δ
   idₛ _ = `_
-
-  wkₛ : Ren Δ (n ∷ Δ)
-  wkₛ _ = there
 
   extₛ : Sub Δ₁ Δ₂ → (n : ℕ) → Sub (n ∷ Δ₁) (n ∷ Δ₂)
   extₛ σ _ _ here = ` here
@@ -139,19 +141,21 @@ module try2 where
     Λα_⇒_ : ∀ {Γ : TEnv Δ} → (l : ℕ) → {T : Type (l ∷ Δ)} → Expr (l ∷ Δ) (l ◁* Γ) T → Expr Δ Γ (`∀α l , T)
     _∙_  : ∀ {l : ℕ}{T : Type (l ∷ Δ)}{Γ : TEnv Δ} → Expr Δ Γ (`∀α l , T) → (T′ : Type Δ) → level T′ ≡ lof l → Expr Δ Γ (T [ T′ ]T)
 
-  extend : ∀ {l} {Δ : LEnv} → Set (lof l) → Env* Δ → Env* (l ∷ Δ)
-  extend α η here = α
-  extend α η (there x) = η x
-
   Env : (Δ : LEnv) → TEnv Δ → Env* Δ → Setω
   Env Δ Γ η = ∀ {T : Type Δ} → (x : inn T Γ) → ⟦ T ⟧ η
 
+  extend-γ : ∀ {Δ : LEnv} {Γ : TEnv Δ} {T : Type Δ} {η : Env* Δ} → ⟦ T ⟧ η → Env Δ Γ η → Env Δ (T ◁ Γ) η
+  extend-γ x γ here = x
+  extend-γ _ γ (there x) = γ x
+
+  extend-γ-by-ℓ : ∀ {Δ : LEnv} {Γ : TEnv Δ} {η : Env* Δ} (l : ℕ) {η′ : Env* (l ∷ Δ)} → Env Δ Γ η → Env (l ∷ Δ) (l ◁* Γ) η′
+  extend-γ-by-ℓ l γ (tskip x) = {!    !}
+
   E⟦_⟧ : ∀ {T : Type Δ}{Γ : TEnv Δ} → Expr Δ Γ T → (η : Env* Δ) → Env Δ Γ η → ⟦ T ⟧ η
   E⟦ ` x ⟧ η γ = γ x
-  E⟦ ƛ_ {T = T} {T′ = T′} e ⟧ η γ x = E⟦ e ⟧ η (λ { here → x; (there x) → γ x })
+  E⟦ ƛ e ⟧ η γ x = E⟦ e ⟧ η (extend-γ x γ)
   E⟦ e₁ · e₂ ⟧ η γ = E⟦ e₁ ⟧ η γ (E⟦ e₂ ⟧ η γ)
-  E⟦_⟧ {Δ}{`∀α l , T} (Λα l ⇒ e) η γ α with extend{l} α η
-  ... | η′ = E⟦ e ⟧ {!!} λ { (tskip x) → {!   !} }
-  E⟦ (e ∙ T′) lev-eq ⟧ η γ with ⟦ T′ ⟧ η
-  ... | S rewrite lev-eq with E⟦ e ⟧ η γ S
-  ... | v = {!    !}
+  E⟦ Λα l ⇒ e ⟧ η γ α = E⟦ e ⟧ (extend-η {l} α η) (extend-γ-by-ℓ l γ)
+  E⟦ (e ∙ T′) ≡l ⟧ η γ rewrite ≡l with E⟦ e ⟧ η γ 
+  ... | v = {!   !}
+ 
