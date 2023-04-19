@@ -137,7 +137,11 @@ module try2 where
     ƛ_   : ∀ {T T′ : Type Δ}{Γ : TEnv Δ} → Expr Δ (T ◁ Γ) T′ → Expr Δ Γ (T ⇒ T′)
     _·_  : ∀ {T T′ : Type Δ}{Γ : TEnv Δ} → Expr Δ Γ (T ⇒ T′) → Expr Δ Γ T → Expr Δ Γ T′
     Λα_⇒_ : ∀ {Γ : TEnv Δ} → (l : ℕ) → {T : Type (l ∷ Δ)} → Expr (l ∷ Δ) (l ◁* Γ) T → Expr Δ Γ (`∀α l , T)
-    _∙_  : ∀ {l : ℕ}{T : Type (l ∷ Δ)}{Γ : TEnv Δ} → Expr Δ Γ (`∀α l , T) → (T′ : Type Δ) → Expr Δ Γ (T [ T′ ]T)
+    _∙_  : ∀ {l : ℕ}{T : Type (l ∷ Δ)}{Γ : TEnv Δ} → Expr Δ Γ (`∀α l , T) → (T′ : Type Δ) → level T′ ≡ lof l → Expr Δ Γ (T [ T′ ]T)
+
+  extend : ∀ {l} {Δ : LEnv} → Set (lof l) → Env* Δ → Env* (l ∷ Δ)
+  extend α η here = α
+  extend α η (there x) = η x
 
   Env : (Δ : LEnv) → TEnv Δ → Env* Δ → Setω
   Env Δ Γ η = ∀ {T : Type Δ} → (x : inn T Γ) → ⟦ T ⟧ η
@@ -146,6 +150,8 @@ module try2 where
   E⟦ ` x ⟧ η γ = γ x
   E⟦ ƛ_ {T = T} {T′ = T′} e ⟧ η γ x = E⟦ e ⟧ η (λ { here → x; (there x) → γ x })
   E⟦ e₁ · e₂ ⟧ η γ = E⟦ e₁ ⟧ η γ (E⟦ e₂ ⟧ η γ)
-  E⟦ Λα l ⇒ e ⟧ η γ α = E⟦ e ⟧ {!   !} λ { (tskip x) → {!   !} }
-  E⟦ e₁ ∙ e₂ ⟧ η γ = {!   !}
-    
+  E⟦_⟧ {Δ}{`∀α l , T} (Λα l ⇒ e) η γ α with extend{l} α η
+  ... | η′ = E⟦ e ⟧ {!!} λ { (tskip x) → {!   !} }
+  E⟦ (e ∙ T′) lev-eq ⟧ η γ with ⟦ T′ ⟧ η
+  ... | S rewrite lev-eq with E⟦ e ⟧ η γ S
+  ... | v = {!    !}
