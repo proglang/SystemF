@@ -116,12 +116,12 @@ module try2 where
   subT σ (`∀α lev , T) = `∀α lev , subT (extₛ σ lev) T
   subT σ 𝟙 = 𝟙 
 
-  singleₛ : Sub Δ₁ Δ₂ → Type Δ₂ → (n : ℕ) → Sub (n ∷ Δ₁) Δ₂
-  singleₛ σ T' _ _ here = T'
-  singleₛ σ T' _ _ (there x) = σ _ x
+  singleₛ : Sub Δ₁ Δ₂ → Type Δ₂ → Sub (n ∷ Δ₁) Δ₂
+  singleₛ σ T' _ here = T'
+  singleₛ σ T' _ (there x) = σ _ x
 
   _[_]T : Type (n ∷ Δ) → Type Δ → Type Δ
-  _[_]T {n} T T' = subT (singleₛ idₛ T' n) T
+  _[_]T {n} T T' = subT (singleₛ idₛ T') T
 
   -- type environments
   data TEnv : LEnv → Set where
@@ -135,12 +135,12 @@ module try2 where
     tskip : ∀ {T l Γ} → inn {Δ} T Γ → inn (wkT T) (l ◁* Γ)
 
   data Expr : (Δ : LEnv) → TEnv Δ → Type Δ → Set where
-    `_   : ∀ {T : Type Δ}{Γ : TEnv Δ} → inn T Γ → Expr Δ Γ T
-    ƛ_   : ∀ {T T′ : Type Δ}{Γ : TEnv Δ} → Expr Δ (T ◁ Γ) T′ → Expr Δ Γ (T ⇒ T′)
-    _·_  : ∀ {T T′ : Type Δ}{Γ : TEnv Δ} → Expr Δ Γ (T ⇒ T′) → Expr Δ Γ T → Expr Δ Γ T′
+    `_    : ∀ {T : Type Δ} {Γ : TEnv Δ} → inn T Γ → Expr Δ Γ T
+    ƛ_    : ∀ {T T′ : Type Δ} {Γ : TEnv Δ} → Expr Δ (T ◁ Γ) T′ → Expr Δ Γ (T ⇒ T′)
+    _·_   : ∀ {T T′ : Type Δ} {Γ : TEnv Δ} → Expr Δ Γ (T ⇒ T′) → Expr Δ Γ T → Expr Δ Γ T′
     Λα_⇒_ : ∀ {Γ : TEnv Δ} → (l : ℕ) → {T : Type (l ∷ Δ)} → Expr (l ∷ Δ) (l ◁* Γ) T → Expr Δ Γ (`∀α l , T)
-    _∙_  : ∀ {l : ℕ}{T : Type (l ∷ Δ)}{Γ : TEnv Δ} → Expr Δ Γ (`∀α l , T) → (T′ : Type Δ) → level T′ ≡ lof l → Expr Δ Γ (T [ T′ ]T)
-
+    _∙_   : ∀ {l : ℕ} {T : Type (l ∷ Δ)} {Γ : TEnv Δ} → Expr Δ Γ (`∀α l , T) → (T′ : Type Δ) → level T′ ≡ lof l → Expr Δ Γ (T [ T′ ]T)
+    
   Env : (Δ : LEnv) → TEnv Δ → Env* Δ → Setω
   Env Δ Γ η = ∀ {T : Type Δ} → (x : inn T Γ) → ⟦ T ⟧ η
 
@@ -149,13 +149,14 @@ module try2 where
   extend-γ _ γ (there x) = γ x
 
   extend-γ-by-ℓ : ∀ {Δ : LEnv} {Γ : TEnv Δ} {η : Env* Δ} (l : ℕ) {η′ : Env* (l ∷ Δ)} → Env Δ Γ η → Env (l ∷ Δ) (l ◁* Γ) η′
-  extend-γ-by-ℓ l γ (tskip x) = {!    !}
+  extend-γ-by-ℓ l γ (tskip x) = {! λ _ → γ x !}
 
   E⟦_⟧ : ∀ {T : Type Δ}{Γ : TEnv Δ} → Expr Δ Γ T → (η : Env* Δ) → Env Δ Γ η → ⟦ T ⟧ η
   E⟦ ` x ⟧ η γ = γ x
   E⟦ ƛ e ⟧ η γ x = E⟦ e ⟧ η (extend-γ x γ)
   E⟦ e₁ · e₂ ⟧ η γ = E⟦ e₁ ⟧ η γ (E⟦ e₂ ⟧ η γ)
   E⟦ Λα l ⇒ e ⟧ η γ α = E⟦ e ⟧ (extend-η {l} α η) (extend-γ-by-ℓ l γ)
-  E⟦ (e ∙ T′) ≡l ⟧ η γ rewrite ≡l with E⟦ e ⟧ η γ 
-  ... | v = {!   !}
+  E⟦ (e ∙ T′) ≡l ⟧ η γ with E⟦ e ⟧ η γ | ⟦ T′ ⟧ η 
+  E⟦ (e ∙ T′) ≡l ⟧ η γ | e₁ | T′₁ rewrite ≡l with e₁ T′₁
+  E⟦ (e ∙ T′) ≡l ⟧ η γ | e₁ | T′₁ | v  = {! v !}
  
