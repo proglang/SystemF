@@ -20,25 +20,6 @@ lof : ℕ → Level
 lof ℕ.zero = Level.zero
 lof (ℕ.suc n) = Level.suc (lof n)
 
-module try1 where
-
-  -- polymorphic unit
-  data ⊤ {ℓ} : Set ℓ where
-    tt : ⊤
-
-  data Type n : Set where
-    `_ : Fin n → Type n
-    _⇒_ : Type n → Type n → Type n
-    `∀α,_ : Type (ℕ.suc n) → Type n
-    𝟙 : Type n
-
-  ⟦_⟧ : Type n → (l : ℕ) → Vec (Set (lof l)) n → Set (lof l)
-  ⟦ ` x ⟧ l η = Data.Vec.lookup η x
-  ⟦ T₁ ⇒ T₂ ⟧ l η = ⟦ T₁ ⟧ l η → ⟦ T₂ ⟧ l η
-  ⟦ `∀α, T ⟧ ℕ.zero η = {! !}
-  ⟦ `∀α, T ⟧ (ℕ.suc l) η = (α : Set (lof l)) → ⟦ T ⟧ (ℕ.suc l) ({!!} ∷ η)
-  ⟦ 𝟙 ⟧ l η = ⊤
-
 module try2 where
 
   open import Data.Unit
