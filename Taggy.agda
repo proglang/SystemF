@@ -133,23 +133,16 @@ extend : ∀ {T : Type Δ l}{Γ : TEnv Δ}{η : Env* Δ} → Env Δ Γ η → �
 extend γ v here = v
 extend γ v (there x) = γ x
 
-postulate
-  -- Function extensionality
-  funext :
-    {A : Set l}
-    {B : A → Set l′}
-    {f g : (x : A) → B x}
-    (_ : (x : A) → f x ≡ g x)
-    → -----------------------
-    f ≡ g
-
 
 weak-extend-η : ∀ {Δ}{l l′} (T : Type Δ l) (⟦α⟧ : Set l′) (η : Env* Δ)
   → ⟦ wkT T ⟧ (extend-η ⟦α⟧ η) ≡ ⟦ T ⟧ η
 weak-extend-η (` x) ⟦α⟧ η = refl
 weak-extend-η (T₁ ⇒ T₂) ⟦α⟧ η
   rewrite weak-extend-η T₁ ⟦α⟧ η | weak-extend-η T₂ ⟦α⟧ η = refl
-weak-extend-η (`∀α l , T) ⟦β⟧ η = {!!}
+weak-extend-η (`∀α l , T) ⟦β⟧ η = cong (λ R → (α : Set l) → R) {!weak-extend-η T!}
+-- ((α : Set l) → ⟦ renT (extᵣ wkᵣ l) T ⟧ (extend-η α (extend-η ⟦β⟧ η)))
+-- ≡
+-- ((α : Set l) → ⟦ T ⟧ (extend-η α η))
 weak-extend-η 𝟙 ⟦α⟧ η = refl
 
 extend-tskip : ∀ {Δ : LEnv}{Γ : TEnv Δ}{η : Env* Δ}{⟦α⟧ : Set l}
