@@ -1,29 +1,15 @@
-{-# OPTIONS --rewriting #-}
-
 module Taggy where
 
-open import Agda.Builtin.Equality
-open import Agda.Builtin.Equality.Rewrite
-
 open import Level
--- open import Data.Fin
 open import Data.Nat using (ℕ)
-open import Data.String
-open import Data.List
-open import Data.Vec
+open import Data.List using (List; []; _∷_)
 
 open import Relation.Binary.PropositionalEquality
   using (_≡_; _≢_; refl; sym; trans; cong; cong₂; subst; resp₂)
 
 -- syntax
 
-Ident = String
-
 variable l l′ : Level
-
-lof : ℕ → Level
-lof ℕ.zero = Level.zero
-lof (ℕ.suc n) = Level.suc (lof n)
 
 open import Data.Unit
 
