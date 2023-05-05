@@ -1,10 +1,10 @@
 module Taggy-all where
 
 open import Level
--- open import Data.Nat using (ℕ)
-open import Data.List using (List; []; _∷_)
+open import Data.Fin using (Fin) renaming (zero to fzero; suc to fsuc)
+open import Data.List using (List; []; _∷_; _++_; length; lookup; tabulate)
 open import Data.Unit
-
+open import Function using (_∘_)
 open import Relation.Binary.PropositionalEquality
   using (_≡_; _≢_; refl; sym; trans; cong; cong₂; subst; resp₂)
 
@@ -43,14 +43,14 @@ data Env* : LEnv → Setω where
   []  : Env* []
   _∷_ : Set l → Env* Δ → Env* (l ∷ Δ)
 
-lookup : Env* Δ → l ∈ Δ → Set l
-lookup [] ()
-lookup (x ∷ _) here = x
-lookup (_ ∷ η) (there x) = lookup η x
+apply-env : Env* Δ → l ∈ Δ → Set l
+apply-env [] ()
+apply-env (x ∷ _) here = x
+apply-env (_ ∷ η) (there x) = apply-env η x
 
 -- the meaning of a stratified type in terms of Agda universes
 ⟦_⟧ : (T : Type Δ l) → Env* Δ → Set l
-⟦ ` x ⟧ η = lookup η x
+⟦ ` x ⟧ η = apply-env η x
 ⟦ T₁ ⇒ T₂ ⟧ η = ⟦ T₁ ⟧ η → ⟦ T₂ ⟧ η
 ⟦ `∀α l , T ⟧ η = (α : Set l) → ⟦ T ⟧ (α ∷ η)
 ⟦ 𝟙 ⟧ η = ⊤
@@ -80,7 +80,7 @@ wkT = renT wkᵣ
 
 -- renamings and Env*
 Ren* : (ρ : Ren Δ₁ Δ₂) → (η₁ : Env* Δ₁) → (η₂ : Env* Δ₂) → Setω
-Ren* {Δ₁}{Δ₂} ρ η₁ η₂ = ∀ l → (x : l ∈ Δ₁) → lookup η₂ (ρ _ x) ≡ lookup η₁ x
+Ren* {Δ₁}{Δ₂} ρ η₁ η₂ = ∀ l → (x : l ∈ Δ₁) → apply-env η₂ (ρ _ x) ≡ apply-env η₁ x
 
 wkᵣ∈Ren* : ∀ (η : Env* Δ) (⟦α⟧ : Set l) → Ren* (wkᵣ{Δ}{l}) η (⟦α⟧ ∷ η)
 wkᵣ∈Ren* η ⟦α⟧ _ x = refl
@@ -163,13 +163,29 @@ extend-tskip {η = η} {⟦α⟧ = ⟦α⟧} γ (tskip{T = T} x)
 subst-shrink : (σ : Sub (l ∷ Δ₁) Δ₂) → Sub Δ₁ Δ₂
 subst-shrink σ l′ x = σ l′ (there x)
 
+-- subst-shrink-ext : (σ : Sub Δ₁ Δ₂) → ∀ x → subst-shrink (extₛ σ l) x ≡ σ x
+-- subst-shrink-ext σ x = ?
+
 subst-to-env* : (σ : Sub Δ₁ Δ₂) → (η₂ : Env* Δ₂) → Env* Δ₁
 subst-to-env* {Δ₁ = []} σ η₂ = []
 subst-to-env* {Δ₁ = l ∷ Δ₁} σ η₂ = (⟦ σ l here ⟧ η₂) ∷ subst-to-env* {Δ₁ = Δ₁} (subst-shrink σ) η₂
 
-subst-lookup-preserves : (x  : l ∈ Δ₁) (σ  : Sub Δ₁ Δ₂) (η₂ : Env* Δ₂) → ⟦ σ l x ⟧ η₂ ≡ lookup (subst-to-env* σ η₂) x
-subst-lookup-preserves here σ η₂ = refl
-subst-lookup-preserves (there x) σ η₂ = subst-lookup-preserves x (subst-shrink σ) η₂
+
+index-address : (Δ : LEnv) → (i : Fin (length Δ)) → lookup Δ i ∈ Δ
+index-address (x ∷ Δ) fzero = here
+index-address (x ∷ Δ) (fsuc i) = there (index-address Δ i)
+
+tabulate-env* : (η₂ : Env* Δ₂) (σ : Sub Δ₁ Δ₂) → ((i : Fin (length Δ₁)) → lookup Δ₁ i ∈ Δ₁) → Env* Δ₁
+tabulate-env* {Δ₂} {[]} η₂ σ f = []
+tabulate-env* {Δ₂} {x ∷ Δ₁} η₂ σ f = ⟦ σ _ (f fzero) ⟧ η₂ ∷ {!tabulate-env* η₂ σ ? !}
+
+-- define by induction on l ∈ Δ₁ ?
+subst-to-env** : (σ : Sub Δ₁ Δ₂) → (η₂ : Env* Δ₂) → Env* Δ₁
+subst-to-env** {Δ₁} σ η₂ = {!tabulate!}
+
+subst-apply-env-preserves : (x  : l ∈ Δ₁) (σ  : Sub Δ₁ Δ₂) (η₂ : Env* Δ₂) → ⟦ σ l x ⟧ η₂ ≡ apply-env (subst-to-env* σ η₂) x
+subst-apply-env-preserves here σ η₂ = refl
+subst-apply-env-preserves (there x) σ η₂ = subst-apply-env-preserves x (subst-shrink σ) η₂
 
 substitution-preserves-type : Setω
 substitution-preserves-type =
@@ -177,7 +193,7 @@ substitution-preserves-type =
   → (σ : Sub Δ₁ Δ₂) (T : Type Δ₁ l) → ⟦ subT σ T ⟧ η₂ ≡ ⟦ T ⟧ (subst-to-env* σ η₂)
 
 substitution-preserves : substitution-preserves-type
-substitution-preserves {η₂ = η₂} σ (` x) = subst-lookup-preserves x σ η₂
+substitution-preserves {η₂ = η₂} σ (` x) = subst-apply-env-preserves x σ η₂
 substitution-preserves {η₁ = η₁}{η₂} σ (T₁ ⇒ T₂)
   rewrite substitution-preserves{η₁ = η₁}{η₂} σ T₁
   |  substitution-preserves{η₁ = η₁}{η₂} σ T₂ = refl
