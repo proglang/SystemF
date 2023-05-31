@@ -84,91 +84,91 @@ apply-env (_ ∷ η) (there x) = apply-env η x
 
 -- renaming on types
 
-Ren : LEnv → LEnv → Set
-Ren Δ₁ Δ₂ = ∀ {l} → l ∈ Δ₁ → l ∈ Δ₂
+TRen : LEnv → LEnv → Set
+TRen Δ₁ Δ₂ = ∀ {l} → l ∈ Δ₁ → l ∈ Δ₂
 
-wkᵣ : Ren Δ (l ∷ Δ)
-wkᵣ = there
+Twkᵣ : TRen Δ (l ∷ Δ)
+Twkᵣ = there
 
-extᵣ : Ren Δ₁ Δ₂ → Ren (l ∷ Δ₁) (l ∷ Δ₂)
-extᵣ ρ here = here
-extᵣ ρ (there x) = there (ρ x)
+Textᵣ : TRen Δ₁ Δ₂ → TRen (l ∷ Δ₁) (l ∷ Δ₂)
+Textᵣ ρ here = here
+Textᵣ ρ (there x) = there (ρ x)
 
-renT : Ren Δ₁ Δ₂ → (Type Δ₁ l → Type Δ₂ l)
-renT ρ (` x) = ` ρ x
-renT ρ (T₁ ⇒ T₂) = renT ρ T₁ ⇒ renT ρ T₂
-renT ρ (`∀α lev , T) = `∀α lev , renT (extᵣ ρ) T
-renT ρ 𝟙 = 𝟙 
+Tren : TRen Δ₁ Δ₂ → (Type Δ₁ l → Type Δ₂ l)
+Tren ρ (` x) = ` ρ x
+Tren ρ (T₁ ⇒ T₂) = Tren ρ T₁ ⇒ Tren ρ T₂
+Tren ρ (`∀α lev , T) = `∀α lev , Tren (Textᵣ ρ) T
+Tren ρ 𝟙 = 𝟙 
 
-wkT : Type Δ l′ → Type (l ∷ Δ) l′
-wkT = renT wkᵣ
+Twk : Type Δ l′ → Type (l ∷ Δ) l′
+Twk = Tren Twkᵣ
 
 -- the action of renaming on semantic environments
 
-Ren* : (ρ : Ren Δ₁ Δ₂) → (η₁ : Env* Δ₁) → (η₂ : Env* Δ₂) → Setω
-Ren* {Δ₁} ρ η₁ η₂ = ∀ {l : Level} → (x : l ∈ Δ₁) → apply-env η₂ (ρ x) ≡ apply-env η₁ x
+TRen* : (ρ : TRen Δ₁ Δ₂) → (η₁ : Env* Δ₁) → (η₂ : Env* Δ₂) → Setω
+TRen* {Δ₁} ρ η₁ η₂ = ∀ {l : Level} → (x : l ∈ Δ₁) → apply-env η₂ (ρ x) ≡ apply-env η₁ x
 
-wkᵣ∈Ren* : ∀ (η : Env* Δ) (⟦α⟧ : Set l) → Ren* (wkᵣ{Δ}{l}) η (⟦α⟧ ∷ η)
+wkᵣ∈Ren* : ∀ (η : Env* Δ) (⟦α⟧ : Set l) → TRen* (Twkᵣ{Δ}{l}) η (⟦α⟧ ∷ η)
 wkᵣ∈Ren* η ⟦α⟧ x = refl
 
-ren*-id : (η : Env* Δ) → Ren* (λ x → x) η η
-ren*-id η x = refl
+Tren*-id : (η : Env* Δ) → TRen* (λ x → x) η η
+Tren*-id η x = refl
 
-ren*-pop : (ρ : Ren (l ∷ Δ₁) Δ₂) (α : Set l) (η₁ : Env* Δ₁) (η₂ : Env* Δ₂) → Ren* ρ (α ∷ η₁) η₂ → Ren* (ρ ∘ there) η₁ η₂
-ren*-pop ρ α η₁ η₂ ren* x = ren* (there x)
+Tren*-pop : (ρ : TRen (l ∷ Δ₁) Δ₂) (α : Set l) (η₁ : Env* Δ₁) (η₂ : Env* Δ₂) → TRen* ρ (α ∷ η₁) η₂ → TRen* (ρ ∘ there) η₁ η₂
+Tren*-pop ρ α η₁ η₂ Tren* x = Tren* (there x)
 
-ren*-ext : ∀ {ρ : Ren Δ₁ Δ₂}{η₁ : Env* Δ₁}{η₂ : Env* Δ₂} (α : Set l)
-  → Ren* ρ η₁ η₂ → Ren* (extᵣ ρ) (α ∷ η₁) (α ∷ η₂)
-ren*-ext α ren* here = refl
-ren*-ext α ren* (there x) = ren* x
+Tren*-ext : ∀ {ρ : TRen Δ₁ Δ₂}{η₁ : Env* Δ₁}{η₂ : Env* Δ₂} (α : Set l)
+  → TRen* ρ η₁ η₂ → TRen* (Textᵣ ρ) (α ∷ η₁) (α ∷ η₂)
+Tren*-ext α Tren* here = refl
+Tren*-ext α Tren* (there x) = Tren* x
 
-ren*-preserves-semantics : ∀ {ρ : Ren Δ₁ Δ₂}{η₁ : Env* Δ₁}{η₂ : Env* Δ₂}
-  → (ren* : Ren* ρ η₁ η₂) → (T : Type Δ₁ l) →  ⟦ renT ρ T ⟧ η₂ ≡ ⟦ T ⟧ η₁
-ren*-preserves-semantics {ρ = ρ}{η₁}{η₂} ren* (` x) = ren* x
-ren*-preserves-semantics {ρ = ρ}{η₁}{η₂} ren* (T₁ ⇒ T₂)
-  rewrite ren*-preserves-semantics {ρ = ρ}{η₁}{η₂} ren* T₁
-  | ren*-preserves-semantics {ρ = ρ}{η₁}{η₂} ren* T₂
+Tren*-preserves-semantics : ∀ {ρ : TRen Δ₁ Δ₂}{η₁ : Env* Δ₁}{η₂ : Env* Δ₂}
+  → (Tren* : TRen* ρ η₁ η₂) → (T : Type Δ₁ l) →  ⟦ Tren ρ T ⟧ η₂ ≡ ⟦ T ⟧ η₁
+Tren*-preserves-semantics {ρ = ρ}{η₁}{η₂} Tren* (` x) = Tren* x
+Tren*-preserves-semantics {ρ = ρ}{η₁}{η₂} Tren* (T₁ ⇒ T₂)
+  rewrite Tren*-preserves-semantics {ρ = ρ}{η₁}{η₂} Tren* T₁
+  | Tren*-preserves-semantics {ρ = ρ}{η₁}{η₂} Tren* T₂
   = refl
-ren*-preserves-semantics {ρ = ρ}{η₁}{η₂} ren* (`∀α l , T) =
+Tren*-preserves-semantics {ρ = ρ}{η₁}{η₂} Tren* (`∀α l , T) =
   dependent-extensionality (λ α →
-    ren*-preserves-semantics{ρ = extᵣ ρ}{α ∷ η₁}{α ∷ η₂} (ren*-ext{ρ = ρ} α ren*) T)
-ren*-preserves-semantics ren* 𝟙 = refl
+    Tren*-preserves-semantics{ρ = Textᵣ ρ}{α ∷ η₁}{α ∷ η₂} (Tren*-ext{ρ = ρ} α Tren*) T)
+Tren*-preserves-semantics Tren* 𝟙 = refl
 
 -- substitution on types
 
-data Sub : LEnv → LEnv → Set where
-  []  : Sub [] Δ₂
-  _∷_ : Type Δ₂ l → Sub Δ₁ Δ₂ → Sub (l ∷ Δ₁) Δ₂
+data TSub : LEnv → LEnv → Set where
+  []  : TSub [] Δ₂
+  _∷_ : Type Δ₂ l → TSub Δ₁ Δ₂ → TSub (l ∷ Δ₁) Δ₂
 
-apply-sub : l ∈ Δ₁ → Sub Δ₁ Δ₂ → Type Δ₂ l
-apply-sub here (T ∷ _) = T
-apply-sub (there x) (_ ∷ σ) = apply-sub x σ
+apply-TSub : l ∈ Δ₁ → TSub Δ₁ Δ₂ → Type Δ₂ l
+apply-TSub here (T ∷ _) = T
+apply-TSub (there x) (_ ∷ σ) = apply-TSub x σ
 
-build-id : (Δ₁ : LEnv) → Ren Δ₁ Δ → Sub Δ₁ Δ
-build-id [] ρ = []
-build-id (l ∷ Δ₁) ρ = (` ρ here) ∷ build-id Δ₁ (ρ ∘ there)
+build-Tidₛ : (Δ₁ : LEnv) → TRen Δ₁ Δ → TSub Δ₁ Δ
+build-Tidₛ [] ρ = []
+build-Tidₛ (l ∷ Δ₁) ρ = (` ρ here) ∷ build-Tidₛ Δ₁ (ρ ∘ there)
 
-idₛ : Sub Δ Δ
-idₛ {Δ} = build-id Δ (λ x → x)
+Tidₛ : TSub Δ Δ
+Tidₛ {Δ} = build-Tidₛ Δ (λ x → x)
 
-wkₛ : Sub Δ₁ Δ₂ → Sub Δ₁ (l ∷ Δ₂)
-wkₛ [] = []
-wkₛ (T ∷ σ) = wkT T ∷ wkₛ σ
+Twkₛ : TSub Δ₁ Δ₂ → TSub Δ₁ (l ∷ Δ₂)
+Twkₛ [] = []
+Twkₛ (T ∷ σ) = Twk T ∷ Twkₛ σ
 
-extₛ : Sub Δ₁ Δ₂ → ∀ {l} → Sub (l ∷ Δ₁) (l ∷ Δ₂)
-extₛ σ = ` here ∷ wkₛ σ
+Textₛ : TSub Δ₁ Δ₂ → ∀ {l} → TSub (l ∷ Δ₁) (l ∷ Δ₂)
+Textₛ σ = ` here ∷ Twkₛ σ
 
-subT : Sub Δ₁ Δ₂ → Type Δ₁ l → Type Δ₂ l
-subT σ (` x) = apply-sub x σ
-subT σ (T₁ ⇒ T₂) = subT σ T₁ ⇒ subT σ T₂
-subT σ (`∀α l , T) = `∀α l , subT (extₛ σ) T
-subT σ 𝟙 = 𝟙
+Tsub : TSub Δ₁ Δ₂ → Type Δ₁ l → Type Δ₂ l
+Tsub σ (` x) = apply-TSub x σ
+Tsub σ (T₁ ⇒ T₂) = Tsub σ T₁ ⇒ Tsub σ T₂
+Tsub σ (`∀α l , T) = `∀α l , Tsub (Textₛ σ) T
+Tsub σ 𝟙 = 𝟙
 
-singleₛ : Sub Δ₁ Δ₂ → ∀ {l} → Type Δ₂ l → Sub (l ∷ Δ₁) Δ₂
-singleₛ σ T' = T' ∷ σ
+Tsingleₛ : TSub Δ₁ Δ₂ → ∀ {l} → Type Δ₂ l → TSub (l ∷ Δ₁) Δ₂
+Tsingleₛ σ T' = T' ∷ σ
 
 _[_]T : Type (l ∷ Δ) l′ → Type Δ l → Type Δ l′
-_[_]T T T' = subT (singleₛ idₛ T') T
+_[_]T T T' = Tsub (Tsingleₛ Tidₛ T') T
 
 -- type environments
 
@@ -182,7 +182,7 @@ variable Γ Γ₁ Γ₂ : TEnv Δ
 data inn : Type Δ l → TEnv Δ → Set where
   here  : ∀ {T Γ} → inn {Δ}{l} T (T ◁ Γ)
   there : ∀ {T : Type Δ l}{T′ : Type Δ l′}{Γ} → inn {Δ}{l} T Γ → inn {Δ} T (T′ ◁ Γ)
-  tskip : ∀ {T l Γ} → inn {Δ}{l′} T Γ → inn (wkT T) (l ◁* Γ)
+  tskip : ∀ {T l Γ} → inn {Δ}{l′} T Γ → inn (Twk T) (l ◁* Γ)
 
 data Expr (Δ : LEnv) (Γ : TEnv Δ) : Type Δ l → Set where
   `_   : ∀ {T : Type Δ l} → inn T Γ → Expr Δ Γ T
@@ -191,7 +191,7 @@ data Expr (Δ : LEnv) (Γ : TEnv Δ) : Type Δ l → Set where
   Λ_⇒_ : ∀ (l : Level) → {T : Type (l ∷ Δ) l′} → Expr (l ∷ Δ) (l ◁* Γ) T → Expr Δ Γ (`∀α l , T)
   _∙_  : ∀ {T : Type (l ∷ Δ) l′} → Expr Δ Γ (`∀α l , T) → (T′ : Type Δ l) → Expr Δ Γ (T [ T′ ]T)
 
-variable e e₁ e₂ : Expr Δ Γ T
+variable e e₁ e₂ e₃ : Expr Δ Γ T
 
 -- value environments
 
@@ -206,38 +206,38 @@ extend γ v (there x) = γ x
 extend-tskip : ∀ {Δ : LEnv}{Γ : TEnv Δ}{η : Env* Δ}{⟦α⟧ : Set l}
   → Env Δ Γ η → Env (l ∷ Δ) (l ◁* Γ) (⟦α⟧ ∷ η)
 extend-tskip {η = η} {⟦α⟧ = ⟦α⟧} γ (tskip{T = T} x)
-  rewrite ren*-preserves-semantics {ρ = wkᵣ}{η}{⟦α⟧ ∷ η} (wkᵣ∈Ren* η ⟦α⟧) T
+  rewrite Tren*-preserves-semantics {ρ = Twkᵣ}{η}{⟦α⟧ ∷ η} (wkᵣ∈Ren* η ⟦α⟧) T
   = γ x
 
-subst-to-env* : (σ : Sub Δ₁ Δ₂) → (η₂ : Env* Δ₂) → Env* Δ₁
+subst-to-env* : (σ : TSub Δ₁ Δ₂) → (η₂ : Env* Δ₂) → Env* Δ₁
 subst-to-env* [] η₂ = []
 subst-to-env* (T ∷ σ) η₂ = ⟦ T ⟧ η₂ ∷ subst-to-env* σ η₂
 
-subst-var-preserves : (x  : l ∈ Δ₁) (σ  : Sub Δ₁ Δ₂) (η₂ : Env* Δ₂) → ⟦ apply-sub x σ ⟧ η₂ ≡ apply-env (subst-to-env* σ η₂) x
+subst-var-preserves : (x  : l ∈ Δ₁) (σ  : TSub Δ₁ Δ₂) (η₂ : Env* Δ₂) → ⟦ apply-TSub x σ ⟧ η₂ ≡ apply-env (subst-to-env* σ η₂) x
 subst-var-preserves here (T ∷ σ) η₂ = refl
 subst-var-preserves (there x) (_ ∷ σ) η₂ = subst-var-preserves x σ η₂
 
-subst-to-env*-wk : (σ  : Sub Δ₁ Δ₂) → (α  : Set l) → (η₂ : Env* Δ₂) → subst-to-env* (wkₛ σ) (α ∷ η₂) ≡ω subst-to-env* σ η₂
+subst-to-env*-wk : (σ  : TSub Δ₁ Δ₂) → (α  : Set l) → (η₂ : Env* Δ₂) → subst-to-env* (Twkₛ σ) (α ∷ η₂) ≡ω subst-to-env* σ η₂
 subst-to-env*-wk [] α η₂ = refl
 subst-to-env*-wk (T ∷ σ) α η₂
-  rewrite ren*-preserves-semantics {ρ = wkᵣ}{η₂}{α ∷ η₂} (wkᵣ∈Ren* η₂ α) T
+  rewrite Tren*-preserves-semantics {ρ = Twkᵣ}{η₂}{α ∷ η₂} (wkᵣ∈Ren* η₂ α) T
   = congωω (⟦ T ⟧ η₂ ∷_) (subst-to-env*-wk σ α η₂)
 
-subst-to-env*-build : ∀ (ρ : Ren Δ₁ Δ₂) (η₁ : Env* Δ₁) (η₂ : Env* Δ₂) → Ren* ρ η₁ η₂
-  → subst-to-env* (build-id Δ₁ ρ) η₂ ≡ω η₁
-subst-to-env*-build ρ [] η₂ ren* = refl
-subst-to-env*-build {Δ₁ = _ ∷ Δ₁} ρ (α ∷ η₁) η₂ ren* = 
-  transω (congωω (λ H → apply-env η₂ (ρ here) ∷ H) (subst-to-env*-build (ρ ∘ there) η₁ η₂ (ren*-pop ρ α η₁ η₂ ren*)))
-         (conglω (_∷ η₁) (ren* here))
+subst-to-env*-build : ∀ (ρ : TRen Δ₁ Δ₂) (η₁ : Env* Δ₁) (η₂ : Env* Δ₂) → TRen* ρ η₁ η₂
+  → subst-to-env* (build-Tidₛ Δ₁ ρ) η₂ ≡ω η₁
+subst-to-env*-build ρ [] η₂ Tren* = refl
+subst-to-env*-build {Δ₁ = _ ∷ Δ₁} ρ (α ∷ η₁) η₂ Tren* = 
+  transω (congωω (λ H → apply-env η₂ (ρ here) ∷ H) (subst-to-env*-build (ρ ∘ there) η₁ η₂ (Tren*-pop ρ α η₁ η₂ Tren*)))
+         (conglω (_∷ η₁) (Tren* here))
 
-subst-to-env*-id : (η : Env* Δ) → subst-to-env* idₛ η ≡ω η
-subst-to-env*-id {Δ} η = subst-to-env*-build {Δ₁ = Δ} (λ x → x) η η (ren*-id η)
+subst-to-env*-id : (η : Env* Δ) → subst-to-env* Tidₛ η ≡ω η
+subst-to-env*-id {Δ} η = subst-to-env*-build {Δ₁ = Δ} (λ x → x) η η (Tren*-id η)
 
 subst-preserves-type : Setω
 subst-preserves-type =
   ∀ {Δ₁ Δ₂}{l}{η₂ : Env* Δ₂}
-  → (σ : Sub Δ₁ Δ₂) (T : Type Δ₁ l)
-  → ⟦ subT σ T ⟧ η₂ ≡ ⟦ T ⟧ (subst-to-env* σ η₂)
+  → (σ : TSub Δ₁ Δ₂) (T : Type Δ₁ l)
+  → ⟦ Tsub σ T ⟧ η₂ ≡ ⟦ T ⟧ (subst-to-env* σ η₂)
 
 subst-preserves : subst-preserves-type
 subst-preserves {η₂ = η₂} σ (` x) = subst-var-preserves x σ η₂
@@ -246,13 +246,13 @@ subst-preserves{η₂ = η₂} σ (T₁ ⇒ T₂)
   |  subst-preserves{η₂ = η₂} σ T₂ = refl
 subst-preserves {η₂ = η₂} σ (`∀α l , T) =
   dependent-extensionality (λ α →
-    trans (subst-preserves {η₂ = α ∷ η₂} (extₛ σ) T)
+    trans (subst-preserves {η₂ = α ∷ η₂} (Textₛ σ) T)
           (congωl (λ H → ⟦ T ⟧ (α ∷ H)) (subst-to-env*-wk σ α η₂)))
 subst-preserves σ 𝟙 = refl
 
 single-subst-preserves : ∀ (η : Env* Δ) (T′ : Type Δ l) (T : Type (l ∷ Δ) l′) → ⟦ T [ T′ ]T ⟧ η ≡ ⟦ T ⟧ (⟦ T′ ⟧ η ∷ η)
 single-subst-preserves {Δ = Δ} {l = l}{l′ = l′} η T′ T =
-  trans (subst-preserves (singleₛ idₛ T′) T)
+  trans (subst-preserves (Tsingleₛ Tidₛ T′) T)
         (congωl (λ H → ⟦ T ⟧ (⟦ T′ ⟧ η ∷ H)) (subst-to-env*-id η))
 
 E⟦_⟧ : ∀ {T : Type Δ l}{Γ : TEnv Δ} → Expr Δ Γ T → (η : Env* Δ) → Env Δ Γ η → ⟦ T ⟧ η
@@ -266,93 +266,108 @@ E⟦ _∙_ {T = T} e T′ ⟧ η γ
 
 -- expr in expr substitution
 
-RenE : TEnv Δ → TEnv Δ → Set
-RenE {Δ} Γ₁ Γ₂ = ∀ {l} {T : Type Δ l} → inn T Γ₁ → inn T Γ₂
+ERen : TEnv Δ → TEnv Δ → Set
+ERen {Δ} Γ₁ Γ₂ = ∀ {l} {T : Type Δ l} → inn T Γ₁ → inn T Γ₂
 
-wkᵣE : ∀ {l Δ} {Γ : TEnv Δ} {T : Type Δ l} → RenE Γ (T ◁ Γ)
-wkᵣE = there
+Ewkᵣ : ERen Γ (T ◁ Γ)
+Ewkᵣ = there
 
-extᵣE : RenE Γ₁ Γ₂ → RenE (T ◁ Γ₁) (T ◁ Γ₂)
-extᵣE ρ here = here
-extᵣE ρ (there x) = there (ρ x)
+Eextᵣ : ERen Γ₁ Γ₂ → ERen (T ◁ Γ₁) (T ◁ Γ₂)
+Eextᵣ ρ here = here
+Eextᵣ ρ (there x) = there (ρ x)
 
-extᵣEl : RenE Γ₁ Γ₂ → RenE (l ◁* Γ₁) (l ◁* Γ₂)
-extᵣEl ρ (tskip x) = tskip (ρ x) 
+Eextᵣ-l : ERen Γ₁ Γ₂ → ERen (l ◁* Γ₁) (l ◁* Γ₂)
+Eextᵣ-l ρ (tskip x) = tskip (ρ x) 
 
-renE : RenE Γ₁ Γ₂ → (Expr Δ Γ₁ T → Expr Δ Γ₂ T)
-renE ρ (` x) = ` ρ x
-renE ρ (ƛ e) = ƛ renE (extᵣE ρ) e
-renE ρ (e₁ · e₂) = renE ρ e₁ · renE ρ e₂
-renE ρ (Λ l ⇒ e) = Λ l ⇒ renE (extᵣEl ρ) e
-renE ρ (e ∙ T′) = renE ρ e ∙ T′
+Eren : ERen Γ₁ Γ₂ → (Expr Δ Γ₁ T → Expr Δ Γ₂ T)
+Eren ρ (` x) = ` ρ x
+Eren ρ (ƛ e) = ƛ Eren (Eextᵣ ρ) e
+Eren ρ (e₁ · e₂) = Eren ρ e₁ · Eren ρ e₂
+Eren ρ (Λ l ⇒ e) = Λ l ⇒ Eren (Eextᵣ-l ρ) e
+Eren ρ (e ∙ T′) = Eren ρ e ∙ T′
 
-wkE : Expr Δ Γ T → Expr Δ (T₁ ◁ Γ) T 
-wkE = renE wkᵣE
+Ewk : Expr Δ Γ T → Expr Δ (T₁ ◁ Γ) T 
+Ewk = Eren Ewkᵣ
 
-extEl : Expr Δ Γ T → Expr (l ∷ Δ) (l ◁* Γ) (wkT T)  
-extEl = {!  !}
+Ewk-l : Expr Δ Γ T → Expr (l ∷ Δ) (l ◁* Γ) (Twk T)  
+Ewk-l = {!  !}
 
-SubE : TEnv Δ → TEnv Δ → Set
-SubE {Δ} Γ₁ Γ₂ = ∀ {l} {T : Type Δ l} → inn T Γ₁ → Expr Δ Γ₂ T
+ESub : TEnv Δ → TEnv Δ → Set
+ESub {Δ} Γ₁ Γ₂ = ∀ {l} {T : Type Δ l} → inn T Γ₁ → Expr Δ Γ₂ T
 
-idₛE : SubE Γ Γ
-idₛE = `_
+Eidₛ : ESub Γ Γ
+Eidₛ = `_
 
-wkₛE : ∀ {l Δ} {Γ₁ Γ₂ : TEnv Δ} {T : Type Δ l} → SubE Γ₁ Γ₂ → SubE Γ₁ (T ◁ Γ₂)
-wkₛE σ x = wkE (σ x)
+Ewkₛ : ESub Γ₁ Γ₂ → ESub Γ₁ (T ◁ Γ₂)
+Ewkₛ σ x = Ewk (σ x)
 
-extₛE : SubE Γ₁ Γ₂ → SubE (T ◁ Γ₁) (T ◁ Γ₂)
-extₛE σ here = ` here
-extₛE σ (there x) = wkE (σ x)
+Eextₛ : ESub Γ₁ Γ₂ → ESub (T ◁ Γ₁) (T ◁ Γ₂)
+Eextₛ σ here = ` here
+Eextₛ σ (there x) = Ewk (σ x)
 
-extₛEl : SubE Γ₁ Γ₂ → SubE (l ◁* Γ₁) (l ◁* Γ₂)
-extₛEl σ (tskip x) = extEl (σ x)
+Eextₛ-l : ESub Γ₁ Γ₂ → ESub (l ◁* Γ₁) (l ◁* Γ₂)
+Eextₛ-l σ (tskip x) = Ewk-l (σ x)
 
-subE : SubE Γ₁ Γ₂ → Expr Δ Γ₁ T → Expr Δ Γ₂ T
-subE σ (` x) = σ x
-subE σ (ƛ e) = ƛ subE (extₛE σ) e
-subE σ (e₁ · e₂) = subE σ e₁ · subE σ e₂
-subE σ (Λ l ⇒ e) = Λ l ⇒ subE (extₛEl σ) e
-subE σ (e ∙ T) = subE σ e ∙ T
+Esub : ESub Γ₁ Γ₂ → Expr Δ Γ₁ T → Expr Δ Γ₂ T
+Esub σ (` x) = σ x
+Esub σ (ƛ e) = ƛ Esub (Eextₛ σ) e
+Esub σ (e₁ · e₂) = Esub σ e₁ · Esub σ e₂
+Esub σ (Λ l ⇒ e) = Λ l ⇒ Esub (Eextₛ-l σ) e
+Esub σ (e ∙ T) = Esub σ e ∙ T
 
-singleₛE : SubE Γ₁ Γ₂ → Expr Δ Γ₂ T → SubE (T ◁ Γ₁) Γ₂
-singleₛE σ e' here = e'
-singleₛE σ e' (there x) = σ x
+Esingleₛ : ESub Γ₁ Γ₂ → Expr Δ Γ₂ T → ESub (T ◁ Γ₁) Γ₂
+Esingleₛ σ e' here = e'
+Esingleₛ σ e' (there x) = σ x
 
 _[_]E : Expr Δ (T₁ ◁ Γ) T₂ → Expr Δ Γ T₁ → Expr Δ Γ T₂
-_[_]E e e' = subE (singleₛE idₛE e') e
+_[_]E e e' = Esub (Esingleₛ Eidₛ e') e
 
-subET : ∀ {l Δ₁ Δ₂} {Γ₁ : TEnv Δ₁} {Γ₂ : TEnv Δ₂} {T₁ : Type Δ₁ l} {T₂ : Type Δ₂ l} → 
-  Sub Δ₁ Δ₂ → Expr Δ₁ Γ₁ T₁ → Expr Δ₂ Γ₂ T₂
-subET σ (` x) = {!   !}
-subET σ (ƛ e) = {!   !}
-subET σ (e · e₁) = {!   !}
-subET σ (Λ l ⇒ e) = {!   !}
-subET σ (e ∙ T′) = {!   !}
+-- type in expr substitution
+
+Tsub-Γ : (σ : TSub Δ₁ Δ₂) → TEnv Δ₁ → TEnv Δ₂
+Tsub-Γ {Δ₂ = []} [] ∅ = ∅
+Tsub-Γ {Δ₂ = l ∷ Δ₂} [] ∅ = l ◁* Tsub-Γ [] ∅
+Tsub-Γ σ (T ◁ Γ) = Tsub σ T ◁ Tsub-Γ σ Γ
+Tsub-Γ (T ∷ σ) (l ◁* Γ) = Tsub-Γ σ Γ
+
+ETsub : (σ : TSub Δ₁ Δ₂) → Expr Δ₁ Γ T → Expr Δ₂ (Tsub-Γ σ Γ) (Tsub σ T)
+ETsub σ e = {!   !}
+
+_[_]ET : Expr (l ∷ Δ) (l ◁* Γ) T  → (T′ : Type Δ l) → Expr Δ Γ (T [ T′ ]T)
+_[_]ET e T′ = {!   !}
 
 -- small step call by value semantics
 
-data Val : ∀ {Δ} {T : Type Δ l}{Γ : TEnv Δ} → Expr Δ Γ T → Set where
-  v-ƛ : ∀ {l Δ} {Γ : TEnv Δ} {T : Type Δ l} {T′ : Type Δ l}  {e : Expr Δ (T′ ◁ Γ) T} → 
-    Val (ƛ e)
-  v-Λ : ∀ {l Δ} {Γ : TEnv Δ} {T : Type (l ∷ Δ) l′} {e : Expr (l ∷ Δ) (l ◁* Γ) T} →
-    Val (Λ l ⇒ e)
+data Val : Expr Δ Γ T → Set where
+  v-ƛ : Val (ƛ e)
+  v-Λ : Val (Λ l ⇒ e)
 
-data _↪_ : ∀ {Δ} {T : Type Δ l}{Γ : TEnv Δ} → Expr Δ Γ T → Expr Δ Γ T → Set where
+data _↪_ : Expr Δ Γ T → Expr Δ Γ T → Set where
   β-ƛ : 
      Val e₂ →
      ((ƛ e₁) · e₂) ↪ (e₁ [ e₂ ]E)
-  {- β-Λ  : →
-     Val e₂ →
-     (Λ l  e₁) · t₂ ↪ (e₁ [ t₂ ]) -}
-  ξ-·₁ : ∀ {T : Type Δ l} {T′ : Type Δ l′} {Γ : TEnv Δ} {e e₁ : Expr Δ Γ (T  ⇒ T′)} {e₂ : Expr Δ Γ T} →
+  β-Λ :
+     ((Λ l ⇒ e) ∙ T) ↪ (e [ T ]ET)
+  ξ-·₁ :
     e₁ ↪ e →
     (e₁ · e₂) ↪ (e · e₂)
-  ξ-·₂ : ∀ {T : Type Δ l} {T′ : Type Δ l′} {Γ : TEnv Δ} {e₁ : Expr Δ Γ (T  ⇒ T′)} {e e₂ : Expr Δ Γ T} →
+  ξ-·₂ : 
     e₂ ↪ e → 
     Val e₁ →
     (e₁ · e₂) ↪ (e₁ · e)
-  ξ-∙ : ∀ {T : Type Δ l} {T′ : Type (l ∷ Δ) l′} {Γ : TEnv Δ} {e e' : Expr Δ Γ (`∀α l , T′)} →
-    e ↪ e' →
-    (e ∙ T) ↪ (e' ∙ T)
- 
+  ξ-∙ :
+    e₁ ↪ e₂ →
+    (e₁ ∙ T) ↪ (e₂ ∙ T)
+
+data _↪*_ : Expr Δ Γ T → Expr Δ Γ T → Set where
+  refl :
+    e ↪* e
+  step :
+    e₁ ↪* e₂ →
+    e₂ ↪ e₃ →
+    e₁ ↪* e₃
+
+sem-eq : {!   !}
+sem-eq = {!   !}
+
+    
