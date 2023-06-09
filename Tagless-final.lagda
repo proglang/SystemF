@@ -1,3 +1,4 @@
+\begin{code}[hide]
 module Tagless-final where
 
 open import Level
@@ -262,3 +263,4 @@ single-subst-preserves {Δ = Δ} {l = l}{l′ = l′} η T′ T =
 𝓔⟦ e₁ · e₂ ⟧ η γ = 𝓔⟦ e₁ ⟧ η γ (𝓔⟦ e₂ ⟧ η γ)
 𝓔⟦ Λ l ⇒ e ⟧ η γ = λ ⟦α⟧ → 𝓔⟦ e ⟧ (⟦α⟧ ∷ η) (extend-tskip γ)
 𝓔⟦ _∙_ {T = T} e T′ ⟧ η γ = subst id (sym (single-subst-preserves η T′ T)) (𝓔⟦ e ⟧ η γ (𝓣⟦ T′ ⟧ η))
+\end{code}
