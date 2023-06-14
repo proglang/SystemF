@@ -1,4 +1,4 @@
-module Tagless-op_sem where
+module Tagless-op_sem-sub&env_fun where
 
 open import Level
 open import Data.Product using (_×_; Σ-syntax; ∃-syntax; _,_)
@@ -40,6 +40,16 @@ congωω f refl = refl
 transω : ∀ {A : Setω} {x y z : A} → x ≡ω y → y ≡ω z → x ≡ω z
 transω refl refl = refl
 
+postulate 
+  fun-ext-lvl : {B : (l : Level) → Set (suc l)} {f g : (x : Level) → B x} →
+    (∀ x → f x ≡ g x) → f ≡ω g
+  fun-ext-ωl : {A : Setω} {B : A → Set l} {f g : (x : A) → B x} →
+    (∀ x → f x ≡ g x) → f ≡ω g
+  fun-ext-lω : {A : Set l} {B : A → Setω} {f g : (x : A) → B x} →
+    (∀ x → f x ≡ω g x) → f ≡ω g
+  fun-ext-ωω : {A : Setω} {B : A → Setω} {f g : (x : A) → B x} →
+    (∀ x → f x ≡ω g x) → f ≡ω g
+
 ----------------------------------------------------------------------
 
 -- level environments
@@ -70,21 +80,27 @@ level {l = l} T = l
 
 -- semantic environments (mapping level l to an element of Set l)
 
-data Env* : LEnv → Setω where
+{- data Env* : LEnv → Setω where
   []  : Env* []
   _∷_ : Set l → Env* Δ → Env* (l ∷ Δ)
+   -}
 
-apply-env : Env* Δ → l ∈ Δ → Set l
-apply-env [] ()
-apply-env (x ∷ _) here = x
-apply-env (_ ∷ η) (there x) = apply-env η x
+Env* : LEnv → Setω
+Env* Δ = ∀ l → l ∈ Δ → Set l
+
+drop* : Env* (l ∷ Δ) → Env* Δ 
+drop* η _ x = η _ (there x)
+
+cons* : Set l → Env* Δ → Env* (l ∷ Δ)
+cons* T η _ here = T
+cons* T η _ (there x) = η _ x
 
 -- the meaning of a stratified type in terms of Agda universes
 
 ⟦_⟧ : (T : Type Δ l) → Env* Δ → Set l
-⟦ ` x ⟧ η = apply-env η x
+⟦ ` x ⟧ η =  η _ x
 ⟦ T₁ ⇒ T₂ ⟧ η = ⟦ T₁ ⟧ η → ⟦ T₂ ⟧ η
-⟦ `∀α l , T ⟧ η = (α : Set l) → ⟦ T ⟧ (α ∷ η)
+⟦ `∀α l , T ⟧ η = (α : Set l) → ⟦ T ⟧ (cons* α η)
 ⟦ 𝟙 ⟧ η = ⊤
 
 -- renaming on types
@@ -115,19 +131,19 @@ Twk = Tren Twkᵣ
 -- the action of renaming on semantic environments
 
 TRen* : (ρ : TRen Δ₁ Δ₂) → (η₁ : Env* Δ₁) → (η₂ : Env* Δ₂) → Setω
-TRen* {Δ₁} ρ η₁ η₂ = ∀ {l : Level} → (x : l ∈ Δ₁) → apply-env η₂ (ρ _ x) ≡ apply-env η₁ x
+TRen* {Δ₁} ρ η₁ η₂ = ∀ {l : Level} → (x : l ∈ Δ₁) → η₂ _ (ρ _ x) ≡ η₁ _ x
 
-wkᵣ∈Ren* : ∀ (η : Env* Δ) (⟦α⟧ : Set l) → TRen* (Twkᵣ{Δ}{l}) η (⟦α⟧ ∷ η)
+wkᵣ∈Ren* : ∀ (η : Env* Δ) (⟦α⟧ : Set l) → TRen* (Twkᵣ{Δ}{l}) η (cons* ⟦α⟧ η)
 wkᵣ∈Ren* η ⟦α⟧ x = refl
 
 Tren*-id : (η : Env* Δ) → TRen* (λ _ x → x) η η
 Tren*-id η x = refl
 
-Tren*-pop : (ρ : TRen (l ∷ Δ₁) Δ₂) (α : Set l) (η₁ : Env* Δ₁) (η₂ : Env* Δ₂) → TRen* ρ (α ∷ η₁) η₂ → TRen* (λ _ x → ρ _ (there x)) η₁ η₂
+Tren*-pop : (ρ : TRen (l ∷ Δ₁) Δ₂) (α : Set l) (η₁ : Env* Δ₁) (η₂ : Env* Δ₂) → TRen* ρ (cons* α η₁) η₂ → TRen* (λ _ x → ρ _ (there x)) η₁ η₂
 Tren*-pop ρ α η₁ η₂ Tren* x = Tren* (there x)
 
 Tren*-ext : ∀ {ρ : TRen Δ₁ Δ₂}{η₁ : Env* Δ₁}{η₂ : Env* Δ₂} (α : Set l)
-  → TRen* ρ η₁ η₂ → TRen* (Tliftᵣ ρ) (α ∷ η₁) (α ∷ η₂)
+  → TRen* ρ η₁ η₂ → TRen* (Tliftᵣ ρ) (cons* α η₁) (cons* α η₂)
 Tren*-ext α Tren* here = refl
 Tren*-ext α Tren* (there x) = Tren* x
 
@@ -140,41 +156,36 @@ Tren*-preserves-semantics {ρ = ρ}{η₁}{η₂} Tren* (T₁ ⇒ T₂)
   = refl
 Tren*-preserves-semantics {ρ = ρ}{η₁}{η₂} Tren* (`∀α l , T) =
   dependent-extensionality (λ α →
-    Tren*-preserves-semantics{ρ = Tliftᵣ ρ}{α ∷ η₁}{α ∷ η₂} (Tren*-ext{ρ = ρ} α Tren*) T)
+    Tren*-preserves-semantics{ρ = Tliftᵣ ρ}{cons* α η₁}{cons* α η₂} (Tren*-ext {ρ = ρ} α Tren*) T)
 Tren*-preserves-semantics Tren* 𝟙 = refl
 
 -- substitution on types
 
-data TSub : LEnv → LEnv → Set where
-  []  : TSub [] Δ₂
-  _∷_ : Type Δ₂ l → TSub Δ₁ Δ₂ → TSub (l ∷ Δ₁) Δ₂
-
-apply-TSub : l ∈ Δ₁ → TSub Δ₁ Δ₂ → Type Δ₂ l
-apply-TSub here (T ∷ _) = T
-apply-TSub (there x) (_ ∷ σ) = apply-TSub x σ
-
-build-Tidₛ : (Δ₁ : LEnv) → TRen Δ₁ Δ → TSub Δ₁ Δ
-build-Tidₛ [] ρ = []
-build-Tidₛ (l ∷ Δ₁) ρ = (` ρ _ here) ∷ build-Tidₛ Δ₁ (λ _ x → ρ _ (there x))
+TSub : LEnv → LEnv → Set
+TSub Δ₁ Δ₂ = ∀ l → l ∈ Δ₁ → Type Δ₂ l
 
 Tidₛ : TSub Δ Δ
-Tidₛ {Δ} = build-Tidₛ Δ (λ _ x → x)
+Tidₛ _ = `_
 
 Twkₛ : TSub Δ₁ Δ₂ → TSub Δ₁ (l ∷ Δ₂)
-Twkₛ [] = []
-Twkₛ (T ∷ σ) = Twk T ∷ Twkₛ σ
+Twkₛ σ _ x = Twk (σ _ x)
 
-Tliftₛ : TSub Δ₁ Δ₂ → ∀ {l} → TSub (l ∷ Δ₁) (l ∷ Δ₂)
-Tliftₛ σ = ` here ∷ Twkₛ σ
+Tliftₛ : TSub Δ₁ Δ₂ → TSub (l ∷ Δ₁) (l ∷ Δ₂)
+Tliftₛ σ _ here = ` here
+Tliftₛ σ _ (there x) = Twk (σ _ x)
+
+Tdropₛ : TSub (l ∷ Δ₁) Δ₂ → TSub Δ₁ Δ₂
+Tdropₛ σ _ x = σ _ (there x)
 
 Tsub : TSub Δ₁ Δ₂ → Type Δ₁ l → Type Δ₂ l
-Tsub σ (` x) = apply-TSub x σ
+Tsub σ (` x) = σ _ x
 Tsub σ (T₁ ⇒ T₂) = Tsub σ T₁ ⇒ Tsub σ T₂
 Tsub σ (`∀α l , T) = `∀α l , Tsub (Tliftₛ σ) T
 Tsub σ 𝟙 = 𝟙
 
 Textₛ : TSub Δ₁ Δ₂ → Type Δ₂ l → TSub (l ∷ Δ₁) Δ₂
-Textₛ σ T' = T' ∷ σ
+Textₛ σ T' _ here = T'
+Textₛ σ T' _ (there x) = σ _ x
 
 _[_]T : Type (l ∷ Δ) l′ → Type Δ l → Type Δ l′
 _[_]T T T' = Tsub (Textₛ Tidₛ T') T
@@ -201,7 +212,6 @@ data Expr (Δ : LEnv) (Γ : TEnv Δ) : Type Δ l → Set where
   _∙_  : ∀ {T : Type (l ∷ Δ) l′} → Expr Δ Γ (`∀α l , T) → (T′ : Type Δ l) → Expr Δ Γ (T [ T′ ]T)
 
 variable e e₁ e₂ e₃ : Expr Δ Γ T
-
 -- value environments
 
 Env : (Δ : LEnv) → TEnv Δ → Env* Δ → Setω
@@ -213,24 +223,21 @@ extend γ v here = v
 extend γ v (there x) = γ x
 
 extend-tskip : ∀ {Δ : LEnv}{Γ : TEnv Δ}{η : Env* Δ}{⟦α⟧ : Set l}
-  → Env Δ Γ η → Env (l ∷ Δ) (l ◁* Γ) (⟦α⟧ ∷ η)
+  → Env Δ Γ η → Env (l ∷ Δ) (l ◁* Γ) (cons* ⟦α⟧ η)
 extend-tskip {η = η} {⟦α⟧ = ⟦α⟧} γ (tskip{T = T} x)
-  rewrite Tren*-preserves-semantics {ρ = Twkᵣ}{η}{⟦α⟧ ∷ η} (wkᵣ∈Ren* η ⟦α⟧) T
+  rewrite Tren*-preserves-semantics {ρ = Twkᵣ}{η}{cons* ⟦α⟧ η} (wkᵣ∈Ren* η ⟦α⟧) T
   = γ x
 
-subst-to-env* : (σ : TSub Δ₁ Δ₂) → (η₂ : Env* Δ₂) → Env* Δ₁
-subst-to-env* [] η₂ = []
-subst-to-env* (T ∷ σ) η₂ = ⟦ T ⟧ η₂ ∷ subst-to-env* σ η₂
+subst-to-env* : (σ : TSub Δ₁ Δ₂) → (η : Env* Δ₂) → Env* Δ₁
+subst-to-env* σ η _ x = ⟦ σ _ x ⟧ η
 
-subst-var-preserves : (x  : l ∈ Δ₁) (σ  : TSub Δ₁ Δ₂) (η₂ : Env* Δ₂) → ⟦ apply-TSub x σ ⟧ η₂ ≡ apply-env (subst-to-env* σ η₂) x
-subst-var-preserves here (T ∷ σ) η₂ = refl
-subst-var-preserves (there x) (_ ∷ σ) η₂ = subst-var-preserves x σ η₂
-
-subst-to-env*-wk : (σ  : TSub Δ₁ Δ₂) → (α  : Set l) → (η₂ : Env* Δ₂) → subst-to-env* (Twkₛ σ) (α ∷ η₂) ≡ω subst-to-env* σ η₂
-subst-to-env*-wk [] α η₂ = refl
-subst-to-env*-wk (T ∷ σ) α η₂
-  rewrite Tren*-preserves-semantics {ρ = Twkᵣ}{η₂}{α ∷ η₂} (wkᵣ∈Ren* η₂ α) T
-  = congωω (⟦ T ⟧ η₂ ∷_) (subst-to-env*-wk σ α η₂)
+subst-to-env*-wk : (σ  : TSub Δ₁ Δ₂) → (α  : Set l) → (η : Env* Δ₂) → 
+  subst-to-env* (Twkₛ σ) (cons* α η) ≡ω subst-to-env* σ η
+subst-to-env*-wk {[]} σ α η = fun-ext-lvl λ l → fun-ext λ ()  
+subst-to-env*-wk {l ∷ Δ₁} σ α η = fun-ext-lvl λ l → fun-ext λ where 
+  x → let eq = Tren*-preserves-semantics {ρ = Twkᵣ}{η}{cons* α η} (wkᵣ∈Ren* η α) (σ _ here) in 
+    congωl (λ y → {! cons* (⟦ σ _ here ⟧ η) y l x  !}) {!   !}
+{-
 
 subst-to-env*-build : ∀ (ρ : TRen Δ₁ Δ₂) (η₁ : Env* Δ₁) (η₂ : Env* Δ₂) → TRen* ρ η₁ η₂
   → subst-to-env* (build-Tidₛ Δ₁ ρ) η₂ ≡ω η₁
@@ -249,7 +256,7 @@ subst-preserves-type =
   → ⟦ Tsub σ T ⟧ η₂ ≡ ⟦ T ⟧ (subst-to-env* σ η₂)
 
 subst-preserves : subst-preserves-type
-subst-preserves {η₂ = η₂} σ (` x) = subst-var-preserves x σ η₂
+subst-preserves {η₂ = η₂} σ (` x) = refl
 subst-preserves {η₂ = η₂} σ (T₁ ⇒ T₂)
   rewrite subst-preserves{η₂ = η₂} σ T₁
   |  subst-preserves{η₂ = η₂} σ T₂ = refl
@@ -609,4 +616,4 @@ adequacy (β-ƛ v₂) = {!   !}
 adequacy β-Λ = {!   !}
 adequacy (ξ-·₁ e₁↪e) = cong-app (adequacy e₁↪e) _
 adequacy (ξ-·₂ {e₁ = e₁} e₂↪e v₁) = icong {f = E⟦ e₁ ⟧ [] λ ()} (adequacy e₂↪e)
-adequacy (ξ-∙ e₁↪e₂) = {!   !}   
+adequacy (ξ-∙ e₁↪e₂) = {!   !}    -} 

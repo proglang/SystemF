@@ -1,4 +1,4 @@
-module Tagless-op_sem where
+module Tagless-op_sem-sub_fun where
 
 open import Level
 open import Data.Product using (_×_; Σ-syntax; ∃-syntax; _,_)
@@ -145,36 +145,37 @@ Tren*-preserves-semantics Tren* 𝟙 = refl
 
 -- substitution on types
 
-data TSub : LEnv → LEnv → Set where
-  []  : TSub [] Δ₂
-  _∷_ : Type Δ₂ l → TSub Δ₁ Δ₂ → TSub (l ∷ Δ₁) Δ₂
+TSub : LEnv → LEnv → Set
+TSub Δ₁ Δ₂ = ∀ l → l ∈ Δ₁ → Type Δ₂ l
 
-apply-TSub : l ∈ Δ₁ → TSub Δ₁ Δ₂ → Type Δ₂ l
-apply-TSub here (T ∷ _) = T
-apply-TSub (there x) (_ ∷ σ) = apply-TSub x σ
 
 build-Tidₛ : (Δ₁ : LEnv) → TRen Δ₁ Δ → TSub Δ₁ Δ
-build-Tidₛ [] ρ = []
-build-Tidₛ (l ∷ Δ₁) ρ = (` ρ _ here) ∷ build-Tidₛ Δ₁ (λ _ x → ρ _ (there x))
+build-Tidₛ [] ρ = λ _ ()
+build-Tidₛ (l ∷ Δ₁) ρ _ here = ` (ρ _ here)
+build-Tidₛ (l ∷ Δ₁) ρ _ (there x) = build-Tidₛ Δ₁ (λ _ x → ρ _ (there x)) _ x
 
 Tidₛ : TSub Δ Δ
-Tidₛ {Δ} = build-Tidₛ Δ (λ _ x → x)
+Tidₛ {Δ = Δ} = build-Tidₛ Δ (λ _ x → x)
 
 Twkₛ : TSub Δ₁ Δ₂ → TSub Δ₁ (l ∷ Δ₂)
-Twkₛ [] = []
-Twkₛ (T ∷ σ) = Twk T ∷ Twkₛ σ
+Twkₛ σ _ x = Twk (σ _ x)
 
-Tliftₛ : TSub Δ₁ Δ₂ → ∀ {l} → TSub (l ∷ Δ₁) (l ∷ Δ₂)
-Tliftₛ σ = ` here ∷ Twkₛ σ
+Tliftₛ : TSub Δ₁ Δ₂ → TSub (l ∷ Δ₁) (l ∷ Δ₂)
+Tliftₛ σ _ here = ` here
+Tliftₛ σ _ (there x) = Twk (σ _ x)
+
+Tdropₛ : TSub (l ∷ Δ₁) Δ₂ → TSub Δ₁ Δ₂
+Tdropₛ σ _ x = σ _ (there x)
 
 Tsub : TSub Δ₁ Δ₂ → Type Δ₁ l → Type Δ₂ l
-Tsub σ (` x) = apply-TSub x σ
+Tsub σ (` x) = σ _ x
 Tsub σ (T₁ ⇒ T₂) = Tsub σ T₁ ⇒ Tsub σ T₂
 Tsub σ (`∀α l , T) = `∀α l , Tsub (Tliftₛ σ) T
 Tsub σ 𝟙 = 𝟙
 
 Textₛ : TSub Δ₁ Δ₂ → Type Δ₂ l → TSub (l ∷ Δ₁) Δ₂
-Textₛ σ T' = T' ∷ σ
+Textₛ σ T' _ here = T'
+Textₛ σ T' _ (there x) = σ _ x
 
 _[_]T : Type (l ∷ Δ) l′ → Type Δ l → Type Δ l′
 _[_]T T T' = Tsub (Textₛ Tidₛ T') T
@@ -219,18 +220,19 @@ extend-tskip {η = η} {⟦α⟧ = ⟦α⟧} γ (tskip{T = T} x)
   = γ x
 
 subst-to-env* : (σ : TSub Δ₁ Δ₂) → (η₂ : Env* Δ₂) → Env* Δ₁
-subst-to-env* [] η₂ = []
-subst-to-env* (T ∷ σ) η₂ = ⟦ T ⟧ η₂ ∷ subst-to-env* σ η₂
+subst-to-env* {[]} σ η₂ = []
+subst-to-env* {x ∷ Δ₁} σ η₂ = ⟦ σ _ here ⟧ η₂ ∷ subst-to-env* (Tdropₛ σ) η₂
 
-subst-var-preserves : (x  : l ∈ Δ₁) (σ  : TSub Δ₁ Δ₂) (η₂ : Env* Δ₂) → ⟦ apply-TSub x σ ⟧ η₂ ≡ apply-env (subst-to-env* σ η₂) x
-subst-var-preserves here (T ∷ σ) η₂ = refl
-subst-var-preserves (there x) (_ ∷ σ) η₂ = subst-var-preserves x σ η₂
+subst-var-preserves : (x  : l ∈ Δ₁) (σ  : TSub Δ₁ Δ₂) (η₂ : Env* Δ₂) → ⟦ σ _ x ⟧ η₂ ≡ apply-env (subst-to-env* σ η₂) x
+subst-var-preserves here σ η₂ = refl
+subst-var-preserves (there x) σ η₂ = subst-var-preserves x (Tdropₛ σ) η₂
 
 subst-to-env*-wk : (σ  : TSub Δ₁ Δ₂) → (α  : Set l) → (η₂ : Env* Δ₂) → subst-to-env* (Twkₛ σ) (α ∷ η₂) ≡ω subst-to-env* σ η₂
-subst-to-env*-wk [] α η₂ = refl
-subst-to-env*-wk (T ∷ σ) α η₂
-  rewrite Tren*-preserves-semantics {ρ = Twkᵣ}{η₂}{α ∷ η₂} (wkᵣ∈Ren* η₂ α) T
-  = congωω (⟦ T ⟧ η₂ ∷_) (subst-to-env*-wk σ α η₂)
+subst-to-env*-wk {Δ₁ = []} σ α η₂ = refl
+subst-to-env*-wk {Δ₁ = l ∷ Δ₁} σ α η₂
+  rewrite Tren*-preserves-semantics {ρ = Twkᵣ}{η₂}{α ∷ η₂} (wkᵣ∈Ren* η₂ α) (σ _ here)
+  = congωω (⟦ (σ _ here) ⟧ η₂ ∷_) (subst-to-env*-wk (Tdropₛ σ) α η₂) -- easier?
+
 
 subst-to-env*-build : ∀ (ρ : TRen Δ₁ Δ₂) (η₁ : Env* Δ₁) (η₂ : Env* Δ₂) → TRen* ρ η₁ η₂
   → subst-to-env* (build-Tidₛ Δ₁ ρ) η₂ ≡ω η₁
@@ -240,7 +242,7 @@ subst-to-env*-build {Δ₁ = _ ∷ Δ₁} ρ (α ∷ η₁) η₂ Tren* =
          (conglω (_∷ η₁) (Tren* here))
 
 subst-to-env*-id : (η : Env* Δ) → subst-to-env* Tidₛ η ≡ω η
-subst-to-env*-id {Δ} η = subst-to-env*-build {Δ₁ = Δ} (λ _ x → x) η η (Tren*-id η)
+subst-to-env*-id {Δ = Δ} η = subst-to-env*-build {Δ₁ = Δ} (λ _ x → x) η η (Tren*-id η)
 
 subst-preserves-type : Setω
 subst-preserves-type =
@@ -258,6 +260,7 @@ subst-preserves {η₂ = η₂} σ (`∀α l , T) =
     trans (subst-preserves {η₂ = α ∷ η₂} (Tliftₛ σ) T)
           (congωl (λ H → ⟦ T ⟧ (α ∷ H)) (subst-to-env*-wk σ α η₂)))
 subst-preserves σ 𝟙 = refl
+
 
 single-subst-preserves : ∀ (η : Env* Δ) (T′ : Type Δ l) (T : Type (l ∷ Δ) l′) → ⟦ T [ T′ ]T ⟧ η ≡ ⟦ T ⟧ (⟦ T′ ⟧ η ∷ η)
 single-subst-preserves {Δ = Δ} {l = l}{l′ = l′} η T′ T =
@@ -277,26 +280,22 @@ E⟦ _∙_ {T = T} e T′ ⟧ η γ rewrite single-subst-preserves η T′ T = E
 -- composition of renamings and substituions
 
 _σσ→σ_ : TSub Δ₁ Δ₂ → TSub Δ₂ Δ₃ → TSub Δ₁ Δ₃
-[] σσ→σ σ₂ = []
-(T ∷ σ₁) σσ→σ σ₂ = Tsub σ₂ T ∷ σ₁ σσ→σ σ₂
+(σ₁ σσ→σ σ₂) _ x = Tsub σ₂ (σ₁ _ x)
 
 _ρρ→ρ_ : TRen Δ₁ Δ₂ → TRen Δ₂ Δ₃ → TRen Δ₁ Δ₃
 (ρ₁ ρρ→ρ ρ₂) _ x = ρ₂ _ (ρ₁ _ x)
 
 _ρσ→σ_ : TRen Δ₁ Δ₂ → TSub Δ₂ Δ₃ → TSub Δ₁ Δ₃
-ρ ρσ→σ σ = build-Tidₛ _ ρ σσ→σ σ
+(ρ ρσ→σ σ) _ x = {!   !}
 
 _σρ→σ_ : TSub Δ₁ Δ₂ → TRen Δ₂ Δ₃ → TSub Δ₁ Δ₃
-[] σρ→σ ρ = []
-(T ∷ σ) σρ→σ ρ = Tren ρ T ∷ σ σρ→σ ρ
-
+(σ σρ→σ ρ) _ x = {!   !}
 
 -- interaction of renamings and substituions
 
 sub↑-dist-ren↑ : ∀ l (ρ : TRen Δ₁ Δ₂) (σ : TSub Δ₂ Δ₃) →
   Tliftᵣ {l = l} ρ ρσ→σ Tliftₛ σ ≡ Tliftₛ (ρ ρσ→σ σ) 
-sub↑-dist-ren↑ l ρ [] = {!   !}
-sub↑-dist-ren↑ l ρ (x ∷ σ) = {!   !}
+sub↑-dist-ren↑ l ρ σ = {!   !}
 
 mutual 
   assoc-sub↑-ren↑ : ∀ (T : Type (l ∷ Δ₁) l′) (ρ : TRen Δ₁ Δ₂) (σ : TSub Δ₂ Δ₃) →
@@ -339,7 +338,7 @@ mutual
   assoc-ren-ren 𝟙 ρ₁ ρ₂ = refl
 
 ren↑-dist-sub↑ : ∀ l (σ : TSub Δ₁ Δ₂) (ρ : TRen Δ₂ Δ₃) →
-  (Tliftₛ σ σρ→σ Tliftᵣ ρ) ≡ Tliftₛ (σ σρ→σ ρ) {l = l} 
+  (Tliftₛ {l = l} σ σρ→σ Tliftᵣ ρ) ≡ Tliftₛ (σ σρ→σ ρ)
 ren↑-dist-sub↑ l σ ρ = {!   !}
 
 mutual 
@@ -361,7 +360,7 @@ mutual
   assoc-ren-sub 𝟙 ρ σ = refl
 
 sub↑-dist-sub↑ : ∀ l (σ₁ : TSub Δ₁ Δ₂) (σ₂ : TSub Δ₂ Δ₃) →
-  (Tliftₛ σ₁ {l = l} σσ→σ Tliftₛ σ₂) ≡ Tliftₛ (σ₁ σσ→σ σ₂) 
+  (Tliftₛ {l = l} σ₁ σσ→σ Tliftₛ σ₂) ≡ Tliftₛ (σ₁ σσ→σ σ₂) 
 sub↑-dist-sub↑ l σ₁ σ₂ = {!   !}
 
 mutual 
@@ -437,11 +436,11 @@ TwkᵣΓ≡l◁*Γ (l ◁* Γ) = {!   !}
 
 Tsub-Γ : TSub Δ₁ Δ₂ → TEnv Δ₁ → TEnv Δ₂
 Tsub-Γ σ (T ◁ Γ) = Tsub σ T ◁ Tsub-Γ σ Γ
-Tsub-Γ (T ∷ σ) (l ◁* Γ) = Tsub-Γ σ Γ
-Tsub-Γ {Δ₂ = []} [] ∅ = ∅
-Tsub-Γ {Δ₂ = l ∷ Δ₂} [] ∅ = l ◁* Tsub-Γ [] ∅
+Tsub-Γ σ (l ◁* Γ) = Tsub-Γ (Tdropₛ σ) Γ
+Tsub-Γ {Δ₂ = []} σ ∅ = ∅
+Tsub-Γ {Δ₂ = l ∷ Δ₂} σ ∅ = l ◁* Tsub-Γ (λ _ ()) ∅
 
-TwkₛΓ≡l◁*Γ : ∀ {σ : TSub Δ₁ Δ₂}(Γ : TEnv  Δ₁) → Tsub-Γ (Twkₛ σ) Γ ≡ (l ◁* Tsub-Γ σ Γ)
+TwkₛΓ≡l◁*Γ : ∀ {σ : TSub Δ₁ Δ₂}(Γ : TEnv Δ₁) → Tsub-Γ (Twkₛ σ) Γ ≡ (l ◁* Tsub-Γ σ Γ)
 TwkₛΓ≡l◁*Γ = {!   !} 
 
 σ[T]≡[σT]σ↑ : ∀ (T : Type Δ₁ l) (σ : TSub Δ₁ Δ₂) →
@@ -496,13 +495,9 @@ ETsub {Δ₂ = Δ₂} {Γ = Γ} σ (_∙_ {T = T} e T′) = subst (λ T → Expr
 TliftₛTidₛ≡Tidₛ here = refl
 TliftₛTidₛ≡Tidₛ (there x) = {!   !} -}
  
-Tidₛx≡`x : ∀ (x : l ∈ Δ) → apply-TSub x Tidₛ ≡ (` x)
-Tidₛx≡`x here = refl
-Tidₛx≡`x (there x) with Tidₛx≡`x x 
-... | a = {!   !}
 
 TidₛT≡T : ∀ (T : Type Δ l) → Tsub Tidₛ T ≡ T
-TidₛT≡T (` x) = Tidₛx≡`x x
+TidₛT≡T (` x) = {!   !}
 TidₛT≡T (T₁ ⇒ T₂) = cong₂ _⇒_ (TidₛT≡T T₁) (TidₛT≡T T₂)
 TidₛT≡T {Δ = Δ} (`∀α_,_ {l′ = l′} l T) = cong (`∀α l ,_) (trans {!   !} (TidₛT≡T T))
 TidₛT≡T 𝟙 = refl
