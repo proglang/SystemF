@@ -64,6 +64,15 @@
 \newunicodechar{η}{\ensuremath{\eta}}
 \newunicodechar{ω}{\ensuremath{\omega}}
 \newunicodechar{◁}{\ensuremath{\lhd}}
-\newunicodechar{ƛ}{\ensuremath{\lambda}} %%% fix me
+\newcommand{\lambdabar}{\ensuremath{\mathchoice
+  {\smash@bar\textfont\displaystyle{0.25}{1.2}\lambda}
+  {\smash@bar\textfont\textstyle{0.25}{1.2}\lambda}
+  {\smash@bar\scriptfont\scriptstyle{0.25}{1.2}\lambda}
+  {\smash@bar\scriptscriptfont\scriptscriptstyle{0.25}{1.2}\lambda}
+}}
+\newcommand{\smash@bar}[4]{%
+  \smash{\rlap{\raisebox{-#3\fontdimen5#10}{$\m@th#2\mkern#4mu\mathchar'26$}}}%
+}
+\newunicodechar{ƛ}{\ensuremath{\lambdabar}}
 \newunicodechar{Λ}{\ensuremath{\mathnormal\Lambda}}
 \newunicodechar{ρ}{\ensuremath{\rho}}

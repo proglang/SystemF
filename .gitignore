@@ -1,2 +1,7 @@
 *.agdai
-logrel.agda
+*.aux
+*.log
+*.out
+*.pdf
+*.ptb
+*.synctex.gz
