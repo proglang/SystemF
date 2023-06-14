@@ -111,7 +111,6 @@ Tren ρ 𝟙 = 𝟙
 Twk : Type Δ l′ → Type (l ∷ Δ) l′
 Twk = Tren Twkᵣ
 
-
 -- the action of renaming on semantic environments
 
 TRen* : (ρ : TRen Δ₁ Δ₂) → (η₁ : Env* Δ₁) → (η₂ : Env* Δ₂) → Setω
@@ -153,7 +152,7 @@ apply-TSub : l ∈ Δ₁ → TSub Δ₁ Δ₂ → Type Δ₂ l
 apply-TSub here (T ∷ _) = T
 apply-TSub (there x) (_ ∷ σ) = apply-TSub x σ
 
-build-Tidₛ : (Δ₁ : LEnv) → TRen Δ₁ Δ → TSub Δ₁ Δ
+build-Tidₛ : (Δ₁ : LEnv) → TRen Δ₁ Δ₂ → TSub Δ₁ Δ₂
 build-Tidₛ [] ρ = []
 build-Tidₛ (l ∷ Δ₁) ρ = (` ρ _ here) ∷ build-Tidₛ Δ₁ (λ _ x → ρ _ (there x))
 

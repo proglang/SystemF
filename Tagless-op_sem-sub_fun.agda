@@ -11,17 +11,23 @@ open import Relation.Binary.PropositionalEquality
 open import Axiom.Extensionality.Propositional using (∀-extensionality; Extensionality)
 open ≡-Reasoning
 
-variable l l′ l₁ l₂ : Level
+variable l l′ l₁ l₂ l₃ : Level
 
 ----------------------------------------------------------------------
 
 postulate
   fun-ext : ∀{a b} → Extensionality a b
 
-dependent-extensionality : ∀ {a b}{A : Set a}{F G : (α : A) → Set b}
+fun-ext₂ : ∀ {A₁ : Set l₁} {A₂ : A₁ → Set l₂} {B : (x : A₁) → A₂ x → Set l₃}
+             {f g : (x : A₁) → (y : A₂ x) → B x y} →
+    (∀ (x : A₁) (y : A₂ x) → f x y ≡ g x y) →
+    f ≡ g
+fun-ext₂ h = fun-ext λ x → fun-ext λ y → h x y
+
+dep-ext : ∀ {a b}{A : Set a}{F G : (α : A) → Set b}
     → (∀ (α : A) → F α ≡ G α)
     → ((α : A) → F α) ≡ ((α : A) → G α) 
-dependent-extensionality = ∀-extensionality fun-ext _ _
+dep-ext = ∀-extensionality fun-ext _ _
 
 -- equality for Setω
 
@@ -95,9 +101,9 @@ TRen Δ₁ Δ₂ = ∀ l → l ∈ Δ₁ → l ∈ Δ₂
 Twkᵣ : TRen Δ (l ∷ Δ)
 Twkᵣ _ = there
 
-Tliftᵣ : TRen Δ₁ Δ₂ → TRen (l ∷ Δ₁) (l ∷ Δ₂)
-Tliftᵣ ρ _ here = here
-Tliftᵣ ρ _ (there x) = there (ρ _ x)
+Tliftᵣ : TRen Δ₁ Δ₂ → (l : Level) → TRen (l ∷ Δ₁) (l ∷ Δ₂)
+Tliftᵣ ρ _ _ here = here
+Tliftᵣ ρ _ _ (there x) = there (ρ _ x)
 
 Tdropᵣ : TRen (l ∷ Δ₁) Δ₂ → TRen Δ₁ Δ₂
 Tdropᵣ ρ _ x = ρ _ (there x)
@@ -105,7 +111,7 @@ Tdropᵣ ρ _ x = ρ _ (there x)
 Tren : TRen Δ₁ Δ₂ → (Type Δ₁ l → Type Δ₂ l)
 Tren ρ (` x) = ` ρ _ x
 Tren ρ (T₁ ⇒ T₂) = Tren ρ T₁ ⇒ Tren ρ T₂
-Tren ρ (`∀α lev , T) = `∀α lev , Tren (Tliftᵣ ρ) T
+Tren ρ (`∀α lev , T) = `∀α lev , Tren (Tliftᵣ ρ _) T
 Tren ρ 𝟙 = 𝟙 
 
 Twk : Type Δ l′ → Type (l ∷ Δ) l′
@@ -127,42 +133,35 @@ Tren*-pop : (ρ : TRen (l ∷ Δ₁) Δ₂) (α : Set l) (η₁ : Env* Δ₁) (�
 Tren*-pop ρ α η₁ η₂ Tren* x = Tren* (there x)
 
 Tren*-ext : ∀ {ρ : TRen Δ₁ Δ₂}{η₁ : Env* Δ₁}{η₂ : Env* Δ₂} (α : Set l)
-  → TRen* ρ η₁ η₂ → TRen* (Tliftᵣ ρ) (α ∷ η₁) (α ∷ η₂)
+  → TRen* ρ η₁ η₂ → TRen* (Tliftᵣ ρ _) (α ∷ η₁) (α ∷ η₂)
 Tren*-ext α Tren* here = refl
 Tren*-ext α Tren* (there x) = Tren* x
 
 Tren*-preserves-semantics : ∀ {ρ : TRen Δ₁ Δ₂}{η₁ : Env* Δ₁}{η₂ : Env* Δ₂}
   → (Tren* : TRen* ρ η₁ η₂) → (T : Type Δ₁ l) →  ⟦ Tren ρ T ⟧ η₂ ≡ ⟦ T ⟧ η₁
-Tren*-preserves-semantics {ρ = ρ}{η₁}{η₂} Tren* (` x) = Tren* x
-Tren*-preserves-semantics {ρ = ρ}{η₁}{η₂} Tren* (T₁ ⇒ T₂)
-  rewrite Tren*-preserves-semantics {ρ = ρ}{η₁}{η₂} Tren* T₁
-  | Tren*-preserves-semantics {ρ = ρ}{η₁}{η₂} Tren* T₂
+Tren*-preserves-semantics {ρ = ρ} {η₁} {η₂} Tren* (` x) = Tren* x
+Tren*-preserves-semantics {ρ = ρ} {η₁} {η₂} Tren* (T₁ ⇒ T₂)
+  rewrite Tren*-preserves-semantics {ρ = ρ} {η₁} {η₂} Tren* T₁
+  | Tren*-preserves-semantics {ρ = ρ} {η₁} {η₂} Tren* T₂
   = refl
-Tren*-preserves-semantics {ρ = ρ}{η₁}{η₂} Tren* (`∀α l , T) =
-  dependent-extensionality (λ α →
-    Tren*-preserves-semantics{ρ = Tliftᵣ ρ}{α ∷ η₁}{α ∷ η₂} (Tren*-ext{ρ = ρ} α Tren*) T)
+Tren*-preserves-semantics {ρ = ρ} {η₁} {η₂} Tren* (`∀α l , T) = dep-ext λ where 
+  α → Tren*-preserves-semantics{ρ = Tliftᵣ ρ _}{α ∷ η₁}{α ∷ η₂} (Tren*-ext {ρ = ρ} α Tren*) T
 Tren*-preserves-semantics Tren* 𝟙 = refl
 
 -- substitution on types
 
 TSub : LEnv → LEnv → Set
 TSub Δ₁ Δ₂ = ∀ l → l ∈ Δ₁ → Type Δ₂ l
-
-
-build-Tidₛ : (Δ₁ : LEnv) → TRen Δ₁ Δ → TSub Δ₁ Δ
-build-Tidₛ [] ρ = λ _ ()
-build-Tidₛ (l ∷ Δ₁) ρ _ here = ` (ρ _ here)
-build-Tidₛ (l ∷ Δ₁) ρ _ (there x) = build-Tidₛ Δ₁ (λ _ x → ρ _ (there x)) _ x
-
+ 
 Tidₛ : TSub Δ Δ
-Tidₛ {Δ = Δ} = build-Tidₛ Δ (λ _ x → x)
+Tidₛ _ = `_
 
 Twkₛ : TSub Δ₁ Δ₂ → TSub Δ₁ (l ∷ Δ₂)
 Twkₛ σ _ x = Twk (σ _ x)
 
-Tliftₛ : TSub Δ₁ Δ₂ → TSub (l ∷ Δ₁) (l ∷ Δ₂)
-Tliftₛ σ _ here = ` here
-Tliftₛ σ _ (there x) = Twk (σ _ x)
+Tliftₛ : TSub Δ₁ Δ₂ → (l : Level) → TSub (l ∷ Δ₁) (l ∷ Δ₂)
+Tliftₛ σ _ _ here = ` here
+Tliftₛ σ _ _ (there x) = Twk (σ _ x)
 
 Tdropₛ : TSub (l ∷ Δ₁) Δ₂ → TSub Δ₁ Δ₂
 Tdropₛ σ _ x = σ _ (there x)
@@ -170,7 +169,7 @@ Tdropₛ σ _ x = σ _ (there x)
 Tsub : TSub Δ₁ Δ₂ → Type Δ₁ l → Type Δ₂ l
 Tsub σ (` x) = σ _ x
 Tsub σ (T₁ ⇒ T₂) = Tsub σ T₁ ⇒ Tsub σ T₂
-Tsub σ (`∀α l , T) = `∀α l , Tsub (Tliftₛ σ) T
+Tsub σ (`∀α l , T) = `∀α l , Tsub (Tliftₛ σ _) T
 Tsub σ 𝟙 = 𝟙
 
 Textₛ : TSub Δ₁ Δ₂ → Type Δ₂ l → TSub (l ∷ Δ₁) Δ₂
@@ -216,8 +215,8 @@ extend γ v (there x) = γ x
 extend-tskip : ∀ {Δ : LEnv}{Γ : TEnv Δ}{η : Env* Δ}{⟦α⟧ : Set l}
   → Env Δ Γ η → Env (l ∷ Δ) (l ◁* Γ) (⟦α⟧ ∷ η)
 extend-tskip {η = η} {⟦α⟧ = ⟦α⟧} γ (tskip{T = T} x)
-  rewrite Tren*-preserves-semantics {ρ = Twkᵣ}{η}{⟦α⟧ ∷ η} (wkᵣ∈Ren* η ⟦α⟧) T
-  = γ x
+  rewrite Tren*-preserves-semantics {ρ = Twkᵣ} {η} {⟦α⟧ ∷ η} (wkᵣ∈Ren* η ⟦α⟧) T
+  = γ x 
 
 subst-to-env* : (σ : TSub Δ₁ Δ₂) → (η₂ : Env* Δ₂) → Env* Δ₁
 subst-to-env* {[]} σ η₂ = []
@@ -235,7 +234,7 @@ subst-to-env*-wk {Δ₁ = l ∷ Δ₁} σ α η₂
 
 
 subst-to-env*-build : ∀ (ρ : TRen Δ₁ Δ₂) (η₁ : Env* Δ₁) (η₂ : Env* Δ₂) → TRen* ρ η₁ η₂
-  → subst-to-env* (build-Tidₛ Δ₁ ρ) η₂ ≡ω η₁
+  → subst-to-env* (λ _ x → ` ρ _ x) η₂ ≡ω η₁
 subst-to-env*-build ρ [] η₂ Tren* = refl
 subst-to-env*-build {Δ₁ = _ ∷ Δ₁} ρ (α ∷ η₁) η₂ Tren* = 
   transω (congωω (λ H → apply-env η₂ (ρ _ here) ∷ H) (subst-to-env*-build (λ _ x → ρ _ (there x)) η₁ η₂ (Tren*-pop ρ α η₁ η₂ Tren*)))
@@ -256,11 +255,10 @@ subst-preserves {η₂ = η₂} σ (T₁ ⇒ T₂)
   rewrite subst-preserves{η₂ = η₂} σ T₁
   |  subst-preserves{η₂ = η₂} σ T₂ = refl
 subst-preserves {η₂ = η₂} σ (`∀α l , T) =
-  dependent-extensionality (λ α →
-    trans (subst-preserves {η₂ = α ∷ η₂} (Tliftₛ σ) T)
+  dep-ext (λ α →
+    trans (subst-preserves {η₂ = α ∷ η₂} (Tliftₛ σ _) T)
           (congωl (λ H → ⟦ T ⟧ (α ∷ H)) (subst-to-env*-wk σ α η₂)))
 subst-preserves σ 𝟙 = refl
-
 
 single-subst-preserves : ∀ (η : Env* Δ) (T′ : Type Δ l) (T : Type (l ∷ Δ) l′) → ⟦ T [ T′ ]T ⟧ η ≡ ⟦ T ⟧ (⟦ T′ ⟧ η ∷ η)
 single-subst-preserves {Δ = Δ} {l = l}{l′ = l′} η T′ T =
@@ -286,97 +284,133 @@ _ρρ→ρ_ : TRen Δ₁ Δ₂ → TRen Δ₂ Δ₃ → TRen Δ₁ Δ₃
 (ρ₁ ρρ→ρ ρ₂) _ x = ρ₂ _ (ρ₁ _ x)
 
 _ρσ→σ_ : TRen Δ₁ Δ₂ → TSub Δ₂ Δ₃ → TSub Δ₁ Δ₃
-(ρ ρσ→σ σ) _ x = {!   !}
+(ρ ρσ→σ σ) _ x = σ _ (ρ _ x)
 
 _σρ→σ_ : TSub Δ₁ Δ₂ → TRen Δ₂ Δ₃ → TSub Δ₁ Δ₃
-(σ σρ→σ ρ) _ x = {!   !}
+(σ σρ→σ ρ) _ x = Tren ρ (σ _ x)
+
 
 -- interaction of renamings and substituions
 
-sub↑-dist-ren↑ : ∀ l (ρ : TRen Δ₁ Δ₂) (σ : TSub Δ₂ Δ₃) →
-  Tliftᵣ {l = l} ρ ρσ→σ Tliftₛ σ ≡ Tliftₛ (ρ ρσ→σ σ) 
-sub↑-dist-ren↑ l ρ σ = {!   !}
+sub↑-dist-ρσ→σ : ∀ l (ρ : TRen Δ₁ Δ₂) (σ : TSub Δ₂ Δ₃) →
+  Tliftₛ (ρ ρσ→σ σ) _ ≡ Tliftᵣ ρ l ρσ→σ Tliftₛ σ _ 
+sub↑-dist-ρσ→σ l ρ σ = fun-ext₂ λ where 
+  _ here → refl
+  _ (there x) → refl
 
 mutual 
   assoc-sub↑-ren↑ : ∀ (T : Type (l ∷ Δ₁) l′) (ρ : TRen Δ₁ Δ₂) (σ : TSub Δ₂ Δ₃) →
-    Tsub (Tliftₛ σ) (Tren (Tliftᵣ ρ) T) ≡ Tsub (Tliftₛ (ρ ρσ→σ σ)) T
+    Tsub (Tliftₛ σ _) (Tren (Tliftᵣ ρ _) T) ≡ Tsub (Tliftₛ (ρ ρσ→σ σ) _) T
   assoc-sub↑-ren↑ T ρ σ = begin
-      Tsub (Tliftₛ σ) (Tren (Tliftᵣ ρ) T) 
-    ≡⟨ assoc-sub-ren T (Tliftᵣ ρ) (Tliftₛ σ) ⟩
-      Tsub (Tliftᵣ ρ ρσ→σ Tliftₛ σ) T
-    ≡⟨ cong (λ σ → Tsub σ T) (sub↑-dist-ren↑ _ ρ σ) ⟩
-      Tsub (Tliftₛ (ρ ρσ→σ σ)) T
+      Tsub (Tliftₛ σ _) (Tren (Tliftᵣ ρ _) T) 
+    ≡⟨ assoc-sub-ren T (Tliftᵣ ρ _) (Tliftₛ σ _) ⟩
+      Tsub (Tliftᵣ ρ _ ρσ→σ Tliftₛ σ _) T
+    ≡⟨ cong (λ σ → Tsub σ T) (sym (sub↑-dist-ρσ→σ _ ρ σ)) ⟩
+      Tsub (Tliftₛ (ρ ρσ→σ σ) _) T
     ∎
 
   assoc-sub-ren : ∀ (T : Type Δ₁ l) (ρ : TRen Δ₁ Δ₂) (σ : TSub Δ₂ Δ₃) →
     Tsub σ (Tren ρ T) ≡ Tsub (ρ ρσ→σ σ) T
-  assoc-sub-ren (` x) ρ σ = {!   !}
+  assoc-sub-ren (` x) ρ σ = refl
   assoc-sub-ren (T₁ ⇒ T₂) ρ σ = cong₂ _⇒_ (assoc-sub-ren T₁ ρ σ) (assoc-sub-ren T₂ ρ σ)
   assoc-sub-ren (`∀α l , T) ρ σ = cong (`∀α l ,_) (assoc-sub↑-ren↑ T ρ σ)
   assoc-sub-ren 𝟙 ρ σ = refl
 
-ren↑-dist-ren↑ : ∀ l (ρ₁ : TRen Δ₁ Δ₂) (ρ₂ : TRen Δ₂ Δ₃) →
-  ((Tliftᵣ {l = l} ρ₁) ρρ→ρ (Tliftᵣ ρ₂)) ≡ Tliftᵣ (ρ₁ ρρ→ρ ρ₂)
-ren↑-dist-ren↑ l ρ₁ ρ₂ = {!   !}  
+ren↑-dist-ρρ→ρ : ∀ l (ρ₁ : TRen Δ₁ Δ₂) (ρ₂ : TRen Δ₂ Δ₃) →
+  Tliftᵣ (ρ₁ ρρ→ρ ρ₂) _ ≡ ((Tliftᵣ ρ₁ l) ρρ→ρ (Tliftᵣ ρ₂ _)) 
+ren↑-dist-ρρ→ρ l ρ₁ ρ₂ = fun-ext₂ λ where 
+  _ here → refl
+  _ (there x) → refl
 
 mutual 
   assoc-ren↑-ren↑ : ∀ (T : Type (l ∷ Δ₁) l′) (ρ₁ : TRen Δ₁ Δ₂) (ρ₂ : TRen Δ₂ Δ₃) →
-    Tren (Tliftᵣ ρ₂) (Tren (Tliftᵣ ρ₁) T) ≡ Tren (Tliftᵣ (ρ₁ ρρ→ρ ρ₂)) T
+    Tren (Tliftᵣ ρ₂ _) (Tren (Tliftᵣ ρ₁ _) T) ≡ Tren (Tliftᵣ (ρ₁ ρρ→ρ ρ₂) _) T
   assoc-ren↑-ren↑ {l = l} T ρ₁ ρ₂ =
-      Tren (Tliftᵣ ρ₂) (Tren (Tliftᵣ ρ₁) T) 
-    ≡⟨ assoc-ren-ren T (Tliftᵣ ρ₁) (Tliftᵣ ρ₂) ⟩
-      Tren (Tliftᵣ ρ₁ ρρ→ρ Tliftᵣ ρ₂) T
-    ≡⟨ cong (λ ρ → Tren ρ T) (ren↑-dist-ren↑ l ρ₁ ρ₂)  ⟩
-      Tren (Tliftᵣ (ρ₁ ρρ→ρ ρ₂)) T
+      Tren (Tliftᵣ ρ₂ _) (Tren (Tliftᵣ ρ₁ _) T) 
+    ≡⟨ assoc-ren-ren T (Tliftᵣ ρ₁ _) (Tliftᵣ ρ₂ _) ⟩
+      Tren (Tliftᵣ ρ₁ _ ρρ→ρ Tliftᵣ ρ₂ _) T
+    ≡⟨ cong (λ ρ → Tren ρ T) (sym (ren↑-dist-ρρ→ρ l ρ₁ ρ₂))  ⟩
+      Tren (Tliftᵣ (ρ₁ ρρ→ρ ρ₂) _) T
     ∎
 
   assoc-ren-ren : ∀ (T : Type Δ₁ l) (ρ₁ : TRen Δ₁ Δ₂) (ρ₂ : TRen Δ₂ Δ₃) →
     Tren ρ₂ (Tren ρ₁ T) ≡ Tren (ρ₁ ρρ→ρ ρ₂) T
-  assoc-ren-ren (` x) ρ₁ ρ₂ = {!   !}
+  assoc-ren-ren (` x) ρ₁ ρ₂ = refl
   assoc-ren-ren (T₁ ⇒ T₂) ρ₁ ρ₂ = cong₂ _⇒_ (assoc-ren-ren T₁ ρ₁ ρ₂) (assoc-ren-ren T₂ ρ₁ ρ₂)
   assoc-ren-ren (`∀α l , T) ρ₁ ρ₂ = cong (`∀α l ,_) (assoc-ren↑-ren↑ T ρ₁ ρ₂)
   assoc-ren-ren 𝟙 ρ₁ ρ₂ = refl
 
-ren↑-dist-sub↑ : ∀ l (σ : TSub Δ₁ Δ₂) (ρ : TRen Δ₂ Δ₃) →
-  (Tliftₛ {l = l} σ σρ→σ Tliftᵣ ρ) ≡ Tliftₛ (σ σρ→σ ρ)
-ren↑-dist-sub↑ l σ ρ = {!   !}
+↑ρ-TwkT≡Twk-ρT : ∀ (T : Type Δ₁ l′) (ρ : TRen Δ₁ Δ₂) →
+  Tren (Tliftᵣ ρ l) (Twk T) ≡ Twk (Tren ρ T) 
+↑ρ-TwkT≡Twk-ρT {l = l} T ρ = 
+  begin 
+    Tren (Tliftᵣ ρ _) (Tren Twkᵣ T)
+  ≡⟨ assoc-ren-ren T Twkᵣ (Tliftᵣ ρ _) ⟩
+    Tren (Twkᵣ ρρ→ρ Tliftᵣ ρ _) T
+  ≡⟨ sym (assoc-ren-ren T ρ Twkᵣ) ⟩
+    Tren Twkᵣ (Tren ρ T)
+  ∎
+
+ren↑-dist-σρ→σ : ∀ l (σ : TSub Δ₁ Δ₂) (ρ : TRen Δ₂ Δ₃) →
+  Tliftₛ (σ σρ→σ ρ) l ≡ (Tliftₛ σ l σρ→σ Tliftᵣ ρ _)
+ren↑-dist-σρ→σ l σ ρ = fun-ext₂ λ where 
+   _ here → refl
+   _ (there x) → sym (↑ρ-TwkT≡Twk-ρT (σ _ x) ρ)
 
 mutual 
   assoc-ren↑-sub↑ : ∀ (T : Type (l ∷ Δ₁) l′) (σ : TSub Δ₁ Δ₂) (ρ : TRen Δ₂ Δ₃) →
-    Tren (Tliftᵣ ρ) (Tsub (Tliftₛ σ) T) ≡ Tsub (Tliftₛ (σ σρ→σ ρ)) T
+    Tren (Tliftᵣ ρ _) (Tsub (Tliftₛ σ _) T) ≡ Tsub (Tliftₛ (σ σρ→σ ρ) _) T
   assoc-ren↑-sub↑ {l = l} T σ ρ = begin 
-      Tren (Tliftᵣ ρ) (Tsub (Tliftₛ σ) T)
-    ≡⟨ assoc-ren-sub T (Tliftₛ σ) (Tliftᵣ ρ ) ⟩
-      Tsub (Tliftₛ σ σρ→σ Tliftᵣ ρ) T
-    ≡⟨ cong (λ σ → Tsub σ T) (ren↑-dist-sub↑ l σ ρ) ⟩
-      Tsub (Tliftₛ (σ σρ→σ ρ)) T
+      Tren (Tliftᵣ ρ _) (Tsub (Tliftₛ σ _) T)
+    ≡⟨ assoc-ren-sub T (Tliftₛ σ _) (Tliftᵣ ρ _) ⟩
+      Tsub (Tliftₛ σ _ σρ→σ Tliftᵣ ρ _) T
+    ≡⟨ cong (λ σ → Tsub σ T) (sym (ren↑-dist-σρ→σ l σ ρ)) ⟩
+      Tsub (Tliftₛ (σ σρ→σ ρ) _) T
     ∎ 
 
   assoc-ren-sub : ∀ (T : Type Δ₁ l) (σ : TSub Δ₁ Δ₂) (ρ : TRen Δ₂ Δ₃) →
     Tren ρ (Tsub σ T) ≡ Tsub (σ σρ→σ ρ) T
-  assoc-ren-sub (` x) ρ σ = {!   !}
+  assoc-ren-sub (` x) ρ σ = refl
   assoc-ren-sub (T₁ ⇒ T₂) ρ σ = cong₂ _⇒_ (assoc-ren-sub T₁ ρ σ) (assoc-ren-sub T₂ ρ σ)
   assoc-ren-sub (`∀α l , T) ρ σ = cong (`∀α l ,_) (assoc-ren↑-sub↑ T ρ σ)
   assoc-ren-sub 𝟙 ρ σ = refl
 
-sub↑-dist-sub↑ : ∀ l (σ₁ : TSub Δ₁ Δ₂) (σ₂ : TSub Δ₂ Δ₃) →
-  (Tliftₛ {l = l} σ₁ σσ→σ Tliftₛ σ₂) ≡ Tliftₛ (σ₁ σσ→σ σ₂) 
-sub↑-dist-sub↑ l σ₁ σ₂ = {!   !}
+σ↑-TwkT≡Twk-σT : ∀ {l} (σ : TSub Δ₁ Δ₂) (T : Type Δ₁ l′) →
+  Tsub (Tliftₛ σ _) (Twk {l = l} T) ≡ Twk (Tsub σ T)
+σ↑-TwkT≡Twk-σT σ T = 
+  begin 
+    Tsub (Tliftₛ σ _) (Twk T) 
+  ≡⟨ assoc-sub-ren T Twkᵣ (Tliftₛ σ _) ⟩
+    Tsub (σ σρ→σ λ _ → there) T
+  ≡⟨ sym (assoc-ren-sub T σ Twkᵣ) ⟩
+    Tren Twkᵣ (Tsub σ T)
+  ∎
+
+
+sub↑-dist-σσ→σ : ∀ l (σ₁ : TSub Δ₁ Δ₂) (σ₂ : TSub Δ₂ Δ₃) →
+  Tliftₛ (σ₁ σσ→σ σ₂) _  ≡ (Tliftₛ σ₁ l σσ→σ Tliftₛ σ₂ _)
+sub↑-dist-σσ→σ l σ₁ σ₂ = fun-ext₂ λ where 
+  _ here → refl
+  l′ (there x) → begin 
+        (Tliftₛ (σ₁ σσ→σ σ₂) l) l′ (there x) 
+      ≡⟨ sym (σ↑-TwkT≡Twk-σT {l = l} σ₂ (σ₁ l′ x)) ⟩
+        (Tliftₛ σ₁ _ σσ→σ Tliftₛ σ₂ _) l′ (there x)
+      ∎
 
 mutual 
   assoc-sub↑-sub↑ : ∀ (T : Type (l ∷ Δ₁) l′) (σ₁ : TSub Δ₁ Δ₂) (σ₂ : TSub Δ₂ Δ₃) →
-    Tsub (Tliftₛ σ₂) (Tsub (Tliftₛ σ₁) T) ≡ Tsub (Tliftₛ (σ₁ σσ→σ σ₂)) T
+    Tsub (Tliftₛ σ₂ _) (Tsub (Tliftₛ σ₁ _) T) ≡ Tsub (Tliftₛ (σ₁ σσ→σ σ₂) _) T
   assoc-sub↑-sub↑ {l = l} T σ₁ σ₂ = begin 
-      Tsub (Tliftₛ σ₂) (Tsub (Tliftₛ σ₁) T)
-    ≡⟨ assoc-sub-sub T (Tliftₛ σ₁) (Tliftₛ σ₂) ⟩
-      Tsub (Tliftₛ σ₁ σσ→σ Tliftₛ σ₂) T
-    ≡⟨ cong (λ σ → Tsub σ T) (sub↑-dist-sub↑ l σ₁ σ₂) ⟩
-      Tsub (Tliftₛ (σ₁ σσ→σ σ₂)) T
+      Tsub (Tliftₛ σ₂ _) (Tsub (Tliftₛ σ₁ _) T)
+    ≡⟨ assoc-sub-sub T (Tliftₛ σ₁ _) (Tliftₛ σ₂ _) ⟩
+      Tsub (Tliftₛ σ₁ _ σσ→σ Tliftₛ σ₂ _) T
+    ≡⟨ cong (λ σ → Tsub σ T) (sym (sub↑-dist-σσ→σ l σ₁ σ₂)) ⟩
+      Tsub (Tliftₛ (σ₁ σσ→σ σ₂) _) T
     ∎ 
 
   assoc-sub-sub : ∀ (T : Type Δ₁ l) (σ₁ : TSub Δ₁ Δ₂) (σ₂ : TSub Δ₂ Δ₃) →
     Tsub σ₂ (Tsub σ₁ T) ≡ Tsub (σ₁ σσ→σ σ₂) T
-  assoc-sub-sub (` x) σ₁ σ₂ = {!   !}
+  assoc-sub-sub (` x) σ₁ σ₂ = refl
   assoc-sub-sub (T₁ ⇒ T₂) σ₁ σ₂ = cong₂ _⇒_ (assoc-sub-sub T₁ σ₁ σ₂) (assoc-sub-sub T₂ σ₁ σ₂)
   assoc-sub-sub (`∀α l , T) σ₁ σ₂ = cong (`∀α l ,_) (assoc-sub↑-sub↑ T σ₁ σ₂)
   assoc-sub-sub 𝟙 σ₁ σ₂ = refl
@@ -389,50 +423,50 @@ Tren-Γ ρ (l ◁* Γ) = Tren-Γ (Tdropᵣ ρ) Γ
 Tren-Γ {Δ₂ = []} ρ ∅ = ∅
 Tren-Γ {Δ₂ = l ∷ Δ₂} ρ ∅ = l ◁* (Tren-Γ (λ _ ()) ∅)
 
-Tdropᵣρ·T≡ρ·TwkT : (ρ : TRen (l ∷ Δ₁) Δ₂) → Tren (Tdropᵣ ρ) T ≡ Tren ρ (Twk T)
-Tdropᵣρ·T≡ρ·TwkT {T = ` x} ρ = refl
-Tdropᵣρ·T≡ρ·TwkT {T = T₁ ⇒ T₂} ρ = cong₂ _⇒_ (Tdropᵣρ·T≡ρ·TwkT ρ) (Tdropᵣρ·T≡ρ·TwkT ρ)
-Tdropᵣρ·T≡ρ·TwkT {T = `∀α l , T} ρ = cong (`∀α l ,_) {!   !}
-Tdropᵣρ·T≡ρ·TwkT {T = 𝟙} ρ = refl
+Tdropᵣρ·T≡ρ·TwkT : (ρ : TRen (l ∷ Δ₁) Δ₂) (T : Type Δ₁ l′) → Tren (Tdropᵣ ρ) T ≡ Tren ρ (Twk T)
+Tdropᵣρ·T≡ρ·TwkT ρ T = begin 
+    Tren (Tdropᵣ ρ) T 
+  ≡⟨ {!   !} ⟩
+    Tren ρ (Twk T)
+  ∎
 
 TdropᵣTliftᵣΓ≡l◁*Γ : ∀ {ρ : TRen Δ₁ Δ₂}(Γ : TEnv  Δ₁) → 
-  Tren-Γ (Tdropᵣ (Tliftᵣ ρ)) Γ ≡ (l ◁* Tren-Γ ρ Γ)
+  Tren-Γ (Tdropᵣ (Tliftᵣ ρ _)) Γ ≡ (l ◁* Tren-Γ ρ Γ)
 TdropᵣTliftᵣΓ≡l◁*Γ = {!   !} 
 
 ρ[T]≡[ρT]ρ↑ : ∀ (T : Type Δ₁ l) (ρ : TRen Δ₁ Δ₂) →
-  Textₛ Tidₛ T σρ→σ ρ ≡ (Tliftᵣ ρ) ρσ→σ Textₛ Tidₛ (Tren ρ T)
-ρ[T]≡[ρT]ρ↑ = {!   !}
+  Textₛ Tidₛ T σρ→σ ρ ≡ (Tliftᵣ ρ _) ρσ→σ Textₛ Tidₛ (Tren ρ T)
+ρ[T]≡[ρT]ρ↑ T ρ = fun-ext₂ λ where 
+  _ here → refl
+  _ (there x) → refl
 
 ρT[T′]≡ρT[ρ↑T′] : ∀ (ρ : TRen Δ₁ Δ₂) (T : Type (l ∷ Δ₁) l′) (T′ : Type Δ₁ l) →
-  Tren ρ (T [ T′ ]T) ≡ Tren (Tliftᵣ ρ) T [ Tren ρ T′ ]T 
+  Tren ρ (T [ T′ ]T) ≡ Tren (Tliftᵣ ρ _) T [ Tren ρ T′ ]T 
 ρT[T′]≡ρT[ρ↑T′] ρ T T′ = begin 
     Tren ρ (T [ T′ ]T)
   ≡⟨ assoc-ren-sub T (Textₛ Tidₛ T′) ρ ⟩
     Tsub (Textₛ Tidₛ T′ σρ→σ ρ) T
   ≡⟨ cong (λ σ → Tsub σ T) (ρ[T]≡[ρT]ρ↑ T′ ρ) ⟩
-    Tsub ((Tliftᵣ ρ) ρσ→σ (Textₛ Tidₛ (Tren ρ T′))) T
-  ≡⟨ sym (assoc-sub-ren T (Tliftᵣ ρ) (Textₛ Tidₛ (Tren ρ T′))) ⟩
-    Tsub (Textₛ Tidₛ (Tren ρ T′)) (Tren (Tliftᵣ ρ) T)
+    Tsub ((Tliftᵣ ρ _) ρσ→σ (Textₛ Tidₛ (Tren ρ T′))) T
+  ≡⟨ sym (assoc-sub-ren T (Tliftᵣ ρ _) (Textₛ Tidₛ (Tren ρ T′))) ⟩
+    Tsub (Textₛ Tidₛ (Tren ρ T′)) (Tren (Tliftᵣ ρ _) T)
   ∎
 
 ETren-x : (ρ : TRen Δ₁ Δ₂) → inn T Γ → inn (Tren ρ T) (Tren-Γ ρ Γ)
 ETren-x ρ here = here
 ETren-x ρ (there x) = there (ETren-x ρ x)
-ETren-x {T = T} {Γ = Γ} ρ (tskip x) = 
-  subst (λ T → inn T (Tren-Γ ρ Γ)) (Tdropᵣρ·T≡ρ·TwkT ρ) (ETren-x (Tdropᵣ ρ) x)
+ETren-x {T = .(Twk T)} {Γ = Γ} ρ (tskip {T = T} x) = 
+  subst (λ T → inn T (Tren-Γ ρ Γ)) (Tdropᵣρ·T≡ρ·TwkT ρ T) (ETren-x (Tdropᵣ ρ) x)
 
 ETren : (ρ : TRen Δ₁ Δ₂) → Expr Δ₁ Γ T → Expr Δ₂ (Tren-Γ ρ Γ) (Tren ρ T)
 ETren ρ (` x) = ` ETren-x ρ x
 ETren ρ (ƛ e) = ƛ ETren ρ e
 ETren ρ (e₁ · e₂) = ETren ρ e₁ · ETren ρ e₂
 ETren {Δ₂ = Δ₂} {Γ = Γ} {T = .(`∀α l , T)} ρ (Λ_⇒_ l {T} e) = Λ l ⇒ 
-  subst (λ Γ → Expr (l ∷ Δ₂) Γ (Tren (Tliftᵣ ρ) T)) (TdropᵣTliftᵣΓ≡l◁*Γ Γ) (ETren (Tliftᵣ ρ) e)
+  subst (λ Γ → Expr (l ∷ Δ₂) Γ (Tren (Tliftᵣ ρ _) T)) (TdropᵣTliftᵣΓ≡l◁*Γ Γ) (ETren (Tliftᵣ ρ _) e)
 ETren {Δ₂ = Δ₂} {Γ = Γ} ρ (_∙_ {T = T} e T′) = subst (λ T → Expr Δ₂ (Tren-Γ ρ Γ) T) (sym (ρT[T′]≡ρT[ρ↑T′] ρ T T′)) (ETren ρ e ∙ Tren ρ T′)
 
-TwkᵣΓ≡l◁*Γ : ∀ (Γ : TEnv Δ) → Tren-Γ Twkᵣ Γ ≡ (l ◁* Γ)
-TwkᵣΓ≡l◁*Γ ∅ = refl
-TwkᵣΓ≡l◁*Γ (_◁_ {l = l} T Γ) = {!   !}
-TwkᵣΓ≡l◁*Γ (l ◁* Γ) = {!   !}
+-- type in expr substituions
 
 Tsub-Γ : TSub Δ₁ Δ₂ → TEnv Δ₁ → TEnv Δ₂
 Tsub-Γ σ (T ◁ Γ) = Tsub σ T ◁ Tsub-Γ σ Γ
@@ -440,75 +474,75 @@ Tsub-Γ σ (l ◁* Γ) = Tsub-Γ (Tdropₛ σ) Γ
 Tsub-Γ {Δ₂ = []} σ ∅ = ∅
 Tsub-Γ {Δ₂ = l ∷ Δ₂} σ ∅ = l ◁* Tsub-Γ (λ _ ()) ∅
 
+TliftₛTidₛ≡Tidₛ : ∀ Δ l →
+  (Tliftₛ {Δ₁ = Δ} Tidₛ l) ≡ Tidₛ
+TliftₛTidₛ≡Tidₛ _ _ = fun-ext₂ λ where
+  _ here → refl
+  _ (there x) → refl
+
+TidₛT≡T : ∀ (T : Type Δ l) → Tsub Tidₛ T ≡ T
+TidₛT≡T (` x) = refl
+TidₛT≡T (T₁ ⇒ T₂) = cong₂ _⇒_ (TidₛT≡T T₁) (TidₛT≡T T₂)
+TidₛT≡T {Δ = Δ} (`∀α_,_ {l′ = l′} l T) rewrite TliftₛTidₛ≡Tidₛ Δ l = cong (`∀α l ,_) (TidₛT≡T T)
+TidₛT≡T 𝟙 = refl
+
+TidₛΓ≡Γ : ∀ (Γ : TEnv Δ) → Tsub-Γ Tidₛ Γ ≡ Γ
+TidₛΓ≡Γ ∅ = refl
+TidₛΓ≡Γ (T ◁ Γ) = cong₂ _◁_ (TidₛT≡T T) (TidₛΓ≡Γ Γ)
+TidₛΓ≡Γ (l ◁* Γ) with TidₛΓ≡Γ Γ 
+... | a = {!   !}
+
 TwkₛΓ≡l◁*Γ : ∀ {σ : TSub Δ₁ Δ₂}(Γ : TEnv Δ₁) → Tsub-Γ (Twkₛ σ) Γ ≡ (l ◁* Tsub-Γ σ Γ)
 TwkₛΓ≡l◁*Γ = {!   !} 
 
 σ[T]≡[σT]σ↑ : ∀ (T : Type Δ₁ l) (σ : TSub Δ₁ Δ₂) →
-  (Textₛ Tidₛ T σσ→σ σ) ≡ ((Tliftₛ σ) σσ→σ (Textₛ Tidₛ (Tsub σ T)))
-σ[T]≡[σT]σ↑ T σ = {!   !}
+  (Textₛ Tidₛ T σσ→σ σ) ≡ ((Tliftₛ σ _) σσ→σ (Textₛ Tidₛ (Tsub σ T)))
+σ[T]≡[σT]σ↑ T σ = fun-ext₂ λ where
+  _ here → refl
+  _ (there x) → begin 
+        σ _ x
+      ≡⟨ sym (TidₛT≡T (σ _ x)) ⟩
+        Tsub Tidₛ (σ _ x)
+      ≡⟨ sym (assoc-sub-ren (σ _ x) Twkᵣ (Textₛ Tidₛ (Tsub σ T))) ⟩
+        Tsub (Textₛ Tidₛ (Tsub σ T)) (Twk (σ _ x))
+      ∎
 
 σT[T′]≡σ↑T[σT'] : ∀ (σ : TSub Δ₁ Δ₂) (T : Type (l ∷ Δ₁) l′) (T′ : Type Δ₁ l) →
-  Tsub σ (T [ T′ ]T) ≡ (Tsub (Tliftₛ σ) T) [ Tsub σ T′ ]T  
+  Tsub σ (T [ T′ ]T) ≡ (Tsub (Tliftₛ σ _) T) [ Tsub σ T′ ]T  
 σT[T′]≡σ↑T[σT'] σ T T′ = 
   begin 
     Tsub σ (T [ T′ ]T) 
   ≡⟨ assoc-sub-sub T (Textₛ Tidₛ T′) σ ⟩
     Tsub (Textₛ Tidₛ T′ σσ→σ σ) T
   ≡⟨ cong (λ σ → Tsub σ T) (σ[T]≡[σT]σ↑ T′ σ) ⟩
-    Tsub (Tliftₛ σ σσ→σ Textₛ Tidₛ (Tsub σ T′)) T
-  ≡⟨ sym (assoc-sub-sub T (Tliftₛ σ) (Textₛ Tidₛ (Tsub σ T′))) ⟩
-    (Tsub (Tliftₛ σ) T) [ Tsub σ T′ ]T
+    Tsub (Tliftₛ σ _ σσ→σ Textₛ Tidₛ (Tsub σ T′)) T
+  ≡⟨ sym (assoc-sub-sub T (Tliftₛ σ _) (Textₛ Tidₛ (Tsub σ T′))) ⟩
+    (Tsub (Tliftₛ σ _) T) [ Tsub σ T′ ]T
   ∎
 
 ETsub-x : (σ : TSub Δ₁ Δ₂) → inn T Γ → inn (Tsub σ T) (Tsub-Γ σ Γ)
 ETsub-x σ here = here
 ETsub-x σ (there x) = there (ETsub-x σ x)
-ETsub-x σ (tskip x) = {!   !}
+ETsub-x σ (tskip x) with ETsub-x (Tdropₛ σ) x 
+... | a = {!   !}
 
 ETsub : (σ : TSub Δ₁ Δ₂) → Expr Δ₁ Γ T → Expr Δ₂ (Tsub-Γ σ Γ) (Tsub σ T)
 ETsub σ (` x) = ` ETsub-x σ x
 ETsub σ (ƛ e) = ƛ ETsub σ e
 ETsub σ (e₁ · e₂) = ETsub σ e₁ · ETsub σ e₂
 ETsub {Δ₂ = Δ₂} {Γ = Γ} {T = .(`∀α l , T)} σ (Λ_⇒_ l {T} e) = Λ l ⇒ 
-  subst (λ Γ → Expr (l ∷ Δ₂) Γ (Tsub (Tliftₛ σ) T)) (TwkₛΓ≡l◁*Γ Γ) (ETsub (Tliftₛ σ) e)
-ETsub {Δ₂ = Δ₂} {Γ = Γ} σ (_∙_ {T = T} e T′) = subst (λ T → Expr Δ₂ (Tsub-Γ σ Γ) T) (sym (σT[T′]≡σ↑T[σT'] σ T T′)) (ETsub σ e ∙ Tsub σ T′) 
+  subst (λ Γ → Expr (l ∷ Δ₂) Γ (Tsub (Tliftₛ σ _) T)) (TwkₛΓ≡l◁*Γ Γ) (ETsub (Tliftₛ σ _) e)
+ETsub {Δ₂ = Δ₂} {Γ = Γ} σ (_∙_ {T = T} e T′) = 
+  subst (λ T → Expr Δ₂ (Tsub-Γ σ Γ) T) (sym (σT[T′]≡σ↑T[σT'] σ T T′)) (ETsub σ e ∙ Tsub σ T′) 
 
--- type in expr substituions
-
-{- σ₁x≡σ₂x→↑σ₁x≡↑σ₂x : ∀ {σ₁ σ₂ : TSub Δ₁ Δ₂} → 
- (∀ {l} (x : l ∈ Δ₁) → apply-TSub x σ₁ ≡ apply-TSub x σ₂) → 
- (∀ {l} (x : l ∈ (l′ ∷ Δ₁)) → apply-TSub x (Tliftₛ σ₁) ≡ apply-TSub x (Tliftₛ σ₂))
-σ₁x≡σ₂x→↑σ₁x≡↑σ₂x σ₁≡σ₂ here = refl
-σ₁x≡σ₂x→↑σ₁x≡↑σ₂x {σ₁ = σ₁} σ₁≡σ₂ (there x) with σ₁≡σ₂ x
-... | eq = {!    !}
-
-σ₁x≡σ₂x : ∀ {σ₁ σ₂ : TSub Δ₁ Δ₂} (T : Type Δ₁ l) → 
-  (∀ {l} (x : l ∈ Δ₁) → apply-TSub x σ₁ ≡ apply-TSub x σ₂) → 
-  Tsub σ₁ T ≡ Tsub σ₂ T
-σ₁x≡σ₂x (` x) σ₁≡σ₂ = σ₁≡σ₂ x
-σ₁x≡σ₂x (T₁ ⇒ T₂) σ₁≡σ₂ = cong₂ _⇒_ (σ₁x≡σ₂x T₁ σ₁≡σ₂) (σ₁x≡σ₂x T₂ σ₁≡σ₂)
-σ₁x≡σ₂x (`∀α l , T) σ₁≡σ₂ = cong (`∀α l ,_) (σ₁x≡σ₂x T (σ₁x≡σ₂x→↑σ₁x≡↑σ₂x σ₁≡σ₂))
-σ₁x≡σ₂x 𝟙 σ₁≡σ₂ = refl -}
-
-{- TliftₛTidₛ≡Tidₛ : ∀{Δ l} 
-  (Tliftₛ Tidₛ) ≡ Tidₛ
-TliftₛTidₛ≡Tidₛ here = refl
-TliftₛTidₛ≡Tidₛ (there x) = {!   !} -}
- 
-
-TidₛT≡T : ∀ (T : Type Δ l) → Tsub Tidₛ T ≡ T
-TidₛT≡T (` x) = {!   !}
-TidₛT≡T (T₁ ⇒ T₂) = cong₂ _⇒_ (TidₛT≡T T₁) (TidₛT≡T T₂)
-TidₛT≡T {Δ = Δ} (`∀α_,_ {l′ = l′} l T) = cong (`∀α l ,_) (trans {!   !} (TidₛT≡T T))
-TidₛT≡T 𝟙 = refl
-
-TidₛΓ≡Γ : ∀ (Γ : TEnv Δ) → Tsub-Γ Tidₛ Γ ≡ Γ
-TidₛΓ≡Γ ∅ = refl
-TidₛΓ≡Γ (T ◁ Γ) = cong₂ _◁_ (TidₛT≡T T) (TidₛΓ≡Γ Γ)
-TidₛΓ≡Γ (l ◁* Γ) = {!  !}
 
 _[_]ET : Expr (l ∷ Δ) (l ◁* Γ) T → (T′ : Type Δ l) → Expr Δ Γ (T [ T′ ]T)
 _[_]ET {Δ = Δ} {Γ = Γ} {T = T} e T′ = subst (λ Γ → Expr Δ Γ (T [ T′ ]T)) (TidₛΓ≡Γ Γ) (ETsub (Textₛ Tidₛ T′) e)
+
+TwkᵣΓ≡l◁*Γ : ∀ (Γ : TEnv Δ) → Tren-Γ Twkᵣ Γ ≡ (l ◁* Γ)
+TwkᵣΓ≡l◁*Γ ∅ = refl
+TwkᵣΓ≡l◁*Γ (_◁_ {l = l} T Γ) = {!   !}
+TwkᵣΓ≡l◁*Γ (l ◁* Γ) = {!   !}
 
 Ewk-l : Expr Δ Γ T → Expr (l ∷ Δ) (l ◁* Γ) (Twk T)  
 Ewk-l {Δ = Δ} {Γ = Γ} {T = T} {l = l} e = subst (λ Γ → Expr (l ∷ Δ) Γ (Twk T)) (TwkᵣΓ≡l◁*Γ Γ) (ETren Twkᵣ e)
@@ -604,4 +638,4 @@ adequacy (β-ƛ v₂) = {!   !}
 adequacy β-Λ = {!   !}
 adequacy (ξ-·₁ e₁↪e) = cong-app (adequacy e₁↪e) _
 adequacy (ξ-·₂ {e₁ = e₁} e₂↪e v₁) = icong {f = E⟦ e₁ ⟧ [] λ ()} (adequacy e₂↪e)
-adequacy (ξ-∙ e₁↪e₂) = {!   !}   
+adequacy (ξ-∙ e₁↪e₂) = {!   !}       
