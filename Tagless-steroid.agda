@@ -4,6 +4,7 @@ open import Level renaming (_⊔_ to _⊔′_)
 open import Data.Fin using (Fin) renaming (zero to fzero; suc to fsuc)
 open import Data.List using (List; []; _∷_; _++_; length; lookup; tabulate)
 open import Data.Unit
+open import Data.Empty
 open import Data.Maybe
 open import Data.Product
 open import Function using (_∘_)
@@ -42,8 +43,6 @@ data _≡ω₁_ {A : Setω₁} (x : A) : A → Setω₂ where
 substω : ∀ {a}{A : Set a} → (F : (x : A) → Setω₁) →
   ∀ {x y : A} → x ≡ y → F x → F y
 substω f refl x = x
-
-
 
 ----------------------------------------------------------------------
 
@@ -160,7 +159,7 @@ data SemLeveled : Levelω → Setω₁ where
   AtLev : ∀ {l} → Set l → SemLeveled (just l)
   Omega : Setω → SemLeveled omega
 
-fromLev : ∀ {l lω} →  SemLeveled lω → lω ≡ just l → Set l
+fromLev : ∀ {l lω} → SemLeveled lω → lω ≡ just l → Set l
 fromLev (AtLev x) refl = x
 
 fromOmega : ∀ {lω} → SemLeveled lω → lω ≡ omega → Setω
@@ -190,6 +189,58 @@ eval-lv (lub lv lv₁) η = eval-lv lv η ⊔ eval-lv lv₁ η
 eval-lv (lsc lv) η = lsuc (eval-lv lv η)
 
 --- end inductive recursive definition
+
+--- abstract levels
+
+data ALevelω : Set where
+  ALevel AOmega : ALevelω
+
+_∼⊔_ : ALevelω → ALevelω → ALevelω
+ALevel ∼⊔ ALevel = ALevel
+ALevel ∼⊔ AOmega = AOmega
+AOmega ∼⊔ ALevel = AOmega
+AOmega ∼⊔ AOmega = AOmega
+
+a-eval-lv : ∀ {Δ}{Θ : Telescope Δ} → LVL Δ → Env* Θ → ALevelω
+a-eval-lv (lan _) η = ALevel
+a-eval-lv omg η = AOmega
+a-eval-lv (lub lvl lvl₁) η = a-eval-lv lvl η ∼⊔ a-eval-lv lvl₁ η
+a-eval-lv (lsc lvl) η = a-eval-lv lvl η
+
+a-eval-lv-≡ : ∀ {Δ}{Θ : Telescope Δ} → (η η′ : Env* Θ) → (lv : LVL Δ) → a-eval-lv lv η ≡ a-eval-lv lv η′
+a-eval-lv-≡ η η′ (lan x) = refl
+a-eval-lv-≡ η η′ omg = refl
+a-eval-lv-≡ η η′ (lub lv lv₁) rewrite a-eval-lv-≡ η η′ lv | a-eval-lv-≡ η η′ lv₁ = refl
+a-eval-lv-≡ η η′ (lsc lv) rewrite a-eval-lv-≡ η η′ lv = refl
+
+_~<_ : Levelω → ALevelω → Set
+just x ~< ALevel = ⊤
+just x ~< AOmega = ⊥
+omega ~< ALevel = ⊥
+omega ~< AOmega = ⊤
+
+eval~<a-eval : ∀ {Δ}{Θ : Telescope Δ} → (lv : LVL Δ) → (η : Env* Θ) → eval-lv lv η ~< a-eval-lv lv η
+eval~<a-eval (lan x) η = tt
+eval~<a-eval omg η = tt
+eval~<a-eval (lub lv lv₁) η
+  with eval-lv lv η | a-eval-lv lv η | eval~<a-eval lv η | eval-lv lv₁ η | a-eval-lv lv₁ η | eval~<a-eval lv₁ η
+... | just x | ALevel | tt | just x₁ | ALevel | tt = tt
+... | just x | ALevel | tt | just x₁ | AOmega | ()
+... | just x | ALevel | tt | omega | ALevel | ()
+... | just x | ALevel | tt | omega | AOmega | tt = tt
+... | just x | AOmega | () | elv₁ | alv₁ | ea~<₁
+... | omega | ALevel | () | elv₁ | alv₁ | ea~<₁
+... | omega | AOmega | tt | just x | ALevel | tt = tt
+... | omega | AOmega | tt | just x | AOmega | ()
+... | omega | AOmega | tt | omega | ALevel | ()
+... | omega | AOmega | tt | omega | AOmega | tt = tt
+eval~<a-eval (lsc lv) η
+  with eval-lv lv η | a-eval-lv lv η | eval~<a-eval lv η
+... | just x | ALevel | tt = tt
+... | just x | AOmega | ()
+... | omega | ALevel | ()
+... | omega | AOmega | tt = tt
+
 
 level-of-tv′ : ∀ {Δ}{Θ : Telescope Δ} → Env* Θ → TV ∈ Δ → Level
 level-of-tv′ [] ()
@@ -246,9 +297,27 @@ eval-strong-≡ (lsc lv) η ⟦α⟧ = cong lsuc (eval-strong-≡ lv η ⟦α⟧
 ... | omega =
   Omega ((⟦α⟧ : Set (eval-lan l η)) →
         fromOmega (⟦ T ⟧ (η ▷ ⟦α⟧)) (trans (eval-strong-≡ l′ η ⟦α⟧) eq₂))
-⟦ ∀ᴸ T ⟧ η = Omega ({!!})
+⟦_⟧ {Δ} (∀ᴸ_ {l = l} T) η = {!!}
+  where
+    r1 =  Omega (∀ (a : Level) → fromLev (⟦ T ⟧ (η ∷ᴸ a)) {!!})
+    r2 =  Omega (∀ (a : Level) → fromOmega (⟦ T ⟧ (η ∷ᴸ a)) {!!})
+    SSX : (l : LVL (LV ∷ Δ)) → (a : Level) → SemLeveled (eval-lv l (η ∷ᴸ a))
+    SSX l a 
+      with eval-lv l (η ∷ᴸ a) in eq
+    ... | just x = {!!}
+    ... | omega = {!!}
 
+    SSS : (a : Level) {x : Level} → Set x
+    SSS a
+      with eval-lv l (η ∷ᴸ a) in eq
+    ... | just l′ = fromLev (⟦ T ⟧ (η ∷ᴸ a)) {!!}
+    ... | omega   = let SL = fromOmega (⟦ T ⟧ (η ∷ᴸ a)) eq in {!!}
 
+Sω : Setω
+Sω = ∀ (a : Level) → Set a
+
+Sω1 : Setω
+Sω1 = ∀ (a : ⊤) → Sω
 
 -- -- apply-env : Env* Δ → l ∈ Δ → Set l
 -- -- apply-env [] ()
