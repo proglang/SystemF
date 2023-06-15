@@ -666,9 +666,9 @@ data _↪*_ : Expr Δ Γ T → Expr Δ Γ T → Set where
     e₂ ↪ e₃ →
     e₁ ↪* e₃
 
-adequacy : ∀ {e₁ e₂ : Expr [] ∅ T} → e₁ ↪ e₂ → E⟦ e₁ ⟧ [] (λ()) ≡ E⟦ e₂ ⟧ [] (λ())
+adequacy : ∀ {e₁ e₂ : Expr Δ Γ T}{η : Env* Δ}{γ : Env Δ Γ η} → e₁ ↪ e₂ → E⟦ e₁ ⟧ η γ ≡ E⟦ e₂ ⟧ η γ
 adequacy (β-ƛ v₂) = {!   !}
-adequacy β-Λ = {!   !}
+adequacy (β-Λ) = {!   !}
 adequacy (ξ-·₁ e₁↪e) = cong-app (adequacy e₁↪e) _
-adequacy (ξ-·₂ {e₁ = e₁} e₂↪e v₁) = cong (E⟦ e₁ ⟧ [] λ ()) (adequacy e₂↪e)
-adequacy (ξ-∙ e₁↪e₂) = {!   !}         
+adequacy {η = η}{γ = γ} (ξ-·₂ {e₁ = e₁} e₂↪e v₁) = cong (E⟦ e₁ ⟧ η γ) (adequacy e₂↪e)
+adequacy (ξ-∙ e₁↪e₂) = {!   !}
