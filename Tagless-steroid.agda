@@ -253,12 +253,26 @@ level-weak : ∀ {Δ}{Θ : Telescope Δ} → (l : LAN Δ) → (η : Env* Θ) (x 
 level-weak (lacn x₁) η x = refl
 level-weak (lavr x₁) η x = refl
 
+eval-lan-weak-ext : ∀ {Δ}{Θ : Telescope Δ}{ln : LAN Δ} → (η : Env* Θ) → (α : TV ∈ Δ) → (x : Set (eval-lan ln η))
+  → eval-lan (weak-tv (level-of-tv Θ α)) (_▷_ {l = ln} η  x) ≡ eval-lan (level-of-tv Θ α) η
+eval-lan-weak-ext {Θ = Θ} η α x
+  with level-of-tv Θ α
+... | lacn x = refl
+... | lavr x = refl
+
+eval-lan-weak-ext-lv : ∀ {Δ}{Θ : Telescope Δ} → (η : Env* Θ) → (α : TV ∈ Δ) → (lev : Level)
+  → eval-lan (weak-lv (level-of-tv Θ α)) (η ∷ᴸ lev) ≡ eval-lan (level-of-tv Θ α) η
+eval-lan-weak-ext-lv {Θ = Θ} η α lev
+  with level-of-tv Θ α
+... | lacn x = refl
+... | lavr x = refl
+
 level-of-tv-≡ : ∀ {Δ}{Θ : Telescope Δ} → (η : Env* Θ) → (α : TV ∈ Δ)
   → eval-lan (level-of-tv Θ α) η ≡ level-of-tv′ η α
 level-of-tv-≡ [] ()
-level-of-tv-≡ (η ∷ᴸ x) (there α) = {!!}
+level-of-tv-≡ (η ∷ᴸ lev) (there α) = trans (eval-lan-weak-ext-lv η α lev) (level-of-tv-≡ η α)
 level-of-tv-≡ (_▷_ {l = l} η  x) here = level-weak l η x
-level-of-tv-≡ (η ▷ x) (there α) = {!!}
+level-of-tv-≡ {Θ = ln ∷ Θ} (η ▷ x) (there α) = trans (eval-lan-weak-ext {ln = ln} η α x) (level-of-tv-≡ η α)
 
 apply-env : ∀ {Δ}{Θ : Telescope Δ} → (η : Env* Θ) → (α : TV ∈ Δ) → Set (level-of-tv′ η α)
 apply-env [] ()
