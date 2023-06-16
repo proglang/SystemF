@@ -7,6 +7,7 @@ open import Data.Unit
 open import Data.Empty
 open import Data.Maybe
 open import Data.Product
+open import Data.Sum
 open import Function using (_∘_)
 open import Relation.Binary.PropositionalEquality
   using (_≡_; _≢_; refl; sym; trans; cong; cong₂; subst; resp₂)
@@ -171,12 +172,12 @@ eval-lan :  ∀ {Δ}{Θ : Telescope Δ} → LAN Δ → Env* Θ → Level
 
 data Env* where
   []  : Env* []
-  _∷ᴸ_ : ∀ {Δ}{Θ : Telescope Δ} → Env* Θ → Level → Env* (*ᴸ Θ)
+  _▷ᴸ_ : ∀ {Δ}{Θ : Telescope Δ} → Env* Θ → Level → Env* (*ᴸ Θ)
   _▷_ : ∀ {Δ}{Θ : Telescope Δ}{l : LAN Δ} → (η : Env* Θ) → Set (eval-lan l η) → Env* (l ∷ Θ)
 
 level-of-lv [] ()
-level-of-lv (η ∷ᴸ x) here = x
-level-of-lv (η ∷ᴸ x) (there lv) = level-of-lv η lv
+level-of-lv (η ▷ᴸ x) here = x
+level-of-lv (η ▷ᴸ x) (there lv) = level-of-lv η lv
 level-of-lv (η ▷ x₁) (there lv) = level-of-lv η lv
 
 eval-lan (lacn x) η = x
@@ -200,6 +201,15 @@ ALevel ∼⊔ ALevel = ALevel
 ALevel ∼⊔ AOmega = AOmega
 AOmega ∼⊔ ALevel = AOmega
 AOmega ∼⊔ AOmega = AOmega
+
+∼⊔-reflects-ALevel : ∀ {x}{y} → (x ∼⊔ y) ≡ ALevel → x ≡ ALevel × y ≡ ALevel
+∼⊔-reflects-ALevel {ALevel} {ALevel} refl = refl , refl
+∼⊔-reflects-ALevel {ALevel} {AOmega} ()
+
+∼⊔-reflects-AOmega : ∀ {x}{y} → (x ∼⊔ y) ≡ AOmega → (x ≡ AOmega) ⊎ (y ≡ AOmega)
+∼⊔-reflects-AOmega {ALevel} {AOmega} refl = inj₂ refl
+∼⊔-reflects-AOmega {AOmega} {ALevel} refl = inj₁ refl
+∼⊔-reflects-AOmega {AOmega} {AOmega} refl = inj₁ refl
 
 a-eval-lv : ∀ {Δ}{Θ : Telescope Δ} → LVL Δ → Env* Θ → ALevelω
 a-eval-lv (lan _) η = ALevel
@@ -241,10 +251,39 @@ eval~<a-eval (lsc lv) η
 ... | omega | ALevel | ()
 ... | omega | AOmega | tt = tt
 
+a-eval-level-just : ∀ {Δ}{Θ : Telescope Δ} → (lv : LVL Δ) → (η : Env* Θ) → a-eval-lv lv η ≡ ALevel → ∃[ l ] eval-lv lv η ≡ just l
+a-eval-level-just (lan (lacn l)) η refl = l , refl
+a-eval-level-just (lan (lavr x)) η refl = level-of-lv η x , refl
+a-eval-level-just (lub lv lv₁) η aeval≡ALevel
+  with ∼⊔-reflects-ALevel aeval≡ALevel
+... | ae≡ , ae≡₁
+  with a-eval-level-just lv η ae≡ | a-eval-level-just lv₁ η ae≡₁ 
+... | l , e≡j | l₁ , e≡j₁ rewrite e≡j | e≡j₁ = (l Level.⊔ l₁) , refl
+a-eval-level-just (lsc lv) η aeval≡ALevel
+  with a-eval-level-just lv η aeval≡ALevel
+... | l , eval≡just rewrite eval≡just = suc l , refl
+
+a-eval-level-omega : ∀ {Δ}{Θ : Telescope Δ} → (lv : LVL Δ) → (η : Env* Θ) → a-eval-lv lv η ≡ AOmega → eval-lv lv η ≡ omega
+a-eval-level-omega omg η refl = refl
+a-eval-level-omega (lub lv lv₁) η ae-lub≡
+  with ∼⊔-reflects-AOmega ae-lub≡
+... | inj₁ ae≡
+  rewrite a-eval-level-omega lv η ae≡
+    with eval-lv lv₁ η
+... | just x = refl
+... | omega = refl
+a-eval-level-omega (lub lv lv₁) η ae-lub≡ | inj₂ ae≡₁
+  rewrite a-eval-level-omega lv₁ η ae≡₁
+    with eval-lv lv η
+... | just x = refl
+... | omega = refl
+a-eval-level-omega (lsc lv) η ae≡
+  rewrite a-eval-level-omega lv η ae≡ = refl
+
 
 level-of-tv′ : ∀ {Δ}{Θ : Telescope Δ} → Env* Θ → TV ∈ Δ → Level
 level-of-tv′ [] ()
-level-of-tv′ (η ∷ᴸ x) (there α) = level-of-tv′ η α
+level-of-tv′ (η ▷ᴸ x) (there α) = level-of-tv′ η α
 level-of-tv′ (_▷_ {l = ln} η x) here = eval-lan ln η
 level-of-tv′ (η ▷ x) (there α) = level-of-tv′ η α
 
@@ -261,7 +300,7 @@ eval-lan-weak-ext {Θ = Θ} η α x
 ... | lavr x = refl
 
 eval-lan-weak-ext-lv : ∀ {Δ}{Θ : Telescope Δ} → (η : Env* Θ) → (α : TV ∈ Δ) → (lev : Level)
-  → eval-lan (weak-lv (level-of-tv Θ α)) (η ∷ᴸ lev) ≡ eval-lan (level-of-tv Θ α) η
+  → eval-lan (weak-lv (level-of-tv Θ α)) (η ▷ᴸ lev) ≡ eval-lan (level-of-tv Θ α) η
 eval-lan-weak-ext-lv {Θ = Θ} η α lev
   with level-of-tv Θ α
 ... | lacn x = refl
@@ -270,13 +309,13 @@ eval-lan-weak-ext-lv {Θ = Θ} η α lev
 level-of-tv-≡ : ∀ {Δ}{Θ : Telescope Δ} → (η : Env* Θ) → (α : TV ∈ Δ)
   → eval-lan (level-of-tv Θ α) η ≡ level-of-tv′ η α
 level-of-tv-≡ [] ()
-level-of-tv-≡ (η ∷ᴸ lev) (there α) = trans (eval-lan-weak-ext-lv η α lev) (level-of-tv-≡ η α)
+level-of-tv-≡ (η ▷ᴸ lev) (there α) = trans (eval-lan-weak-ext-lv η α lev) (level-of-tv-≡ η α)
 level-of-tv-≡ (_▷_ {l = l} η  x) here = level-weak l η x
 level-of-tv-≡ {Θ = ln ∷ Θ} (η ▷ x) (there α) = trans (eval-lan-weak-ext {ln = ln} η α x) (level-of-tv-≡ η α)
 
 apply-env : ∀ {Δ}{Θ : Telescope Δ} → (η : Env* Θ) → (α : TV ∈ Δ) → Set (level-of-tv′ η α)
 apply-env [] ()
-apply-env (η ∷ᴸ _) (there α) = apply-env η α
+apply-env (η ▷ᴸ _) (there α) = apply-env η α
 apply-env (η ▷ x) here = x
 apply-env (η ▷ _) (there α) = apply-env η α
 
@@ -311,27 +350,12 @@ eval-strong-≡ (lsc lv) η ⟦α⟧ = cong lsuc (eval-strong-≡ lv η ⟦α⟧
 ... | omega =
   Omega ((⟦α⟧ : Set (eval-lan l η)) →
         fromOmega (⟦ T ⟧ (η ▷ ⟦α⟧)) (trans (eval-strong-≡ l′ η ⟦α⟧) eq₂))
-⟦_⟧ {Δ} (∀ᴸ_ {l = l} T) η = {!!}
-  where
-    r1 =  Omega (∀ (a : Level) → fromLev (⟦ T ⟧ (η ∷ᴸ a)) {!!})
-    r2 =  Omega (∀ (a : Level) → fromOmega (⟦ T ⟧ (η ∷ᴸ a)) {!!})
-    SSX : (l : LVL (LV ∷ Δ)) → (a : Level) → SemLeveled (eval-lv l (η ∷ᴸ a))
-    SSX l a 
-      with eval-lv l (η ∷ᴸ a) in eq
-    ... | just x = {!!}
-    ... | omega = {!!}
-
-    SSS : (a : Level) {x : Level} → Set x
-    SSS a
-      with eval-lv l (η ∷ᴸ a) in eq
-    ... | just l′ = fromLev (⟦ T ⟧ (η ∷ᴸ a)) {!!}
-    ... | omega   = let SL = fromOmega (⟦ T ⟧ (η ∷ᴸ a)) eq in {!!}
-
-Sω : Setω
-Sω = ∀ (a : Level) → Set a
-
-Sω1 : Setω
-Sω1 = ∀ (a : ⊤) → Sω
+⟦_⟧ {Δ} (∀ᴸ_ {l = l} T) η
+  with a-eval-lv l (η ▷ᴸ zero) in eq
+... | ALevel = Omega (∀ (a : Level) → let l , elj = a-eval-level-just l (η ▷ᴸ a) (trans (a-eval-lv-≡ (η ▷ᴸ a) (η ▷ᴸ zero) l) eq)
+                                      in  fromLev (⟦ T ⟧ (η ▷ᴸ a)) elj)
+... | AOmega = Omega (∀ (a : Level) → let elo = a-eval-level-omega l (η ▷ᴸ a) (trans (a-eval-lv-≡ (η ▷ᴸ a) (η ▷ᴸ zero) l) eq)
+                                      in  fromOmega (⟦ T ⟧ (η ▷ᴸ a)) elo)
 
 -- -- apply-env : Env* Δ → l ∈ Δ → Set l
 -- -- apply-env [] ()
