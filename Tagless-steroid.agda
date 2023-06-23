@@ -99,6 +99,15 @@ lsuc omega = omega
 -- ----------------
 -- Δ ⊢ ∀ᴸ λ . T : ω
 
+-- expressions
+--   x ::= term variable
+--   M, N ::= x
+--       | λ x . M
+--       | M N
+--       | Λ α : ℓ . M
+--       | M T
+--       | Λᴸ λ . M
+--       | M ℓ
 
 data Kind : Set where
   LV : Kind
@@ -166,7 +175,7 @@ fromLev (AtLev x) refl = x
 fromOmega : ∀ {lω} → SemLeveled lω → lω ≡ omega → Setω
 fromOmega (Omega x) refl = x
 
-data Env* : ∀ {Δ} → Telescope Δ → Setω₂
+data Env* : ∀ {Δ} → Telescope Δ → Setω
 level-of-lv : {Δ : List Kind} {Θ : Telescope Δ} → Env* Θ → LV ∈ Δ → Level
 eval-lan :  ∀ {Δ}{Θ : Telescope Δ} → LAN Δ → Env* Θ → Level
 
@@ -333,7 +342,7 @@ eval-strong-≡ omg η ⟦α⟧ = refl
 eval-strong-≡ (lub lv lv₁) η ⟦α⟧ = cong₂ _⊔_ (eval-strong-≡ lv η ⟦α⟧) (eval-strong-≡ lv₁ η ⟦α⟧)
 eval-strong-≡ (lsc lv) η ⟦α⟧ = cong lsuc (eval-strong-≡ lv η ⟦α⟧)
 
-⟦_⟧ : ∀ {Δ}{Θ : Telescope Δ}{l} → Type Θ l → (η : Env* Θ) → SemLeveled (eval-lv l η)
+⟦_⟧ : ∀ {Δ}{Θ : Telescope Δ}{l : LVL Δ} → Type Θ l → (η : Env* Θ) → SemLeveled (eval-lv l η)
 ⟦ 𝟙 ⟧ η = AtLev ⊤
 ⟦ ` α ⟧ η rewrite level-of-tv-≡ η α = AtLev (apply-env η α)
 ⟦ _⇒_ {l = l}{l′ = l′} T₁ T₂ ⟧ η
@@ -463,17 +472,19 @@ eval-strong-≡ (lsc lv) η ⟦α⟧ = cong lsuc (eval-strong-≡ lv η ⟦α⟧
 -- -- _[_]T : Type (l ∷ Δ) l′ → Type Δ l → Type Δ l′
 -- -- _[_]T T T' = subT (singleₛ idₛ T') T
 
--- -- -- type environments
+-- type environments
 
--- -- data TEnv : LEnv → Set where
--- --   ∅    : TEnv []
--- --   _◁_  : Type Δ l → TEnv Δ → TEnv Δ
--- --   _◁*_ : (l : Level) → TEnv Δ → TEnv (l ∷ Δ)
+data TEnv : {Δ : List Kind} → Telescope Δ → Set where
+  ∅    : TEnv []
+  _▷_  : ∀{Δ}{Θ : Telescope Δ}{l : LVL Δ} → TEnv Θ → Type Θ l → TEnv Θ
+  _▷*_ : ∀{Δ}{Θ : Telescope Δ}{l : LVL Δ} → TEnv Θ → (la : LAN Δ) → TEnv (la ∷ Θ)
+  _▷ℓ : ∀{Δ}{Θ : Telescope Δ}{l : LVL Δ} → TEnv Θ → TEnv (*ᴸ Θ)
 
--- -- data inn : Type Δ l → TEnv Δ → Set where
--- --   here  : ∀ {T Γ} → inn {Δ}{l} T (T ◁ Γ)
--- --   there : ∀ {T : Type Δ l}{T′ : Type Δ l′}{Γ} → inn {Δ}{l} T Γ → inn {Δ} T (T′ ◁ Γ)
--- --   tskip : ∀ {T l Γ} → inn {Δ}{l′} T Γ → inn (wkT T) (l ◁* Γ)
+data inn : ∀ {Δ} {l : LVL Δ} {Θ : Telescope Δ} → Type Θ l → TEnv Θ → Set where
+  here  : ∀{Δ}{l}{Θ : Telescope Δ}{T : Type Θ l}{Γ} → inn T (Γ ▷ T)
+  there : ∀{Δ}{l}{Θ : Telescope Δ}{T T′ : Type Θ l}{Γ} → inn T Γ → inn T (Γ ▷ T′)
+  tskip : ∀{Δ}{l}{Θ : Telescope Δ}{T : Type Θ l}{Γ}{l′} → inn T Γ → inn {!!} (Γ ▷* l′)
+  lskip : ∀{Δ}{l}{Θ : Telescope Δ}{T : Type Θ l}{Γ} → inn T Γ → inn {!!} (Γ ▷ℓ)
 
 -- -- data Expr (Δ : LEnv) (Γ : TEnv Δ) : Type Δ l → Set where
 -- --   `_   : ∀ {T : Type Δ l} → inn T Γ → Expr Δ Γ T
