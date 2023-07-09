@@ -51,6 +51,10 @@ transω refl refl = refl
 
 -- level environments
 
+{- data LEnv′ (l : Level) : Set l where 
+  []  : LEnv′ l
+  _∷_[_] : (l′ : Level) → LEnv′ l → l′ ⊔ l ≡ l → LEnv′ l -}
+   
 LEnv = List Level
 variable Δ Δ₁ Δ₂ Δ₃ : LEnv
 
@@ -68,7 +72,7 @@ data Type Δ : Level → Set where
   `∀α_,_ : ∀ l → Type (l ∷ Δ) l′ → Type Δ (suc l ⊔ l′)
   𝟙      : Type Δ zero
 
-variable T T₁ T₂ : Type Δ l
+variable T T′ T₁ T₂ : Type Δ l
 
 
 -- level of type according to Leivant'91
@@ -76,6 +80,10 @@ level : Type Δ l → Level
 level {l = l} T = l
 
 -- semantic environments (mapping level l to an element of Set l)
+
+{- data Env*′ (l : Level) : LEnv′ l → Set l where
+  []  : Env*′ l []
+  _∷_[_] : ∀{Δ : LEnv′ l} → Set l′ → Env*′ l Δ → (eq : l ⊔ l′ ≡ l) → Env*′ l (l′ ∷ Δ [ eq ]) -}
 
 data Env* : LEnv → Setω where
   []  : Env* []
@@ -123,11 +131,6 @@ Tren ρ 𝟙 = 𝟙
 
 Twk : Type Δ l′ → Type (l ∷ Δ) l′
 Twk = Tren (Twkᵣ Tidᵣ)
-
-data OPEᵣ : TRen Δ₁ Δ₂ → Set where
-  ope-idᵣ   : ∀ {Δ} → OPEᵣ (Tidᵣ {Δ = Δ}) 
-  ope-liftᵣ : ∀ {l} → OPEᵣ ρ → OPEᵣ (Tliftᵣ ρ l) 
-  ope-wkᵣ   : ∀ {l} → OPEᵣ ρ → OPEᵣ (Twkᵣ {l = l} ρ)
 
 -- the action of renaming on semantic environments
 
@@ -192,12 +195,6 @@ Textₛ σ T' _ (there x) = σ _ x
 
 _[_]T : Type (l ∷ Δ) l′ → Type Δ l → Type Δ l′
 _[_]T T T' = Tsub (Textₛ Tidₛ T') T
-
-data OPEₛ : TSub Δ₁ Δ₂ → Set where
-  ope-idₛ   : ∀ {Δ} → OPEₛ (Tidₛ {Δ = Δ}) 
-  ope-liftₛ : ∀ {l} → OPEₛ σ → OPEₛ (Tliftₛ σ l) 
-  ope-wkₛ   : ∀ {l} → OPEₛ σ → OPEₛ (Twkₛ {l = l} σ)
-  ope-extₛ  : ∀ {T : Type Δ l} → OPEₛ σ → OPEₛ (Textₛ σ T)
 
 
 -- type environments
@@ -280,9 +277,10 @@ subst-preserves {η₂ = η₂} σ (`∀α l , T) =
     trans (subst-preserves {η₂ = α ∷ η₂} (Tliftₛ σ _) T)
           (congωl (λ H → ⟦ T ⟧ (α ∷ H)) (subst-to-env*-wk σ α η₂)))
 subst-preserves σ 𝟙 = refl
-
-single-subst-preserves : ∀ (η : Env* Δ) (T′ : Type Δ l) (T : Type (l ∷ Δ) l′) → ⟦ T [ T′ ]T ⟧ η ≡ ⟦ T ⟧ (⟦ T′ ⟧ η ∷ η)
-single-subst-preserves {Δ = Δ} {l = l}{l′ = l′} η T′ T =
+ 
+Tsingle-subst-preserves : ∀ (η : Env* Δ) (T′ : Type Δ l) (T : Type (l ∷ Δ) l′) → 
+  ⟦ T [ T′ ]T ⟧ η ≡ ⟦ T ⟧ (⟦ T′ ⟧ η ∷ η)
+Tsingle-subst-preserves {Δ = Δ} {l = l}{l′ = l′} η T′ T =
   trans (subst-preserves (Textₛ Tidₛ T′) T)
         (congωl (λ H → ⟦ T ⟧ (⟦ T′ ⟧ η ∷ H)) (subst-to-env*-id η))
 
@@ -291,7 +289,7 @@ E⟦ ` x ⟧ η γ = γ x
 E⟦ ƛ_ e ⟧ η γ = λ v → E⟦ e ⟧ η (extend γ v)
 E⟦ e₁ · e₂ ⟧ η γ = E⟦ e₁ ⟧ η γ (E⟦ e₂ ⟧ η γ)
 E⟦ Λ l ⇒ e ⟧ η γ = λ ⟦α⟧ → E⟦ e ⟧ (⟦α⟧ ∷ η) (extend-tskip γ)
-E⟦ _∙_ {T = T} e T′ ⟧ η γ rewrite single-subst-preserves η T′ T = E⟦ e ⟧ η γ (⟦ T′ ⟧ η)
+E⟦ _∙_ {T = T} e T′ ⟧ η γ rewrite Tsingle-subst-preserves η T′ T = E⟦ e ⟧ η γ (⟦ T′ ⟧ η)
 
 -- type in expr substitution
 
@@ -450,17 +448,6 @@ TidᵣT≡T (T₁ ⇒ T₂) = cong₂ _⇒_ (TidᵣT≡T T₁) (TidᵣT≡T T₂
 TidᵣT≡T {Δ = Δ} (`∀α l , T) rewrite TliftᵣTidᵣ≡Tidᵣ Δ l = cong (`∀α l ,_) (TidᵣT≡T T)
 TidᵣT≡T 𝟙 = refl
 
--- todo : ind über Γ?
-Tren-Γ : {ρ : TRen Δ₁ Δ₂} → OPEᵣ ρ → TEnv Δ₁ → TEnv Δ₂
-Tren-Γ (ope-wkᵣ ope) Γ = _ ◁* Tren-Γ ope Γ
-Tren-Γ (ope-liftᵣ {l = .l} ope) (l ◁* Γ) = l ◁* Tren-Γ ope Γ
-Tren-Γ ope-idᵣ Γ = Γ
-Tren-Γ {ρ = ρ} ope (T ◁ Γ) = Tren ρ T ◁ Tren-Γ ope Γ
-
-ΓidᵣΓ≡Γ : ∀ (Γ : TEnv Δ₁) → Tren-Γ ope-idᵣ Γ ≡ Γ
-ΓidᵣΓ≡Γ ∅ = refl
-ΓidᵣΓ≡Γ (T ◁ Γ) = cong (T ◁_) (ΓidᵣΓ≡Γ Γ)
-ΓidᵣΓ≡Γ (l ◁* Γ) = refl
 
 ρ[T]≡[ρT]ρ↑ : ∀ (T : Type Δ₁ l) (ρ : TRen Δ₁ Δ₂) →
   Textₛ Tidₛ T σρ→σ ρ ≡ (Tliftᵣ ρ _) ρσ→σ Textₛ Tidₛ (Tren ρ T)
@@ -480,74 +467,58 @@ Tren-Γ {ρ = ρ} ope (T ◁ Γ) = Tren ρ T ◁ Tren-Γ ope Γ
     Tsub (Textₛ Tidₛ (Tren ρ T′)) (Tren (Tliftᵣ ρ _) T)
   ∎
 
-Twkᵣ[TidᵣT]≡Tidᵣ[TwkᵣT] : ∀ {l} (T : Type Δ l′) → 
-  Twk {l = l} (Tren Tidᵣ T) ≡ Tren Tidᵣ (Tren (Twkᵣ {l = l} Tidᵣ) T)
-Twkᵣ[TidᵣT]≡Tidᵣ[TwkᵣT] {Δ = Δ} {l = l} T  = begin 
-    Twk (Tren Tidᵣ T)
-  ≡⟨ sym (↑ρ-TwkT≡Twk-ρT T Tidᵣ) ⟩
-    Tren (Tliftᵣ Tidᵣ l) (Tren (Twkᵣ Tidᵣ) T)
-  ≡⟨ cong (λ ρ → Tren ρ (Tren (Twkᵣ Tidᵣ) T)) (TliftᵣTidᵣ≡Tidᵣ Δ l) ⟩
-    Tren Tidᵣ (Tren (Twkᵣ Tidᵣ) T)
-  ∎
+data OPE : TRen Δ₁ Δ₂ → TEnv Δ₁ → TEnv Δ₂ → Set where
+  ope-id : ∀ {Δ} {Γ : TEnv Δ} →
+    OPE Tidᵣ Γ Γ
+  ope-lift₁ : ∀ {l} {Δ₁} {Δ₂} {Γ₁ : TEnv Δ₁} {Γ₂ : TEnv Δ₂} {ρ : TRen Δ₁ Δ₂} →
+    (ope : OPE ρ Γ₁ Γ₂) → OPE (Tliftᵣ ρ _) (l ◁* Γ₁) (l ◁* Γ₂)
+  ope-wk : ∀ {l} {Δ₁} {Δ₂} {Γ₁ : TEnv Δ₁} {Γ₂ : TEnv Δ₂} {ρ : TRen Δ₁ Δ₂} →
+    (ope : OPE ρ Γ₁ Γ₂) → OPE (Twkᵣ ρ) Γ₁ (l ◁* Γ₂)
+  ope-lift₂ : ∀ {l} {Δ₁} {Δ₂} {Γ₁ : TEnv Δ₁} {Γ₂ : TEnv Δ₂} {T : Type Δ₁ l} {ρ : TRen Δ₁ Δ₂}
+    (ope : OPE ρ Γ₁ Γ₂) → OPE ρ (T ◁ Γ₁) (Tren ρ T ◁ Γ₂) 
   
-ETren-x : {ρ : TRen Δ₁ Δ₂} → (ope : OPEᵣ ρ) → inn T Γ → inn (Tren ρ T) (Tren-Γ ope Γ)
-ETren-x {T = T} ope-idᵣ here rewrite TidᵣT≡T T = here
-ETren-x (ope-liftᵣ ope) here = here
-ETren-x {T = T} {Γ = Γ} (ope-wkᵣ {ρ = ρ} ope) here =
- subst (λ T → inn T (Tren-Γ (ope-wkᵣ ope) Γ)) (assoc-ren-ren T ρ (Twkᵣ Tidᵣ)) (tskip (ETren-x {T = T} {Γ = Γ} ope here))
-ETren-x {T = T} {Γ = (T′ ◁ Γ)} ope-idᵣ (there x) = 
-  subst (λ Γ → inn (Tren Tidᵣ T) Γ) (cong (_ ◁_) (ΓidᵣΓ≡Γ Γ)) (there (ETren-x ope-idᵣ x))
-ETren-x (ope-liftᵣ ope) (there x) = there (ETren-x (ope-liftᵣ ope) x)
-ETren-x {T = T} {Γ = (T′ ◁ Γ)} (ope-wkᵣ {ρ = ρ} ope) (there x) = 
-  subst (λ T → inn T (_ ◁* Tren-Γ ope (_ ◁ Γ))) (assoc-ren-ren T ρ (Twkᵣ Tidᵣ)) (tskip (ETren-x ope (there x)))
-ETren-x {T = .(Twk T)} {Γ = .(l ◁* Γ)} ope-idᵣ (tskip {T = T} {l = l} {Γ = Γ} x) 
-  with ETren-x ope-idᵣ x
-... | x rewrite ΓidᵣΓ≡Γ Γ = 
-  subst (λ T → inn T (l ◁* Γ)) (Twkᵣ[TidᵣT]≡Tidᵣ[TwkᵣT] T) (tskip {l = l} x)
-ETren-x {T = .(Twk T)} {Γ = .(l ◁* Γ)} (ope-liftᵣ {ρ = ρ} ope) (tskip {T = T} {l = l} {Γ = Γ} x) = 
-  subst (λ T → inn T (l ◁* Tren-Γ ope Γ)) (sym (↑ρ-TwkT≡Twk-ρT T ρ)) (tskip {l = l} (ETren-x ope x ))
-ETren-x (ope-wkᵣ {ρ = ρ} ope) (tskip {T = T} {l = l} {Γ = Γ} x) 
-  with ETren-x ope (tskip x)
-... | x = 
-  subst (λ T → inn T (_ ◁* Tren-Γ ope (l ◁* Γ))) (assoc-ren-ren (Tren (Twkᵣ Tidᵣ) T) ρ (Twkᵣ Tidᵣ)) (tskip x)
+ETren-x : {ρ : TRen Δ₁ Δ₂} → (ope : OPE ρ Γ₁ Γ₂) → inn T Γ₁ → inn (Tren ρ T) Γ₂
+ETren-x {T = T} {ρ = ρ} ope-id x rewrite TidᵣT≡T T = x
+ETren-x {ρ = .(Tliftᵣ _ _)} (ope-lift₁ ope) (tskip x) = 
+  subst (λ T → inn T _) (sym (↑ρ-TwkT≡Twk-ρT _ _)) (tskip (ETren-x ope x))
+ETren-x {ρ = .(Twkᵣ _)} (ope-wk ope) x = subst (λ T → inn T _) (assoc-ren-ren _ _ (Twkᵣ Tidᵣ)) (tskip (ETren-x ope x))
+ETren-x {ρ = ρ} (ope-lift₂ ope) here = here
+ETren-x {ρ = ρ} (ope-lift₂ ope) (there x) = there (ETren-x ope x)
 
-ETren : {ρ : TRen Δ₁ Δ₂} → (ope : OPEᵣ ρ) → Expr Δ₁ Γ T → Expr Δ₂ (Tren-Γ ope Γ) (Tren ρ T)
+ETren : {ρ : TRen Δ₁ Δ₂} → (ope : OPE ρ Γ₁ Γ₂) → Expr Δ₁ Γ₁ T → Expr Δ₂ Γ₂ (Tren ρ T)
 ETren ope (` x) = ` ETren-x ope x
-ETren ope (ƛ e) = ƛ {!  !}
-  -- subst (λ Γ → Expr Δ₂ Γ (Tren (Twkᵣ ρ) T′)) {!   !} (ETren ope e)
+ETren ope (ƛ e) = ƛ ETren (ope-lift₂ ope) e
 ETren ope (e₁ · e₂) = ETren ope e₁ · ETren ope e₂
-ETren ope (Λ l ⇒ e) = Λ l ⇒ ETren (ope-liftᵣ ope) e
-ETren {Δ₂ = Δ₂} {Γ = Γ} {ρ = ρ} ope (_∙_ {T = T} e T′) = 
-  subst (λ T → Expr Δ₂ (Tren-Γ ope Γ) T) (sym (ρT[T′]≡ρT[ρ↑T′] ρ T T′)) (ETren ope e ∙ Tren ρ T′) 
+ETren {ρ = ρ} ope (Λ l ⇒ e) = Λ l ⇒ ETren (ope-lift₁ ope) e
+ETren {Δ₂ = Δ₂} {Γ₁ = Γ₁} {Γ₂ = Γ₂} {ρ = ρ}  ope (_∙_ {T = T} e T′) = 
+  subst (λ T → Expr Δ₂ Γ₂ T) (sym (ρT[T′]≡ρT[ρ↑T′] ρ T T′)) (ETren ope e ∙ Tren ρ T′) 
 
 Ewk-l : Expr Δ Γ T → Expr (l ∷ Δ) (l ◁* Γ) (Twk T)  
-Ewk-l {Δ = Δ} {Γ = Γ} {T = T} {l = l} e = ETren (ope-wkᵣ ope-idᵣ) e
+Ewk-l {Δ = Δ} {Γ = Γ} {T = T} {l = l} e = ETren (ope-wk ope-id) e
 
 -- type in expr substituions
 
-Tsub-Γ : {σ : TSub Δ₁ Δ₂} → OPEₛ σ → TEnv Δ₁ → TEnv Δ₂
-Tsub-Γ {σ = σ} ope (T ◁ Γ) = Tsub σ T ◁ Tsub-Γ ope Γ
-Tsub-Γ (ope-wkₛ ope) Γ = _ ◁* Tsub-Γ ope Γ
-Tsub-Γ (ope-liftₛ {l = .l} ope) (l ◁* Γ) = l ◁* Tsub-Γ ope Γ
-Tsub-Γ (ope-extₛ {T = T} ope) (l ◁* Γ) = Tsub-Γ ope Γ
-Tsub-Γ ope-idₛ Γ = Γ
+data SUB : TSub Δ₁ Δ₂ → TEnv Δ₁ → TEnv Δ₂ → Set where
+  sub-id : ∀ {Δ} {Γ : TEnv Δ} →
+    SUB Tidₛ Γ Γ
+  sub-lift₁ : ∀ {l} {Δ₁} {Δ₂} {Γ₁ : TEnv Δ₁} {Γ₂ : TEnv Δ₂} {σ : TSub Δ₁ Δ₂} →
+    (sub : SUB σ Γ₁ Γ₂) → SUB (Tliftₛ σ _) (l ◁* Γ₁) (l ◁* Γ₂)
+  sub-ext : ∀ {l} {Δ₁} {Δ₂} {Γ₁ : TEnv Δ₁} {Γ₂ : TEnv Δ₂} {σ : TSub Δ₁ Δ₂} {T : Type Δ₂ l} →
+    (sub : SUB σ Γ₁ Γ₂) → SUB (Textₛ σ T) (l ◁* Γ₁) Γ₂
+  sub-lift₂ : ∀ {l} {Δ₁} {Δ₂} {Γ₁ : TEnv Δ₁} {Γ₂ : TEnv Δ₂} {σ : TSub Δ₁ Δ₂} {T : Type Δ₁ l} →
+    (sub : SUB σ Γ₁ Γ₂) → SUB σ (T ◁ Γ₁) (Tsub σ T ◁ Γ₂)
 
-TliftₛTidₛ≡Tidₛ : ∀ Δ l →
+TliftₛTidₛ≡Tidₛ : ∀ Δ l →                         
   (Tliftₛ {Δ₁ = Δ} Tidₛ l) ≡ Tidₛ
 TliftₛTidₛ≡Tidₛ _ _ = fun-ext₂ λ where
   _ here → refl
-  _ (there x) → refl
+  _ (there x) → refl             
 
-TidₛT≡T : ∀ (T : Type Δ l) → Tsub Tidₛ T ≡ T
+TidₛT≡T : ∀ (T : Type Δ l) → Tsub Tidₛ T ≡ T       
 TidₛT≡T (` x) = refl
 TidₛT≡T (T₁ ⇒ T₂) = cong₂ _⇒_ (TidₛT≡T T₁) (TidₛT≡T T₂)
 TidₛT≡T {Δ = Δ} (`∀α l , T) rewrite TliftₛTidₛ≡Tidₛ Δ l = cong (`∀α l ,_) (TidₛT≡T T)
 TidₛT≡T 𝟙 = refl
-
-ΓidₛΓ≡Γ : ∀ (Γ : TEnv Δ₁) → Tsub-Γ ope-idₛ Γ ≡ Γ
-ΓidₛΓ≡Γ ∅ = refl
-ΓidₛΓ≡Γ (T ◁ Γ) = cong₂ (_◁_) (TidₛT≡T T) (ΓidₛΓ≡Γ Γ)
-ΓidₛΓ≡Γ (l ◁* Γ) = refl
 
 σ[T]≡[σT]σ↑ : ∀ (T : Type Δ₁ l) (σ : TSub Δ₁ Δ₂) →
   (Textₛ Tidₛ T σσ→σ σ) ≡ ((Tliftₛ σ _) σσ→σ (Textₛ Tidₛ (Tsub σ T)))
@@ -574,21 +545,36 @@ TidₛT≡T 𝟙 = refl
     (Tsub (Tliftₛ σ _) T) [ Tsub σ T′ ]T
   ∎
 
-ETsub-x : {σ : TSub Δ₁ Δ₂} → (ope : OPEₛ σ) → inn T Γ → inn (Tsub σ T) (Tsub-Γ ope Γ)
-ETsub-x ope here = {!   !}
-ETsub-x ope (there x) = {!   !}
-ETsub-x {T = .(Twk T)} {Γ = Γ} ope (tskip {T = T} x) = {!   !}
- 
-ETsub : {σ : TSub Δ₁ Δ₂} → (ope : OPEₛ σ) → Expr Δ₁ Γ T → Expr Δ₂ (Tsub-Γ ope Γ) (Tsub σ T)
-ETsub ope (` x) = ` ETsub-x ope x
-ETsub ope (ƛ e) = ƛ {!   !}
-ETsub ope (e₁ · e₂) = ETsub ope e₁ · ETsub ope e₂
-ETsub {Δ₂ = Δ₂} {Γ = Γ} {T = .(`∀α l , T)} {σ = σ} ope (Λ_⇒_ l {T} e) = Λ l ⇒ ETsub (ope-liftₛ ope) e
-ETsub {Δ₂ = Δ₂} {Γ = Γ} {σ = σ} ope (_∙_ {T = T} e T′) = 
-  subst (λ T → Expr Δ₂ (Tsub-Γ ope Γ) T) (sym (σT[T′]≡σ↑T[σT'] σ T T′)) (ETsub ope e ∙ Tsub σ T′) 
+σT≡TextₛσTwkT : {T′ : Type Δ₂ l′} (σ : TSub Δ₁ Δ₂) (T : Type Δ₁ l) → Tsub (Textₛ σ T′) (Twk T) ≡ Tsub σ T
+σT≡TextₛσTwkT {T′ = T′} σ T = begin 
+    Tsub (Textₛ σ _) (Twk T)
+  ≡⟨ assoc-sub-ren T (Twkᵣ Tidᵣ) (Textₛ σ _) ⟩
+    Tsub (Twkᵣ Tidᵣ ρσ→σ Textₛ σ T′) T
+  ≡⟨ sym (assoc-sub-sub T _ σ) ⟩
+    Tsub σ (Tsub Tidₛ T)
+  ≡⟨ cong (λ T → Tsub σ T) (TidₛT≡T T) ⟩
+    Tsub σ T
+  ∎
+
+ETsub-x : {σ : TSub Δ₁ Δ₂} → SUB σ Γ₁ Γ₂ → inn T Γ₁ → inn (Tsub σ T) Γ₂
+ETsub-x {T = T} sub-id x rewrite TidₛT≡T T = x
+ETsub-x {T = .(Twk T)} {σ = .(Tliftₛ _ _)} (sub-lift₁ sub) (tskip {T = T} x) = 
+  subst (λ T → inn T _) (sym (σ↑-TwkT≡Twk-σT _ T)) (tskip (ETsub-x sub x))
+ETsub-x {T = .(Twk T)} (sub-ext sub) (tskip {T = T} x) = 
+  subst (λ T → inn T _) (sym (σT≡TextₛσTwkT _ T)) (ETsub-x sub x)
+ETsub-x (sub-lift₂ sub) here = here
+ETsub-x (sub-lift₂ sub) (there x) = there (ETsub-x sub x)
+
+ETsub : {σ : TSub Δ₁ Δ₂} → SUB σ Γ₁ Γ₂ → Expr Δ₁ Γ₁ T → Expr Δ₂ Γ₂ (Tsub σ T)
+ETsub sub (` x) = ` ETsub-x sub x
+ETsub sub (ƛ e) = ƛ ETsub (sub-lift₂ sub) e
+ETsub sub (e₁ · e₂) = ETsub sub e₁ · ETsub sub e₂
+ETsub sub (Λ l ⇒ e) = Λ l ⇒ ETsub (sub-lift₁ sub) e
+ETsub {Δ₂ = Δ₂} {Γ₂ = Γ₂} {σ = σ} sub (_∙_ {T = T} e T′) = 
+  subst (λ T → Expr Δ₂ Γ₂ T) (sym (σT[T′]≡σ↑T[σT'] σ T T′)) (ETsub sub e ∙ Tsub σ T′)
 
 _[_]ET : Expr (l ∷ Δ) (l ◁* Γ) T → (T′ : Type Δ l) → Expr Δ Γ (T [ T′ ]T)
-_[_]ET {Δ = Δ} {Γ = Γ} {T = T} e T′ = ETsub (ope-extₛ ope-idₛ) e
+e [ T ]ET = ETsub (sub-ext sub-id) e 
 
 -- expr in expr substitution
 
@@ -644,219 +630,6 @@ Eextₛ σ e' (there x) = σ x
 
 _[_]E : Expr Δ (T₁ ◁ Γ) T₂ → Expr Δ Γ T₁ → Expr Δ Γ T₂
 _[_]E e e' = Esub (Eextₛ Eidₛ e') e
-
-
-{- 
-Tren-Γ : {ρ : TRen Δ₁ Δ₂} → OPEᵣ ρ → TEnv Δ₁ → TEnv Δ₂
-Tren-Γ {ρ = ρ} ope-idᵣ (T ◁ Γ) = Tren ρ T ◁ Γ
-Tren-Γ {ρ = ρ} (ope-liftᵣ ope) (T ◁ Γ) = Tren ρ T ◁ Tren-Γ (ope-liftᵣ ope) Γ
-Tren-Γ (ope-wkᵣ ope) (T ◁ Γ) = _ ◁* Tren-Γ ope (T ◁ Γ)
-Tren-Γ ope-idᵣ (l ◁* Γ) = l ◁* Γ
-Tren-Γ (ope-liftᵣ {l = .l} ope) (l ◁* Γ) = l ◁* Tren-Γ ope Γ
-Tren-Γ (ope-wkᵣ ope) (l ◁* Γ) = _ ◁* Tren-Γ ope (l ◁* Γ)
-Tren-Γ ope-idᵣ ∅ = ∅
-Tren-Γ (ope-wkᵣ ope) ∅ = _ ◁* Tren-Γ ope ∅
-
-ΓidᵣΓ≡Γ : ∀ (Γ : TEnv Δ₁) → Tren-Γ ope-idᵣ Γ ≡ Γ
-ΓidᵣΓ≡Γ ∅ = refl
-ΓidᵣΓ≡Γ (T ◁ Γ) = cong (_◁ Γ) (TidᵣT≡T T)
-ΓidᵣΓ≡Γ (l ◁* Γ) = refl
-
-ρ[T]≡[ρT]ρ↑ : ∀ (T : Type Δ₁ l) (ρ : TRen Δ₁ Δ₂) →
-  Textₛ Tidₛ T σρ→σ ρ ≡ (Tliftᵣ ρ _) ρσ→σ Textₛ Tidₛ (Tren ρ T)
-ρ[T]≡[ρT]ρ↑ T ρ = fun-ext₂ λ where 
-  _ here → refl
-  _ (there x) → refl
-
-ρT[T′]≡ρT[ρ↑T′] : ∀ (ρ : TRen Δ₁ Δ₂) (T : Type (l ∷ Δ₁) l′) (T′ : Type Δ₁ l) →
-  Tren ρ (T [ T′ ]T) ≡ Tren (Tliftᵣ ρ _) T [ Tren ρ T′ ]T 
-ρT[T′]≡ρT[ρ↑T′] ρ T T′ = begin 
-    Tren ρ (T [ T′ ]T)
-  ≡⟨ assoc-ren-sub T (Textₛ Tidₛ T′) ρ ⟩
-    Tsub (Textₛ Tidₛ T′ σρ→σ ρ) T
-  ≡⟨ cong (λ σ → Tsub σ T) (ρ[T]≡[ρT]ρ↑ T′ ρ) ⟩
-    Tsub ((Tliftᵣ ρ _) ρσ→σ (Textₛ Tidₛ (Tren ρ T′))) T
-  ≡⟨ sym (assoc-sub-ren T (Tliftᵣ ρ _) (Textₛ Tidₛ (Tren ρ T′))) ⟩
-    Tsub (Textₛ Tidₛ (Tren ρ T′)) (Tren (Tliftᵣ ρ _) T)
-  ∎
-
-Twkᵣ[TidᵣT]≡Tidᵣ[TwkᵣT] : ∀ {l} (T : Type Δ l′) → 
-  Twk {l = l} (Tren Tidᵣ T) ≡ Tren Tidᵣ (Tren (Twkᵣ {l = l} Tidᵣ) T)
-Twkᵣ[TidᵣT]≡Tidᵣ[TwkᵣT] {Δ = Δ} {l = l} T  = begin 
-    Twk (Tren Tidᵣ T)
-  ≡⟨ sym (↑ρ-TwkT≡Twk-ρT T Tidᵣ) ⟩
-    Tren (Tliftᵣ Tidᵣ l) (Tren (Twkᵣ Tidᵣ) T)
-  ≡⟨ cong (λ ρ → Tren ρ (Tren (Twkᵣ Tidᵣ) T)) (TliftᵣTidᵣ≡Tidᵣ Δ l) ⟩
-    Tren Tidᵣ (Tren (Twkᵣ Tidᵣ) T)
-  ∎
-  
-ETren-x : {ρ : TRen Δ₁ Δ₂} → (ope : OPEᵣ ρ) → inn T Γ → inn (Tren ρ T) (Tren-Γ ope Γ)
-ETren-x ope-idᵣ here = here
-ETren-x (ope-liftᵣ ope) here = here
-ETren-x {T = T} {Γ = Γ} (ope-wkᵣ {ρ = ρ} ope) here =
- subst (λ T → inn T (Tren-Γ (ope-wkᵣ ope) Γ)) (assoc-ren-ren T ρ (Twkᵣ Tidᵣ)) (tskip (ETren-x {T = T} {Γ = Γ} ope here))
-ETren-x {T = T} {Γ = (T′ ◁ Γ)} ope-idᵣ (there x) = 
-  subst (λ Γ → inn (Tren Tidᵣ T) Γ) (cong (_ ◁_) (ΓidᵣΓ≡Γ Γ)) (there (ETren-x ope-idᵣ x))
-ETren-x (ope-liftᵣ ope) (there x) = there (ETren-x (ope-liftᵣ ope) x)
-ETren-x {T = T} {Γ = (T′ ◁ Γ)} (ope-wkᵣ {ρ = ρ} ope) (there x) = 
-  subst (λ T → inn T (_ ◁* Tren-Γ ope (_ ◁ Γ))) (assoc-ren-ren T ρ (Twkᵣ Tidᵣ)) (tskip (ETren-x ope (there x)))
-ETren-x {T = .(Twk T)} {Γ = .(l ◁* Γ)} ope-idᵣ (tskip {T = T} {l = l} {Γ = Γ} x) 
-  with ETren-x ope-idᵣ x
-... | x rewrite ΓidᵣΓ≡Γ Γ = 
-  subst (λ T → inn T (l ◁* Γ)) (Twkᵣ[TidᵣT]≡Tidᵣ[TwkᵣT] T) (tskip {l = l} x)
-ETren-x {T = .(Twk T)} {Γ = .(l ◁* Γ)} (ope-liftᵣ {ρ = ρ} ope) (tskip {T = T} {l = l} {Γ = Γ} x) = 
-  subst (λ T → inn T (l ◁* Tren-Γ ope Γ)) (sym (↑ρ-TwkT≡Twk-ρT T ρ)) (tskip {l = l} (ETren-x ope x ))
-ETren-x (ope-wkᵣ {ρ = ρ} ope) (tskip {T = T} {l = l} {Γ = Γ} x) 
-  with ETren-x ope (tskip x)
-... | x = 
-  subst (λ T → inn T (_ ◁* Tren-Γ ope (l ◁* Γ))) (assoc-ren-ren (Tren (Twkᵣ Tidᵣ) T) ρ (Twkᵣ Tidᵣ)) (tskip x)
-  
-lemma : ∀ (Γ : TEnv Δ) → Tren-Γ (ope-wkᵣ {l = l} ope-idᵣ) Γ ≡ (l ◁* Γ)
-lemma ∅ = refl
-lemma {l = l} (T ◁ Γ) rewrite TidᵣT≡T T | ΓidᵣΓ≡Γ Γ = refl
-lemma (l ◁* Γ) = refl
-
-
-ETren : {ρ : TRen Δ₁ Δ₂} → (ope : OPEᵣ ρ) → Expr Δ₁ Γ T → Expr Δ₂ (Tren-Γ ope Γ) (Tren ρ T)
-ETren ope (` x) = ` ETren-x ope x
-ETren {Γ = Γ} ope-idᵣ (ƛ_ {T = T} {T′ = T′} e) rewrite TidᵣT≡T T | ΓidᵣΓ≡Γ Γ | TidᵣT≡T T′ = ƛ e
-ETren (ope-liftᵣ ope) (ƛ e) = ƛ ETren (ope-liftᵣ ope) e
-ETren {Δ₂ = Δ₂} {Γ = Γ} {ρ = .(Twkᵣ _)} (ope-wkᵣ {ρ = ρ} {l = l} ope) (ƛ_ {T′ = T′} e) with ETren (ope-wkᵣ {l = l} ope) e 
-... | a = ƛ {!   !}
-  -- subst (λ Γ → Expr Δ₂ Γ (Tren (Twkᵣ ρ) T′)) {!   !} (ETren ope e)
-ETren ope (e₁ · e₂) = ETren ope e₁ · ETren ope e₂
-ETren ope (Λ l ⇒ e) = Λ l ⇒ ETren (ope-liftᵣ ope) e
-ETren {Δ₂ = Δ₂} {Γ = Γ} {ρ = ρ} ope (_∙_ {T = T} e T′) = 
-  subst (λ T → Expr Δ₂ (Tren-Γ ope Γ) T) (sym (ρT[T′]≡ρT[ρ↑T′] ρ T T′)) (ETren ope e ∙ Tren ρ T′) 
--- type in expr substituions
-
-Tsub-Γ : {σ : TSub Δ₁ Δ₂} → OPEₛ σ → TEnv Δ₁ → TEnv Δ₂
-Tsub-Γ {σ = σ} ope (T ◁ Γ) = Tsub σ T ◁ Tsub-Γ ope Γ
-Tsub-Γ ope-idₛ ∅ = ∅
-Tsub-Γ (ope-wkₛ ope) ∅ = _ ◁* Tsub-Γ ope ∅
-Tsub-Γ ope-idₛ (l ◁* Γ) = l ◁* Γ
-Tsub-Γ (ope-liftₛ ope) (l ◁* Γ) = l ◁* Tsub-Γ ope Γ
-Tsub-Γ (ope-wkₛ ope) (l ◁* Γ) = _ ◁* Tsub-Γ ope (l ◁* Γ)
-Tsub-Γ (ope-extₛ {T = T} ope) (l ◁* Γ) = Tsub-Γ ope Γ
-
-TliftₛTidₛ≡Tidₛ : ∀ Δ l →
-  (Tliftₛ {Δ₁ = Δ} Tidₛ l) ≡ Tidₛ
-TliftₛTidₛ≡Tidₛ _ _ = fun-ext₂ λ where
-  _ here → refl
-  _ (there x) → refl
-
-TidₛT≡T : ∀ (T : Type Δ l) → Tsub Tidₛ T ≡ T
-TidₛT≡T (` x) = refl
-TidₛT≡T (T₁ ⇒ T₂) = cong₂ _⇒_ (TidₛT≡T T₁) (TidₛT≡T T₂)
-TidₛT≡T {Δ = Δ} (`∀α l , T) rewrite TliftₛTidₛ≡Tidₛ Δ l = cong (`∀α l ,_) (TidₛT≡T T)
-TidₛT≡T 𝟙 = refl
-
-ΓidₛΓ≡Γ : ∀ (Γ : TEnv Δ₁) → Tsub-Γ ope-idₛ Γ ≡ Γ
-ΓidₛΓ≡Γ ∅ = refl
-ΓidₛΓ≡Γ (T ◁ Γ) = cong₂ _◁_ (TidₛT≡T T) (ΓidₛΓ≡Γ Γ)
-ΓidₛΓ≡Γ (l ◁* Γ) = refl
-
-σ[T]≡[σT]σ↑ : ∀ (T : Type Δ₁ l) (σ : TSub Δ₁ Δ₂) →
-  (Textₛ Tidₛ T σσ→σ σ) ≡ ((Tliftₛ σ _) σσ→σ (Textₛ Tidₛ (Tsub σ T)))
-σ[T]≡[σT]σ↑ T σ = fun-ext₂ λ where
-  _ here → refl
-  _ (there x) → begin 
-        σ _ x
-      ≡⟨ sym (TidₛT≡T (σ _ x)) ⟩
-        Tsub Tidₛ (σ _ x)
-      ≡⟨ sym (assoc-sub-ren (σ _ x) (Twkᵣ Tidᵣ) (Textₛ Tidₛ (Tsub σ T))) ⟩
-        Tsub (Textₛ Tidₛ (Tsub σ T)) (Twk (σ _ x))
-      ∎
-
-σT[T′]≡σ↑T[σT'] : ∀ (σ : TSub Δ₁ Δ₂) (T : Type (l ∷ Δ₁) l′) (T′ : Type Δ₁ l) →
-  Tsub σ (T [ T′ ]T) ≡ (Tsub (Tliftₛ σ _) T) [ Tsub σ T′ ]T  
-σT[T′]≡σ↑T[σT'] σ T T′ = 
-  begin 
-    Tsub σ (T [ T′ ]T) 
-  ≡⟨ assoc-sub-sub T (Textₛ Tidₛ T′) σ ⟩
-    Tsub (Textₛ Tidₛ T′ σσ→σ σ) T
-  ≡⟨ cong (λ σ → Tsub σ T) (σ[T]≡[σT]σ↑ T′ σ) ⟩
-    Tsub (Tliftₛ σ _ σσ→σ Textₛ Tidₛ (Tsub σ T′)) T
-  ≡⟨ sym (assoc-sub-sub T (Tliftₛ σ _) (Textₛ Tidₛ (Tsub σ T′))) ⟩
-    (Tsub (Tliftₛ σ _) T) [ Tsub σ T′ ]T
-  ∎
-
-ETsub-x : {σ : TSub Δ₁ Δ₂} → (ope : OPEₛ σ) → inn T Γ → inn (Tsub σ T) (Tsub-Γ ope Γ)
-ETsub-x ope here = here
-ETsub-x ope (there x) = there (ETsub-x ope x)
-ETsub-x {T = .(Twk T)} {Γ = Γ} ope (tskip {T = T} x) = {!   !}
- 
-ETsub : {σ : TSub Δ₁ Δ₂} → (ope : OPEₛ σ) → Expr Δ₁ Γ T → Expr Δ₂ (Tsub-Γ ope Γ) (Tsub σ T)
-ETsub ope (` x) = ` ETsub-x ope x
-ETsub ope (ƛ e) = ƛ ETsub ope e
-ETsub ope (e₁ · e₂) = ETsub ope e₁ · ETsub ope e₂
-ETsub {Δ₂ = Δ₂} {Γ = Γ} {T = .(`∀α l , T)} {σ = σ} ope (Λ_⇒_ l {T} e) = Λ l ⇒ ETsub (ope-liftₛ ope) e
-ETsub {Δ₂ = Δ₂} {Γ = Γ} {σ = σ} ope (_∙_ {T = T} e T′) = 
-  subst (λ T → Expr Δ₂ (Tsub-Γ ope Γ) T) (sym (σT[T′]≡σ↑T[σT'] σ T T′)) (ETsub ope e ∙ Tsub σ T′) 
-
-_[_]ET : Expr (l ∷ Δ) (l ◁* Γ) T → (T′ : Type Δ l) → Expr Δ Γ (T [ T′ ]T)
-_[_]ET {Δ = Δ} {Γ = Γ} {T = T} e T′ =
-  subst (λ Γ → Expr Δ Γ (T [ T′ ]T)) (ΓidₛΓ≡Γ Γ) (ETsub (ope-extₛ ope-idₛ) e)
-
-Ewk-l : Expr Δ Γ T → Expr (l ∷ Δ) (l ◁* Γ) (Twk T)  
-Ewk-l {Δ = Δ} {Γ = Γ} {T = T} {l = l} e = 
-  subst (λ Γ → Expr (l ∷ Δ) Γ (Twk T)) (lemma Γ) (ETren (ope-wkᵣ ope-idᵣ) e)
-
--- expr in expr substitution
-
-ERen : TEnv Δ → TEnv Δ → Set
-ERen {Δ} Γ₁ Γ₂ = ∀ {l} {T : Type Δ l} → inn T Γ₁ → inn T Γ₂
-
-Ewkᵣ : ERen Γ (T ◁ Γ) 
-Ewkᵣ = there
-
-Eliftᵣ : ERen Γ₁ Γ₂ → ERen (T ◁ Γ₁) (T ◁ Γ₂)
-Eliftᵣ ρ here = here
-Eliftᵣ ρ (there x) = there (ρ x)
-
-Eliftᵣ-l : ERen Γ₁ Γ₂ → ERen (l ◁* Γ₁) (l ◁* Γ₂)
-Eliftᵣ-l ρ (tskip x) = tskip (ρ x) 
-
-Eren : ERen Γ₁ Γ₂ → (Expr Δ Γ₁ T → Expr Δ Γ₂ T)
-Eren ρ (` x) = ` ρ x
-Eren ρ (ƛ e) = ƛ Eren (Eliftᵣ ρ) e
-Eren ρ (e₁ · e₂) = Eren ρ e₁ · Eren ρ e₂
-Eren ρ (Λ l ⇒ e) = Λ l ⇒ Eren (Eliftᵣ-l ρ) e
-Eren ρ (e ∙ T′) = Eren ρ e ∙ T′
-
-Ewk : Expr Δ Γ T → Expr Δ (T₁ ◁ Γ) T 
-Ewk = Eren Ewkᵣ
-
-ESub : TEnv Δ → TEnv Δ → Set
-ESub {Δ} Γ₁ Γ₂ = ∀ {l} {T : Type Δ l} → inn T Γ₁ → Expr Δ Γ₂ T
-
-Eidₛ : ESub Γ Γ
-Eidₛ = `_
-
-Ewkₛ : ESub Γ₁ Γ₂ → ESub Γ₁ (T ◁ Γ₂)
-Ewkₛ σ x = Ewk (σ x)
-
-Eliftₛ : ESub Γ₁ Γ₂ → ESub (T ◁ Γ₁) (T ◁ Γ₂)
-Eliftₛ σ here = ` here
-Eliftₛ σ (there x) = Ewk (σ x)
-
-Eliftₛ-l : ESub Γ₁ Γ₂ → ESub (l ◁* Γ₁) (l ◁* Γ₂)
-Eliftₛ-l σ (tskip x) = Ewk-l (σ x)
-
-Esub : ESub Γ₁ Γ₂ → Expr Δ Γ₁ T → Expr Δ Γ₂ T
-Esub σ (` x) = σ x
-Esub σ (ƛ e) = ƛ Esub (Eliftₛ σ) e
-Esub σ (e₁ · e₂) = Esub σ e₁ · Esub σ e₂
-Esub σ (Λ l ⇒ e) = Λ l ⇒ Esub (Eliftₛ-l σ) e
-Esub σ (e ∙ T) = Esub σ e ∙ T
-
-Eextₛ : ESub Γ₁ Γ₂ → Expr Δ Γ₂ T → ESub (T ◁ Γ₁) Γ₂
-Eextₛ σ e' here = e'
-Eextₛ σ e' (there x) = σ x
-
-_[_]E : Expr Δ (T₁ ◁ Γ) T₂ → Expr Δ Γ T₁ → Expr Δ Γ T₂
-_[_]E e e' = Esub (Eextₛ Eidₛ e') e
--}
 
 -- small step call by value semantics
 
@@ -879,21 +652,32 @@ data _↪_ : Expr Δ Γ T → Expr Δ Γ T → Set where
     (e₁ · e₂) ↪ (e₁ · e)
   ξ-∙ :
     e₁ ↪ e₂ →
-    (e₁ ∙ T) ↪ (e₂ ∙ T)
+    (e₁ ∙ T′) ↪ (e₂ ∙ T′)
 
-data _↪*_ : Expr Δ Γ T → Expr Δ Γ T → Set where
+{- data _↪*_ : Expr Δ Γ T → Expr Δ Γ T → Set where
   refl :
     e ↪* e
   step :
     e₁ ↪* e₂ →
     e₂ ↪ e₃ →
-    e₁ ↪* e₃
+    e₁ ↪* e₃ -}
+
+subst-to-env : ∀ {η : Env* Δ} → (σ : ESub Γ₁ Γ₂) → (γ : Env Δ Γ₂ η) → Env Δ Γ₁ η
+subst-to-env = {!   !}
+
+Esubst-preserves : ∀ {η : Env* Δ} {γ : Env Δ Γ₂ η} → (σ : ESub Γ₁ Γ₂) (e : Expr Δ Γ₁ T)
+  → E⟦ Esub σ e ⟧ η γ ≡ E⟦ e ⟧ η (subst-to-env σ γ)
+Esubst-preserves = {!   !}
+
+Esingle-subst-preserves : ∀ {η : Env* Δ} (γ : Env Δ Γ η) (e₁ : Expr Δ (T′ ◁ Γ) T) (e₂ : Expr Δ Γ T′) →
+  E⟦ e₁ [ e₂ ]E ⟧ η γ ≡ E⟦ e₁ ⟧ η (extend γ (E⟦ e₂ ⟧ η γ))  
+Esingle-subst-preserves γ e₁ e₂ = {!   !}
 
 adequacy : ∀ {e₁ e₂ : Expr Δ Γ T}{η : Env* Δ}{γ : Env Δ Γ η} → e₁ ↪ e₂ → E⟦ e₁ ⟧ η γ ≡ E⟦ e₂ ⟧ η γ
 adequacy (β-ƛ v₂) = {!   !}
 adequacy (β-Λ) = {!   !}
-adequacy (ξ-·₁ e₁↪e) = cong-app (adequacy e₁↪e) _
-adequacy {η = η}{γ = γ} (ξ-·₂ {e₁ = e₁} e₂↪e v₁) = cong (E⟦ e₁ ⟧ η γ) (adequacy e₂↪e)
-adequacy (ξ-∙ e₁↪e₂) = {!   !}      
-
-                        
+adequacy {η = η} {γ = γ} (ξ-·₁ {e₂ = e₂} e₁↪e) = cong-app (adequacy e₁↪e) (E⟦ e₂ ⟧ η γ)
+adequacy {η = η} {γ = γ} (ξ-·₂ {e₁ = e₁} e₂↪e v₁) = cong (E⟦ e₁ ⟧ η γ) (adequacy e₂↪e)
+adequacy {η = η} {γ = γ} (ξ-∙ {e₁ = e₁} {e₂ = e₂} {T′ = T′} e₁↪e₂) 
+  with cong-app (adequacy {η = η} {γ = γ} e₁↪e₂) (⟦ T′ ⟧ η)
+... | b = {!   !}  
