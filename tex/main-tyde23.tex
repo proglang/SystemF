@@ -203,35 +203,37 @@ extrinsically or intrinsically, that is, do we want to start with
 untyped syntax and then define the statics as an afterthought, or do
 we integrate types with the syntax.
 
-If we opt for intrinsically typed syntax, we get quite some properties
-for free. For instance, a small-step semantics for intrinsically typed
+If we opt for intrinsically typed syntax, some properties are already paid
+for by construction. For instance, a small-step semantics for intrinsically typed
 syntax satisfies type preservation by construction. For another
-instance, consider implementing a denotational semantics in the form
-of an interpreter. With untyped syntax, the interpreter has to use
-type tags and perform tag checks at run time. But with intrinsically
-typed syntax we can write tagless interpreters which elide type tags
-entirely.
+instance, consider specifying a denotational semantics by a
+compositional mapping from syntax to some semantic domain. With 
+untyped syntax, the semantic domain has to lump the interpretations of
+different types together and distinguish them using type tags. But with intrinsically
+typed syntax the semantics can map into type-indexed semantic domains
+and thus elide type tags. This observation directly translates to tagless interpreters
+on intrinsically typed syntax, which elide tag checks at run time.
 
 For concreteness, we show the well-known example of a tagless
 interpreter for the simply-typed lambda calculus implemented in Agda in
 Figure~\ref{fig:stlc}. We define the syntax as an inductive data type along with
 a compositional mapping to the semantic domain, spanned by Agda's
 natural number type and the function space. 
+We define intrinsically typed syntax of expressions as an inductive datatype
+parameterized over a typing environment and indexed on the return
+type. For variables, we use de Bruijn indices into the typing
+environment.
 \begin{figure}[tp]
   \input{latex/STLC}
   \caption{Simply typed lambda calculus, denotationally}
   \label{fig:stlc}
 \end{figure}
-We define intrinsically typed syntax of expressions as an inductive datatype
-parameterized over a typing environment and indexed on the return
-type. For variables, we use de Bruin indices into the typing
-environment.
 
 The semantics of a typing environment is a run-time environment in the
 form of a heterogenous list of suitably typed values. With all that,
-we can define the semantics of an expression ... as a function from
-the semantics of a typing environment ... to the semantics of the type
-... Clearly this definition also serves as a tagless interpreter for
+we can define the semantics of an expression {\AESem} as a function from
+the semantics of a typing environment {\AGSem} to the semantics of the type
+{\ATSem}. Clearly this definition also serves as a tagless interpreter for
 the simply-typed lambda calculus, which means that type preservation
 is also built into its definition. Moreover, as Agda accepts this
 definition as terminating, we know that evaluation of every
@@ -265,7 +267,7 @@ universe stratification.
 \section{Types}
 \label{sec:types}
 
-The definition of the type language is taken literally from Leivant's
+The definition of the type language for stratified System~F is taken literally from Leivant's
 paper. It is defined as an inductive type parameterized over a level
 environment (that assigns levels to free type variables) and indexed
 over the level of the type. 
@@ -288,10 +290,10 @@ of $\ASet~l$ and pushes it on the environment.
 The type of the domain environment is interesting because its range type is
 unusual.
 \TFTEnv
-As a value in the environment (a type, colloquially speaking) can live
-in a $\ASet~l$, for any $l$, we 
-cannot assign the type any fixed level. Agda's solution is to provide
-a limit type $\ASeto$, which we use in this definition. 
+As a value in the environment (the interpretation of a type, colloquially speaking) can live
+in a $\ASet~l$, for any finite level $l$, we 
+cannot assign the type any finite level. Hence, the type {\ADEnv} lives in
+the limit type $\ASeto$, which we use in this definition. 
 
 \section{Expressions}
 \label{sec:expressions}
@@ -339,7 +341,7 @@ similar to the  simply-typed lambda calculus.
 
 The first issue arises in the case for type abstraction. We interpret
 a type abstraction at level $l$ as a function with argument type
-$\ASet~l$. This argument as to be pushed onto the domain environment
+$\ASet~l$. This argument has to be pushed onto the domain environment
 $\eta$ and we have to account at the value level for the additional
 type variable in the type environment. The following function
 adapts the types.
@@ -375,12 +377,52 @@ define these equalities, it is somewhat tedious to re-establish
 standard lemmas for transforming equality proofs
 like cong, subst, and trans to deal with $\ASeto$.
 
+\section{Related Work}
+\label{sec:related-work}
+
+Arjen Rouvoet's thesis~\cite{DBLP:phd/basesearch/Rouvoet21} gives an
+excellent overview of the state of the art in intrinsically typed
+techniques for modeling language semantics. He pushed the limits of
+this technology in a range of papers with various coauthors
+\cite{DBLP:journals/pacmpl/RestPRVM22,DBLP:journals/pacmpl/RouvoetKV21,DBLP:conf/cpp/RouvoetPKV20,DBLP:journals/pacmpl/PoulsenRTKV18}. 
+
+Giving semantics in an interpretive style is a defining feature of
+denotational semantics \cite{Schmidt1986}, but it can be traced back
+to Reynolds's idea of definitional interpreters \cite{Reynolds1975}.
+
+The particular encoding of de Bruijn style variable representations
+used in this work dates back to work on nested datatypes
+\cite{DBLP:conf/mpc/BirdM98,DBLP:journals/jfp/BirdP99,DBLP:conf/csl/AltenkirchR99},
+which subsequently lead to GADTs
+\cite{cheney03:_first_class_phant_types}.
+
+A tagless interpreter for a simply typed calculus was developed in
+Cayenne \cite{augustsson99}, but for extrinsically typed syntax (i.e.,
+syntax and separate typing predicatepe).
+
+Intrinsically typed encodings are further studied by Allais and others
+\cite{DBLP:conf/cpp/Allais0MM17}, who define a range of tagless
+functions including denotational semantics on intrinsically typed
+terms. 
+
+We draw some inspiration from the program implemented by Benton and coworkers
+\cite{DBLP:journals/jar/BentonHKM12}. Based on intrinsically typed
+syntax for a simply-typed lambda applied calculus, they define a
+big-step semantics and a set-theoretic denotational semantics. They
+prove soundness of the former semantics with respect to the latter as
+well as adequacy (using a logical relation). They also develop an
+expression encoding for System~F, but the paper stops short of
+discussing its semantics. 
+
 \section{Future Work}
 \label{sec:future-work}
 
 We are currently formalizing the small-step semantics of the language
 with the goal of proving an adequacy theorem for reduction with
 respect to the denotational semantics.
+
+It would also be interesting to extend the stratified calculus by
+level quantification as in Agda's universe polymorphism.
 
 
 %%
