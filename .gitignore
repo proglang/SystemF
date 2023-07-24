@@ -1,7 +1,11 @@
+auto
 *.agdai
 *.aux
 *.log
 *.out
 *.pdf
 *.ptb
+*.rel
+*.bbl
+*.blg
 *.synctex.gz
