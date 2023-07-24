@@ -1,7 +1,7 @@
 module Tagless-op_sem-sub_fun where
 
 open import Level
-open import Data.Product using (_×_; Σ-syntax; ∃-syntax; _,_)
+open import Data.Product using (_×_; Σ; Σ-syntax; ∃-syntax; _,_; proj₁; proj₂)
 open import Data.Sum using (_⊎_)
 open import Data.Fin using (Fin) renaming (zero to fzero; suc to fsuc)
 open import Data.List using (List; []; _∷_; _++_; length; lookup; tabulate)
@@ -49,8 +49,15 @@ conglω f refl = refl
 congωω : ∀ {A : Setω} {B : Setω} (f : A → B) {x y : A} → x ≡ω y → f x ≡ω f y
 congωω f refl = refl
 
+-- conglωω : ∀ {a} {A : Set a} {B : Setω} {C : Setω} (f : A → B → C) {x₁ x₂ : A} {y₁ y₂ : B} → x₁ ≡ x₂ → y₁ ≡ω y₂ → f x₁ y₁ ≡ω f x₂ y₂
+-- conglωω f refl refl = refl
+
 transω : ∀ {A : Setω} {x y z : A} → x ≡ω y → y ≡ω z → x ≡ω z
 transω refl refl = refl
+
+-- substω : ∀ {b}{A : Setω} → (F : (x : A) → Set b) →
+--   ∀ {x y : A} → x ≡ω y → F x → F y
+-- substω f refl x = x
 
 ----------------------------------------------------------------------
 
@@ -655,6 +662,7 @@ Eextₛ σ e' (there x) = σ x
 _[_]E : Expr Δ (T₁ ◁ Γ) T₂ → Expr Δ Γ T₁ → Expr Δ Γ T₂
 _[_]E e e' = Esub (Eextₛ Eidₛ e') e
 
+
 -- small step call by value semantics
 
 data Val : Expr Δ Γ T → Set where
@@ -678,6 +686,7 @@ data _↪_ : Expr Δ Γ T → Expr Δ Γ T → Set where
     e₁ ↪ e₂ →
     (e₁ ∙ T′) ↪ (e₂ ∙ T′)
 
+-- small-step continued
 
 subst-to-env : ESub Γ₁ Γ₂ → Env Δ Γ₂ η → Env Δ Γ₁ η
 subst-to-env {η = η} σ γ₂ _ _ x = E⟦ σ x ⟧ η γ₂
@@ -752,3 +761,121 @@ adequacy {η = η} {γ = γ} (ξ-·₁ {e₂ = e₂} e₁↪e) = cong-app (adequ
 adequacy {η = η} {γ = γ} (ξ-·₂ {e₁ = e₁} e₂↪e v₁) = cong (E⟦ e₁ ⟧ η γ) (adequacy e₂↪e)
 adequacy {η = η} {γ = γ} (ξ-∙ {T′ = T′} {T = T} e₁↪e₂) 
   rewrite Tsingle-subst-preserves η T′ T = cong-app (adequacy e₁↪e₂) (⟦ T′ ⟧ η)   
+
+----------------------------------------------------------------------
+
+-- big step call by value semantics (analogous to Benton et al)
+
+data Value : Type [] l → Set where
+  V-ƛ : ∀ {T : Type [] l}{T′ : Type [] l′} → Expr [] (T ◁ ∅) T′ → Value (T ⇒ T′)
+  V-Λ : ∀ (l : Level) → {T : Type (l ∷ []) l′} → Expr (l ∷ []) (l ◁* ∅) T → Value (`∀α l , T)
+
+variable v v₂ : Value T
+
+exp : Value T → Expr [] ∅ T
+exp (V-ƛ e) = ƛ e
+exp (V-Λ l e) = Λ l ⇒ e
+
+infix 15 _⇓_
+data _⇓_ : Expr [] ∅ T → Value T → Set where
+  ⇓-ƛ : (ƛ e) ⇓ V-ƛ e
+  ⇓-· : e₁ ⇓ V-ƛ e → e₂ ⇓ v₂ → (e [ exp v₂ ]E) ⇓ v → (e₁ · e₂) ⇓ v
+  ⇓-Λ : (Λ l ⇒ e) ⇓ V-Λ l e
+  ⇓-∙ : e₁ ⇓ V-Λ l e → (e [ T ]ET) ⇓ v → (e₁ ∙ T) ⇓ v
+
+-- soundness
+
+zero-env : Env [] ∅ []
+zero-env l T ()
+
+soundness : e ⇓ v → E⟦ e ⟧ [] zero-env ≡ E⟦ exp v ⟧ [] zero-env
+soundness ⇓-ƛ = refl
+soundness (⇓-· p p₁ p₂)
+  with soundness p | soundness p₁
+... | sound-p | sound-p₁
+  rewrite sound-p | sound-p₁
+  with soundness p₂
+... | sound-p₂ = trans {!!} sound-p₂
+soundness ⇓-Λ = refl
+soundness (⇓-∙ p p₁)
+  with soundness p | soundness p₁
+... | sound-p | sound-p₁ = trans {!!} sound-p₁
+
+-- adequacy
+
+infixl 10 _∧_
+_∧_ = _×_
+
+-- logical relation
+
+REL : Type [] l → Set (suc l)
+REL {l} T = Value T → ⟦ T ⟧ [] → Set l 
+
+RelEnv : LEnv → Setω
+RelEnv Δ = ∀ l → l ∈ Δ → Σ (Type [] l) REL
+
+REdrop : RelEnv (l ∷ Δ) → RelEnv Δ
+REdrop ρ l x = ρ l (there x)
+
+REext : RelEnv Δ → (Σ (Type [] l) REL) → RelEnv (l ∷ Δ)
+REext ρ R _ here = R
+REext ρ R _ (there x) = ρ _ x
+
+subst←RE : RelEnv Δ → TSub Δ []
+subst←RE ρ l x = proj₁ (ρ l x)
+
+subst←RE-ext : ∀ (ρ : RelEnv Δ) (T : Type [] l) (R : REL T) (l′ : Level) (x : l′ ∈ (l ∷ Δ)) → subst←RE (REext ρ (T , R)) l′ x ≡ Textₛ (subst←RE ρ) T l′ x
+subst←RE-ext ρ T R l here = refl
+subst←RE-ext ρ T R l (there x) = refl
+
+subst←RE-ext-ext : ∀ (ρ : RelEnv Δ) (T : Type [] l) (R : REL T) → subst←RE (REext ρ (T , R)) ≡ Textₛ (subst←RE ρ) T
+subst←RE-ext-ext ρ T R = fun-ext (λ l′ → fun-ext (subst←RE-ext ρ T R l′))
+
+-- special case of composition sub o ren
+lemma2-wk : (T  : Type Δ l) → (T′ : Type Δ l′) → Twk T [ T′ ]T ≡ T
+lemma2-wk (` here) T′ = refl
+lemma2-wk (` there x) T′ = refl
+lemma2-wk (T₁ ⇒ T₂) T′ = {!!}
+lemma2-wk (`∀α l , T) T′ = {!!}
+lemma2-wk 𝟙 T′ = refl
+
+lemma2-var : (σ : TSub Δ []) → (T′ : Type [] l) →
+  ∀ x → (Tliftₛ σ l l′ x [ T′ ]T) ≡ Textₛ σ T′ l′ x
+lemma2-var σ T′ here = refl
+lemma2-var σ T′ (there x) = lemma2-wk (σ _ x) T′
+
+lemma2 : (σ : TSub Δ []) → (T  : Type (l ∷ Δ) l′) → (T′ : Type [] l)
+  → Tsub (Tliftₛ σ l) T [ T′ ]T ≡ Tsub (Textₛ σ T′) T
+lemma2 σ (` x) T′ = lemma2-var σ T′ x
+lemma2 σ (T₁ ⇒ T₂) T′ = {!!}
+lemma2 σ (`∀α l , T) T′ = {!!}
+lemma2 σ 𝟙 T′ = refl
+
+lemma1 : (ρ  : RelEnv Δ) → (T  : Type (l ∷ Δ) l′) → (T′ : Type [] l) → (R  : REL T′)
+  → Tsub (Tliftₛ (subst←RE ρ) l) T [ T′ ]T ≡ Tsub (subst←RE (REext ρ (T′ , R))) T
+lemma1 {l = l} ρ T T′ R =
+  begin
+    Tsub (Tliftₛ (subst←RE ρ) l) T [ T′ ]T
+    ≡⟨ lemma2 (subst←RE ρ) T T′ ⟩
+    Tsub (Textₛ (subst←RE ρ) T′) T
+    ≡⟨ cong (λ G → Tsub G T) (sym (subst←RE-ext-ext ρ T′ R)) ⟩
+    Tsub (subst←RE (REext ρ (T′ , R))) T
+    ∎
+
+-- stratified logical relation
+
+SLR : (T : Type Δ l) → (ρ : RelEnv Δ) → Value (Tsub (subst←RE ρ) T) → ⟦ T ⟧ (subst-to-env* (subst←RE ρ) []) → Set l
+SLR (` α)       ρ v          x =
+  proj₂ (ρ _ α) v (subst id (sym (subst-var-preserves α (subst←RE ρ) [])) x)
+SLR (T ⇒ T′)    ρ (V-ƛ e)    f =
+  ∀ (w : Value (Tsub (subst←RE ρ) T)) →
+  ∀ (x : ⟦ T ⟧ (subst-to-env* (subst←RE ρ) [])) →
+  SLR T ρ w x →
+  ∃[ v ] (e [ exp w ]E ⇓ v)
+       ∧ SLR T′ ρ v (f x)
+SLR (`∀α l , T) ρ (V-Λ .l e) F =
+  ∀ (T′ : Type [] l) →
+  ∀ (R : REL T′) →
+  ∃[ v ] (e [ T′ ]ET ⇓ v)
+       ∧ let ρ′ = REext ρ (T′ , R)
+         in SLR T ρ′ (subst Value (lemma1 ρ T T′ R) v) (F (⟦ T′ ⟧ []))
