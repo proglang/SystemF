@@ -847,14 +847,6 @@ subst←RE-ext-ext : ∀ (ρ : RelEnv Δ) (T : Type [] l) (R : REL T) → subst�
 subst←RE-ext-ext ρ T R = fun-ext (λ l′ → fun-ext (subst←RE-ext ρ T R l′))
 
 -- special case of composition sub o ren
-lemma2-wk : (T  : Type Δ l) → (T′ : Type Δ l′) → Twk T [ T′ ]T ≡ T
-lemma2-wk T T′ = begin 
-    Tsub (Textₛ Tidₛ T′) (Twk T)
-  ≡⟨ σT≡TextₛσTwkT Tidₛ T ⟩
-    Tsub Tidₛ T
-  ≡⟨ TidₛT≡T T ⟩
-    T
-  ∎ 
 
 sublemma : (σ : TSub Δ []) → (Textₛ σ T) ≡ Tliftₛ σ _ ∘ₛₛ Textₛ Tidₛ T
 sublemma {T = T} σ = fun-ext₂ λ where 
