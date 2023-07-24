@@ -259,9 +259,9 @@ extend γ v _ _ (there x) = γ _ _ x
 extend-tskip : ∀ {Δ : LEnv}{Γ : TEnv Δ}{η : Env* Δ}{⟦α⟧ : Set l}
   → Env Δ Γ η → Env (l ∷ Δ) (l ◁* Γ) (⟦α⟧ ∷ η)
 extend-tskip {η = η} {⟦α⟧ = ⟦α⟧} γ _ _ (tskip{T = T} x)
-  rewrite Tren*-preserves-semantics {ρ = Twkᵣ Tidᵣ} {η} {⟦α⟧ ∷ η} (wkᵣ∈Ren* η ⟦α⟧) T
-  = γ _ _ x 
-
+  {- rewrite Tren*-preserves-semantics {ρ = Twkᵣ Tidᵣ} {η} {⟦α⟧ ∷ η} (wkᵣ∈Ren* η ⟦α⟧) T -}
+  = subst Function.id (sym (Tren*-preserves-semantics {ρ = Twkᵣ Tidᵣ} {η} {⟦α⟧ ∷ η} (wkᵣ∈Ren* η ⟦α⟧) T)) (γ _ _ x) -- γ _ _ x 
+  
 subst-to-env* : TSub Δ₁ Δ₂ → Env* Δ₂ → Env* Δ₁
 subst-to-env* {[]} σ η₂ = []
 subst-to-env* {x ∷ Δ₁} σ η₂ = ⟦ σ _ here ⟧ η₂ ∷ subst-to-env* (Tdropₛ σ) η₂
@@ -691,10 +691,9 @@ data _↪_ : Expr Δ Γ T → Expr Δ Γ T → Set where
 subst-to-env : ESub Γ₁ Γ₂ → Env Δ Γ₂ η → Env Δ Γ₁ η
 subst-to-env {η = η} σ γ₂ _ _ x = E⟦ σ x ⟧ η γ₂
 
-  -- rewrite Tren*-preserves-semantics {ρ = Twkᵣ Tidᵣ} {η} {⟦α⟧ ∷ η} (wkᵣ∈Ren* η ⟦α⟧) T = {!   !}
-
 ERen* : (ρ : ERen Γ₁ Γ₂) → (γ₁ : Env Δ Γ₁ η) → (γ₂ : Env Δ Γ₂ η) → Setω
-ERen* {Δ = Δ} {Γ₁ = Γ₁} ρ γ₁ γ₂ = ∀ {l} {T : Type Δ l} → (x : inn T Γ₁) → γ₂ _ _ (ρ x) ≡ γ₁ _ _ x
+ERen* {Δ = Δ} {Γ₁ = Γ₁} ρ γ₁ γ₂ = ∀ {l} {T : Type Δ l} → 
+  (x : inn T Γ₁) → γ₂ _ _ (ρ x) ≡ γ₁ _ _ x
 
 Ewkᵣ∈ERen* : {T : Type Δ l} (⟦e⟧ : ⟦ T ⟧ η) → ERen* (Ewkᵣ {T = T} Eidᵣ) γ (extend γ ⟦e⟧)
 Ewkᵣ∈ERen* ⟦e⟧ x = refl
@@ -728,13 +727,29 @@ Eren*-preserves-semantics {η = η} Eren* (_∙_ {T = T} e T′)
 
 ste-dist-ext : ∀ (σ : ESub Γ₁ Γ₂) (T : Type Δ l) (⟦e⟧ : ⟦ T ⟧ η) (γ : Env Δ Γ₂ η) → 
   subst-to-env (Eliftₛ {T = T} σ) (extend {T = T} γ ⟦e⟧) ≡ω extend {T = T} (subst-to-env σ γ) ⟦e⟧
-ste-dist-ext σ T ⟦e⟧ γ = fun-ext-lvl λ l → fun-ext₂ λ where 
+ste-dist-ext σ T ⟦e⟧ γ = fun-ext-lvl λ _ → fun-ext₂ λ where 
   _ here → refl
   _ (there x) → Eren*-preserves-semantics {ρ = Ewkᵣ Eidᵣ} (Ewkᵣ∈ERen* {γ = γ} {T = T} ⟦e⟧) (σ x)
 
 ste-dist-ext-tskip : ∀ (σ : ESub Γ₁ Γ₂) (l : Level) (⟦α⟧ : Set l) (γ : Env Δ Γ₂ η) → 
   subst-to-env (Eliftₛ-l {l = l} σ) (extend-tskip {⟦α⟧ = ⟦α⟧} γ) ≡ω (extend-tskip {⟦α⟧ = ⟦α⟧} (subst-to-env σ γ))   
-ste-dist-ext-tskip σ T ⟦α⟧ γ = {!   !}
+ste-dist-ext-tskip {Δ = Δ} {Γ₁ = Γ₁} {η = η} σ l ⟦α⟧ γ = fun-ext-lvl λ _ → fun-ext λ T → fun-ext (lambda {T = T})
+  where lambda : {T : Type (l ∷ Δ) l′} (x : inn T (l ◁* Γ₁)) → 
+                 subst-to-env (Eliftₛ-l σ) (extend-tskip {⟦α⟧ = ⟦α⟧} γ) l′ T x ≡ extend-tskip (subst-to-env σ γ) l′ T x 
+        lambda {l′ = l′} {T = .(Twk T)} (tskip {T = T} x) with (Tren*-preserves-semantics {ρ = Twkᵣ Tidᵣ} {η} {⟦α⟧ ∷ η} (wkᵣ∈Ren* η ⟦α⟧) T)
+        ... | a = {!   !}
+          {- with ⟦_⟧ {Δ = l ∷ Δ} {l = l′} (Tren (Twkᵣ Tidᵣ) T) (⟦α⟧ ∷  η) | 
+               Tren*-preserves-semantics {ρ = Twkᵣ Tidᵣ} {η} {⟦α⟧ ∷ η} (wkᵣ∈Ren* η ⟦α⟧) T
+        ... | x | y = {!   !}  -}
+{- with-type : {Δ : LEnv} {η : Env* Δ} (l : Level) (⟦α⟧ : Set l) {l′ : Level}
+  {T : Type Δ l′} (w : Set l′) (w₁ : w ≡ ⟦ Tren (Twkᵣ Tidᵣ) T ⟧ (⟦α⟧ ∷ η)) {Γ₁ Γ₂ : TEnv Δ}
+  (σ : {l = l₁ : Level} {T = T₁ : Type Δ l₁} → inn T₁ Γ₁ → Expr Δ Γ₂ T₁)
+  (γ : (l₁ : Level) (T₁ : Type Δ l₁) → inn T₁ Γ₂ → ⟦ T₁ ⟧ η)
+  (x : inn T Γ₁) →
+  E⟦ ETren (ope-wk ope-id) (σ x) ⟧ (⟦α⟧ ∷ η) (extend-tskip γ) ≡
+  (extend-tskip (λ z z₁ x₁ → E⟦ σ x₁ ⟧ η γ) l′ (Twk T) (tskip x))
+with-type {η = η} l ⟦α⟧ {T = T} .(⟦ Tren (Twkᵣ Tidᵣ) T ⟧ (⟦α⟧ ∷ η)) refl σ γ x = {! Tren*-preserves-semantics (wkᵣ∈Ren* η ⟦α⟧) T  !}
+ -}
 
 Esubst-preserves : ∀ (γ : Env Δ Γ₂ η) → (σ : ESub Γ₁ Γ₂) (e : Expr Δ Γ₁ T)
   → E⟦ Esub σ e ⟧ η γ ≡ E⟦ e ⟧ η (subst-to-env σ γ)
@@ -751,7 +766,7 @@ Esubst-preserves {η = η} γ σ (_∙_ {T = T} e T′)
 
 Esingle-subst-preserves : ∀ (γ : Env Δ Γ η) (e₁ : Expr Δ (T′ ◁ Γ) T) (e₂ : Expr Δ Γ T′) →
   E⟦ e₁ [ e₂ ]E ⟧ η γ ≡ E⟦ e₁ ⟧ η (extend γ (E⟦ e₂ ⟧ η γ))  
-Esingle-subst-preserves γ e₁ e₂ = trans (Esubst-preserves γ (Eextₛ Eidₛ e₂) e₁) {!   !}
+Esingle-subst-preserves γ e₁ e₂ = {! Esubst-preserves γ (Eextₛ Eidₛ e₂) e₁  !}
 
 adequacy : ∀ {e₁ e₂ : Expr Δ Γ T} → e₁ ↪ e₂ → E⟦ e₁ ⟧ η γ ≡ E⟦ e₂ ⟧ η γ
 adequacy {γ = γ} (β-ƛ {e₂ = e₂} {e₁ = e₁} v₂) = sym (Esingle-subst-preserves γ e₁ e₂)
@@ -760,7 +775,7 @@ adequacy {η = η} (β-Λ {T = T} {T′ = T′}) = {!   !}
 adequacy {η = η} {γ = γ} (ξ-·₁ {e₂ = e₂} e₁↪e) = cong-app (adequacy e₁↪e) (E⟦ e₂ ⟧ η γ)
 adequacy {η = η} {γ = γ} (ξ-·₂ {e₁ = e₁} e₂↪e v₁) = cong (E⟦ e₁ ⟧ η γ) (adequacy e₂↪e)
 adequacy {η = η} {γ = γ} (ξ-∙ {T′ = T′} {T = T} e₁↪e₂) 
-  rewrite Tsingle-subst-preserves η T′ T = cong-app (adequacy e₁↪e₂) (⟦ T′ ⟧ η)   
+  rewrite Tsingle-subst-preserves η T′ T = cong-app (adequacy e₁↪e₂) (⟦ T′ ⟧ η)  
 
 ----------------------------------------------------------------------
 
@@ -790,16 +805,16 @@ zero-env l T ()
 
 soundness : e ⇓ v → E⟦ e ⟧ [] zero-env ≡ E⟦ exp v ⟧ [] zero-env
 soundness ⇓-ƛ = refl
-soundness (⇓-· p p₁ p₂)
+soundness (⇓-· {e = e} {v₂ = v₂} p p₁ p₂)
   with soundness p | soundness p₁
 ... | sound-p | sound-p₁
   rewrite sound-p | sound-p₁
   with soundness p₂
-... | sound-p₂ = trans {!!} sound-p₂
+... | sound-p₂ = trans (sym (Esingle-subst-preserves zero-env e (exp v₂))) sound-p₂
 soundness ⇓-Λ = refl
 soundness (⇓-∙ p p₁)
   with soundness p | soundness p₁
-... | sound-p | sound-p₁ = trans {!!} sound-p₁
+... | sound-p | sound-p₁ = trans {! !} sound-p₁
 
 -- adequacy
 
@@ -833,23 +848,35 @@ subst←RE-ext-ext ρ T R = fun-ext (λ l′ → fun-ext (subst←RE-ext ρ T R 
 
 -- special case of composition sub o ren
 lemma2-wk : (T  : Type Δ l) → (T′ : Type Δ l′) → Twk T [ T′ ]T ≡ T
-lemma2-wk (` here) T′ = refl
-lemma2-wk (` there x) T′ = refl
-lemma2-wk (T₁ ⇒ T₂) T′ = {!!}
-lemma2-wk (`∀α l , T) T′ = {!!}
-lemma2-wk 𝟙 T′ = refl
+lemma2-wk T T′ = begin 
+    Tsub (Textₛ Tidₛ T′) (Twk T)
+  ≡⟨ σT≡TextₛσTwkT Tidₛ T ⟩
+    Tsub Tidₛ T
+  ≡⟨ TidₛT≡T T ⟩
+    T
+  ∎ 
 
-lemma2-var : (σ : TSub Δ []) → (T′ : Type [] l) →
-  ∀ x → (Tliftₛ σ l l′ x [ T′ ]T) ≡ Textₛ σ T′ l′ x
-lemma2-var σ T′ here = refl
-lemma2-var σ T′ (there x) = lemma2-wk (σ _ x) T′
+sublemma : (σ : TSub Δ []) → (Textₛ σ T) ≡ Tliftₛ σ _ ∘ₛₛ Textₛ Tidₛ T
+sublemma {T = T} σ = fun-ext₂ λ where 
+  _ here → refl
+  _ (there x) → begin 
+        σ _ x
+      ≡⟨ sym (TidₛT≡T (σ _ x)) ⟩
+        Tsub Tidₛ (σ _ x)
+      ≡⟨ sym (assoc-sub-ren (σ _ x) (Twkᵣ Tidᵣ) (Textₛ Tidₛ T)) ⟩
+        Tsub (Textₛ Tidₛ T) (Twk (σ _ x)) 
+      ∎
 
 lemma2 : (σ : TSub Δ []) → (T  : Type (l ∷ Δ) l′) → (T′ : Type [] l)
   → Tsub (Tliftₛ σ l) T [ T′ ]T ≡ Tsub (Textₛ σ T′) T
-lemma2 σ (` x) T′ = lemma2-var σ T′ x
-lemma2 σ (T₁ ⇒ T₂) T′ = {!!}
-lemma2 σ (`∀α l , T) T′ = {!!}
-lemma2 σ 𝟙 T′ = refl
+lemma2 σ T T′ = begin 
+    Tsub (Textₛ Tidₛ T′) (Tsub (Tliftₛ σ _) T)
+  ≡⟨ assoc-sub-sub T (Tliftₛ σ _) (Textₛ Tidₛ T′) ⟩
+    Tsub (Tliftₛ σ _ ∘ₛₛ Textₛ Tidₛ T′) T
+  ≡⟨ cong (λ σ → Tsub σ T) (sym (sublemma σ)) ⟩
+    Tsub (Textₛ σ T′) T
+  ∎
+   
 
 lemma1 : (ρ  : RelEnv Δ) → (T  : Type (l ∷ Δ) l′) → (T′ : Type [] l) → (R  : REL T′)
   → Tsub (Tliftₛ (subst←RE ρ) l) T [ T′ ]T ≡ Tsub (subst←RE (REext ρ (T′ , R))) T
@@ -879,3 +906,4 @@ SLR (`∀α l , T) ρ (V-Λ .l e) F =
   ∃[ v ] (e [ T′ ]ET ⇓ v)
        ∧ let ρ′ = REext ρ (T′ , R)
          in SLR T ρ′ (subst Value (lemma1 ρ T T′ R) v) (F (⟦ T′ ⟧ []))
+  

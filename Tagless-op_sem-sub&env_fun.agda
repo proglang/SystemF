@@ -234,10 +234,7 @@ subst-to-env* σ η _ x = ⟦ σ _ x ⟧ η
 subst-to-env*-wk : (σ  : TSub Δ₁ Δ₂) → (α  : Set l) → (η : Env* Δ₂) → 
   subst-to-env* (Twkₛ σ) (cons* α η) ≡ω subst-to-env* σ η
 subst-to-env*-wk {[]} σ α η = fun-ext-lvl λ l → fun-ext λ ()  
-subst-to-env*-wk {l ∷ Δ₁} σ α η = fun-ext-lvl λ l → fun-ext λ where 
-  x → let eq = Tren*-preserves-semantics {ρ = Twkᵣ}{η}{cons* α η} (wkᵣ∈Ren* η α) (σ _ here) in 
-    congωl (λ y → {! cons* (⟦ σ _ here ⟧ η) y l x  !}) {!   !}
-{-
+subst-to-env*-wk {l ∷ Δ₁} {l = l₁} σ α η = fun-ext-lvl λ l → fun-ext {!   !}
 
 subst-to-env*-build : ∀ (ρ : TRen Δ₁ Δ₂) (η₁ : Env* Δ₁) (η₂ : Env* Δ₂) → TRen* ρ η₁ η₂
   → subst-to-env* (build-Tidₛ Δ₁ ρ) η₂ ≡ω η₁
