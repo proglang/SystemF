@@ -255,9 +255,6 @@ levels. This restriction literally embodies predicativity and, as we
 will discover, the stratification corresponds directly to Agda's
 universe stratification.
 
-{[Apologies for the scarcity of references in this draft. We're aware
-  of much more work using intrinsically typed interpreters, but we're
-  running out of time. Any pointers are appreciated.]}
 
 % As the construction is more involved than the one for simply-typed
 % lambda calculus, we only give the key definitions and discuss some of
@@ -353,9 +350,9 @@ The statement of this lemma is more general as it applies to arbitrary
 renamings:
 \TFRenPreserverSemanticsType
 The argument $ren*$ roughly states that $\eta_1$ and $\eta_2$ are domain
-environments related by renaming $\rho$ as follows  $\eta_1 \equiv \eta_2 \circ \rho$.
-The proof of the lemma is by induction on $T$, but the case for
-universal quantification comes with a surprising goal:
+environments related by renaming $\rho$ by precomposition  $\eta_1 \equiv \eta_2 \circ \rho$.
+The proof of the lemma is by induction on $T$ with an interesting
+subgoal in the case for universal quantification:
 \TFProblematicGoal
 We can show that the ranges of the function are equal
 with the inductive hypothesis. But the usual extensionality principle does

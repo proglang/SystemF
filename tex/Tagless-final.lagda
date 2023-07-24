@@ -56,10 +56,10 @@ variable l l′ : Level
 \begin{code}
 LEnv = List Level
 data Type (Δ : LEnv) : Level → Set where
-  𝟙     : Type Δ zero
-  `_    : l ∈ Δ → Type Δ l
-  _⇒_   : Type Δ l → Type Δ l′ → Type Δ (l ⊔ l′)
-  ∀α_,_ : ∀ l → Type (l ∷ Δ) l′ → Type Δ (suc l ⊔ l′)
+  𝟙   : Type Δ zero
+  `_  : l ∈ Δ → Type Δ l
+  _⇒_ : Type Δ l → Type Δ l′ → Type Δ (l ⊔ l′)
+  `∀  : ∀ l → Type (l ∷ Δ) l′ → Type Δ (suc l ⊔ l′)
 \end{code}}
 \begin{code}[hide]
 -- level of type according to Leivant'91
@@ -88,7 +88,7 @@ apply-env (_ ∷ η) (there x) = apply-env η x
 𝓣⟦ 𝟙 ⟧ η = ⊤
 𝓣⟦ ` α ⟧ η = apply-env η α
 𝓣⟦ T₁ ⇒ T₂ ⟧ η = 𝓣⟦ T₁ ⟧ η → 𝓣⟦ T₂ ⟧ η
-𝓣⟦ ∀α l , T ⟧ η = (⟦α⟧ : Set l) → 𝓣⟦ T ⟧ (⟦α⟧ ∷ η)
+𝓣⟦ `∀ l T ⟧ η = (⟦α⟧ : Set l) → 𝓣⟦ T ⟧ (⟦α⟧ ∷ η)
 \end{code}}
 \begin{code}[hide]
 -- renaming on types
@@ -106,7 +106,7 @@ extᵣ ρ (there x) = there (ρ x)
 renT : Ren Δ₁ Δ₂ → (Type Δ₁ l → Type Δ₂ l)
 renT ρ (` x) = ` ρ x
 renT ρ (T₁ ⇒ T₂) = renT ρ T₁ ⇒ renT ρ T₂
-renT ρ (∀α lev , T) = ∀α lev , renT (extᵣ ρ) T
+renT ρ (`∀ lev T) = `∀ lev (renT (extᵣ ρ) T)
 renT ρ 𝟙 = 𝟙 
 
 wkT : Type Δ l′ → Type (l ∷ Δ) l′
@@ -149,7 +149,7 @@ ren*-preserves-semantics {ρ = ρ}{η₁}{η₂} ren* (T₁ ⇒ T₂)
   rewrite ren*-preserves-semantics {ρ = ρ}{η₁}{η₂} ren* T₁
   | ren*-preserves-semantics {ρ = ρ}{η₁}{η₂} ren* T₂
   = refl
-ren*-preserves-semantics {ρ = ρ}{η₁}{η₂} ren* (∀α l , T) =
+ren*-preserves-semantics {ρ = ρ}{η₁}{η₂} ren* (`∀ l T) =
   ∀-extensionality (λ α →
     ren*-preserves-semantics{ρ = extᵣ ρ}{α ∷ η₁}{α ∷ η₂} (ren*-ext{ρ = ρ} α ren*) T)
 
@@ -193,7 +193,7 @@ subT : Sub Δ₁ Δ₂ → Type Δ₁ l → Type Δ₂ l
 subT σ 𝟙 = 𝟙
 subT σ (` α) = apply-sub σ α
 subT σ (T₁ ⇒ T₂) = subT σ T₁ ⇒ subT σ T₂
-subT σ (∀α l , T) = ∀α l , subT (extₛ σ) T
+subT σ (`∀ l T) = `∀ l (subT (extₛ σ) T)
 
 singleₛ : Sub Δ₁ Δ₂ → ∀ {l} → Type Δ₂ l → Sub (l ∷ Δ₁) Δ₂
 singleₛ σ T' = T' ∷ σ
@@ -229,10 +229,10 @@ data Expr (Δ : LEnv) (Γ : TEnv Δ) : Type Δ l → Set where
        → Expr Δ (T ◁ Γ) T′ → Expr Δ Γ (T ⇒ T′)
   _·_  : ∀ {T : Type Δ l}{T′ : Type Δ l′}
        → Expr Δ Γ (T ⇒ T′) → Expr Δ Γ T → Expr Δ Γ T′
-  Λ_⇒_ : ∀ (l : Level) → {T : Type (l ∷ Δ) l′}
-       → Expr (l ∷ Δ) (l ◁* Γ) T → Expr Δ Γ (∀α l , T)
+  Λ    : ∀ (l : Level) → {T : Type (l ∷ Δ) l′}
+       → Expr (l ∷ Δ) (l ◁* Γ) T → Expr Δ Γ (`∀ l T)
   _∙_  : ∀ {T : Type (l ∷ Δ) l′}
-       → Expr Δ Γ (∀α l , T) → (T′ : Type Δ l)
+       → Expr Δ Γ (`∀ l T) → (T′ : Type Δ l)
        → Expr Δ Γ (T [ T′ ]T)
 \end{code}}
 \begin{code}[hide]
@@ -297,7 +297,7 @@ subst-preserves {η₂ = η₂} σ (` α) = subst-var-preserves α σ η₂
 subst-preserves{η₂ = η₂} σ (T₁ ⇒ T₂)
   rewrite subst-preserves{η₂ = η₂} σ T₁
   |  subst-preserves{η₂ = η₂} σ T₂ = refl
-subst-preserves {η₂ = η₂} σ (∀α l , T) =
+subst-preserves {η₂ = η₂} σ (`∀ l T) =
   ∀-extensionality (λ ⟦α⟧ →
     trans (subst-preserves {η₂ = ⟦α⟧ ∷ η₂} (extₛ σ) T)
           (congωl (λ H → 𝓣⟦ T ⟧ (⟦α⟧ ∷ H)) (subst-to-env*-wk σ ⟦α⟧ η₂)))
@@ -320,7 +320,7 @@ single-subst-preserves {Δ = Δ} {l = l}{l′ = l′} η T′ T =
 𝓔⟦ ` x ⟧ η γ = γ x
 𝓔⟦ ƛ_ e ⟧ η γ = λ v → 𝓔⟦ e ⟧ η (extend γ v)
 𝓔⟦ e₁ · e₂ ⟧ η γ = 𝓔⟦ e₁ ⟧ η γ (𝓔⟦ e₂ ⟧ η γ)
-𝓔⟦ Λ l ⇒ e ⟧ η γ = λ ⟦α⟧ → 𝓔⟦ e ⟧ (⟦α⟧ ∷ η) (extend-tskip γ)
+𝓔⟦ Λ l e ⟧ η γ = λ ⟦α⟧ → 𝓔⟦ e ⟧ (⟦α⟧ ∷ η) (extend-tskip γ)
 𝓔⟦ _∙_ {T = T} e T′ ⟧ η γ =
   subst id (sym (single-subst-preserves η T′ T))
     (𝓔⟦ e ⟧ η γ (𝓣⟦ T′ ⟧ η))
