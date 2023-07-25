@@ -883,19 +883,31 @@ lemma1 {l = l} ρ T T′ R =
 
 -- stratified logical relation
 
-SLR : (T : Type Δ l) → (ρ : RelEnv Δ) → Value (Tsub (subst←RE ρ) T) → ⟦ T ⟧ (subst-to-env* (subst←RE ρ) []) → Set l
-SLR (` α)       ρ v          x =
+LRV : (T : Type Δ l) → (ρ : RelEnv Δ) → Value (Tsub (subst←RE ρ) T) → ⟦ T ⟧ (subst-to-env* (subst←RE ρ) []) → Set l
+LRV (` α)       ρ v          x =
   proj₂ (ρ _ α) v (subst id (sym (subst-var-preserves α (subst←RE ρ) [])) x)
-SLR (T ⇒ T′)    ρ (V-ƛ e)    f =
+LRV (T ⇒ T′)    ρ (V-ƛ e)    f =
   ∀ (w : Value (Tsub (subst←RE ρ) T)) →
   ∀ (x : ⟦ T ⟧ (subst-to-env* (subst←RE ρ) [])) →
-  SLR T ρ w x →
+  LRV T ρ w x →
   ∃[ v ] (e [ exp w ]E ⇓ v)
-       ∧ SLR T′ ρ v (f x)
-SLR (`∀α l , T) ρ (V-Λ .l e) F =
+       ∧ LRV T′ ρ v (f x)
+LRV (`∀α l , T) ρ (V-Λ .l e) F =
   ∀ (T′ : Type [] l) →
   ∀ (R : REL T′) →
   ∃[ v ] (e [ T′ ]ET ⇓ v)
        ∧ let ρ′ = REext ρ (T′ , R)
-         in SLR T ρ′ (subst Value (lemma1 ρ T T′ R) v) (F (⟦ T′ ⟧ []))
-  
+         in LRV T ρ′ (subst Value (lemma1 ρ T T′ R) v) (F (⟦ T′ ⟧ []))
+
+data Set* : Setω₁ where
+  AtLev : ∀ {l} → Set l → Set*
+  Omega : Setω → Set*
+  _*AND*_ : Set* → Set* → Set*
+
+ENVdrop : (Γ : TEnv Δ) → (η : Env* Δ) → Env Δ (T ◁ Γ) η → Env Δ Γ η
+ENVdrop Γ η γ l T x = γ l T (there x)
+
+LRE : (Γ : TEnv Δ) → (ρ : RelEnv Δ) → ESub Γ {!∅!} → let η = subst-to-env* (subst←RE ρ) [] in Env Δ Γ η → Set*
+LRE ∅ ρ σ γ = AtLev ⊤
+LRE (T ◁ Γ) ρ σ γ = AtLev (LRV T ρ {!σ here!} (γ _ T here))  *AND*  LRE Γ ρ (Edropₛ σ) (ENVdrop Γ _ γ)
+LRE (l ◁* Γ) ρ σ γ = LRE Γ (REdrop ρ) {!!} {!!}
