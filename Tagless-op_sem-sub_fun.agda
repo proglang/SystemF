@@ -791,6 +791,18 @@ exp : Value T → Expr [] ∅ T
 exp (V-ƛ e) = ƛ e
 exp (V-Λ l e) = Λ l ⇒ e
 
+-- connection to previous definition of value
+
+Value-is-Val : (v : Value T) → Val (exp v)
+Value-is-Val (V-ƛ x) = v-ƛ
+Value-is-Val (V-Λ l x) = v-Λ
+
+Val-is-Value : Val e → ∃[ v ] exp v ≡ e
+Val-is-Value {e = (ƛ e)} v-ƛ = (V-ƛ e) , refl
+Val-is-Value {e = (Λ l ⇒ e)} v-Λ = (V-Λ l e) , refl
+
+-- big step semantics
+
 infix 15 _⇓_
 data _⇓_ : Expr [] ∅ T → Value T → Set where
   ⇓-ƛ : (ƛ e) ⇓ V-ƛ e
@@ -899,6 +911,14 @@ LRV (`∀α l , T) ρ (V-Λ .l e) F =
        ∧ let ρ′ = REext ρ (T′ , R)
          in LRV T ρ′ (subst Value (lemma1 ρ T T′ R) v) (F (⟦ T′ ⟧ []))
 
+-- closing value substitution
+
+CSub : TSub Δ [] → TEnv Δ → Set
+CSub {Δ} σ Γ = ∀ {l} {T : Type Δ l} → inn T Γ → Value (Tsub σ T)
+
+Cdrop : CSub σ (T ◁ Γ) → CSub σ Γ
+Cdrop χ x = χ (there x)
+
 data Set* : Setω₁ where
   AtLev : ∀ {l} → Set l → Set*
   Omega : Setω → Set*
@@ -907,7 +927,8 @@ data Set* : Setω₁ where
 ENVdrop : (Γ : TEnv Δ) → (η : Env* Δ) → Env Δ (T ◁ Γ) η → Env Δ Γ η
 ENVdrop Γ η γ l T x = γ l T (there x)
 
-LRE : (Γ : TEnv Δ) → (ρ : RelEnv Δ) → ESub Γ {!∅!} → let η = subst-to-env* (subst←RE ρ) [] in Env Δ Γ η → Set*
-LRE ∅ ρ σ γ = AtLev ⊤
-LRE (T ◁ Γ) ρ σ γ = AtLev (LRV T ρ {!σ here!} (γ _ T here))  *AND*  LRE Γ ρ (Edropₛ σ) (ENVdrop Γ _ γ)
-LRE (l ◁* Γ) ρ σ γ = LRE Γ (REdrop ρ) {!!} {!!}
+LRE : (Γ : TEnv Δ) → (ρ : RelEnv Δ) → CSub (subst←RE ρ) Γ → let η = subst-to-env* (subst←RE ρ) [] in Env Δ Γ η → Set*
+LRE ∅ ρ χ γ = AtLev ⊤
+LRE (T ◁ Γ) ρ χ γ = AtLev (LRV T ρ (χ here) (γ _ T here))
+                    *AND*  LRE Γ ρ (Cdrop χ) (ENVdrop Γ _ γ)
+LRE (l ◁* Γ) ρ χ γ = LRE Γ (REdrop ρ) {!!} {!!}
