@@ -858,6 +858,16 @@ subst←RE-ext ρ T R l (there x) = refl
 subst←RE-ext-ext : ∀ (ρ : RelEnv Δ) (T : Type [] l) (R : REL T) → subst←RE (REext ρ (T , R)) ≡ Textₛ (subst←RE ρ) T
 subst←RE-ext-ext ρ T R = fun-ext (λ l′ → fun-ext (subst←RE-ext ρ T R l′))
 
+
+subst←RE-drop : ∀ (ρ : RelEnv (l ∷ Δ)) →
+  (l′ : Level) (x : l′ ∈ Δ) → (subst←RE (REdrop ρ)) l′ x ≡ (Tdropₛ (subst←RE ρ)) l′ x
+subst←RE-drop ρ l′ here = refl
+subst←RE-drop ρ l′ (there x) = refl
+
+subst←RE-drop-ext : ∀ (ρ : RelEnv (l ∷ Δ)) →
+  (subst←RE (REdrop ρ)) ≡ (Tdropₛ (subst←RE ρ))
+subst←RE-drop-ext ρ = fun-ext (λ l′ → fun-ext (subst←RE-drop ρ l′))
+
 -- special case of composition sub o ren
 
 sublemma : (σ : TSub Δ []) → (Textₛ σ T) ≡ Tliftₛ σ _ ∘ₛₛ Textₛ Tidₛ T
@@ -922,6 +932,9 @@ Cdrop χ x = χ (there x)
 Cdropt : {Γ : TEnv Δ} → CSub σ (l ◁* Γ) → CSub (Tdropₛ σ) Γ
 Cdropt {σ = σ} χ {l} {T} x = subst Value (assoc-sub-ren T (Twkᵣ Tidᵣ) σ) (χ (tskip x))
 
+Gdropt : (ρ : RelEnv (l ∷ Δ)) → Env (l ∷ Δ) (l ◁* Γ) (subst-to-env* (subst←RE ρ) []) → Env Δ Γ (subst-to-env* (subst←RE (REdrop ρ)) [])
+Gdropt ρ = {!!}
+
 data Set* : Setω₁ where
   AtLev : ∀ {l} → Set l → Set*
   Omega : Setω → Set*
@@ -934,4 +947,5 @@ LRE : (Γ : TEnv Δ) → (ρ : RelEnv Δ) → CSub (subst←RE ρ) Γ → let η
 LRE ∅ ρ χ γ = AtLev ⊤
 LRE (T ◁ Γ) ρ χ γ = AtLev (LRV T ρ (χ here) (γ _ T here))
                     *AND*  LRE Γ ρ (Cdrop χ) (ENVdrop Γ _ γ)
-LRE (l ◁* Γ) ρ χ γ = LRE Γ (REdrop ρ) {!Cdropt χ!} {!!}
+LRE (l ◁* Γ) ρ χ γ
+  rewrite sym (subst←RE-drop-ext ρ) = LRE Γ (REdrop ρ) (Cdropt χ) {!!}
