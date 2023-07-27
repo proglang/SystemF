@@ -932,8 +932,12 @@ Cdrop χ x = χ (there x)
 Cdropt : {Γ : TEnv Δ} → CSub σ (l ◁* Γ) → CSub (Tdropₛ σ) Γ
 Cdropt {σ = σ} χ {l} {T} x = subst Value (assoc-sub-ren T (Twkᵣ Tidᵣ) σ) (χ (tskip x))
 
-Gdropt : (ρ : RelEnv (l ∷ Δ)) → Env (l ∷ Δ) (l ◁* Γ) (subst-to-env* (subst←RE ρ) []) → Env Δ Γ (subst-to-env* (subst←RE (REdrop ρ)) [])
-Gdropt ρ = {!!}
+Gdropt : (σ : TSub (l ∷ Δ) [])
+  → Env (l ∷ Δ) (l ◁* Γ) (subst-to-env* σ [])
+  → Env Δ Γ (subst-to-env* (Tdropₛ σ) [])
+Gdropt σ γ l T x =
+  let r = γ l (Twk T) (tskip x) in
+  subst id (Tren*-preserves-semantics {ρ = Twkᵣ Tidᵣ} {subst-to-env* (Tdropₛ σ) []} {subst-to-env* σ []} (wkᵣ∈Ren* (subst-to-env* (Tdropₛ σ) []) (⟦ σ _ here ⟧ [])) T) r
 
 data Set* : Setω₁ where
   AtLev : ∀ {l} → Set l → Set*
@@ -943,9 +947,11 @@ data Set* : Setω₁ where
 ENVdrop : (Γ : TEnv Δ) → (η : Env* Δ) → Env Δ (T ◁ Γ) η → Env Δ Γ η
 ENVdrop Γ η γ l T x = γ l T (there x)
 
+-- extended LR on environments
+
 LRE : (Γ : TEnv Δ) → (ρ : RelEnv Δ) → CSub (subst←RE ρ) Γ → let η = subst-to-env* (subst←RE ρ) [] in Env Δ Γ η → Set*
 LRE ∅ ρ χ γ = AtLev ⊤
 LRE (T ◁ Γ) ρ χ γ = AtLev (LRV T ρ (χ here) (γ _ T here))
                     *AND*  LRE Γ ρ (Cdrop χ) (ENVdrop Γ _ γ)
 LRE (l ◁* Γ) ρ χ γ
-  rewrite sym (subst←RE-drop-ext ρ) = LRE Γ (REdrop ρ) (Cdropt χ) {!!}
+  rewrite sym (subst←RE-drop-ext ρ) = LRE Γ (REdrop ρ) (Cdropt χ) (Gdropt (subst←RE ρ) γ)
