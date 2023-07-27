@@ -635,19 +635,14 @@ module extended where
   Eliftᵣ ρ (there x) = there (ρ x)
 
   Eliftᵣ-l : {ρ* : TRen Δ₁ Δ₂} → ERen ρ* Γ₁ Γ₂ → ERen (Tliftᵣ ρ* l) (l ◁* Γ₁) (l ◁* Γ₂)
-  Eliftᵣ-l {Γ₂ = Γ₂} {l = l} {ρ* = ρ*} ρ (tskip x) = subst id (cong (λ T → inn T (l ◁* Γ₂)) eq) (tskip (ρ x))
-    where eq : Twk (Tren ρ* T) ≡ Tren (Tliftᵣ ρ* l) (Twk T)
-          eq = {!!}
+  Eliftᵣ-l {Γ₂ = Γ₂} {l = l} {ρ* = ρ*} ρ (tskip x) = subst id (cong (λ T → inn T (l ◁* Γ₂)) (sym (↑ρ-TwkT≡Twk-ρT _ ρ*))) (tskip (ρ x))
 
   Eren : {ρ* : TRen Δ₁ Δ₂} → ERen ρ* Γ₁ Γ₂ → Expr Δ₁ Γ₁ T → Expr Δ₂ Γ₂ (Tren ρ* T)
   Eren ρ (` x) = ` ρ x
   Eren ρ (ƛ e) = ƛ Eren (Eliftᵣ ρ) e
   Eren ρ (e₁ · e₂) = Eren ρ e₁ · Eren ρ e₂
   Eren ρ (Λ l ⇒ e) = Λ l ⇒ Eren (Eliftᵣ-l ρ) e
-  Eren {Δ₂ = Δ₂} {Γ₂ = Γ₂} {T = T} {ρ* = ρ*} ρ (e ∙ T′) = let r = Eren ρ e ∙ Tren ρ* T′ in subst (Expr Δ₂ Γ₂) (eq {ρ* = ρ*} {T′ = T′}) r
-    where eq : ∀ {ρ* : TRen Δ₁ Δ₂}{l}{l₁} {T : Type (l ∷ Δ₁) l₁}{T′ : Type Δ₁ l} → Tren (Tliftᵣ ρ* l) T [ Tren ρ* T′ ]T ≡ Tren ρ* (T [ T′ ]T)
-          eq = {!!}
-
+  Eren {Δ₂ = Δ₂} {Γ₂ = Γ₂} {T = .(T [ T′ ]T)} {ρ* = ρ*} ρ (_∙_ {T = T} e T′) = subst (Expr Δ₂ Γ₂) (sym (ρT[T′]≡ρT[ρ↑T′] ρ* T T′)) (Eren ρ e ∙ Tren ρ* T′)
 
 ERen : TEnv Δ → TEnv Δ → Set
 ERen {Δ} Γ₁ Γ₂ = ∀ {l} {T : Type Δ l} → inn T Γ₁ → inn T Γ₂
