@@ -5,7 +5,7 @@ open import Data.Product using (_×_; Σ; Σ-syntax; ∃-syntax; _,_; proj₁; p
 open import Data.Sum using (_⊎_)
 open import Data.Fin using (Fin) renaming (zero to fzero; suc to fsuc)
 open import Data.List using (List; []; _∷_; _++_; length; lookup; tabulate)
-open import Data.Unit using (⊤; tt)
+open import Data.Unit.Polymorphic.Base using (⊤; tt)
 open import Data.Empty using (⊥)
 open import Function using (_∘_; id)
 open import Relation.Binary.PropositionalEquality
@@ -939,19 +939,33 @@ Gdropt σ γ l T x =
   let r = γ l (Twk T) (tskip x) in
   subst id (Tren*-preserves-semantics {ρ = Twkᵣ Tidᵣ} {subst-to-env* (Tdropₛ σ) []} {subst-to-env* σ []} (wkᵣ∈Ren* (subst-to-env* (Tdropₛ σ) []) (⟦ σ _ here ⟧ [])) T) r
 
-data Set* : Setω₁ where
-  AtLev : ∀ {l} → Set l → Set*
-  Omega : Setω → Set*
-  _*AND*_ : Set* → Set* → Set*
+levelTy : Type Δ l → Level
+levelTy {l = l} T = l
+
+levelEnv : TEnv Δ → Level
+levelEnv ∅ = zero
+levelEnv (T ◁ Γ) = levelTy T ⊔ levelEnv Γ
+levelEnv (l ◁* Γ) = levelEnv Γ
 
 ENVdrop : (Γ : TEnv Δ) → (η : Env* Δ) → Env Δ (T ◁ Γ) η → Env Δ Γ η
 ENVdrop Γ η γ l T x = γ l T (there x)
 
 -- extended LR on environments
 
-LRE : (Γ : TEnv Δ) → (ρ : RelEnv Δ) → CSub (subst←RE ρ) Γ → let η = subst-to-env* (subst←RE ρ) [] in Env Δ Γ η → Set*
-LRE ∅ ρ χ γ = AtLev ⊤
-LRE (T ◁ Γ) ρ χ γ = AtLev (LRV T ρ (χ here) (γ _ T here))
-                    *AND*  LRE Γ ρ (Cdrop χ) (ENVdrop Γ _ γ)
+LRE : (Γ : TEnv Δ) → (ρ : RelEnv Δ) → CSub (subst←RE ρ) Γ → let η = subst-to-env* (subst←RE ρ) [] in Env Δ Γ η → Set (levelEnv Γ)
+LRE ∅ ρ χ γ = ⊤
+LRE (T ◁ Γ) ρ χ γ = LRV T ρ (χ here) (γ _ T here) ∧  LRE Γ ρ (Cdrop χ) (ENVdrop Γ _ γ)
 LRE (l ◁* Γ) ρ χ γ
   rewrite sym (subst←RE-drop-ext ρ) = LRE Γ (REdrop ρ) (Cdropt χ) (Gdropt (subst←RE ρ) γ)
+
+-- fundamental theorem
+-- need function to apply closing substitution χ to expression e
+
+fundamental : ∀ (Γ : TEnv Δ) (ρ : RelEnv Δ) (χ : CSub (subst←RE ρ) Γ) → let η = subst-to-env* (subst←RE ρ) [] in (γ : Env Δ Γ η) →
+  ∀ (T : Type Δ l) (e : Expr Δ Γ T) →
+  LRE Γ ρ χ γ → ∃[ v ] ({!"χ e"!} ⇓ v) ∧ LRV T ρ v (E⟦ e ⟧ η γ)
+fundamental Γ ρ χ γ T (` x) lre = χ x , {!!}
+fundamental Γ ρ χ γ (T ⇒ T′) (ƛ e) lre = {!!}
+fundamental Γ ρ χ γ T (e₁ · e₂) lre = {!!}
+fundamental Γ ρ χ γ (`∀α l , T) (Λ .l ⇒ e) lre = {!!}
+fundamental Γ ρ χ γ .(_ [ T′ ]T) (e ∙ T′) lre = {!!}
