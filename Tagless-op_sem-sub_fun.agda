@@ -810,6 +810,20 @@ data _⇓_ : Expr [] ∅ T → Value T → Set where
   ⇓-Λ : (Λ l ⇒ e) ⇓ V-Λ l e
   ⇓-∙ : e₁ ⇓ V-Λ l e → (e [ T ]ET) ⇓ v → (e₁ ∙ T) ⇓ v
 
+variable v′ v′₂ : Expr [] ∅ T
+infix 15 _⇓′_
+data _⇓′_ : Expr [] ∅ T → Expr [] ∅ T → Set where
+  ⇓-ƛ : ƛ e ⇓′ ƛ e
+  ⇓-· : e₁ ⇓′ ƛ e → e₂ ⇓′ v′₂ → (e [ v′₂ ]E) ⇓′ v′ → (e₁ · e₂) ⇓′ v′
+  ⇓-Λ : Λ l ⇒ e ⇓′ Λ l ⇒ e
+  ⇓-∙ : e₁ ⇓′ Λ l ⇒ e → e [ T ]ET ⇓′ v′ → (e₁ ∙ T) ⇓′ v′
+
+⇓-value : e ⇓′ v′ → Val v′
+⇓-value ⇓-ƛ = v-ƛ
+⇓-value (⇓-· e⇓′v′ e⇓′v′₁ e⇓′v′₂) = ⇓-value e⇓′v′₂
+⇓-value ⇓-Λ = v-Λ
+⇓-value (⇓-∙ e⇓′v′ e⇓′v′₁) = ⇓-value e⇓′v′₁
+
 -- soundness
 
 zero-env : Env [] ∅ []
@@ -925,6 +939,14 @@ LRV (`∀α l , T) ρ (V-Λ .l e) F =
 
 CSub : TSub Δ [] → TEnv Δ → Set
 CSub {Δ} σ Γ = ∀ {l} {T : Type Δ l} → inn T Γ → Value (Tsub σ T)
+
+-- doesn't work
+Csub : {Γ : TEnv Δ} → CSub σ Γ → Expr Δ Γ T → Expr [] ∅ (Tsub σ T)
+Csub χ (` x) = exp (χ x)
+Csub χ (ƛ e) = ƛ {!!}
+Csub χ (e₁ · e₂) = Csub χ e₁ · Csub χ e₂
+Csub χ (Λ l ⇒ e) = {!!}
+Csub χ (e ∙ T′) = {!!}
 
 Cdrop : CSub σ (T ◁ Γ) → CSub σ Γ
 Cdrop χ x = χ (there x)
