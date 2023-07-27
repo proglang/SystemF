@@ -148,11 +148,24 @@ Tliftᵣ : TRen Δ₁ Δ₂ → (l : Level) → TRen (l ∷ Δ₁) (l ∷ Δ₂)
 Tliftᵣ ρ _ _ here = here
 Tliftᵣ ρ _ _ (there x) = there (ρ _ x)
 
+Tlift-Tid : ∀ (x : l′ ∈ (l ∷ Δ)) → Tliftᵣ Tidᵣ l l′ x ≡ Tidᵣ l′ x
+Tlift-Tid here = refl
+Tlift-Tid (there x) = refl
+
+Tlift-Tid-ext : Tliftᵣ {Δ} {Δ} Tidᵣ l ≡ Tidᵣ
+Tlift-Tid-ext = fun-ext (λ l′ → fun-ext Tlift-Tid)
+
 Tren : TRen Δ₁ Δ₂ → (Type Δ₁ l → Type Δ₂ l)
 Tren ρ (` x) = ` ρ _ x
 Tren ρ (T₁ ⇒ T₂) = Tren ρ T₁ ⇒ Tren ρ T₂
 Tren ρ (`∀α l , T) = `∀α l , Tren (Tliftᵣ ρ l) T
 Tren ρ 𝟙 = 𝟙 
+
+ident-Tidᵣ : ∀ (T : Type Δ l) → Tren Tidᵣ T ≡ T
+ident-Tidᵣ (` x) = refl
+ident-Tidᵣ (T₁ ⇒ T₂) = cong₂ _⇒_ (ident-Tidᵣ T₁) (ident-Tidᵣ T₂)
+ident-Tidᵣ (`∀α l , T) = cong (`∀α l ,_) (trans (cong (λ ρ → Tren ρ T) Tlift-Tid-ext) (ident-Tidᵣ T))
+ident-Tidᵣ 𝟙 = refl
 
 Twk : Type Δ l′ → Type (l ∷ Δ) l′
 Twk = Tren (Twkᵣ Tidᵣ)
@@ -603,6 +616,39 @@ _[_]ET : Expr (l ∷ Δ) (l ◁* Γ) T → (T′ : Type Δ l) → Expr Δ Γ (T 
 e [ T ]ET = ETsub (sub-ext sub-id) e 
 
 -- expr in expr substitution
+module extended where
+
+  ERen : TRen Δ₁ Δ₂ → TEnv Δ₁ → TEnv Δ₂ → Set
+  ERen {Δ₁}{Δ₂} ρ* Γ₁ Γ₂ = ∀ {l} {T : Type Δ₁ l} → inn T Γ₁ → inn (Tren ρ* T) Γ₂
+
+  Eidᵣ : ERen Tidᵣ Γ Γ 
+  Eidᵣ {T = T} x rewrite ident-Tidᵣ T = x
+
+  Edropᵣ : (ρ* : TRen Δ₁ Δ₂) → ERen ρ* (T ◁ Γ₁) Γ₂ → ERen ρ* Γ₁ Γ₂
+  Edropᵣ ρ* ρ x = ρ (there x)
+
+  Ewkᵣ : (ρ* : TRen Δ₁ Δ₂) →  ERen ρ* Γ₁ Γ₂ → ERen ρ* Γ₁ (T ◁ Γ₂) 
+  Ewkᵣ ρ* ρ x = there (ρ x) 
+
+  Eliftᵣ : {ρ* : TRen Δ₁ Δ₂} → ERen ρ* Γ₁ Γ₂ → ERen ρ* (T ◁ Γ₁) (Tren ρ* T ◁ Γ₂)
+  Eliftᵣ ρ here = here
+  Eliftᵣ ρ (there x) = there (ρ x)
+
+  Eliftᵣ-l : {ρ* : TRen Δ₁ Δ₂} → ERen ρ* Γ₁ Γ₂ → ERen (Tliftᵣ ρ* l) (l ◁* Γ₁) (l ◁* Γ₂)
+  Eliftᵣ-l {Γ₂ = Γ₂} {l = l} {ρ* = ρ*} ρ (tskip x) = subst id (cong (λ T → inn T (l ◁* Γ₂)) eq) (tskip (ρ x))
+    where eq : Twk (Tren ρ* T) ≡ Tren (Tliftᵣ ρ* l) (Twk T)
+          eq = {!!}
+
+  Eren : {ρ* : TRen Δ₁ Δ₂} → ERen ρ* Γ₁ Γ₂ → Expr Δ₁ Γ₁ T → Expr Δ₂ Γ₂ (Tren ρ* T)
+  Eren ρ (` x) = ` ρ x
+  Eren ρ (ƛ e) = ƛ Eren (Eliftᵣ ρ) e
+  Eren ρ (e₁ · e₂) = Eren ρ e₁ · Eren ρ e₂
+  Eren ρ (Λ l ⇒ e) = Λ l ⇒ Eren (Eliftᵣ-l ρ) e
+  Eren {Δ₂ = Δ₂} {Γ₂ = Γ₂} {T = T} {ρ* = ρ*} ρ (e ∙ T′) = let r = Eren ρ e ∙ Tren ρ* T′ in subst (Expr Δ₂ Γ₂) (eq {ρ* = ρ*} {T′ = T′}) r
+    where eq : ∀ {ρ* : TRen Δ₁ Δ₂}{l}{l₁} {T : Type (l ∷ Δ₁) l₁}{T′ : Type Δ₁ l} → Tren (Tliftᵣ ρ* l) T [ Tren ρ* T′ ]T ≡ Tren ρ* (T [ T′ ]T)
+          eq = {!!}
+
+
 ERen : TEnv Δ → TEnv Δ → Set
 ERen {Δ} Γ₁ Γ₂ = ∀ {l} {T : Type Δ l} → inn T Γ₁ → inn T Γ₂
 
@@ -905,7 +951,7 @@ subst←RE-ext ρ T R l here = refl
 subst←RE-ext ρ T R l (there x) = refl
 
 subst←RE-ext-ext : ∀ (ρ : RelEnv Δ) (T : Type [] l) (R : REL T) → subst←RE (REext ρ (T , R)) ≡ Textₛ (subst←RE ρ) T
-subst←RE-ext-ext ρ T R = fun-ext (λ l′ → fun-ext (subst←RE-ext ρ T R l′))
+subst←RE-ext-ext ρ T R = fun-ext₂ (subst←RE-ext ρ T R)
 
 
 subst←RE-drop : ∀ (ρ : RelEnv (l ∷ Δ)) →
@@ -915,7 +961,7 @@ subst←RE-drop ρ l′ (there x) = refl
 
 subst←RE-drop-ext : ∀ (ρ : RelEnv (l ∷ Δ)) →
   (subst←RE (REdrop ρ)) ≡ (Tdropₛ (subst←RE ρ))
-subst←RE-drop-ext ρ = fun-ext (λ l′ → fun-ext (subst←RE-drop ρ l′))
+subst←RE-drop-ext ρ = fun-ext₂ (subst←RE-drop ρ)
 
 -- special case of composition sub o ren
 
