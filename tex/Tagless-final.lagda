@@ -3,6 +3,7 @@ module Tagless-final where
 
 open import Level
 open import Data.Fin using (Fin) renaming (zero to fzero; suc to fsuc)
+open import Data.Nat using (ℕ)
 open import Data.List using (List; []; _∷_; _++_; length; lookup; tabulate)
 open import Data.Unit
 open import Function using (_∘_; id)
@@ -56,7 +57,7 @@ variable l l′ : Level
 \begin{code}
 LEnv = List Level
 data Type (Δ : LEnv) : Level → Set where
-  𝟙   : Type Δ zero
+  nat : Type Δ zero
   `_  : l ∈ Δ → Type Δ l
   _⇒_ : Type Δ l → Type Δ l′ → Type Δ (l ⊔ l′)
   `∀  : ∀ l → Type (l ∷ Δ) l′ → Type Δ (suc l ⊔ l′)
@@ -85,7 +86,7 @@ apply-env (_ ∷ η) (there x) = apply-env η x
 \newcommand\TFTSem{%
 \begin{code}
 𝓣⟦_⟧ : Type Δ l → DEnv Δ → Set l
-𝓣⟦ 𝟙 ⟧ η = ⊤
+𝓣⟦ nat ⟧ η = ℕ
 𝓣⟦ ` α ⟧ η = apply-env η α
 𝓣⟦ T₁ ⇒ T₂ ⟧ η = 𝓣⟦ T₁ ⟧ η → 𝓣⟦ T₂ ⟧ η
 𝓣⟦ `∀ l T ⟧ η = (⟦α⟧ : Set l) → 𝓣⟦ T ⟧ (⟦α⟧ ∷ η)
@@ -107,7 +108,7 @@ renT : Ren Δ₁ Δ₂ → (Type Δ₁ l → Type Δ₂ l)
 renT ρ (` x) = ` ρ x
 renT ρ (T₁ ⇒ T₂) = renT ρ T₁ ⇒ renT ρ T₂
 renT ρ (`∀ lev T) = `∀ lev (renT (extᵣ ρ) T)
-renT ρ 𝟙 = 𝟙 
+renT ρ nat = nat
 
 wkT : Type Δ l′ → Type (l ∷ Δ) l′
 wkT = renT wkᵣ
@@ -143,7 +144,7 @@ ren*-preserves-semantics :
   → 𝓣⟦ renT ρ T ⟧ η₂ ≡ 𝓣⟦ T ⟧ η₁
 \end{code}}
 \begin{code}[hide]
-ren*-preserves-semantics ren* 𝟙 = refl
+ren*-preserves-semantics ren* nat = refl
 ren*-preserves-semantics ren* (` x) = ren* x
 ren*-preserves-semantics {ρ = ρ}{η₁}{η₂} ren* (T₁ ⇒ T₂)
   rewrite ren*-preserves-semantics {ρ = ρ}{η₁}{η₂} ren* T₁
@@ -190,7 +191,7 @@ extₛ : Sub Δ₁ Δ₂ → ∀ {l} → Sub (l ∷ Δ₁) (l ∷ Δ₂)
 extₛ σ = ` here ∷ wkₛ σ
 
 subT : Sub Δ₁ Δ₂ → Type Δ₁ l → Type Δ₂ l
-subT σ 𝟙 = 𝟙
+subT σ nat = nat
 subT σ (` α) = apply-sub σ α
 subT σ (T₁ ⇒ T₂) = subT σ T₁ ⇒ subT σ T₂
 subT σ (`∀ l T) = `∀ l (subT (extₛ σ) T)
@@ -223,6 +224,7 @@ data inn : Type Δ l → TEnv Δ → Set where
 \newcommand\TFExpr{%
 \begin{code}
 data Expr (Δ : LEnv) (Γ : TEnv Δ) : Type Δ l → Set where
+  #_   : ∀ (n : ℕ) → Expr Δ Γ nat
   `_   : ∀ {T : Type Δ l}
        → inn T Γ → Expr Δ Γ T
   ƛ_   : ∀ {T : Type Δ l}{T′ : Type Δ l′}
@@ -292,7 +294,7 @@ subst-preserves :
   ∀ {Δ₁ Δ₂}{l}{η₂ : DEnv Δ₂}
   → (σ : Sub Δ₁ Δ₂) (T : Type Δ₁ l)
   → 𝓣⟦ subT σ T ⟧ η₂ ≡ 𝓣⟦ T ⟧ (subst-to-env* σ η₂)
-subst-preserves σ 𝟙 = refl
+subst-preserves σ nat = refl
 subst-preserves {η₂ = η₂} σ (` α) = subst-var-preserves α σ η₂
 subst-preserves{η₂ = η₂} σ (T₁ ⇒ T₂)
   rewrite subst-preserves{η₂ = η₂} σ T₁
@@ -317,6 +319,7 @@ single-subst-preserves {Δ = Δ} {l = l}{l′ = l′} η T′ T =
 \begin{code}
 𝓔⟦_⟧ : ∀ {T : Type Δ l}{Γ : TEnv Δ}
   → Expr Δ Γ T → (η : DEnv Δ) → Env Δ Γ η → 𝓣⟦ T ⟧ η
+𝓔⟦ # n ⟧ η γ = n
 𝓔⟦ ` x ⟧ η γ = γ x
 𝓔⟦ ƛ_ e ⟧ η γ = λ v → 𝓔⟦ e ⟧ η (extend γ v)
 𝓔⟦ e₁ · e₂ ⟧ η γ = 𝓔⟦ e₁ ⟧ η γ (𝓔⟦ e₂ ⟧ η γ)
