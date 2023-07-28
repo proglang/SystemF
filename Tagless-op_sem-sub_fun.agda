@@ -7,6 +7,7 @@ open import Data.Fin using (Fin) renaming (zero to fzero; suc to fsuc)
 open import Data.List using (List; []; _∷_; _++_; length; lookup; tabulate)
 open import Data.Unit.Polymorphic.Base using (⊤; tt)
 open import Data.Empty using (⊥)
+open import Data.Nat using (ℕ)
 open import Function using (_∘_; id)
 open import Relation.Binary.PropositionalEquality
   using (_≡_; _≢_; refl; sym; trans; cong; cong₂; subst; subst₂; resp₂; cong-app; icong; module ≡-Reasoning)
@@ -88,7 +89,7 @@ data Type Δ : Level → Set where
   `_     : l ∈ Δ → Type Δ l
   _⇒_    : Type Δ l → Type Δ l′ → Type Δ (l ⊔ l′)
   `∀α_,_ : ∀ l → Type (l ∷ Δ) l′ → Type Δ (suc l ⊔ l′)
-  𝟙      : Type Δ zero
+  `ℕ     : Type Δ zero
 
 variable T T′ T₁ T₂ : Type Δ l
 
@@ -125,7 +126,7 @@ apply-env (_ ∷ η) (there x) = apply-env η x
 ⟦ ` x ⟧ η = apply-env η x
 ⟦ T₁ ⇒ T₂ ⟧ η = ⟦ T₁ ⟧ η → ⟦ T₂ ⟧ η
 ⟦ `∀α l , T ⟧ η = (α : Set l) → ⟦ T ⟧ (α ∷ η)
-⟦ 𝟙 ⟧ η = ⊤
+⟦ `ℕ ⟧ η = ℕ
 
 -- renaming on types
 
@@ -159,13 +160,13 @@ Tren : TRen Δ₁ Δ₂ → (Type Δ₁ l → Type Δ₂ l)
 Tren ρ (` x) = ` ρ _ x
 Tren ρ (T₁ ⇒ T₂) = Tren ρ T₁ ⇒ Tren ρ T₂
 Tren ρ (`∀α l , T) = `∀α l , Tren (Tliftᵣ ρ l) T
-Tren ρ 𝟙 = 𝟙 
+Tren ρ `ℕ = `ℕ
 
 ident-Tidᵣ : ∀ (T : Type Δ l) → Tren Tidᵣ T ≡ T
 ident-Tidᵣ (` x) = refl
 ident-Tidᵣ (T₁ ⇒ T₂) = cong₂ _⇒_ (ident-Tidᵣ T₁) (ident-Tidᵣ T₂)
 ident-Tidᵣ (`∀α l , T) = cong (`∀α l ,_) (trans (cong (λ ρ → Tren ρ T) Tlift-Tid-ext) (ident-Tidᵣ T))
-ident-Tidᵣ 𝟙 = refl
+ident-Tidᵣ `ℕ = refl
 
 Twk : Type Δ l′ → Type (l ∷ Δ) l′
 Twk = Tren (Twkᵣ Tidᵣ)
@@ -199,7 +200,7 @@ Tren*-preserves-semantics {ρ = ρ} {η₁} {η₂} Tren* (T₁ ⇒ T₂)
   = refl
 Tren*-preserves-semantics {ρ = ρ} {η₁} {η₂} Tren* (`∀α l , T) = dep-ext λ where 
   α → Tren*-preserves-semantics{ρ = Tliftᵣ ρ _}{α ∷ η₁}{α ∷ η₂} (Tren*-lift {ρ = ρ} α Tren*) T
-Tren*-preserves-semantics Tren* 𝟙 = refl
+Tren*-preserves-semantics Tren* `ℕ = refl
 
 -- substitution on types
 
@@ -226,7 +227,7 @@ Tsub : TSub Δ₁ Δ₂ → Type Δ₁ l → Type Δ₂ l
 Tsub σ (` x) = σ _ x
 Tsub σ (T₁ ⇒ T₂) = Tsub σ T₁ ⇒ Tsub σ T₂
 Tsub σ (`∀α l , T) = `∀α l , Tsub (Tliftₛ σ _) T
-Tsub σ 𝟙 = 𝟙
+Tsub σ `ℕ = `ℕ
 
 Textₛ : TSub Δ₁ Δ₂ → Type Δ₂ l → TSub (l ∷ Δ₁) Δ₂
 Textₛ σ T' _ here = T'
@@ -251,6 +252,7 @@ data inn : Type Δ l → TEnv Δ → Set where
   tskip : ∀ {T l Γ} → inn {Δ}{l′} T Γ → inn (Twk T) (l ◁* Γ)
 
 data Expr (Δ : LEnv) (Γ : TEnv Δ) : Type Δ l → Set where
+  #_   : (n : ℕ) → Expr Δ Γ `ℕ
   `_   : ∀ {T : Type Δ l} → inn T Γ → Expr Δ Γ T
   ƛ_   : ∀ {T : Type Δ l}{T′ : Type Δ l′} → Expr Δ (T ◁ Γ) T′ → Expr Δ Γ (T ⇒ T′)
   _·_  : ∀ {T : Type Δ l}{T′ : Type Δ l′} → Expr Δ Γ (T ⇒ T′) → Expr Δ Γ T → Expr Δ Γ T′
@@ -318,7 +320,7 @@ subst-preserves {η₂ = η₂} σ (`∀α l , T) =
   dep-ext (λ ⟦α⟧ →
     trans (subst-preserves {η₂ = ⟦α⟧ ∷ η₂} (Tliftₛ σ _) T)
           (congωl (λ H → ⟦ T ⟧ (⟦α⟧ ∷ H)) (subst-to-env*-wk σ ⟦α⟧ η₂)))
-subst-preserves σ 𝟙 = refl
+subst-preserves σ `ℕ = refl
  
 Tsingle-subst-preserves : ∀ (η : Env* Δ) (T′ : Type Δ l) (T : Type (l ∷ Δ) l′) → 
   ⟦ T [ T′ ]T ⟧ η ≡ ⟦ T ⟧ (⟦ T′ ⟧ η ∷ η)
@@ -327,6 +329,7 @@ Tsingle-subst-preserves {Δ = Δ} {l = l}{l′ = l′} η T′ T =
         (congωl (λ H → ⟦ T ⟧ (⟦ T′ ⟧ η ∷ H)) (subst-to-env*-id η))
 
 E⟦_⟧ : ∀ {T : Type Δ l}{Γ : TEnv Δ} → Expr Δ Γ T → (η : Env* Δ) → Env Δ Γ η → ⟦ T ⟧ η
+E⟦ # n ⟧ η γ = n
 E⟦ ` x ⟧ η γ = γ _ _ x
 E⟦ ƛ_ e ⟧ η γ = λ v → E⟦ e ⟧ η (extend γ v)
 E⟦ e₁ · e₂ ⟧ η γ = E⟦ e₁ ⟧ η γ (E⟦ e₂ ⟧ η γ)
@@ -373,7 +376,7 @@ mutual
   assoc-sub-ren (` x) ρ σ = refl
   assoc-sub-ren (T₁ ⇒ T₂) ρ σ = cong₂ _⇒_ (assoc-sub-ren T₁ ρ σ) (assoc-sub-ren T₂ ρ σ)
   assoc-sub-ren (`∀α l , T) ρ σ = cong (`∀α l ,_) (assoc-sub↑-ren↑ T ρ σ)
-  assoc-sub-ren 𝟙 ρ σ = refl
+  assoc-sub-ren `ℕ ρ σ = refl
 
 ren↑-dist-∘ᵣᵣ : ∀ l (ρ₁ : TRen Δ₁ Δ₂) (ρ₂ : TRen Δ₂ Δ₃) →
   Tliftᵣ (ρ₁ ∘ᵣᵣ ρ₂) _ ≡ ((Tliftᵣ ρ₁ l) ∘ᵣᵣ (Tliftᵣ ρ₂ _)) 
@@ -397,7 +400,7 @@ mutual
   assoc-ren-ren (` x) ρ₁ ρ₂ = refl
   assoc-ren-ren (T₁ ⇒ T₂) ρ₁ ρ₂ = cong₂ _⇒_ (assoc-ren-ren T₁ ρ₁ ρ₂) (assoc-ren-ren T₂ ρ₁ ρ₂)
   assoc-ren-ren (`∀α l , T) ρ₁ ρ₂ = cong (`∀α l ,_) (assoc-ren↑-ren↑ T ρ₁ ρ₂)
-  assoc-ren-ren 𝟙 ρ₁ ρ₂ = refl
+  assoc-ren-ren `ℕ ρ₁ ρ₂ = refl
 
 ↑ρ-TwkT≡Twk-ρT : ∀ (T : Type Δ₁ l′) (ρ : TRen Δ₁ Δ₂) →
   Tren (Tliftᵣ ρ l) (Twk T) ≡ Twk (Tren ρ T) 
@@ -432,7 +435,7 @@ mutual
   assoc-ren-sub (` x) ρ σ = refl
   assoc-ren-sub (T₁ ⇒ T₂) ρ σ = cong₂ _⇒_ (assoc-ren-sub T₁ ρ σ) (assoc-ren-sub T₂ ρ σ)
   assoc-ren-sub (`∀α l , T) ρ σ = cong (`∀α l ,_) (assoc-ren↑-sub↑ T ρ σ)
-  assoc-ren-sub 𝟙 ρ σ = refl
+  assoc-ren-sub `ℕ ρ σ = refl
 
 σ↑-TwkT≡Twk-σT : ∀ {l} (σ : TSub Δ₁ Δ₂) (T : Type Δ₁ l′) →
   Tsub (Tliftₛ σ _) (Twk {l = l} T) ≡ Twk (Tsub σ T)
@@ -472,7 +475,7 @@ mutual
   assoc-sub-sub (` x) σ₁ σ₂ = refl
   assoc-sub-sub (T₁ ⇒ T₂) σ₁ σ₂ = cong₂ _⇒_ (assoc-sub-sub T₁ σ₁ σ₂) (assoc-sub-sub T₂ σ₁ σ₂)
   assoc-sub-sub (`∀α l , T) σ₁ σ₂ = cong (`∀α l ,_) (assoc-sub↑-sub↑ T σ₁ σ₂)
-  assoc-sub-sub 𝟙 σ₁ σ₂ = refl
+  assoc-sub-sub `ℕ σ₁ σ₂ = refl
 
 -- type in expr renamings
 
@@ -486,7 +489,7 @@ TidᵣT≡T : ∀ (T : Type Δ l) → Tren Tidᵣ T ≡ T
 TidᵣT≡T (` x) = refl
 TidᵣT≡T (T₁ ⇒ T₂) = cong₂ _⇒_ (TidᵣT≡T T₁) (TidᵣT≡T T₂)
 TidᵣT≡T {Δ = Δ} (`∀α l , T) rewrite TliftᵣTidᵣ≡Tidᵣ Δ l = cong (`∀α l ,_) (TidᵣT≡T T)
-TidᵣT≡T 𝟙 = refl
+TidᵣT≡T `ℕ = refl
 
 ρ[T]≡[ρT]ρ↑ : ∀ (T : Type Δ₁ l) (ρ : TRen Δ₁ Δ₂) →
   Textₛ Tidₛ T ∘ₛᵣ ρ ≡ (Tliftᵣ ρ _) ∘ᵣₛ Textₛ Tidₛ (Tren ρ T)
@@ -525,6 +528,7 @@ ETren-x {ρ = ρ} (ope-lift-T ope) here = here
 ETren-x {ρ = ρ} (ope-lift-T ope) (there x) = there (ETren-x ope x)
 
 ETren : {ρ : TRen Δ₁ Δ₂} → (ope : OPE ρ Γ₁ Γ₂) → Expr Δ₁ Γ₁ T → Expr Δ₂ Γ₂ (Tren ρ T)
+ETren ope (# n) = # n
 ETren ope (` x) = ` ETren-x ope x
 ETren ope (ƛ e) = ƛ ETren (ope-lift-T ope) e
 ETren ope (e₁ · e₂) = ETren ope e₁ · ETren ope e₂
@@ -557,7 +561,7 @@ TidₛT≡T : ∀ (T : Type Δ l) → Tsub Tidₛ T ≡ T
 TidₛT≡T (` x) = refl
 TidₛT≡T (T₁ ⇒ T₂) = cong₂ _⇒_ (TidₛT≡T T₁) (TidₛT≡T T₂)
 TidₛT≡T {Δ = Δ} (`∀α l , T) rewrite TliftₛTidₛ≡Tidₛ Δ l = cong (`∀α l ,_) (TidₛT≡T T)
-TidₛT≡T 𝟙 = refl
+TidₛT≡T `ℕ = refl
 
 σ[T]≡[σT]σ↑ : ∀ (T : Type Δ₁ l) (σ : TSub Δ₁ Δ₂) →
   (Textₛ Tidₛ T ∘ₛₛ σ) ≡ ((Tliftₛ σ _) ∘ₛₛ (Textₛ Tidₛ (Tsub σ T)))
@@ -605,6 +609,7 @@ ETsub-x (sub-lift-T sub) here = here
 ETsub-x (sub-lift-T sub) (there x) = there (ETsub-x sub x)
 
 ETsub : {σ : TSub Δ₁ Δ₂} → Sub σ Γ₁ Γ₂ → Expr Δ₁ Γ₁ T → Expr Δ₂ Γ₂ (Tsub σ T)
+ETsub sub (# n) = # n
 ETsub sub (` x) = ` ETsub-x sub x
 ETsub sub (ƛ e) = ƛ ETsub (sub-lift-T sub) e
 ETsub sub (e₁ · e₂) = ETsub sub e₁ · ETsub sub e₂
@@ -638,6 +643,7 @@ module extended where
   Eliftᵣ-l {Γ₂ = Γ₂} {l = l} {ρ* = ρ*} ρ (tskip x) = subst id (cong (λ T → inn T (l ◁* Γ₂)) (sym (↑ρ-TwkT≡Twk-ρT _ ρ*))) (tskip (ρ x))
 
   Eren : {ρ* : TRen Δ₁ Δ₂} → ERen ρ* Γ₁ Γ₂ → Expr Δ₁ Γ₁ T → Expr Δ₂ Γ₂ (Tren ρ* T)
+  Eren ρ (# n) = # n
   Eren ρ (` x) = ` ρ x
   Eren ρ (ƛ e) = ƛ Eren (Eliftᵣ ρ) e
   Eren ρ (e₁ · e₂) = Eren ρ e₁ · Eren ρ e₂
@@ -664,6 +670,7 @@ Eliftᵣ-l : ERen Γ₁ Γ₂ → ERen (l ◁* Γ₁) (l ◁* Γ₂)
 Eliftᵣ-l ρ (tskip x) = tskip (ρ x) 
 
 Eren : ERen Γ₁ Γ₂ → (Expr Δ Γ₁ T → Expr Δ Γ₂ T)
+Eren ρ (# n) = # n
 Eren ρ (` x) = ` ρ x
 Eren ρ (ƛ e) = ƛ Eren (Eliftᵣ ρ) e
 Eren ρ (e₁ · e₂) = Eren ρ e₁ · Eren ρ e₂
@@ -693,6 +700,7 @@ Eliftₛ-l : ESub Γ₁ Γ₂ → ESub (l ◁* Γ₁) (l ◁* Γ₂)
 Eliftₛ-l σ (tskip x) = Ewk-l (σ x)
 
 Esub : ESub Γ₁ Γ₂ → Expr Δ Γ₁ T → Expr Δ Γ₂ T
+Esub σ (# n) = # n
 Esub σ (` x) = σ x
 Esub σ (ƛ e) = ƛ Esub (Eliftₛ σ) e
 Esub σ (e₁ · e₂) = Esub σ e₁ · Esub σ e₂
@@ -710,6 +718,7 @@ _[_]E e e' = Esub (Eextₛ Eidₛ e') e
 -- small step call by value semantics
 
 data Val : Expr Δ Γ T → Set where
+  v-n : ∀ {n} → Val (# n)
   v-ƛ : Val (ƛ e)
   v-Λ : Val (Λ l ⇒ e)
 
@@ -754,6 +763,7 @@ ETren*-preserves-semantics : ∀ {T : Type Δ₁ l} {ρ′ : TRen Δ₁ Δ₂} {
   (Tren* : TRen* ρ′ η₁ η₂) →
   (ETren* : ETRen* {ρ′ = ρ′} ρ γ₁ γ₂ Tren*) → (e : Expr Δ₁ Γ₁ T) → 
   E⟦ ETren ρ e ⟧ η₂ γ₂ ≡ subst id (sym (Tren*-preserves-semantics Tren* T)) (E⟦ e ⟧ η₁ γ₁)
+ETren*-preserves-semantics Tren* ETren* (# n) = refl
 ETren*-preserves-semantics Tren* ETren* (` x) = ETren* x
 ETren*-preserves-semantics {ρ = ρ} Tren* ETren* (ƛ e) = fun-ext λ ⟦e⟧ → 
   {! ETren*-preserves-semantics {ρ = ope-lift-T ρ} Tren* (ETren*-lift-T ⟦e⟧ ρ ?) e !}
@@ -764,6 +774,7 @@ ETren*-preserves-semantics Tren* ETren* (e ∙ T′) = {!   !}
 ETsubst-preserves : ∀ {T : Type Δ₁ l} {σ′ : TSub Δ₁ Δ₂} 
   (η₂ : Env* Δ₂) (γ₂ : Env Δ₂ Γ₂ η₂) → (σ : Sub σ′ Γ₁ Γ₂) → (e : Expr Δ₁ Γ₁ T) → 
   E⟦ ETsub σ e ⟧ η₂ γ₂ ≡ subst id (sym (subst-preserves σ′ T)) (E⟦ e ⟧ (subst-to-env* σ′ η₂) (Sub-to-env σ γ₂))
+ETsubst-preserves η₂ γ₂ σ (# n) = refl
 ETsubst-preserves η₂ γ₂ σ (` x) = {!   !}
 ETsubst-preserves η₂ γ₂ σ (ƛ e) = {!   !}
 ETsubst-preserves η₂ γ₂ σ (e · e₁) = {!   !}
@@ -792,6 +803,7 @@ Eren*-lift-l {η = η} ⟦α⟧ Eren* (tskip {T = T} x)
 
 Eren*-preserves-semantics : {ρ : ERen Γ₁ Γ₂} {γ₁ : Env Δ Γ₁ η} {γ₂ : Env Δ Γ₂ η} →
   (Eren* : ERen* ρ γ₁ γ₂) → (e : Expr Δ Γ₁ T) → E⟦ Eren ρ e ⟧ η γ₂ ≡ E⟦ e ⟧ η γ₁
+Eren*-preserves-semantics Eren* (# n) = refl
 Eren*-preserves-semantics Eren* (` x) = Eren* x
 Eren*-preserves-semantics Eren* (ƛ e) = fun-ext λ ⟦e⟧ → 
   Eren*-preserves-semantics (Eren*-lift ⟦e⟧ Eren*) e
@@ -820,6 +832,7 @@ ste-dist-ext-tskip {Δ = Δ} {Γ₁ = Γ₁} {η = η} σ l ⟦α⟧ γ = fun-ex
 
 Esubst-preserves : ∀ (γ : Env Δ Γ₂ η) → (σ : ESub Γ₁ Γ₂) (e : Expr Δ Γ₁ T)
   → E⟦ Esub σ e ⟧ η γ ≡ E⟦ e ⟧ η (subst-to-env σ γ)
+Esubst-preserves γ σ (# n) = refl
 Esubst-preserves γ σ (` x) = refl
 Esubst-preserves {η = η} γ σ (ƛ_ {T = T} e) = fun-ext λ ⟦e⟧ → 
   trans (Esubst-preserves (extend γ ⟦e⟧) (Eliftₛ σ) e) 
@@ -858,22 +871,26 @@ adequacy {η = η} {γ = γ} (ξ-∙ {T′ = T′} {T = T} e₁↪e₂)
 -- big step call by value semantics (analogous to Benton et al)
 
 data Value : Type [] l → Set where
+  V-ℕ : (n : ℕ) → Value `ℕ
   V-ƛ : ∀ {T : Type [] l}{T′ : Type [] l′} → Expr [] (T ◁ ∅) T′ → Value (T ⇒ T′)
   V-Λ : ∀ (l : Level) → {T : Type (l ∷ []) l′} → Expr (l ∷ []) (l ◁* ∅) T → Value (`∀α l , T)
 
 variable v v₂ : Value T
 
 exp : Value T → Expr [] ∅ T
+exp (V-ℕ n) = # n
 exp (V-ƛ e) = ƛ e
 exp (V-Λ l e) = Λ l ⇒ e
 
 -- connection to previous definition of value
 
 Value-is-Val : (v : Value T) → Val (exp v)
+Value-is-Val (V-ℕ x) = v-n
 Value-is-Val (V-ƛ x) = v-ƛ
 Value-is-Val (V-Λ l x) = v-Λ
 
 Val-is-Value : Val e → ∃[ v ] exp v ≡ e
+Val-is-Value {e = # n} v-n = V-ℕ n , refl
 Val-is-Value {e = (ƛ e)} v-ƛ = (V-ƛ e) , refl
 Val-is-Value {e = (Λ l ⇒ e)} v-Λ = (V-Λ l e) , refl
 
@@ -881,12 +898,14 @@ Val-is-Value {e = (Λ l ⇒ e)} v-Λ = (V-Λ l e) , refl
 
 infix 15 _⇓_
 data _⇓_ : Expr [] ∅ T → Value T → Set where
+  ⇓-n : ∀ {n} → (# n) ⇓ V-ℕ n
   ⇓-ƛ : (ƛ e) ⇓ V-ƛ e
   ⇓-· : e₁ ⇓ V-ƛ e → e₂ ⇓ v₂ → (e [ exp v₂ ]E) ⇓ v → (e₁ · e₂) ⇓ v
   ⇓-Λ : (Λ l ⇒ e) ⇓ V-Λ l e
   ⇓-∙ : e₁ ⇓ V-Λ l e → (e [ T ]ET) ⇓ v → (e₁ ∙ T) ⇓ v
 
 exp-v⇓v : ∀ (v : Value T) → exp v ⇓ v
+exp-v⇓v (V-ℕ x) = ⇓-n
 exp-v⇓v (V-ƛ x) = ⇓-ƛ
 exp-v⇓v (V-Λ l x) = ⇓-Λ
 
@@ -910,6 +929,7 @@ zero-env : Env [] ∅ []
 zero-env l T ()
 
 soundness : e ⇓ v → E⟦ e ⟧ [] zero-env ≡ E⟦ exp v ⟧ [] zero-env
+soundness ⇓-n = refl
 soundness ⇓-ƛ = refl
 soundness (⇓-· {e = e} {v₂ = v₂} p p₁ p₂)
   with soundness p | soundness p₁
@@ -1000,9 +1020,9 @@ lemma1 {l = l} ρ T T′ R =
 -- stratified logical relation
 
 LRV : (T : Type Δ l) → (ρ : RelEnv Δ) → Value (Tsub (subst←RE ρ) T) → ⟦ T ⟧ (subst-to-env* (subst←RE ρ) []) → Set l
--- LRV (`𝟏)  ρ V-unit tt = ⊤
--- LRV `ℕ ρ (V-nat m) n = m ≡ n
-LRV (` α)       ρ v          x =
+LRV `ℕ ρ (V-ℕ n) x =
+  n ≡ x
+LRV (` α) ρ v x =
   proj₂ (ρ _ α) v (subst id (sym (subst-var-preserves α (subst←RE ρ) [])) x)
 LRV (T ⇒ T′)    ρ (V-ƛ e)    f =
   ∀ (w : Value (Tsub (subst←RE ρ) T)) →
@@ -1024,6 +1044,7 @@ CSub {Δ} σ Γ = ∀ {l} {T : Type Δ l} → inn T Γ → Value (Tsub σ T)
 
 -- doesn't work
 Csub : {Γ : TEnv Δ} → CSub σ Γ → Expr Δ Γ T → Expr [] ∅ (Tsub σ T)
+Csub χ (# n) = # n
 Csub χ (` x) = exp (χ x)
 Csub χ (ƛ e) = ƛ {!!}
 Csub χ (e₁ · e₂) = Csub χ e₁ · Csub χ e₂
@@ -1079,16 +1100,17 @@ fundamental : ∀ (Γ : TEnv Δ) (ρ : RelEnv Δ) (χ : CSub (subst←RE ρ) Γ)
   ∀ (T : Type Δ l) (e : Expr Δ Γ T) →
   LRG Γ ρ χ γ → ∃[ v ] (Csub χ e ⇓ v) ∧ LRV T ρ v (E⟦ e ⟧ η γ)
 fundamental Γ ρ χ γ T (` x) lrg = χ x , exp-v⇓v (χ x) , {!!}
+fundamental Γ ρ χ γ `ℕ (# n) lrg = V-ℕ n , ⇓-n , refl
 fundamental Γ ρ χ γ (T ⇒ T′) (ƛ e) lrg =
   V-ƛ {!!} ,
   ⇓-ƛ ,
   (λ w x lrv-w-x → fundamental (T ◁ Γ) ρ {!!} (extend γ x) T′ e (lrv-w-x , lrg))
-fundamental Γ ρ χ γ T (e₁ · e₂) lrg
-  with fundamental Γ ρ χ γ _ e₁ lrg | fundamental Γ ρ χ γ _ e₂ lrg
+fundamental Γ ρ χ γ T (_·_ {T = T₂}{T′ = .T} e₁ e₂) lrg
+  with fundamental Γ ρ χ γ (T₂ ⇒ T) e₁ lrg | fundamental Γ ρ χ γ T₂ e₂ lrg
 ... | V-ƛ e₃ , e₁⇓v₁ , lrv₁ | v₂ , e₂⇓v₂ , lrv₂
   with fundamental {!!} ρ {!!} (extend γ {!!}) T ({!!} [ {!!} ]E) (lrv₂ , {!!})
 ... | v₃ , e₃[]⇓v₃ , lrv₃
   = v₃ , (⇓-· e₁⇓v₁ e₂⇓v₂ e₃[]⇓v₃) , {!!}
 fundamental Γ ρ χ γ (`∀α l , T) (Λ .l ⇒ e) lrg =
   (V-Λ l {!!}) , (⇓-Λ , λ T′ R → fundamental (l ◁* Γ) (REext ρ (T′ , R)) {!!} {!!} {!T!} {!e!} {!!})
-fundamental Γ ρ χ γ .(_ [ T′ ]T) (e ∙ T′) lrg = {!!}
+fundamental Γ ρ χ γ .(_ [ T′ ]T) (_∙_ {T = T} e T′) lrg = {!!}
