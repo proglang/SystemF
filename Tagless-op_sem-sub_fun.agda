@@ -1043,6 +1043,9 @@ Gdropt σ γ l T x =
   let r = γ l (Twk T) (tskip x) in
   subst id (Tren*-preserves-semantics {ρ = Twkᵣ Tidᵣ} {subst-to-env* (Tdropₛ σ) []} {subst-to-env* σ []} (wkᵣ∈Ren* (subst-to-env* (Tdropₛ σ) []) (⟦ σ _ here ⟧ [])) T) r
 
+exprTy : {T : Type Δ l} → Expr Δ Γ T → Type Δ l
+exprTy {T = T} e = T
+
 levelTy : Type Δ l → Level
 levelTy {l = l} T = l
 
@@ -1056,27 +1059,36 @@ ENVdrop Γ η γ l T x = γ l T (there x)
 
 -- extended LR on environments
 
-LRE : (Γ : TEnv Δ) → (ρ : RelEnv Δ) → CSub (subst←RE ρ) Γ → let η = subst-to-env* (subst←RE ρ) [] in Env Δ Γ η → Set (levelEnv Γ)
-LRE ∅ ρ χ γ = ⊤
-LRE (T ◁ Γ) ρ χ γ = LRV T ρ (χ here) (γ _ T here) ∧  LRE Γ ρ (Cdrop χ) (ENVdrop Γ _ γ)
-LRE (l ◁* Γ) ρ χ γ
-  rewrite sym (subst←RE-drop-ext ρ) = LRE Γ (REdrop ρ) (Cdropt χ) (Gdropt (subst←RE ρ) γ)
+LRG : (Γ : TEnv Δ) → (ρ : RelEnv Δ) → CSub (subst←RE ρ) Γ → let η = subst-to-env* (subst←RE ρ) [] in Env Δ Γ η → Set (levelEnv Γ)
+LRG ∅ ρ χ γ = ⊤
+LRG (T ◁ Γ) ρ χ γ = LRV T ρ (χ here) (γ _ T here) ∧  LRG Γ ρ (Cdrop χ) (ENVdrop Γ _ γ)
+LRG (l ◁* Γ) ρ χ γ
+  rewrite sym (subst←RE-drop-ext ρ) = LRG Γ (REdrop ρ) (Cdropt χ) (Gdropt (subst←RE ρ) γ)
 
-LRV←LRE : (Γ : TEnv Δ) (ρ : RelEnv Δ) (χ : CSub (subst←RE ρ) Γ) (γ : Env Δ Γ (subst-to-env* (subst←RE ρ) [])) (T : Type Δ l) → LRE Γ ρ χ γ →
+LRV←LRG : (Γ : TEnv Δ) (ρ : RelEnv Δ) (χ : CSub (subst←RE ρ) Γ) (γ : Env Δ Γ (subst-to-env* (subst←RE ρ) [])) (T : Type Δ l) → LRG Γ ρ χ γ →
   (x : inn T Γ) → LRV T ρ (χ x) (γ l T x)
-LRV←LRE .(T ◁ _) ρ χ γ T lre here = proj₁ lre
-LRV←LRE (_ ◁ Γ) ρ χ γ T lre (there x) = LRV←LRE _ ρ (Cdrop χ) (ENVdrop Γ _ γ) T (proj₂ lre) x
-LRV←LRE {l = l} (_ ◁* Γ) ρ χ γ Tw lre (tskip x)
-  rewrite sym (subst←RE-drop-ext ρ) = LRV←LRE {l = l} Γ (REdrop ρ) (Cdropt χ) (Gdropt (subst←RE ρ) γ) {!!} lre {!x!}
+LRV←LRG .(T ◁ _) ρ χ γ T (lrv , lrg) here = lrv
+LRV←LRG (_ ◁ Γ) ρ χ γ T (lrv , lrg) (there x) = LRV←LRG _ ρ (Cdrop χ) (ENVdrop Γ _ γ) T lrg x
+LRV←LRG {l = l} (_ ◁* Γ) ρ χ γ Tw lrg (tskip x)
+  rewrite sym (subst←RE-drop-ext ρ) = LRV←LRG {l = l} Γ (REdrop ρ) (Cdropt χ) (Gdropt (subst←RE ρ) γ) {!!} lrg {!x!}
 
 -- fundamental theorem
 -- need function to apply closing substitution χ to expression e
 
 fundamental : ∀ (Γ : TEnv Δ) (ρ : RelEnv Δ) (χ : CSub (subst←RE ρ) Γ) → let η = subst-to-env* (subst←RE ρ) [] in (γ : Env Δ Γ η) →
   ∀ (T : Type Δ l) (e : Expr Δ Γ T) →
-  LRE Γ ρ χ γ → ∃[ v ] (Csub χ e ⇓ v) ∧ LRV T ρ v (E⟦ e ⟧ η γ)
-fundamental Γ ρ χ γ T (` x) lre = χ x , exp-v⇓v (χ x) , {!!}
-fundamental Γ ρ χ γ (T ⇒ T′) (ƛ e) lre = {!!}
-fundamental Γ ρ χ γ T (e₁ · e₂) lre = {!!}
-fundamental Γ ρ χ γ (`∀α l , T) (Λ .l ⇒ e) lre = {!!}
-fundamental Γ ρ χ γ .(_ [ T′ ]T) (e ∙ T′) lre = {!!}
+  LRG Γ ρ χ γ → ∃[ v ] (Csub χ e ⇓ v) ∧ LRV T ρ v (E⟦ e ⟧ η γ)
+fundamental Γ ρ χ γ T (` x) lrg = χ x , exp-v⇓v (χ x) , {!!}
+fundamental Γ ρ χ γ (T ⇒ T′) (ƛ e) lrg =
+  V-ƛ {!!} ,
+  ⇓-ƛ ,
+  (λ w x lrv-w-x → fundamental (T ◁ Γ) ρ {!!} (extend γ x) T′ e (lrv-w-x , lrg))
+fundamental Γ ρ χ γ T (e₁ · e₂) lrg
+  with fundamental Γ ρ χ γ _ e₁ lrg | fundamental Γ ρ χ γ _ e₂ lrg
+... | V-ƛ e₃ , e₁⇓v₁ , lrv₁ | v₂ , e₂⇓v₂ , lrv₂
+  with fundamental {!!} ρ {!!} (extend γ {!!}) T ({!!} [ {!!} ]E) (lrv₂ , {!!})
+... | v₃ , e₃[]⇓v₃ , lrv₃
+  = v₃ , (⇓-· e₁⇓v₁ e₂⇓v₂ e₃[]⇓v₃) , {!!}
+fundamental Γ ρ χ γ (`∀α l , T) (Λ .l ⇒ e) lrg =
+  (V-Λ l {!!}) , (⇓-Λ , λ T′ R → fundamental (l ◁* Γ) (REext ρ (T′ , R)) {!!} {!!} {!T!} {!e!} {!!})
+fundamental Γ ρ χ γ .(_ [ T′ ]T) (e ∙ T′) lrg = {!!}
