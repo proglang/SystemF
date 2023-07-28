@@ -886,6 +886,10 @@ data _⇓_ : Expr [] ∅ T → Value T → Set where
   ⇓-Λ : (Λ l ⇒ e) ⇓ V-Λ l e
   ⇓-∙ : e₁ ⇓ V-Λ l e → (e [ T ]ET) ⇓ v → (e₁ ∙ T) ⇓ v
 
+exp-v⇓v : ∀ (v : Value T) → exp v ⇓ v
+exp-v⇓v (V-ƛ x) = ⇓-ƛ
+exp-v⇓v (V-Λ l x) = ⇓-Λ
+
 variable v′ v′₂ : Expr [] ∅ T
 infix 15 _⇓′_
 data _⇓′_ : Expr [] ∅ T → Expr [] ∅ T → Set where
@@ -996,6 +1000,8 @@ lemma1 {l = l} ρ T T′ R =
 -- stratified logical relation
 
 LRV : (T : Type Δ l) → (ρ : RelEnv Δ) → Value (Tsub (subst←RE ρ) T) → ⟦ T ⟧ (subst-to-env* (subst←RE ρ) []) → Set l
+-- LRV (`𝟏)  ρ V-unit tt = ⊤
+-- LRV `ℕ ρ (V-nat m) n = m ≡ n
 LRV (` α)       ρ v          x =
   proj₂ (ρ _ α) v (subst id (sym (subst-var-preserves α (subst←RE ρ) [])) x)
 LRV (T ⇒ T′)    ρ (V-ƛ e)    f =
@@ -1056,13 +1062,20 @@ LRE (T ◁ Γ) ρ χ γ = LRV T ρ (χ here) (γ _ T here) ∧  LRE Γ ρ (Cdrop
 LRE (l ◁* Γ) ρ χ γ
   rewrite sym (subst←RE-drop-ext ρ) = LRE Γ (REdrop ρ) (Cdropt χ) (Gdropt (subst←RE ρ) γ)
 
+LRV←LRE : (Γ : TEnv Δ) (ρ : RelEnv Δ) (χ : CSub (subst←RE ρ) Γ) (γ : Env Δ Γ (subst-to-env* (subst←RE ρ) [])) (T : Type Δ l) → LRE Γ ρ χ γ →
+  (x : inn T Γ) → LRV T ρ (χ x) (γ l T x)
+LRV←LRE .(T ◁ _) ρ χ γ T lre here = proj₁ lre
+LRV←LRE (_ ◁ Γ) ρ χ γ T lre (there x) = LRV←LRE _ ρ (Cdrop χ) (ENVdrop Γ _ γ) T (proj₂ lre) x
+LRV←LRE {l = l} (_ ◁* Γ) ρ χ γ Tw lre (tskip x)
+  rewrite sym (subst←RE-drop-ext ρ) = LRV←LRE {l = l} Γ (REdrop ρ) (Cdropt χ) (Gdropt (subst←RE ρ) γ) {!!} lre {!x!}
+
 -- fundamental theorem
 -- need function to apply closing substitution χ to expression e
 
 fundamental : ∀ (Γ : TEnv Δ) (ρ : RelEnv Δ) (χ : CSub (subst←RE ρ) Γ) → let η = subst-to-env* (subst←RE ρ) [] in (γ : Env Δ Γ η) →
   ∀ (T : Type Δ l) (e : Expr Δ Γ T) →
-  LRE Γ ρ χ γ → ∃[ v ] ({!"χ e"!} ⇓ v) ∧ LRV T ρ v (E⟦ e ⟧ η γ)
-fundamental Γ ρ χ γ T (` x) lre = χ x , {!!}
+  LRE Γ ρ χ γ → ∃[ v ] (Csub χ e ⇓ v) ∧ LRV T ρ v (E⟦ e ⟧ η γ)
+fundamental Γ ρ χ γ T (` x) lre = χ x , exp-v⇓v (χ x) , {!!}
 fundamental Γ ρ χ γ (T ⇒ T′) (ƛ e) lre = {!!}
 fundamental Γ ρ χ γ T (e₁ · e₂) lre = {!!}
 fundamental Γ ρ χ γ (`∀α l , T) (Λ .l ⇒ e) lre = {!!}
