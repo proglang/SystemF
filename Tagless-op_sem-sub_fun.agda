@@ -1057,6 +1057,9 @@ Cdrop χ x = χ (there x)
 Cdropt : {Γ : TEnv Δ} → CSub σ (l ◁* Γ) → CSub (Tdropₛ σ) Γ
 Cdropt {σ = σ} χ {l} {T} x = subst Value (assoc-sub-ren T (Twkᵣ Tidᵣ) σ) (χ (tskip x))
 
+Cextt : ∀{l} → CSub σ Γ → (T′ : Type [] l) → CSub (Textₛ σ T′) (l ◁* Γ)
+Cextt {σ = σ} χ T′ (tskip {T = T} x) = subst Value (sym (σT≡TextₛσTwkT σ T)) (χ x)
+
 Gdropt : (σ : TSub (l ∷ Δ) [])
   → Env (l ∷ Δ) (l ◁* Γ) (subst-to-env* σ [])
   → Env Δ Γ (subst-to-env* (Tdropₛ σ) [])
@@ -1108,9 +1111,17 @@ fundamental Γ ρ χ γ (T ⇒ T′) (ƛ e) lrg =
 fundamental Γ ρ χ γ T (_·_ {T = T₂}{T′ = .T} e₁ e₂) lrg
   with fundamental Γ ρ χ γ (T₂ ⇒ T) e₁ lrg | fundamental Γ ρ χ γ T₂ e₂ lrg
 ... | V-ƛ e₃ , e₁⇓v₁ , lrv₁ | v₂ , e₂⇓v₂ , lrv₂
-  with fundamental {!!} ρ {!!} (extend γ {!!}) T ({!!} [ {!!} ]E) (lrv₂ , {!!})
+  with lrv₁ v₂ (E⟦ e₂ ⟧ (subst-to-env* (subst←RE ρ) []) γ) lrv₂
 ... | v₃ , e₃[]⇓v₃ , lrv₃
-  = v₃ , (⇓-· e₁⇓v₁ e₂⇓v₂ e₃[]⇓v₃) , {!!}
+  = v₃ , (⇓-· e₁⇓v₁ e₂⇓v₂ e₃[]⇓v₃) , lrv₃
 fundamental Γ ρ χ γ (`∀α l , T) (Λ .l ⇒ e) lrg =
-  (V-Λ l {!!}) , (⇓-Λ , λ T′ R → fundamental (l ◁* Γ) (REext ρ (T′ , R)) {!!} {!!} {!T!} {!e!} {!!})
+  V-Λ l {!!} ,
+  ⇓-Λ ,
+  λ T′ R → fundamental (l ◁* Γ)
+                       (REext ρ (T′ , R))
+                       (subst (λ σ → CSub σ (l ◁* Γ)) (sym (subst←RE-ext-ext ρ T′ R)) (Cextt χ T′))
+                       {!!}
+                       {!T!}
+                       {!e!}
+                       {!!}
 fundamental Γ ρ χ γ .(_ [ T′ ]T) (_∙_ {T = T} e T′) lrg = {!!}
