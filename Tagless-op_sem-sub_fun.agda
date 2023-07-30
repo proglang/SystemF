@@ -149,24 +149,11 @@ Tliftᵣ : TRen Δ₁ Δ₂ → (l : Level) → TRen (l ∷ Δ₁) (l ∷ Δ₂)
 Tliftᵣ ρ _ _ here = here
 Tliftᵣ ρ _ _ (there x) = there (ρ _ x)
 
-Tlift-Tid : ∀ (x : l′ ∈ (l ∷ Δ)) → Tliftᵣ Tidᵣ l l′ x ≡ Tidᵣ l′ x
-Tlift-Tid here = refl
-Tlift-Tid (there x) = refl
-
-Tlift-Tid-ext : Tliftᵣ {Δ} {Δ} Tidᵣ l ≡ Tidᵣ
-Tlift-Tid-ext = fun-ext (λ l′ → fun-ext Tlift-Tid)
-
 Tren : TRen Δ₁ Δ₂ → (Type Δ₁ l → Type Δ₂ l)
 Tren ρ (` x) = ` ρ _ x
 Tren ρ (T₁ ⇒ T₂) = Tren ρ T₁ ⇒ Tren ρ T₂
 Tren ρ (`∀α l , T) = `∀α l , Tren (Tliftᵣ ρ l) T
 Tren ρ `ℕ = `ℕ
-
-ident-Tidᵣ : ∀ (T : Type Δ l) → Tren Tidᵣ T ≡ T
-ident-Tidᵣ (` x) = refl
-ident-Tidᵣ (T₁ ⇒ T₂) = cong₂ _⇒_ (ident-Tidᵣ T₁) (ident-Tidᵣ T₂)
-ident-Tidᵣ (`∀α l , T) = cong (`∀α l ,_) (trans (cong (λ ρ → Tren ρ T) Tlift-Tid-ext) (ident-Tidᵣ T))
-ident-Tidᵣ `ℕ = refl
 
 Twk : Type Δ l′ → Type (l ∷ Δ) l′
 Twk = Tren (Twkᵣ Tidᵣ)
@@ -627,7 +614,7 @@ module extended where
   ERen {Δ₁}{Δ₂} ρ* Γ₁ Γ₂ = ∀ {l} {T : Type Δ₁ l} → inn T Γ₁ → inn (Tren ρ* T) Γ₂
 
   Eidᵣ : ERen Tidᵣ Γ Γ 
-  Eidᵣ {T = T} x rewrite ident-Tidᵣ T = x
+  Eidᵣ {T = T} x rewrite TidᵣT≡T T = x
 
   Edropᵣ : (ρ* : TRen Δ₁ Δ₂) → ERen ρ* (T ◁ Γ₁) Γ₂ → ERen ρ* Γ₁ Γ₂
   Edropᵣ ρ* ρ x = ρ (there x)
@@ -649,6 +636,43 @@ module extended where
   Eren ρ (e₁ · e₂) = Eren ρ e₁ · Eren ρ e₂
   Eren ρ (Λ l ⇒ e) = Λ l ⇒ Eren (Eliftᵣ-l ρ) e
   Eren {Δ₂ = Δ₂} {Γ₂ = Γ₂} {T = .(T [ T′ ]T)} {ρ* = ρ*} ρ (_∙_ {T = T} e T′) = subst (Expr Δ₂ Γ₂) (sym (ρT[T′]≡ρT[ρ↑T′] ρ* T T′)) (Eren ρ e ∙ Tren ρ* T′)
+  
+  Ewk : Expr Δ Γ T → Expr Δ (T₁ ◁ Γ) (T) 
+  Ewk {T = T} e = subst (λ T → Expr _ _ T) (TidᵣT≡T T) (Eren (Ewkᵣ Tidᵣ Eidᵣ) e)
+
+  ESub : TRen Δ₁ Δ₂ → TEnv Δ₁ → TEnv Δ₂ → Set
+  ESub {Δ₁ = Δ₁} {Δ₂ = Δ₂} ρ* Γ₁ Γ₂ = ∀ {l} {T : Type Δ₁ l} → inn T Γ₁ → Expr Δ₂ Γ₂ (Tren ρ* T)
+  
+  Eidₛ : ESub Tidᵣ Γ Γ
+  Eidₛ {T = T} rewrite TidᵣT≡T T = `_
+  
+  Ewkₛ : (ρ* : TRen Δ₁ Δ₂) → ESub ρ* Γ₁ Γ₂ → ESub ρ* Γ₁ (T ◁ Γ₂)
+  Ewkₛ ρ* σ {T = T} x = Ewk (σ x)
+  
+  Edropₛ : (ρ* : TRen Δ₁ Δ₂) → ESub ρ* (T ◁ Γ₁) Γ₂ → ESub ρ* Γ₁ Γ₂
+  Edropₛ ρ* σ x = σ (there x)
+  
+  Eliftₛ : (ρ* : TRen Δ₁ Δ₂) → ESub ρ* Γ₁ Γ₂ → ESub ρ* (T ◁ Γ₁) ((Tren ρ* T) ◁ Γ₂)
+  Eliftₛ ρ* σ here = ` here
+  Eliftₛ ρ* σ (there x) = Ewk (σ x)
+  
+  Eliftₛ-l : (ρ* : TRen Δ₁ Δ₂) → ESub ρ* Γ₁ Γ₂ → ESub (Tliftᵣ ρ* _) (l ◁* Γ₁) (l ◁* Γ₂)
+  Eliftₛ-l ρ* σ (tskip x) = subst (Expr _ _) (sym (↑ρ-TwkT≡Twk-ρT _ ρ*)) (Ewk-l (σ x))
+  
+  Esub : (ρ* : TRen Δ₁ Δ₂) → ESub ρ* Γ₁ Γ₂ → Expr Δ₁ Γ₁ T → Expr Δ₂ Γ₂ (Tren ρ* T)
+  Esub ρ* σ (# n) = # n
+  Esub ρ* σ (` x) = σ x
+  Esub ρ* σ (ƛ e) = ƛ Esub ρ* (Eliftₛ ρ* σ) e
+  Esub ρ* σ (e₁ · e₂) = Esub ρ* σ e₁ · Esub ρ* σ e₂
+  Esub ρ* σ (Λ l ⇒ e) = Λ l ⇒ Esub (Tliftᵣ ρ* _) (Eliftₛ-l ρ* σ) e
+  Esub ρ* σ (_∙_ {T = T} e T′) = subst (Expr _ _) (sym (ρT[T′]≡ρT[ρ↑T′] ρ* T T′)) (Esub ρ* σ e ∙ (Tren ρ* T′))
+  
+  Eextₛ : (ρ* : TRen Δ₁ Δ₂) → ESub ρ* Γ₁ Γ₂ → Expr Δ₂ Γ₂ (Tren ρ* T) → ESub ρ* (T ◁ Γ₁) Γ₂
+  Eextₛ ρ* σ e' here = e'
+  Eextₛ ρ* σ e' (there x) = σ x
+
+  _[_]E : Expr Δ (T₁ ◁ Γ) T₂ → Expr Δ Γ T₁ → Expr Δ Γ T₂
+  _[_]E {T₁ = T₁} {T₂ = T₂} e e′ = subst (Expr _ _) (TidᵣT≡T T₂) (Esub Tidᵣ (Eextₛ Tidᵣ Eidₛ (subst (Expr _ _) (sym (TidᵣT≡T T₁)) e′)) e)
 
 ERen : TEnv Δ → TEnv Δ → Set
 ERen {Δ} Γ₁ Γ₂ = ∀ {l} {T : Type Δ l} → inn T Γ₁ → inn T Γ₂
