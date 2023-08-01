@@ -247,6 +247,7 @@ data Expr (Δ : LEnv) (Γ : TEnv Δ) : Type Δ l → Set where
   _∙_  : ∀ {T : Type (l ∷ Δ) l′} → Expr Δ Γ (`∀α l , T) → (T′ : Type Δ l) → Expr Δ Γ (T [ T′ ]T)
 
 variable e e₁ e₂ e₃ : Expr Δ Γ T
+variable n : ℕ
 
 -- value environments
 
@@ -610,6 +611,8 @@ e [ T ]ET = ETsub (sub-ext sub-id) e
 -- expr in expr substitution
 module extended where
 
+  -- expression renamings
+
   ERen : TRen Δ₁ Δ₂ → TEnv Δ₁ → TEnv Δ₂ → Set
   ERen {Δ₁}{Δ₂} ρ* Γ₁ Γ₂ = ∀ {l} {T : Type Δ₁ l} → inn T Γ₁ → inn (Tren ρ* T) Γ₂
 
@@ -640,39 +643,42 @@ module extended where
   Ewk : Expr Δ Γ T → Expr Δ (T₁ ◁ Γ) (T) 
   Ewk {T = T} e = subst (λ T → Expr _ _ T) (TidᵣT≡T T) (Eren (Ewkᵣ Tidᵣ Eidᵣ) e)
 
-  ESub : TRen Δ₁ Δ₂ → TEnv Δ₁ → TEnv Δ₂ → Set
-  ESub {Δ₁ = Δ₁} {Δ₂ = Δ₂} ρ* Γ₁ Γ₂ = ∀ {l} {T : Type Δ₁ l} → inn T Γ₁ → Expr Δ₂ Γ₂ (Tren ρ* T)
+  -- expression substitutions
+
+  ESub : TSub Δ₁ Δ₂ → TEnv Δ₁ → TEnv Δ₂ → Set
+  ESub {Δ₁ = Δ₁} {Δ₂ = Δ₂} σ* Γ₁ Γ₂ = ∀ {l} {T : Type Δ₁ l} → inn T Γ₁ → Expr Δ₂ Γ₂ (Tsub σ* T)
   
-  Eidₛ : ESub Tidᵣ Γ Γ
-  Eidₛ {T = T} rewrite TidᵣT≡T T = `_
+  Eidₛ : ESub Tidₛ Γ Γ
+  Eidₛ {T = T} rewrite TidₛT≡T T = `_
   
-  Ewkₛ : (ρ* : TRen Δ₁ Δ₂) → ESub ρ* Γ₁ Γ₂ → ESub ρ* Γ₁ (T ◁ Γ₂)
-  Ewkₛ ρ* σ {T = T} x = Ewk (σ x)
+  Ewkₛ : (σ* : TSub Δ₁ Δ₂) → ESub σ* Γ₁ Γ₂ → ESub σ* Γ₁ (T ◁ Γ₂)
+  Ewkₛ σ* σ {T = T} x = Ewk (σ x)
   
-  Edropₛ : (ρ* : TRen Δ₁ Δ₂) → ESub ρ* (T ◁ Γ₁) Γ₂ → ESub ρ* Γ₁ Γ₂
-  Edropₛ ρ* σ x = σ (there x)
+  Edropₛ : (σ* : TSub Δ₁ Δ₂) → ESub σ* (T ◁ Γ₁) Γ₂ → ESub σ* Γ₁ Γ₂
+  Edropₛ σ* σ x = σ (there x)
   
-  Eliftₛ : (ρ* : TRen Δ₁ Δ₂) → ESub ρ* Γ₁ Γ₂ → ESub ρ* (T ◁ Γ₁) ((Tren ρ* T) ◁ Γ₂)
-  Eliftₛ ρ* σ here = ` here
-  Eliftₛ ρ* σ (there x) = Ewk (σ x)
+  Eliftₛ : (σ* : TSub Δ₁ Δ₂) → ESub σ* Γ₁ Γ₂ → ESub σ* (T ◁ Γ₁) ((Tsub σ* T) ◁ Γ₂)
+  Eliftₛ _ σ here = ` here
+  Eliftₛ _ σ (there x) = Ewk (σ x)
   
-  Eliftₛ-l : (ρ* : TRen Δ₁ Δ₂) → ESub ρ* Γ₁ Γ₂ → ESub (Tliftᵣ ρ* _) (l ◁* Γ₁) (l ◁* Γ₂)
-  Eliftₛ-l ρ* σ (tskip x) = subst (Expr _ _) (sym (↑ρ-TwkT≡Twk-ρT _ ρ*)) (Ewk-l (σ x))
+  Eliftₛ-l : (σ* : TSub Δ₁ Δ₂) → ESub σ* Γ₁ Γ₂ → ESub (Tliftₛ σ* _) (l ◁* Γ₁) (l ◁* Γ₂)
+  Eliftₛ-l σ* σ (tskip x) = subst (Expr _ _) (sym {!!}) (Ewk-l (σ x))
   
-  Esub : (ρ* : TRen Δ₁ Δ₂) → ESub ρ* Γ₁ Γ₂ → Expr Δ₁ Γ₁ T → Expr Δ₂ Γ₂ (Tren ρ* T)
-  Esub ρ* σ (# n) = # n
-  Esub ρ* σ (` x) = σ x
-  Esub ρ* σ (ƛ e) = ƛ Esub ρ* (Eliftₛ ρ* σ) e
-  Esub ρ* σ (e₁ · e₂) = Esub ρ* σ e₁ · Esub ρ* σ e₂
-  Esub ρ* σ (Λ l ⇒ e) = Λ l ⇒ Esub (Tliftᵣ ρ* _) (Eliftₛ-l ρ* σ) e
-  Esub ρ* σ (_∙_ {T = T} e T′) = subst (Expr _ _) (sym (ρT[T′]≡ρT[ρ↑T′] ρ* T T′)) (Esub ρ* σ e ∙ (Tren ρ* T′))
+  Esub : (σ* : TSub Δ₁ Δ₂) → ESub σ* Γ₁ Γ₂ → Expr Δ₁ Γ₁ T → Expr Δ₂ Γ₂ (Tsub σ* T)
+  Esub σ* σ (# n) = # n
+  Esub σ* σ (` x) = σ x
+  Esub σ* σ (ƛ e) = ƛ Esub σ* (Eliftₛ σ* σ) e
+  Esub σ* σ (e₁ · e₂) = Esub σ* σ e₁ · Esub σ* σ e₂
+  Esub σ* σ (Λ l ⇒ e) = Λ l ⇒ Esub (Tliftₛ σ* _) (Eliftₛ-l σ* σ) e
+  Esub σ* σ (_∙_ {T = T} e T′) = subst (Expr _ _) (sym {!!}) (Esub σ* σ e ∙ (Tsub σ* T′))
+  -- Esub σ* σ (_∙_ {T = T} e T′) = subst (Expr _ _) (sym (ρT[T′]≡ρT[ρ↑T′] σ* T T′)) (Esub σ* σ e ∙ (Tren σ* T′))
   
-  Eextₛ : (ρ* : TRen Δ₁ Δ₂) → ESub ρ* Γ₁ Γ₂ → Expr Δ₂ Γ₂ (Tren ρ* T) → ESub ρ* (T ◁ Γ₁) Γ₂
-  Eextₛ ρ* σ e' here = e'
-  Eextₛ ρ* σ e' (there x) = σ x
+  Eextₛ : (σ* : TSub Δ₁ Δ₂) → ESub σ* Γ₁ Γ₂ → Expr Δ₂ Γ₂ (Tsub σ* T) → ESub σ* (T ◁ Γ₁) Γ₂
+  Eextₛ σ* σ e' here = e'
+  Eextₛ σ* σ e' (there x) = σ x
 
   _[_]E : Expr Δ (T₁ ◁ Γ) T₂ → Expr Δ Γ T₁ → Expr Δ Γ T₂
-  _[_]E {T₁ = T₁} {T₂ = T₂} e e′ = subst (Expr _ _) (TidᵣT≡T T₂) (Esub Tidᵣ (Eextₛ Tidᵣ Eidₛ (subst (Expr _ _) (sym (TidᵣT≡T T₁)) e′)) e)
+  _[_]E {T₁ = T₁} {T₂ = T₂} e e′ = subst (Expr _ _) (TidₛT≡T T₂) (Esub Tidₛ (Eextₛ Tidₛ Eidₛ (subst (Expr _ _) (sym (TidₛT≡T T₁)) e′)) e)
 
 ERen : TEnv Δ → TEnv Δ → Set
 ERen {Δ} Γ₁ Γ₂ = ∀ {l} {T : Type Δ l} → inn T Γ₁ → inn T Γ₂
@@ -738,13 +744,13 @@ Eextₛ σ e' (there x) = σ x
 _[_]E : Expr Δ (T₁ ◁ Γ) T₂ → Expr Δ Γ T₁ → Expr Δ Γ T₂
 _[_]E e e' = Esub (Eextₛ Eidₛ e') e
 
-
 -- small step call by value semantics
 
 data Val : Expr Δ Γ T → Set where
-  v-n : ∀ {n} → Val (# n)
+  v-n : Val {Δ}{Γ} (# n)
   v-ƛ : Val (ƛ e)
   v-Λ : Val (Λ l ⇒ e)
+
 
 data _↪_ : Expr Δ Γ T → Expr Δ Γ T → Set where
   β-ƛ : 
@@ -1062,6 +1068,44 @@ LRV (`∀α l , T) ρ (V-Λ .l e) F =
          in LRV T ρ′ (subst Value (lemma1 ρ T T′ R) v) (F (⟦ T′ ⟧ []))
 
 -- closing value substitution
+
+module extended2 where
+  open extended
+
+  variable σ* : TSub Δ []
+
+  VSub : {Γ₁ : TEnv Δ₁} → extended.ESub σ* Γ₁ Γ₂ → Set
+  VSub {Δ₁ = Δ₁} {Γ₁ = Γ₁} σ = ∀ {l} {T : Type Δ₁ l} → (x : inn T Γ₁) → Val (σ x)
+
+  CSub : TSub Δ [] → TEnv Δ → Set
+  CSub {Δ} σ* Γ = Σ (extended.ESub σ* Γ ∅) VSub
+
+  Csub : {Γ : TEnv Δ} {σ* : TSub Δ []} → CSub σ* Γ → Expr Δ Γ T → Expr [] ∅ (Tsub σ* T)
+  Csub {σ* = σ*} ( χ₁ , χ₂ ) e = extended.Esub σ* χ₁ e
+
+  Cdrop : CSub σ* (T ◁ Γ) → CSub σ* Γ
+  Cdrop (χ₁ , χ₂) = (χ₁ ∘ there , χ₂ ∘ there)
+  
+  Cdropt : {Γ : TEnv Δ} → CSub σ (l ◁* Γ) → CSub (Tdropₛ σ) Γ
+  Cdropt {σ = σ} (χ₁ , χ₂) = (λ {l} {T} x → {!!}) , {!!}
+
+  ----------
+
+  CSub′ : TSub Δ [] → TEnv Δ → Set
+  CSub′ {Δ} σ* Γ = ∀ {l} {T : Type Δ l} → inn T Γ → Σ (Expr [] ∅ (Tsub σ* T)) Val
+
+  Csub′ : {Γ : TEnv Δ} {σ* : TSub Δ []} → CSub′ σ* Γ → Expr Δ Γ T → Expr [] ∅ (Tsub σ* T)
+  Csub′ {σ* = σ*} χ e = extended.Esub σ* (proj₁ ∘ χ) e
+
+  Cdrop′ : CSub′ σ* (T ◁ Γ) → CSub′ σ* Γ
+  Cdrop′ χ = χ ∘ there
+  
+  Cdropt′ : {Γ : TEnv Δ} → CSub′ σ* (l ◁* Γ) → CSub′ (Tdropₛ σ*) Γ
+  Cdropt′ {σ* = σ*} χ {l}{T} x = subst (λ T → Σ (Expr [] ∅ T) Val) (assoc-sub-ren T (Twkᵣ Tidᵣ) σ*) (χ (tskip x))
+
+  Cextt′ : ∀{l} → CSub′ σ* Γ → (T′ : Type [] l) → CSub′ (Textₛ σ* T′) (l ◁* Γ)
+  Cextt′ {σ* = σ*} χ T′ (tskip {T = T} x) = subst (λ T → Σ (Expr [] ∅ T) Val) (sym (σT≡TextₛσTwkT σ* T)) (χ x)
+
 
 CSub : TSub Δ [] → TEnv Δ → Set
 CSub {Δ} σ Γ = ∀ {l} {T : Type Δ l} → inn T Γ → Value (Tsub σ T)
