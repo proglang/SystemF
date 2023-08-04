@@ -18,3 +18,9 @@ dep-ext : ∀ {a b}{A : Set a}{F G : (α : A) → Set b}
     → (∀ (α : A) → F α ≡ G α)
     → ((α : A) → F α) ≡ ((α : A) → G α) 
 dep-ext = ∀-extensionality fun-ext _ _
+
+postulate 
+  fun-ext₂′ :  ∀ {l₁}{l₂}{l₃}{l₄} {A₁ : Set l₁} {A₂ : A₁ → Set l₂} {A₃ : (x : A₁) → A₂ x → Set l₃}{B : (x : A₁) → (y : A₂ x) → A₃ x y → Set l₄}
+             {f g : (x : A₁) → {y : A₂ x} → (z : A₃ x y) → B x y z} →
+    (∀ (x : A₁) {y : A₂ x} (z : A₃ x y) → f x {y} z ≡ g x {y} z) →
+    f ≡ g
