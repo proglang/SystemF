@@ -17,6 +17,7 @@ open ≡-Reasoning
 open import Ext
 open import SetOmega
 open import Types
+open import TypeSubstitution
 open import Expressions
 
 -- expr substitution
@@ -273,6 +274,24 @@ Ewk {T = T} e = subst (λ T → Expr _ _ T) (TidᵣT≡T T) (Eren (Ewkᵣ Tidᵣ
 
 Ewk-l : Expr Δ Γ T → Expr (l ∷ Δ) (l ◁* Γ) (Twk T)  
 Ewk-l e = Eren tskip e
+
+-- semantic renamings on expressions
+
+ERen* : {ρ* : TRen Δ₁ Δ₂} (TRen* : TRen* ρ* η₁ η₂) → (ρ : ERen ρ* Γ₁ Γ₂) → (γ₁ : Env Δ₁ Γ₁ η₁) → (γ₂ : Env Δ₂ Γ₂ η₂) → Setω
+ERen* {Δ₁ = Δ₁} {Γ₁ = Γ₁} {ρ*} Tren* ρ γ₁ γ₂ = ∀ {l} {T : Type Δ₁ l} → 
+  (x : inn T Γ₁) → γ₂ _ _ (ρ x) ≡ subst id (sym (Tren*-preserves-semantics Tren* T)) (γ₁ _ _ x)
+
+ETren*-preserves-semantics : ∀ {T : Type Δ₁ l} {ρ* : TRen Δ₁ Δ₂} {ρ : ERen ρ* Γ₁ Γ₂} {γ₁ : Env Δ₁ Γ₁ η₁} {γ₂ : Env Δ₂ Γ₂ η₂} →
+  (Tren* : TRen* ρ* η₁ η₂) →
+  (Eren* : ERen* Tren* ρ γ₁ γ₂) → 
+  (e : Expr Δ₁ Γ₁ T) → 
+  E⟦ Eren ρ e ⟧ η₂ γ₂ ≡ subst id (sym (Tren*-preserves-semantics Tren* T)) (E⟦ e ⟧ η₁ γ₁)
+ETren*-preserves-semantics Tren* Eren* (# n) = refl
+ETren*-preserves-semantics Tren* Eren* (` x) = Eren* x
+ETren*-preserves-semantics Tren* Eren* (ƛ e) = {!   !}
+ETren*-preserves-semantics Tren* Eren* (e₁ · e₂) = {!   !}
+ETren*-preserves-semantics Tren* Eren* (Λ l ⇒ e) = {!   !}
+ETren*-preserves-semantics Tren* Eren* (e ∙ T′) = {!   !}
 
 -- expression substitutions
 
