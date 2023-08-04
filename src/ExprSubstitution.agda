@@ -17,6 +17,7 @@ open ≡-Reasoning
 
 open import Ext
 open import SetOmega
+open import SubstProperties
 open import Types
 open import TypeSubstitution
 open import Expressions
@@ -282,17 +283,33 @@ ERen* : {ρ* : TRen Δ₁ Δ₂} (TRen* : TRen* ρ* η₁ η₂) → (ρ : ERen 
 ERen* {Δ₁ = Δ₁} {Γ₁ = Γ₁} {ρ*} Tren* ρ γ₁ γ₂ = ∀ {l} {T : Type Δ₁ l} → 
   (x : inn T Γ₁) → γ₂ _ _ (ρ x) ≡ subst id (sym (Tren*-preserves-semantics Tren* T)) (γ₁ _ _ x)
 
-ETren*-preserves-semantics : ∀ {T : Type Δ₁ l} {ρ* : TRen Δ₁ Δ₂} {ρ : ERen ρ* Γ₁ Γ₂} {γ₁ : Env Δ₁ Γ₁ η₁} {γ₂ : Env Δ₂ Γ₂ η₂} →
+Eren*-preserves-semantics : ∀ {T : Type Δ₁ l} {ρ* : TRen Δ₁ Δ₂} {ρ : ERen ρ* Γ₁ Γ₂} {γ₁ : Env Δ₁ Γ₁ η₁} {γ₂ : Env Δ₂ Γ₂ η₂} →
   (Tren* : TRen* ρ* η₁ η₂) →
   (Eren* : ERen* Tren* ρ γ₁ γ₂) → 
   (e : Expr Δ₁ Γ₁ T) → 
   E⟦ Eren ρ e ⟧ η₂ γ₂ ≡ subst id (sym (Tren*-preserves-semantics Tren* T)) (E⟦ e ⟧ η₁ γ₁)
-ETren*-preserves-semantics Tren* Eren* (# n) = refl
-ETren*-preserves-semantics Tren* Eren* (` x) = Eren* x
-ETren*-preserves-semantics Tren* Eren* (ƛ e) = {!   !}
-ETren*-preserves-semantics Tren* Eren* (e₁ · e₂) = {!   !}
-ETren*-preserves-semantics Tren* Eren* (Λ l ⇒ e) = {!   !}
-ETren*-preserves-semantics Tren* Eren* (e ∙ T′) = {!   !}
+Eren*-preserves-semantics Tren* Eren* (# n) = refl
+Eren*-preserves-semantics Tren* Eren* (` x) = Eren* x
+Eren*-preserves-semantics Tren* Eren* (ƛ e) = fun-ext λ ⟦e⟧ → {!   !}
+Eren*-preserves-semantics {η₁ = η₁} {η₂ = η₂} {ρ = ρ} {γ₁ = γ₁} {γ₂ = γ₂} Tren* Eren* (_·_ {T = T} {T′ = T′} e₁ e₂) 
+  with Eren*-preserves-semantics {ρ = ρ} {γ₁ = γ₁} {γ₂ = γ₂} Tren* Eren* e₁ 
+    |  Eren*-preserves-semantics {ρ = ρ} {γ₁ = γ₁} {γ₂ = γ₂} Tren* Eren* e₂ 
+... | eq₁* | eq₂* =
+  let eq = sym (Tren*-preserves-semantics Tren* T′) in
+  let eq₁ = sym (Tren*-preserves-semantics Tren* (T ⇒ T′)) in
+  let eq₂ = sym (Tren*-preserves-semantics Tren* T) in
+  let sub = subst id eq in 
+  let sub₁ = subst id eq₁ in
+  let sub₂ = subst id eq₂ in
+  begin 
+    E⟦ Eren ρ e₁ ⟧ η₂ γ₂ (E⟦ Eren ρ e₂ ⟧ η₂ γ₂)
+  ≡⟨ cong₂ (λ x y → x y) eq₁* eq₂* ⟩
+   (sub₁ (E⟦ e₁ ⟧ η₁ γ₁)) (sub₂ (E⟦ e₂ ⟧ η₁ γ₁))
+  ≡⟨ dist-subst-app (E⟦ e₁ ⟧ η₁ γ₁) eq₂ eq₁ eq (E⟦ e₂ ⟧ η₁ γ₁) ⟩
+    sub (E⟦ e₁ ⟧ η₁ γ₁ (E⟦ e₂ ⟧ η₁ γ₁))
+  ∎
+Eren*-preserves-semantics Tren* Eren* (Λ l ⇒ e) = {!   !}
+Eren*-preserves-semantics Tren* Eren* (e ∙ T′) = {!   !}
 
 -- expression substitutions
 
