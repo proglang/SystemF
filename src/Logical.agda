@@ -281,7 +281,7 @@ Cextend-Elift {σ* = σ*} χ w e = begin
     Esub σ* (ES←SC (Cextend χ w)) e
   ≡⟨ cong (λ σ → Esub σ* σ e) (Cextend-Eext χ w) ⟩
     Esub σ* (Eextₛ σ* (ES←SC χ) (exp w)) e
-  ≡⟨ {!!} ⟩
+  ≡⟨ {!  !} ⟩
     Esub σ* (Eliftₛ σ* (ES←SC χ)) e [ exp w ]E
   ∎
 
