@@ -17,6 +17,7 @@ open ≡-Reasoning
 open import Ext
 open import SetOmega
 open import Types
+open import TypeSubstitution
 open import Expressions
 open import ExprSubstitution
 open import SmallStep
