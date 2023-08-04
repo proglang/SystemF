@@ -63,6 +63,10 @@ substω : ∀ {b}{A : Setω} → (F : (x : A) → Set b) →
   ∀ {x y : A} → x ≡ω y → F x → F y
 substω f refl x = x
 
+substωω : ∀ {A : Setω} → (F : (x : A) → Setω) →
+  ∀ {x y : A} → x ≡ω y → F x → F y
+substωω f refl x = x
+
 ----------------------------------------------------------------------
 
 -- level environments
@@ -662,7 +666,7 @@ module extended where
   Eliftₛ _ σ (there x) = Ewk (σ x)
   
   Eliftₛ-l : (σ* : TSub Δ₁ Δ₂) → ESub σ* Γ₁ Γ₂ → ESub (Tliftₛ σ* _) (l ◁* Γ₁) (l ◁* Γ₂)
-  Eliftₛ-l σ* σ (tskip x) = subst (Expr _ _) (sym {!!}) (Ewk-l (σ x))
+  Eliftₛ-l σ* σ (tskip {T = T} x) = subst (Expr _ _) (sym (σ↑-TwkT≡Twk-σT σ* T)) (Ewk-l (σ x))
   
   Esub : (σ* : TSub Δ₁ Δ₂) → ESub σ* Γ₁ Γ₂ → Expr Δ₁ Γ₁ T → Expr Δ₂ Γ₂ (Tsub σ* T)
   Esub σ* σ (# n) = # n
@@ -670,7 +674,7 @@ module extended where
   Esub σ* σ (ƛ e) = ƛ Esub σ* (Eliftₛ σ* σ) e
   Esub σ* σ (e₁ · e₂) = Esub σ* σ e₁ · Esub σ* σ e₂
   Esub σ* σ (Λ l ⇒ e) = Λ l ⇒ Esub (Tliftₛ σ* _) (Eliftₛ-l σ* σ) e
-  Esub σ* σ (_∙_ {T = T} e T′) = subst (Expr _ _) (sym {!!}) (Esub σ* σ e ∙ (Tsub σ* T′))
+  Esub σ* σ (_∙_ {T = T} e T′) = subst (Expr _ _) (sym (σT[T′]≡σ↑T[σT'] σ* T T′)) (Esub σ* σ e ∙ (Tsub σ* T′))
   -- Esub σ* σ (_∙_ {T = T} e T′) = subst (Expr _ _) (sym (ρT[T′]≡ρT[ρ↑T′] σ* T T′)) (Esub σ* σ e ∙ (Tren σ* T′))
   
   Eextₛ : (σ* : TSub Δ₁ Δ₂) → ESub σ* Γ₁ Γ₂ → Expr Δ₂ Γ₂ (Tsub σ* T) → ESub σ* (T ◁ Γ₁) Γ₂
@@ -770,13 +774,38 @@ data _↪_ : Expr Δ Γ T → Expr Δ Γ T → Set where
     (e₁ ∙ T′) ↪ (e₂ ∙ T′)
 
 -- small-step continued
+{-
+Goal
+TRen* (Twkᵣ Tidᵣ) (subst-to-env* σ′ η₂)
+      (⟦α⟧ ∷ subst-to-env* (Tdropₛ (Tliftₛ σ′ l)) (⟦α⟧ ∷ η₂))
+Have
+TRen* (Twkᵣ Tidᵣ) (subst-to-env* σ′ η₂)
+      (⟦α⟧ ∷ subst-to-env* σ′ η₂)
+-}
 
-Sub-to-env : ∀{σ′ : TSub Δ₁ Δ₂} → Sub σ′ Γ₁ Γ₂ → Env Δ₂ Γ₂ η₂ → Env Δ₁ Γ₁ (subst-to-env* σ′ η₂)
+Env-drop-level : ∀{⟦α⟧ : Set l} → Env (l ∷ Δ) (l ◁* Γ) (⟦α⟧ ∷ η) → Env Δ Γ η
+Env-drop-level {η = η} {⟦α⟧ = ⟦α⟧} γ _ T x = 
+  subst Function.id (Tren*-preserves-semantics (wkᵣ∈Ren* η ⟦α⟧) T) (γ _ _ (tskip x))
+
+Env-drop : Env Δ (T ◁ Γ) η → Env Δ Γ η
+Env-drop {η = η} γ _ _ x = γ _ _ (there x)
+
+wkᵣ∈Ren*′ : ∀ (η₂ : Env* Δ₂) (⟦α⟧ : Set l) (σ : TSub Δ₁ Δ₂) → 
+  TRen* (Twkᵣ Tidᵣ) (subst-to-env* σ η₂) (⟦α⟧ ∷ subst-to-env* (Twkₛ σ) (⟦α⟧ ∷ η₂))
+wkᵣ∈Ren*′ {Δ₁ = Δ₁} η₂ ⟦α⟧ σ x = substω (λ η → apply-env η (Tidᵣ _ x) ≡ apply-env (subst-to-env* σ η₂) x) 
+  {! subst-to-env*-wk ? ? ?  !} (wkᵣ∈Ren* (subst-to-env* σ η₂) ⟦α⟧ x)
+
+Sub-to-env : ∀ {σ′ : TSub Δ₁ Δ₂} → Sub σ′ Γ₁ Γ₂ → Env Δ₂ Γ₂ η₂ → Env Δ₁ Γ₁ (subst-to-env* σ′ η₂)
 Sub-to-env {η₂ = η₂} {σ′ = .Tidₛ} sub-id γ _ T x = 
   substω (λ η → ⟦ T ⟧ η) (symω (subst-to-env*-id η₂)) (γ _ _ x)
-Sub-to-env {σ′ = .(Tliftₛ _ _)} (sub-lift-l σ) γ _ T x = {!   !}
-Sub-to-env {σ′ = .(Textₛ _ _)} (sub-ext σ) γ _ T x = {!   !}
-Sub-to-env {σ′ = σ′} (sub-lift-T σ) γ = {!   !}
+Sub-to-env {Δ₁ = l ∷ Δ₁} {η₂ = _∷_ {Δ = Δ} ⟦α⟧ η₂} {σ′ = .(Tliftₛ σ′ l)} (sub-lift-l {σ = σ′} σ) γ _ .(Twk T) (tskip {T = T} x) = 
+  subst id 
+    (sym (Tren*-preserves-semantics (wkᵣ∈Ren*′ η₂ ⟦α⟧ σ′) T)) 
+    ((Sub-to-env σ (Env-drop-level γ)) _ _ x)
+Sub-to-env {η₂ = η₂} {.(Textₛ _ _)} (sub-ext {T = T′} σ) γ _ .(Twk T) (tskip {T = T} x) = 
+  subst id (sym (Tren*-preserves-semantics (wkᵣ∈Ren* (subst-to-env* _ η₂) (⟦ T′ ⟧ η₂)) T)) ((Sub-to-env σ γ) _ _ x)
+Sub-to-env {σ′ = σ′} (sub-lift-T  σ) γ _ T here = subst id (subst-preserves σ′ T) (γ _ _ here)
+Sub-to-env {σ′ = σ′} (sub-lift-T σ) γ _ _ (there x) = (Sub-to-env σ (Env-drop γ)) _ _ x
 
 ETRen* : {ρ′ : TRen Δ₁ Δ₂} (ρ : OPE ρ′ Γ₁ Γ₂) → (γ₁ : Env Δ₁ Γ₁ η₁) → (γ₂ : Env Δ₂ Γ₂ η₂) → (Tren* : TRen* ρ′ η₁ η₂)  → Setω
 ETRen* {Δ₁ = Δ₁} {Γ₁ = Γ₁} {ρ′ = ρ′} ρ γ₁ γ₂ Tren* = ∀ {l} {T : Type Δ₁ l} → 
@@ -788,6 +817,8 @@ ETren*-lift-T : {ρ′ : TRen Δ₁ Δ₂} {γ₁ : Env Δ₁ Γ₁ η₁} → {
 ETren*-lift-T ⟦e⟧ ρ ETren* here = {!   !}
 ETren*-lift-T ⟦e⟧ ρ ETren* (there x) = {!   !} 
 
+open import SubstProperties
+
 ETren*-preserves-semantics : ∀ {T : Type Δ₁ l} {ρ′ : TRen Δ₁ Δ₂} {ρ : OPE ρ′ Γ₁ Γ₂}
   {γ₁ : Env Δ₁ Γ₁ η₁} {γ₂ : Env Δ₂ Γ₂ η₂} →
   (Tren* : TRen* ρ′ η₁ η₂) →
@@ -797,7 +828,23 @@ ETren*-preserves-semantics Tren* ETren* (# n) = refl
 ETren*-preserves-semantics Tren* ETren* (` x) = ETren* x
 ETren*-preserves-semantics {ρ = ρ} Tren* ETren* (ƛ e) = fun-ext λ ⟦e⟧ → 
   {! ETren*-preserves-semantics {ρ = ope-lift-T ρ} Tren* (ETren*-lift-T ⟦e⟧ ρ ?) e !}
-ETren*-preserves-semantics Tren* ETren* (e₁ · e₂) = {!   !}
+ETren*-preserves-semantics {η₁ = η₁} {η₂ = η₂} {ρ = ρ} {γ₁ = γ₁} {γ₂ = γ₂} Tren* ETren* (_·_ {T = T} {T′ = T′} e₁ e₂) 
+  with ETren*-preserves-semantics {T = T ⇒ T′} {ρ = ρ} {γ₂ = γ₂} Tren* ETren* e₁ 
+  |    ETren*-preserves-semantics {T = T} {ρ = ρ} {γ₂ = γ₂} Tren* ETren* e₂ 
+... | eq₁* | eq₂* = 
+  let eq = sym (Tren*-preserves-semantics Tren* T′) in
+  let eq₁ = sym (Tren*-preserves-semantics Tren* (T ⇒ T′)) in
+  let eq₂ = sym (Tren*-preserves-semantics Tren* T) in
+  let sub = subst id eq in 
+  let sub₁ = subst id eq₁ in
+  let sub₂ = subst id eq₂ in
+  begin 
+    E⟦ ETren ρ e₁ ⟧ η₂ γ₂ (E⟦ ETren ρ e₂ ⟧ η₂ γ₂)
+  ≡⟨ cong₂ (λ x y → x y) eq₁* eq₂* ⟩
+   (sub₁ (E⟦ e₁ ⟧ η₁ γ₁)) (sub₂ (E⟦ e₂ ⟧ η₁ γ₁))
+  ≡⟨ dist-subst'' (E⟦ e₁ ⟧ η₁ γ₁) eq₂ eq₁ eq (E⟦ e₂ ⟧ η₁ γ₁) ⟩
+    sub (E⟦ e₁ ⟧ η₁ γ₁ (E⟦ e₂ ⟧ η₁ γ₁))
+  ∎
 ETren*-preserves-semantics Tren* ETren* (Λ l ⇒ e) = {!   !}
 ETren*-preserves-semantics Tren* ETren* (e ∙ T′) = {!   !}
 
@@ -807,7 +854,10 @@ ETsubst-preserves : ∀ {T : Type Δ₁ l} {σ′ : TSub Δ₁ Δ₂}
 ETsubst-preserves η₂ γ₂ σ (# n) = refl
 ETsubst-preserves η₂ γ₂ σ (` x) = {!   !}
 ETsubst-preserves η₂ γ₂ σ (ƛ e) = {!   !}
-ETsubst-preserves η₂ γ₂ σ (e · e₁) = {!   !}
+ETsubst-preserves η₂ γ₂ σ (e₁ · e₂) 
+  with ETsubst-preserves η₂ γ₂ σ e₁ 
+  |    ETsubst-preserves η₂ γ₂ σ e₂
+... | a | b = {!   !}
 ETsubst-preserves η₂ γ₂ σ (Λ l ⇒ e) = {!   !}
 ETsubst-preserves η₂ γ₂ σ (e ∙ T′) = {!   !}
 
@@ -1069,127 +1119,128 @@ LRV (`∀α l , T) ρ (V-Λ .l e) F =
 
 -- closing value substitution
 
-module extended2 where
-  open extended
-
-  variable σ* : TSub Δ []
-
-  VSub : {Γ₁ : TEnv Δ₁} → extended.ESub σ* Γ₁ Γ₂ → Set
-  VSub {Δ₁ = Δ₁} {Γ₁ = Γ₁} σ = ∀ {l} {T : Type Δ₁ l} → (x : inn T Γ₁) → Val (σ x)
-
-  CSub : TSub Δ [] → TEnv Δ → Set
-  CSub {Δ} σ* Γ = Σ (extended.ESub σ* Γ ∅) VSub
-
-  Csub : {Γ : TEnv Δ} {σ* : TSub Δ []} → CSub σ* Γ → Expr Δ Γ T → Expr [] ∅ (Tsub σ* T)
-  Csub {σ* = σ*} ( χ₁ , χ₂ ) e = extended.Esub σ* χ₁ e
-
-  Cdrop : CSub σ* (T ◁ Γ) → CSub σ* Γ
-  Cdrop (χ₁ , χ₂) = (χ₁ ∘ there , χ₂ ∘ there)
-  
-  Cdropt : {Γ : TEnv Δ} → CSub σ (l ◁* Γ) → CSub (Tdropₛ σ) Γ
-  Cdropt {σ = σ} (χ₁ , χ₂) = (λ {l} {T} x → {!!}) , {!!}
-
-  ----------
-
-  CSub′ : TSub Δ [] → TEnv Δ → Set
-  CSub′ {Δ} σ* Γ = ∀ {l} {T : Type Δ l} → inn T Γ → Σ (Expr [] ∅ (Tsub σ* T)) Val
-
-  Csub′ : {Γ : TEnv Δ} {σ* : TSub Δ []} → CSub′ σ* Γ → Expr Δ Γ T → Expr [] ∅ (Tsub σ* T)
-  Csub′ {σ* = σ*} χ e = extended.Esub σ* (proj₁ ∘ χ) e
-
-  Cdrop′ : CSub′ σ* (T ◁ Γ) → CSub′ σ* Γ
-  Cdrop′ χ = χ ∘ there
-  
-  Cdropt′ : {Γ : TEnv Δ} → CSub′ σ* (l ◁* Γ) → CSub′ (Tdropₛ σ*) Γ
-  Cdropt′ {σ* = σ*} χ {l}{T} x = subst (λ T → Σ (Expr [] ∅ T) Val) (assoc-sub-ren T (Twkᵣ Tidᵣ) σ*) (χ (tskip x))
-
-  Cextt′ : ∀{l} → CSub′ σ* Γ → (T′ : Type [] l) → CSub′ (Textₛ σ* T′) (l ◁* Γ)
-  Cextt′ {σ* = σ*} χ T′ (tskip {T = T} x) = subst (λ T → Σ (Expr [] ∅ T) Val) (sym (σT≡TextₛσTwkT σ* T)) (χ x)
-
-
-CSub : TSub Δ [] → TEnv Δ → Set
-CSub {Δ} σ Γ = ∀ {l} {T : Type Δ l} → inn T Γ → Value (Tsub σ T)
-
--- doesn't work
-Csub : {Γ : TEnv Δ} → CSub σ Γ → Expr Δ Γ T → Expr [] ∅ (Tsub σ T)
-Csub χ (# n) = # n
-Csub χ (` x) = exp (χ x)
-Csub χ (ƛ e) = ƛ {!!}
-Csub χ (e₁ · e₂) = Csub χ e₁ · Csub χ e₂
-Csub χ (Λ l ⇒ e) = {!!}
-Csub χ (e ∙ T′) = {!!}
-
-Cdrop : CSub σ (T ◁ Γ) → CSub σ Γ
-Cdrop χ x = χ (there x)
-
-Cdropt : {Γ : TEnv Δ} → CSub σ (l ◁* Γ) → CSub (Tdropₛ σ) Γ
-Cdropt {σ = σ} χ {l} {T} x = subst Value (assoc-sub-ren T (Twkᵣ Tidᵣ) σ) (χ (tskip x))
-
-Cextt : ∀{l} → CSub σ Γ → (T′ : Type [] l) → CSub (Textₛ σ T′) (l ◁* Γ)
-Cextt {σ = σ} χ T′ (tskip {T = T} x) = subst Value (sym (σT≡TextₛσTwkT σ T)) (χ x)
-
-Gdropt : (σ : TSub (l ∷ Δ) [])
-  → Env (l ∷ Δ) (l ◁* Γ) (subst-to-env* σ [])
-  → Env Δ Γ (subst-to-env* (Tdropₛ σ) [])
-Gdropt σ γ l T x =
-  let r = γ l (Twk T) (tskip x) in
-  subst id (Tren*-preserves-semantics {ρ = Twkᵣ Tidᵣ} {subst-to-env* (Tdropₛ σ) []} {subst-to-env* σ []} (wkᵣ∈Ren* (subst-to-env* (Tdropₛ σ) []) (⟦ σ _ here ⟧ [])) T) r
-
-exprTy : {T : Type Δ l} → Expr Δ Γ T → Type Δ l
-exprTy {T = T} e = T
-
-levelTy : Type Δ l → Level
-levelTy {l = l} T = l
-
-levelEnv : TEnv Δ → Level
-levelEnv ∅ = zero
-levelEnv (T ◁ Γ) = levelTy T ⊔ levelEnv Γ
-levelEnv (l ◁* Γ) = levelEnv Γ
-
-ENVdrop : (Γ : TEnv Δ) → (η : Env* Δ) → Env Δ (T ◁ Γ) η → Env Δ Γ η
-ENVdrop Γ η γ l T x = γ l T (there x)
-
--- extended LR on environments
-
-LRG : (Γ : TEnv Δ) → (ρ : RelEnv Δ) → CSub (subst←RE ρ) Γ → let η = subst-to-env* (subst←RE ρ) [] in Env Δ Γ η → Set (levelEnv Γ)
-LRG ∅ ρ χ γ = ⊤
-LRG (T ◁ Γ) ρ χ γ = LRV T ρ (χ here) (γ _ T here) ∧  LRG Γ ρ (Cdrop χ) (ENVdrop Γ _ γ)
-LRG (l ◁* Γ) ρ χ γ
-  rewrite sym (subst←RE-drop-ext ρ) = LRG Γ (REdrop ρ) (Cdropt χ) (Gdropt (subst←RE ρ) γ)
-
-LRV←LRG : (Γ : TEnv Δ) (ρ : RelEnv Δ) (χ : CSub (subst←RE ρ) Γ) (γ : Env Δ Γ (subst-to-env* (subst←RE ρ) [])) (T : Type Δ l) → LRG Γ ρ χ γ →
-  (x : inn T Γ) → LRV T ρ (χ x) (γ l T x)
-LRV←LRG .(T ◁ _) ρ χ γ T (lrv , lrg) here = lrv
-LRV←LRG (_ ◁ Γ) ρ χ γ T (lrv , lrg) (there x) = LRV←LRG _ ρ (Cdrop χ) (ENVdrop Γ _ γ) T lrg x
-LRV←LRG {l = l} (_ ◁* Γ) ρ χ γ Tw lrg (tskip x)
-  rewrite sym (subst←RE-drop-ext ρ) = LRV←LRG {l = l} Γ (REdrop ρ) (Cdropt χ) (Gdropt (subst←RE ρ) γ) {!!} lrg {!x!}
-
--- fundamental theorem
--- need function to apply closing substitution χ to expression e
-
-fundamental : ∀ (Γ : TEnv Δ) (ρ : RelEnv Δ) (χ : CSub (subst←RE ρ) Γ) → let η = subst-to-env* (subst←RE ρ) [] in (γ : Env Δ Γ η) →
-  ∀ (T : Type Δ l) (e : Expr Δ Γ T) →
-  LRG Γ ρ χ γ → ∃[ v ] (Csub χ e ⇓ v) ∧ LRV T ρ v (E⟦ e ⟧ η γ)
-fundamental Γ ρ χ γ T (` x) lrg = χ x , exp-v⇓v (χ x) , {!!}
-fundamental Γ ρ χ γ `ℕ (# n) lrg = V-ℕ n , ⇓-n , refl
-fundamental Γ ρ χ γ (T ⇒ T′) (ƛ e) lrg =
-  V-ƛ {!!} ,
-  ⇓-ƛ ,
-  (λ w x lrv-w-x → fundamental (T ◁ Γ) ρ {!!} (extend γ x) T′ e (lrv-w-x , lrg))
-fundamental Γ ρ χ γ T (_·_ {T = T₂}{T′ = .T} e₁ e₂) lrg
-  with fundamental Γ ρ χ γ (T₂ ⇒ T) e₁ lrg | fundamental Γ ρ χ γ T₂ e₂ lrg
-... | V-ƛ e₃ , e₁⇓v₁ , lrv₁ | v₂ , e₂⇓v₂ , lrv₂
-  with lrv₁ v₂ (E⟦ e₂ ⟧ (subst-to-env* (subst←RE ρ) []) γ) lrv₂
-... | v₃ , e₃[]⇓v₃ , lrv₃
-  = v₃ , (⇓-· e₁⇓v₁ e₂⇓v₂ e₃[]⇓v₃) , lrv₃
-fundamental Γ ρ χ γ (`∀α l , T) (Λ .l ⇒ e) lrg =
-  V-Λ l {!!} ,
-  ⇓-Λ ,
-  λ T′ R → fundamental (l ◁* Γ)
-                       (REext ρ (T′ , R))
-                       (subst (λ σ → CSub σ (l ◁* Γ)) (sym (subst←RE-ext-ext ρ T′ R)) (Cextt χ T′))
-                       {!!}
-                       {!T!}
-                       {!e!}
-                       {!!}
-fundamental Γ ρ χ γ .(_ [ T′ ]T) (_∙_ {T = T} e T′) lrg = {!!}
+-- module extended2 where
+--   open extended
+-- 
+--   variable σ* : TSub Δ []
+-- 
+--   VSub : {Γ₁ : TEnv Δ₁} → extended.ESub σ* Γ₁ Γ₂ → Set
+--   VSub {Δ₁ = Δ₁} {Γ₁ = Γ₁} σ = ∀ {l} {T : Type Δ₁ l} → (x : inn T Γ₁) → Val (σ x)
+-- 
+--   CSub : TSub Δ [] → TEnv Δ → Set
+--   CSub {Δ} σ* Γ = Σ (extended.ESub σ* Γ ∅) VSub
+-- 
+--   Csub : {Γ : TEnv Δ} {σ* : TSub Δ []} → CSub σ* Γ → Expr Δ Γ T → Expr [] ∅ (Tsub σ* T)
+--   Csub {σ* = σ*} ( χ₁ , χ₂ ) e = extended.Esub σ* χ₁ e
+-- 
+--   Cdrop : CSub σ* (T ◁ Γ) → CSub σ* Γ
+--   Cdrop (χ₁ , χ₂) = (χ₁ ∘ there , χ₂ ∘ there)
+--   
+--   Cdropt : {Γ : TEnv Δ} → CSub σ (l ◁* Γ) → CSub (Tdropₛ σ) Γ
+--   Cdropt {σ = σ} (χ₁ , χ₂) = (λ {l} {T} x → {!!}) , {!!}
+-- 
+--   ----------
+-- 
+--   CSub′ : TSub Δ [] → TEnv Δ → Set
+--   CSub′ {Δ} σ* Γ = ∀ {l} {T : Type Δ l} → inn T Γ → Σ (Expr [] ∅ (Tsub σ* T)) Val
+-- 
+--   Csub′ : {Γ : TEnv Δ} {σ* : TSub Δ []} → CSub′ σ* Γ → Expr Δ Γ T → Expr [] ∅ (Tsub σ* T)
+--   Csub′ {σ* = σ*} χ e = extended.Esub σ* (proj₁ ∘ χ) e
+-- 
+--   Cdrop′ : CSub′ σ* (T ◁ Γ) → CSub′ σ* Γ
+--   Cdrop′ χ = χ ∘ there
+--   
+--   Cdropt′ : {Γ : TEnv Δ} → CSub′ σ* (l ◁* Γ) → CSub′ (Tdropₛ σ*) Γ
+--   Cdropt′ {σ* = σ*} χ {l}{T} x = subst (λ T → Σ (Expr [] ∅ T) Val) (assoc-sub-ren T (Twkᵣ Tidᵣ) σ*) (χ (tskip x))
+-- 
+--   Cextt′ : ∀{l} → CSub′ σ* Γ → (T′ : Type [] l) → CSub′ (Textₛ σ* T′) (l ◁* Γ)
+--   Cextt′ {σ* = σ*} χ T′ (tskip {T = T} x) = subst (λ T → Σ (Expr [] ∅ T) Val) (sym (σT≡TextₛσTwkT σ* T)) (χ x)
+-- 
+-- 
+-- CSub : TSub Δ [] → TEnv Δ → Set
+-- CSub {Δ} σ Γ = ∀ {l} {T : Type Δ l} → inn T Γ → Value (Tsub σ T)
+-- 
+-- -- doesn't work
+-- Csub : {Γ : TEnv Δ} → CSub σ Γ → Expr Δ Γ T → Expr [] ∅ (Tsub σ T)
+-- Csub χ (# n) = # n
+-- Csub χ (` x) = exp (χ x)
+-- Csub χ (ƛ e) = ƛ {!!}
+-- Csub χ (e₁ · e₂) = Csub χ e₁ · Csub χ e₂
+-- Csub χ (Λ l ⇒ e) = {!!}
+-- Csub χ (e ∙ T′) = {!!}
+-- 
+-- Cdrop : CSub σ (T ◁ Γ) → CSub σ Γ
+-- Cdrop χ x = χ (there x)
+-- 
+-- Cdropt : {Γ : TEnv Δ} → CSub σ (l ◁* Γ) → CSub (Tdropₛ σ) Γ
+-- Cdropt {σ = σ} χ {l} {T} x = subst Value (assoc-sub-ren T (Twkᵣ Tidᵣ) σ) (χ (tskip x))
+-- 
+-- Cextt : ∀{l} → CSub σ Γ → (T′ : Type [] l) → CSub (Textₛ σ T′) (l ◁* Γ)
+-- Cextt {σ = σ} χ T′ (tskip {T = T} x) = subst Value (sym (σT≡TextₛσTwkT σ T)) (χ x)
+-- 
+-- Gdropt : (σ : TSub (l ∷ Δ) [])
+--   → Env (l ∷ Δ) (l ◁* Γ) (subst-to-env* σ [])
+--   → Env Δ Γ (subst-to-env* (Tdropₛ σ) [])
+-- Gdropt σ γ l T x =
+--   let r = γ l (Twk T) (tskip x) in
+--   subst id (Tren*-preserves-semantics {ρ = Twkᵣ Tidᵣ} {subst-to-env* (Tdropₛ σ) []} {subst-to-env* σ []} (wkᵣ∈Ren* (subst-to-env* (Tdropₛ σ) []) (⟦ σ _ here ⟧ [])) T) r
+-- 
+-- exprTy : {T : Type Δ l} → Expr Δ Γ T → Type Δ l
+-- exprTy {T = T} e = T
+-- 
+-- levelTy : Type Δ l → Level
+-- levelTy {l = l} T = l
+-- 
+-- levelEnv : TEnv Δ → Level
+-- levelEnv ∅ = zero
+-- levelEnv (T ◁ Γ) = levelTy T ⊔ levelEnv Γ
+-- levelEnv (l ◁* Γ) = levelEnv Γ
+-- 
+-- ENVdrop : (Γ : TEnv Δ) → (η : Env* Δ) → Env Δ (T ◁ Γ) η → Env Δ Γ η
+-- ENVdrop Γ η γ l T x = γ l T (there x)
+-- 
+-- -- extended LR on environments
+-- 
+-- LRG : (Γ : TEnv Δ) → (ρ : RelEnv Δ) → CSub (subst←RE ρ) Γ → let η = subst-to-env* (subst←RE ρ) [] in Env Δ Γ η → Set (levelEnv Γ)
+-- LRG ∅ ρ χ γ = ⊤
+-- LRG (T ◁ Γ) ρ χ γ = LRV T ρ (χ here) (γ _ T here) ∧  LRG Γ ρ (Cdrop χ) (ENVdrop Γ _ γ)
+-- LRG (l ◁* Γ) ρ χ γ
+--   rewrite sym (subst←RE-drop-ext ρ) = LRG Γ (REdrop ρ) (Cdropt χ) (Gdropt (subst←RE ρ) γ)
+-- 
+-- LRV←LRG : (Γ : TEnv Δ) (ρ : RelEnv Δ) (χ : CSub (subst←RE ρ) Γ) (γ : Env Δ Γ (subst-to-env* (subst←RE ρ) [])) (T : Type Δ l) → LRG Γ ρ χ γ →
+--   (x : inn T Γ) → LRV T ρ (χ x) (γ l T x)
+-- LRV←LRG .(T ◁ _) ρ χ γ T (lrv , lrg) here = lrv
+-- LRV←LRG (_ ◁ Γ) ρ χ γ T (lrv , lrg) (there x) = LRV←LRG _ ρ (Cdrop χ) (ENVdrop Γ _ γ) T lrg x
+-- LRV←LRG {l = l} (_ ◁* Γ) ρ χ γ Tw lrg (tskip x)
+--   rewrite sym (subst←RE-drop-ext ρ) = LRV←LRG {l = l} Γ (REdrop ρ) (Cdropt χ) (Gdropt (subst←RE ρ) γ) {!!} lrg {!x!}
+-- 
+-- -- fundamental theorem
+-- -- need function to apply closing substitution χ to expression e
+-- 
+-- fundamental : ∀ (Γ : TEnv Δ) (ρ : RelEnv Δ) (χ : CSub (subst←RE ρ) Γ) → let η = subst-to-env* (subst←RE ρ) [] in (γ : Env Δ Γ η) →
+--   ∀ (T : Type Δ l) (e : Expr Δ Γ T) →
+--   LRG Γ ρ χ γ → ∃[ v ] (Csub χ e ⇓ v) ∧ LRV T ρ v (E⟦ e ⟧ η γ)
+-- fundamental Γ ρ χ γ T (` x) lrg = χ x , exp-v⇓v (χ x) , {!!}
+-- fundamental Γ ρ χ γ `ℕ (# n) lrg = V-ℕ n , ⇓-n , refl
+-- fundamental Γ ρ χ γ (T ⇒ T′) (ƛ e) lrg =
+--   V-ƛ {!!} ,
+--   ⇓-ƛ ,
+--   (λ w x lrv-w-x → fundamental (T ◁ Γ) ρ {!!} (extend γ x) T′ e (lrv-w-x , lrg))
+-- fundamental Γ ρ χ γ T (_·_ {T = T₂}{T′ = .T} e₁ e₂) lrg
+--   with fundamental Γ ρ χ γ (T₂ ⇒ T) e₁ lrg | fundamental Γ ρ χ γ T₂ e₂ lrg
+-- ... | V-ƛ e₃ , e₁⇓v₁ , lrv₁ | v₂ , e₂⇓v₂ , lrv₂
+--   with lrv₁ v₂ (E⟦ e₂ ⟧ (subst-to-env* (subst←RE ρ) []) γ) lrv₂
+-- ... | v₃ , e₃[]⇓v₃ , lrv₃
+--   = v₃ , (⇓-· e₁⇓v₁ e₂⇓v₂ e₃[]⇓v₃) , lrv₃
+-- fundamental Γ ρ χ γ (`∀α l , T) (Λ .l ⇒ e) lrg =
+--   V-Λ l {!!} ,
+--   ⇓-Λ ,
+--   λ T′ R → fundamental (l ◁* Γ)
+--                        (REext ρ (T′ , R))
+--                        (subst (λ σ → CSub σ (l ◁* Γ)) (sym (subst←RE-ext-ext ρ T′ R)) (Cextt χ T′))
+--                        {!!}
+--                        {!T!}
+--                        {!e!}
+--                        {!!}
+-- fundamental Γ ρ χ γ .(_ [ T′ ]T) (_∙_ {T = T} e T′) lrg = {!!}
+    
