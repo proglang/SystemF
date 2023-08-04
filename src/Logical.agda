@@ -8,7 +8,7 @@ open import Data.List using (List; []; _∷_; _++_; length; lookup; tabulate)
 open import Data.Unit.Polymorphic.Base using (⊤; tt)
 open import Data.Empty using (⊥)
 open import Data.Nat using (ℕ)
-open import Function using (_∘_; id; _∘₂_)
+open import Function using (_∘_; id; case_of_)
 open import Relation.Binary.PropositionalEquality
   using (_≡_; _≢_; refl; sym; trans; cong; cong₂; subst; subst₂; resp₂; cong-app; icong; module ≡-Reasoning)
 open import Axiom.Extensionality.Propositional using (∀-extensionality; Extensionality)
@@ -192,8 +192,11 @@ LRV `ℕ ρ (# n , v-n) z =
 CSub : TSub Δ [] → TEnv Δ → Set
 CSub {Δ} σ* Γ = ∀ l {T : Type Δ l} → inn T Γ → Value (Tsub σ* T)
 
+ES←SC : {σ* : TSub Δ []} → CSub σ* Γ → ESub σ* Γ ∅
+ES←SC χ = λ l x → proj₁ (χ l x)
+
 Csub : {Γ : TEnv Δ} {σ* : TSub Δ []} → CSub σ* Γ → Expr Δ Γ T → Expr [] ∅ (Tsub σ* T)
-Csub {σ* = σ*} χ e = Esub σ* (λ l x → proj₁ (χ l x)) e
+Csub {σ* = σ*} χ e = Esub σ* (ES←SC χ) e
 
 Cdrop : ∀ {l} {T : Type Δ l} → CSub σ* (T ◁ Γ) → CSub σ* Γ
 Cdrop χ _ x = χ _ (there x)
@@ -201,6 +204,15 @@ Cdrop χ _ x = χ _ (there x)
 Cextend : ∀ {l} {T : Type Δ l} → CSub σ* Γ → Value (Tsub σ* T) → CSub σ* (T ◁ Γ)
 Cextend χ v _ here = v
 Cextend χ v _ (there x) = χ _ x
+
+Cextend-Eext : ∀ {l} {T : Type Δ l} → (χ : CSub σ* Γ) → (w : Value (Tsub σ* T)) → 
+  ES←SC (Cextend {T = T} χ w) ≡ Eextₛ _ (ES←SC χ) (exp w)
+Cextend-Eext {Δ = Δ} {σ* = σ*} {Γ = Γ} {T = T} χ w = fun-ext₂′ aux
+  where
+    aux : (l : Level) {T′ : Type Δ l} (x : inn T′ (T ◁ Γ)) →
+      ES←SC (Cextend χ w) l x ≡ Eextₛ σ* (ES←SC χ) (exp w) l x
+    aux l here = refl
+    aux l (there x) = refl
 
 Cdrop-Cextend : ∀ {l} {σ* : TSub Δ []} {T : Type Δ l}
   → (χ : CSub σ* Γ) → (v : Value (Tsub σ* T))
@@ -217,6 +229,22 @@ Cdropt {σ* = σ*} χ l {T} x = subst (λ T → Σ (Expr [] ∅ T) Val) (assoc-s
 
 Cextt : ∀{l} → CSub σ* Γ → (T′ : Type [] l) → CSub (Textₛ σ* T′) (l ◁* Γ)
 Cextt {σ* = σ*} χ T′ _ (tskip {T = T} x) = subst (λ T → Σ (Expr [] ∅ T) Val) (sym (σT≡TextₛσTwkT σ* T)) (χ _ x)
+
+LRVwk : ∀ {Δ}{l}{l₁}
+  → (T : Type Δ l)
+  → (Γ : TEnv Δ)
+  → (ρ : RelEnv (l₁ ∷ Δ))
+  → (χ : CSub (subst←RE ρ) (l₁ ◁* Γ))
+  → (γ : Env (l₁ ∷ Δ) (l₁ ◁* Γ) (subst-to-env* (subst←RE ρ) []))
+  → (x : inn T Γ)
+  → LRV T (REdrop ρ) (Cdropt χ l x) (Gdropt (subst←RE ρ) γ l T x)
+  → LRV (Twk T) ρ (χ l (tskip x)) (γ l (Twk T) (tskip x))
+LRVwk (` α) Γ ρ χ γ x lrv = {!!}
+LRVwk (T₁ ⇒ T₂) Γ ρ χ γ x lrv = {!!}
+LRVwk (`∀α l , T) Γ ρ χ γ x lrv = {!!}
+LRVwk `ℕ Γ ρ χ γ x lrv
+  with χ zero (tskip x) | γ zero `ℕ (tskip x)
+... | # n , v-n | z = lrv
 
 -- extended LR on environments
 
@@ -236,8 +264,25 @@ LRV←LRG : (Γ : TEnv Δ) (ρ : RelEnv Δ) (χ : CSub (subst←RE ρ) Γ) (γ :
   → LRV T ρ (χ l x) (γ l T x)
 LRV←LRG .(T ◁ _) ρ χ γ T (lrv , lrg) here = lrv
 LRV←LRG (_ ◁ Γ) ρ χ γ T (lrv , lrg) (there x) = LRV←LRG _ ρ (Cdrop χ) (ENVdrop Γ _ γ) T lrg x
-LRV←LRG {l = l} (_ ◁* Γ) ρ χ γ Tw lrg (tskip x)
-  rewrite sym (subst←RE-drop-ext ρ) = LRV←LRG {l = l} Γ (REdrop ρ) (Cdropt χ) (Gdropt (subst←RE ρ) γ) {!!} lrg {!x!}
+LRV←LRG {l = l} (_ ◁* Γ) ρ χ γ Tw lrg (tskip {T = T} x)
+  rewrite sym (subst←RE-drop-ext ρ)
+  = let r = LRV←LRG {l = l} Γ (REdrop ρ) (Cdropt χ) (Gdropt (subst←RE ρ) γ) T lrg x
+    in LRVwk T Γ ρ χ γ x r
+
+Cextend-Elift : {σ* : TSub Δ []} {Γ : TEnv Δ}{T : Type Δ l}{T′ : Type Δ l′}
+  → (χ : CSub σ* Γ)
+  → (w : Value (Tsub σ* T))
+  → (e : Expr Δ (T ◁ Γ) T′)
+  → Csub (Cextend χ w) e ≡ (Esub σ* (Eliftₛ σ* (ES←SC χ)) e [ exp w ]E)
+Cextend-Elift {σ* = σ*} χ w e = begin
+    Csub (Cextend χ w) e
+  ≡⟨⟩
+    Esub σ* (ES←SC (Cextend χ w)) e
+  ≡⟨ cong (λ σ → Esub σ* σ e) (Cextend-Eext χ w) ⟩
+    Esub σ* (Eextₛ σ* (ES←SC χ) (exp w)) e
+  ≡⟨ {!!} ⟩
+    Esub σ* (Eliftₛ σ* (ES←SC χ)) e [ exp w ]E
+  ∎
 
 -- fundamental theorem
 
@@ -261,7 +306,9 @@ fundamental Γ ρ χ γ (T ⇒ T′) (ƛ e) lrg =
                 T′
                 e
                 lrg′
-    in {!r!})
+    in case r of λ where
+      (v , ew⇓v , lrv-v) → v , {!ew⇓v!} , lrv-v
+    )
 fundamental Γ ρ χ γ T (_·_ {T = T₂}{T′ = .T} e₁ e₂) lrg
   with fundamental Γ ρ χ γ (T₂ ⇒ T) e₁ lrg | fundamental Γ ρ χ γ T₂ e₂ lrg
 ... | (e₃ , v-ƛ) , e₁⇓v₁ , lrv₁ | v₂ , e₂⇓v₂ , lrv₂
