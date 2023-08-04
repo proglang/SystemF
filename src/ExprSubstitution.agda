@@ -1,3 +1,4 @@
+{-# OPTIONS --allow-unsolved-metas #-}
 module ExprSubstitution where
 
 open import Level
