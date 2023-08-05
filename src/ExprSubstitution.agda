@@ -283,6 +283,41 @@ ERen* : {ρ* : TRen Δ₁ Δ₂} (TRen* : TRen* ρ* η₁ η₂) → (ρ : ERen 
 ERen* {Δ₁ = Δ₁} {Γ₁ = Γ₁} {ρ*} Tren* ρ γ₁ γ₂ = ∀ {l} {T : Type Δ₁ l} → 
   (x : inn T Γ₁) → γ₂ _ _ (ρ x) ≡ subst id (sym (Tren*-preserves-semantics Tren* T)) (γ₁ _ _ x)
 
+ERen*-lift : ∀ {T : Type Δ₁ l} {ρ* : TRen Δ₁ Δ₂} {ρ : ERen ρ* Γ₁ Γ₂} {γ₁ : Env Δ₁ Γ₁ η₁} {γ₂ : Env Δ₂ Γ₂ η₂} → 
+  (⟦e⟧ : ⟦ Tren ρ* T ⟧ η₂) →
+  (Tren* : TRen* ρ* η₁ η₂) → 
+  (Eren* : ERen* Tren* ρ γ₁ γ₂) → 
+  ERen* Tren* (Eliftᵣ {T = T} ρ) (extend γ₁ (subst id (Tren*-preserves-semantics Tren* T) ⟦e⟧)) (extend γ₂ ⟦e⟧)
+ERen*-lift {η₁ = η₁} {η₂ = η₂} {T = T} {ρ* = ρ*} ⟦e⟧ Tren* Eren* here 
+  rewrite Tren*-preserves-semantics {ρ* = ρ*} {η₁ = η₁} {η₂ = η₂} Tren* T = refl
+ERen*-lift {η₁ = η₁} {η₂ = η₂} {ρ* = ρ*} ⟦e⟧ Tren* Eren* {T = T} (there x) = Eren* x
+
+ERen*-lift-l : ∀ {ρ* : TRen Δ₁ Δ₂} {ρ : ERen ρ* Γ₁ Γ₂} {γ₁ : Env Δ₁ Γ₁ η₁} {γ₂ : Env Δ₂ Γ₂ η₂} → 
+  (⟦α⟧ : Set l) →
+  (Tren* : TRen* ρ* η₁ η₂) → 
+  (Eren* : ERen* Tren* ρ γ₁ γ₂) → 
+  ERen* (Tren*-lift ⟦α⟧ Tren*) (Eliftᵣ-l ρ) (extend-tskip {⟦α⟧  = ⟦α⟧} γ₁) (extend-tskip {⟦α⟧  = ⟦α⟧} γ₂)
+ERen*-lift-l {Γ₂ = Γ₂} {η₁ = η₁} {η₂ = η₂} {ρ* = ρ*} {ρ = ρ} {γ₁ = γ₁} {γ₂ = γ₂} ⟦e⟧ Tren* Eren* {l} (tskip {T = T} x) = 
+  let eq* = Eren* x in 
+  let eq = sym (Tren*-preserves-semantics (Tren*-lift ⟦e⟧ Tren*) (Twk T)) in 
+  let eq' = sym (Tren*-preserves-semantics (wkᵣ∈Ren* η₁ ⟦e⟧) T) in 
+  let eq'' = cong (λ T₁ → inn T₁ (_ ◁* Γ₂)) (sym (↑ρ-TwkT≡Twk-ρT T ρ*)) in
+  begin 
+    extend-tskip γ₂ l (Tren (Tliftᵣ ρ* _) (Twk T)) (subst id eq'' (tskip (ρ x)))
+  ≡⟨ {!   !} ⟩
+    subst id eq (subst id eq' (γ₁ _ T x))
+  ∎
+
+dist-subst′′ :
+  ∀ {ℓ₁ ℓ₂}
+    {A : Set ℓ₁} {B B′ : A → Set ℓ₂} 
+  → (x : A) 
+  → (f : (a : A) → B a)
+  → (A→B≡A′→B′ : ((a : A) → B a) ≡ ((a : A) → B′ a))
+  → (B≡B′ : B x ≡ B′ x)
+  → subst id B≡B′ (f x) ≡ subst id A→B≡A′→B′ f x
+dist-subst′′ _ _ x y = {!  !}
+
 Eren*-preserves-semantics : ∀ {T : Type Δ₁ l} {ρ* : TRen Δ₁ Δ₂} {ρ : ERen ρ* Γ₁ Γ₂} {γ₁ : Env Δ₁ Γ₁ η₁} {γ₂ : Env Δ₂ Γ₂ η₂} →
   (Tren* : TRen* ρ* η₁ η₂) →
   (Eren* : ERen* Tren* ρ γ₁ γ₂) → 
@@ -290,11 +325,21 @@ Eren*-preserves-semantics : ∀ {T : Type Δ₁ l} {ρ* : TRen Δ₁ Δ₂} {ρ 
   E⟦ Eren ρ e ⟧ η₂ γ₂ ≡ subst id (sym (Tren*-preserves-semantics Tren* T)) (E⟦ e ⟧ η₁ γ₁)
 Eren*-preserves-semantics Tren* Eren* (# n) = refl
 Eren*-preserves-semantics Tren* Eren* (` x) = Eren* x
-Eren*-preserves-semantics Tren* Eren* (ƛ e) = fun-ext λ ⟦e⟧ → {!   !}
-Eren*-preserves-semantics {η₁ = η₁} {η₂ = η₂} {ρ = ρ} {γ₁ = γ₁} {γ₂ = γ₂} Tren* Eren* (_·_ {T = T} {T′ = T′} e₁ e₂) 
-  with Eren*-preserves-semantics {ρ = ρ} {γ₁ = γ₁} {γ₂ = γ₂} Tren* Eren* e₁ 
-    |  Eren*-preserves-semantics {ρ = ρ} {γ₁ = γ₁} {γ₂ = γ₂} Tren* Eren* e₂ 
-... | eq₁* | eq₂* =
+Eren*-preserves-semantics {η₁ = η₁} {η₂ = η₂} {T = .(T ⇒ T′)} {ρ* = ρ*} {ρ = ρ} {γ₁ = γ₁} {γ₂ = γ₂} Tren* Eren* (ƛ_ {T = T} {T′} e) = fun-ext λ ⟦e⟧ →
+  let eq* = Eren*-preserves-semantics {ρ = Eliftᵣ ρ} {γ₂ = extend γ₂ ⟦e⟧} Tren* (ERen*-lift {ρ = ρ} {γ₁ = γ₁} {γ₂ = γ₂} ⟦e⟧ Tren* Eren*) e  in
+  let eq = sym (Tren*-preserves-semantics Tren* (T ⇒ T′)) in
+  let eq₁ = Tren*-preserves-semantics Tren* T in
+  let eq₂ = sym (Tren*-preserves-semantics Tren* T′) in
+  begin 
+    E⟦ Eren (Eliftᵣ ρ) e ⟧ η₂ (extend γ₂ ⟦e⟧)
+  ≡⟨ eq* ⟩
+    subst id eq₂ (E⟦ e ⟧ η₁ (extend γ₁ (subst id eq₁ ⟦e⟧)))
+  ≡⟨ dist-subst (λ x → E⟦ e ⟧ η₁ (extend γ₁ x)) eq₁ eq eq₂ ⟦e⟧ ⟩
+    subst id eq (λ x → E⟦ e ⟧ η₁ (extend γ₁ x)) ⟦e⟧
+  ∎
+Eren*-preserves-semantics {η₁ = η₁} {η₂ = η₂} {ρ = ρ} {γ₁ = γ₁} {γ₂ = γ₂} Tren* Eren* (_·_ {T = T} {T′ = T′} e₁ e₂) =
+  let eq₁* = Eren*-preserves-semantics {ρ = ρ} {γ₁ = γ₁} {γ₂ = γ₂} Tren* Eren* e₁ in
+  let eq₂* = Eren*-preserves-semantics {ρ = ρ} {γ₁ = γ₁} {γ₂ = γ₂} Tren* Eren* e₂ in
   let eq = sym (Tren*-preserves-semantics Tren* T′) in
   let eq₁ = sym (Tren*-preserves-semantics Tren* (T ⇒ T′)) in
   let eq₂ = sym (Tren*-preserves-semantics Tren* T) in
@@ -305,11 +350,24 @@ Eren*-preserves-semantics {η₁ = η₁} {η₂ = η₂} {ρ = ρ} {γ₁ = γ�
     E⟦ Eren ρ e₁ ⟧ η₂ γ₂ (E⟦ Eren ρ e₂ ⟧ η₂ γ₂)
   ≡⟨ cong₂ (λ x y → x y) eq₁* eq₂* ⟩
    (sub₁ (E⟦ e₁ ⟧ η₁ γ₁)) (sub₂ (E⟦ e₂ ⟧ η₁ γ₁))
-  ≡⟨ dist-subst-app (E⟦ e₁ ⟧ η₁ γ₁) eq₂ eq₁ eq (E⟦ e₂ ⟧ η₁ γ₁) ⟩
+  ≡⟨ dist-subst′ (E⟦ e₁ ⟧ η₁ γ₁) eq₂ eq₁ eq (E⟦ e₂ ⟧ η₁ γ₁) ⟩
     sub (E⟦ e₁ ⟧ η₁ γ₁ (E⟦ e₂ ⟧ η₁ γ₁))
   ∎
-Eren*-preserves-semantics Tren* Eren* (Λ l ⇒ e) = {!   !}
-Eren*-preserves-semantics Tren* Eren* (e ∙ T′) = {!   !}
+Eren*-preserves-semantics  {η₁ = η₁} {η₂ = η₂} {T = .(`∀α l , T)} {ρ* = ρ*} {ρ = ρ} {γ₁ = γ₁} {γ₂ = γ₂} Tren* Eren* (Λ_⇒_ l {T = T} e) = fun-ext λ ⟦α⟧ → 
+  let eq* = Eren*-preserves-semantics {ρ = Eliftᵣ-l ρ} {γ₁ = extend-tskip {⟦α⟧ = ⟦α⟧} γ₁} {γ₂ = extend-tskip {⟦α⟧ = ⟦α⟧} γ₂} 
+            (Tren*-lift {η₁ = η₁} ⟦α⟧ Tren*) (ERen*-lift-l ⟦α⟧ Tren* Eren*) e in 
+  let eq = sym (dep-ext (λ { α → Tren*-preserves-semantics (Tren*-lift α Tren*) T })) in 
+  let eq' = sym (Tren*-preserves-semantics (Tren*-lift ⟦α⟧ Tren*) T) in
+  begin 
+    E⟦ Eren (Eliftᵣ-l ρ) e ⟧ (⟦α⟧ ∷ η₂) (extend-tskip γ₂)
+  ≡⟨ eq* ⟩
+    subst id eq' (E⟦ e ⟧ (⟦α⟧ ∷ η₁) (extend-tskip γ₁))
+  ≡⟨ dist-subst′′ ⟦α⟧ (λ ⟦α⟧ → E⟦ e ⟧ (⟦α⟧ ∷ η₁) (extend-tskip γ₁)) eq eq' ⟩
+    subst id eq (λ ⟦α⟧ → E⟦ e ⟧ (⟦α⟧ ∷ η₁) (extend-tskip γ₁)) ⟦α⟧
+  ∎
+Eren*-preserves-semantics {η₁ = η₁} {η₂ = η₂} {ρ* = ρ*} {ρ = ρ} {γ₁ = γ₁} {γ₂ = γ₂} Tren* Eren* (_∙_ {T = T} e T′) = 
+  let eq* = Eren*-preserves-semantics {ρ = ρ} {γ₁ = γ₁} {γ₂ = γ₂} Tren* Eren* e in 
+  {!   !}
 
 -- expression substitutions
 
@@ -455,3 +513,4 @@ _>>S_ {Δ₃ = Δ₃}{σ₁* = σ₁*}{σ₂* = σ₂*}{Γ₃ = Γ₃} σ₁ σ�
 
 -- _[_]ET : Expr (l ∷ Δ) (l ◁* Γ) T → (T′ : Type Δ l) → Expr Δ Γ (T [ T′ ]T)
 -- e [ T ]ET = ETsub (sub-ext sub-id) e 
+   
