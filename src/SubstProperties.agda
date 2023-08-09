@@ -20,6 +20,16 @@ elim-subst :
   → subst F a₂≡a₁ (subst F a₁≡a₂ x) ≡ x
 elim-subst _ refl refl _ = refl
 
+elim-subst₃ :
+  ∀ {ℓ ℓ₁} {A : Set ℓ} {a₁ a₂ a₃ a₄ : A}
+  → (F : A → Set ℓ₁)
+  → (a₁≡a₂ : a₁ ≡ a₂)
+  → (a₃≡a₁ : a₃ ≡ a₁)
+  → (a₂≡a₃ : a₂ ≡ a₃)
+  → (x : F a₂)
+  → subst F a₁≡a₂ (subst F a₃≡a₁ (subst F a₂≡a₃ x)) ≡ x
+elim-subst₃ _ refl refl refl _ = refl
+
 dist-subst :
   ∀ {ℓ₁ ℓ₂}
     {A A′ : Set ℓ₁} {B B′ : Set ℓ₂}

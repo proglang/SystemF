@@ -412,6 +412,9 @@ _[_]E {T₁ = T₁} {T₂ = T₂} e e′ =
 _[_]ET : Expr (l ∷ Δ) (l ◁* Γ) T → (T′ : Type Δ l) → Expr Δ Γ (T [ T′ ]T)
 e [ T ]ET = Esub (Textₛ Tidₛ T) (Eextₛ-l Tidₛ Eidₛ) e
 
+sub0 : Expr Δ Γ (Tsub Tidₛ T₁) → ESub Tidₛ (T₁ ◁ Γ) Γ
+sub0 e′ = Eextₛ Tidₛ Eidₛ e′
+
 -- general equality of expression substitutions
 
 _~_ : {σ* : TSub Δ₁ Δ₂} → (σ₁ σ₂ : ESub σ* Γ₁ Γ₂) → Set
@@ -434,9 +437,12 @@ Esub~ σ₁ σ₂ σ₁~σ₂ (Λ l ⇒ e) = cong (Λ l ⇒_) (Esub~ _ _ (~-lift
 Esub~ σ₁ σ₂ σ₁~σ₂ (e ∙ T′) rewrite Esub~ σ₁ σ₂ σ₁~σ₂ e = refl
 
 --- want to prove
---- Goal: Esub σ* (Eextₛ σ* (ES←SC χ) (exp w)) e
----     ≡ (Esub σ* (Eliftₛ σ* (ES←SC χ)) e) [ exp w ]E
+--- Goal: Esub σ* (Eextₛ σ* σ e′) e
+---     ≡ (Esub σ* (Eliftₛ σ* σ) e) [ e′ ]E
 ---
+--- at the level of substitutions
+---
+---     (Eextₛ σ* σ e′) ~  (Eliftₛ σ* σ) >>S sub0 e′
 
 -- composition of substitutions
 
@@ -445,8 +451,42 @@ _>>S_ : ∀ {Δ₁}{Δ₂}{Δ₃}{σ₁* : TSub Δ₁ Δ₂} {σ₂* : TSub Δ�
 _>>S_ {Δ₃ = Δ₃}{σ₁* = σ₁*}{σ₂* = σ₂*}{Γ₃ = Γ₃} σ₁ σ₂ l {T} x
   = subst (Expr Δ₃ Γ₃) (assoc-sub-sub T  σ₁* σ₂*) (Esub _ σ₂ (σ₁ l x))
 
+TSub-id-right : ∀ (σ* : TSub Δ₁ Δ₂) → (σ* ∘ₛₛ Tidₛ) ≡ σ*
+TSub-id-right {Δ₁ = Δ₁} σ* = fun-ext₂ aux
+  where
+    aux : (l : Level) (x : l ∈ Δ₁) → (σ* ∘ₛₛ Tidₛ) l x ≡ σ* l x
+    aux l x = TidₛT≡T (σ* l x)
+
+Eext-Elift[]~-type : Set
+Eext-Elift[]~-type = ∀ {l}{Δ₁}{Δ₂} {σ* : TSub Δ₁ Δ₂} {Γ₁ : TEnv Δ₁} {Γ₂ : TEnv Δ₂} {T : Type Δ₁ l} (σ : ESub σ* Γ₁ Γ₂) (e′ : Expr Δ₂ Γ₂ (Tsub σ* T))
+  → let l = Eextₛ {T = T} σ* σ e′ in
+    let r = Eliftₛ {T = T} σ* σ >>S sub0 (subst (Expr _ _) (sym (TidₛT≡T (Tsub σ* T))) e′) in
+    l ~ subst (λ S → ESub S (T ◁ Γ₁) Γ₂) (TSub-id-right σ*) r
+
+
+Eext-Elift[]~ : Eext-Elift[]~-type
+Eext-Elift[]~ {.l₁} {Δ₁} {Δ₂} {σ* = σ*} {Γ₁} {Γ₂} {T = T} σ e′ l₁ {.T} here =
+  let sub₁ = subst (λ S → ESub S (T ◁ Γ₁) Γ₂) (TSub-id-right σ*) in
+  let sub₁′ = subst (Expr Δ₂ Γ₂) (cong (λ σ* → Tsub σ* T) (TSub-id-right σ*)) in
+  let sub₂ = subst (Expr Δ₂ Γ₂) (sym (TidₛT≡T (Tsub σ* T))) in
+  let sub₃ = subst (Expr Δ₂ Γ₂) (assoc-sub-sub T  σ* Tidₛ) in
+  begin
+    e′
+      ≡⟨ sym (elim-subst₃ (Expr Δ₂ Γ₂) (cong (λ σ* → Tsub σ* T) (TSub-id-right σ*)) (assoc-sub-sub T  σ* Tidₛ) (sym (TidₛT≡T (Tsub σ* T))) e′) ⟩
+    sub₁′ (sub₃ (sub₂ e′))
+      ≡⟨ refl ⟩
+    sub₁′ (sub₃ (Esub _ (sub0 (sub₂ e′)) (` here)))
+      ≡⟨ refl ⟩
+    sub₁′ (sub₃ (Esub _ (sub0 (sub₂ e′)) ((Eliftₛ σ* σ) l₁ here)))
+      ≡⟨ refl ⟩
+    sub₁′ ((Eliftₛ σ* σ >>S sub0 (sub₂ e′)) l₁ here)
+      ≡⟨ {!!} ⟩
+    sub₁ (Eliftₛ σ* σ >>S sub0 (sub₂ e′)) l₁ here 
+  ∎
+Eext-Elift[]~ {l} {Δ₁} {Δ₂} {σ* = σ*} {Γ₁} {Γ₂} {T = T} σ e′ l₁ {T₁} (there x) = {!!}
+
 -- Eext-Elift[]~ : ∀ {σ*  TSub Δ₁ Δ₂} (σ : ESub σ* Γ₁ Γ₂) (e′ : Expr Δ₂ Γ₂ (Tsub σ* T))
---   → Eextₛ σ* σ e′ ~ (Eliftₛ σ* σ >>S ((Eextₛ Tidₛ Eidₛ e′) e [ e′ ]E))
+--   → Eextₛ σ* σ e′ ~ (Eliftₛ σ* σ >>S ((Eextₛ Tidₛ Eidₛ e′)))
 -- Eext-Elift[]~ σ e′ = ?
 
 -- obsolete
