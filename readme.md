@@ -1,1 +1,1 @@
-# System F in Agda
+# Stratified System F in Agda
