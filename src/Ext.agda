@@ -1,7 +1,9 @@
 module Ext where
 
 open import Relation.Binary.PropositionalEquality using (_≡_)
+open import Level
 open import Axiom.Extensionality.Propositional using (∀-extensionality; Extensionality)
+open import SetOmega
 
 ----------------------------------------------------------------------
 
@@ -24,3 +26,7 @@ postulate
              {f g : (x : A₁) → {y : A₂ x} → (z : A₃ x y) → B x y z} →
     (∀ (x : A₁) {y : A₂ x} (z : A₃ x y) → f x {y} z ≡ g x {y} z) →
     f ≡ g
+
+postulate
+  fun-ext-lvl : {B : (l : Level) → Set l} {f g : (x : Level) → B x} →
+    (∀ x → f x ≡ g x) → f ≡ω g
