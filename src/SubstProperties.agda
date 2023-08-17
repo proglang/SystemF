@@ -41,6 +41,18 @@ dist-subst :
   → subst id B≡B′ (f (subst id A≡A′ x)) ≡ subst id A→B≡A′→B′ f x
 dist-subst _ refl refl refl _ = refl
 
+-- more general
+dist-subst' :
+  ∀ {ℓ ℓ' ℓ₁ ℓ₂} {A : Set ℓ} {B : Set ℓ'} {a₁ a₂ : A}
+    {F : A → Set ℓ₁} {G : B → Set ℓ₂}
+  → (a→b : A → B)
+  → (f : ∀ {a} → F a → G (a→b a))
+  → (a₁≡a₂ : a₁ ≡ a₂)
+  → (b₁≡b₂ : a→b a₁ ≡ a→b a₂)
+  → (x : F a₁) 
+  → f {a₂} (subst F a₁≡a₂ x) ≡ subst G b₁≡b₂ (f {a₁} x)
+dist-subst' _ _ refl refl _ = refl
+
 dist-subst′ :
   ∀ {ℓ₁ ℓ₂}
     {A A′ : Set ℓ₁} {B B′ : Set ℓ₂}
