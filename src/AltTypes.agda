@@ -93,7 +93,7 @@ data _⇛_ : LEnv → LEnv → Set where
 
 -- applying a substitution
 
-pattern △  =  _ ∷ _
+pattern △ = _ ∷ _
 
 _⟨_⟩ : Type Δ₁ l
     → Δ₂ ⇛ Δ₁
@@ -134,7 +134,7 @@ lemma-⨟ T (σ ↑) (_ ∷ τ) = lemma-⨟ T σ τ
 lemma-⨟ 𝟘 (T′ ∷ σ) τ@△ = refl
 lemma-⨟ (T ↑) (T′ ∷ σ) τ@△ = lemma-⨟ T σ τ
 lemma-⨟ (T₁ ⇒ T₂) σ@△ τ@△ = cong₂ _⇒_ (lemma-⨟ T₁ σ τ) (lemma-⨟ T₂ σ τ)
-lemma-⨟ (`∀ l T) σ@△ τ@△ = cong (`∀ l) (lemma-⨟ T (𝟘 ∷ σ ↑ ) (𝟘 ∷ τ ↑))
+lemma-⨟ (`∀ l T) σ@△ τ@△ = cong (`∀ l) (lemma-⨟ T (𝟘 ∷ σ ↑) (𝟘 ∷ τ ↑))
 lemma-⨟ `ℕ σ@△ τ@△ = refl
 
 {-# REWRITE lemma-⨟ #-}
