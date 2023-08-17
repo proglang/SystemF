@@ -61,7 +61,7 @@ extend-tskip : ∀ {Δ : LEnv}{Γ : TEnv Δ}{η : Env* Δ}{⟦α⟧ : Set l}
   → Env Δ Γ η → Env (l ∷ Δ) (l ◁* Γ) (⟦α⟧ ∷ η)
 extend-tskip {η = η} {⟦α⟧ = ⟦α⟧} γ _ _ (tskip{T = T} x)
   {- rewrite Tren*-preserves-semantics {ρ = Twkᵣ Tidᵣ} {η} {⟦α⟧ ∷ η} (wkᵣ∈Ren* η ⟦α⟧) T -}
-  = subst Function.id (sym (Tren*-preserves-semantics {ρ* = Twkᵣ Tidᵣ} {η} {⟦α⟧ ∷ η} (wkᵣ∈Ren* η ⟦α⟧) T)) (γ _ _ x) -- γ _ _ x 
+  = subst id (sym (Tren*-preserves-semantics {ρ* = Twkᵣ Tidᵣ} {η} {⟦α⟧ ∷ η} (wkᵣ∈Ren* η ⟦α⟧) T)) (γ _ _ x) -- γ _ _ x 
   
 subst-to-env* : TSub Δ₁ Δ₂ → Env* Δ₂ → Env* Δ₁
 subst-to-env* {[]} σ* η₂ = []
@@ -76,7 +76,7 @@ subst-to-env*-wk : (σ*  : TSub Δ₁ Δ₂) → (α  : Set l) → (η₂ : Env*
 subst-to-env*-wk {Δ₁ = []} σ* α η₂ = refl
 subst-to-env*-wk {Δ₁ = l ∷ Δ₁} σ* α η₂
   rewrite Tren*-preserves-semantics {ρ* = Twkᵣ Tidᵣ}{η₂}{α ∷ η₂} (wkᵣ∈Ren* η₂ α) (σ* _ here)
-  = congωω (⟦ (σ* _ here) ⟧ η₂ ∷_) (subst-to-env*-wk (Tdropₛ σ*) α η₂) -- easier?
+  = congωω (⟦ (σ* _ here) ⟧ η₂ ∷_) (subst-to-env*-wk (Tdropₛ σ*) α η₂)
 
 subst-to-env*-build : ∀ (ρ* : TRen Δ₁ Δ₂) (η₁ : Env* Δ₁) (η₂ : Env* Δ₂) → TRen* ρ* η₁ η₂
   → subst-to-env* (λ _ x → ` ρ* _ x) η₂ ≡ω η₁
@@ -117,5 +117,6 @@ E⟦ ` x ⟧ η γ = γ _ _ x
 E⟦ ƛ_ e ⟧ η γ = λ v → E⟦ e ⟧ η (extend γ v)
 E⟦ e₁ · e₂ ⟧ η γ = E⟦ e₁ ⟧ η γ (E⟦ e₂ ⟧ η γ)
 E⟦ Λ l ⇒ e ⟧ η γ = λ ⟦α⟧ → E⟦ e ⟧ (⟦α⟧ ∷ η) (extend-tskip γ)
-E⟦ _∙_ {T = T} e T′ ⟧ η γ rewrite Tsingle-subst-preserves η T′ T = E⟦ e ⟧ η γ (⟦ T′ ⟧ η)
+E⟦ _∙_ {T = T} e T′ ⟧ η γ  = 
+  subst id (sym (Tsingle-subst-preserves η T′ T)) (E⟦ e ⟧ η γ (⟦ T′ ⟧ η))
   

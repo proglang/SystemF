@@ -13,11 +13,12 @@ open import Axiom.Extensionality.Propositional using (∀-extensionality; Extens
 open ≡-Reasoning
 
 open import Expressions
+open import ExprSubstitution
 open import Types
+open import TypeSubstitution
 open import Ext
 open import SmallStep
 open import SetOmega
-open import ExprSubstitution
 
 module Adequacy where
 
