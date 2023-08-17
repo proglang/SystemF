@@ -170,7 +170,8 @@ ENVdrop-extend {l = l} {Δ = Δ} {Γ = Γ}{T = T}{η = η} γ z = fun-ext-lvl (�
 
 -- stratified logical relation
 
-LRV : (T : Type Δ l) → (ρ : RelEnv Δ) → Value (Tsub (subst←RE ρ) T) → ⟦ T ⟧ (subst-to-env* (subst←RE ρ) []) → Set l
+LRV : (T : Type Δ l) → (ρ : RelEnv Δ)
+  → Value (Tsub (subst←RE ρ) T) → ⟦ T ⟧ (subst-to-env* (subst←RE ρ) []) → Set l
 LRV (` α) ρ v z =
   proj₂ (ρ _ α) v (subst id (sym (subst-var-preserves α (subst←RE ρ) [])) z)
 LRV (T₁ ⇒ T₂) ρ (ƛ e , v-ƛ) f =
