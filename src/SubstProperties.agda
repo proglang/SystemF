@@ -23,7 +23,7 @@ elim-subst :
 elim-subst _ refl refl _ = refl
 
 elim-subst₃ :
-  ∀ {ℓ ℓ₁} {A : Set ℓ} {a₁ a₂ a₃ a₄ : A}
+  ∀ {ℓ ℓ₁} {A : Set ℓ} {a₁ a₂ a₃ : A}
   → (F : A → Set ℓ₁)
   → (a₁≡a₂ : a₁ ≡ a₂)
   → (a₃≡a₁ : a₃ ≡ a₁)
@@ -100,3 +100,15 @@ dist-subst′′′ :
   → (Ba′≡Ba : B a′ ≡ B a)
   → f a ≡ subst id Ba′≡Ba (f a′)
 dist-subst′′′ _ _ _ refl refl = refl
+
+subst-cong :
+  ∀ {ℓ}{ℓ₁}{ℓ₂}
+    {A₁ : Set ℓ₁}
+    {A₂ : Set ℓ₂}
+  → (F : A₁ → Set ℓ)
+  → (G : A₂ → A₁)
+  → {x y : A₂}
+  → (x≡y : x ≡ y)
+  → (a : F (G x))
+  → subst F (cong G x≡y) a ≡ subst (λ z → F (G z)) x≡y a
+subst-cong F G refl a = refl
