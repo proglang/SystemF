@@ -21,6 +21,7 @@ open import Types
 open import TypeSubstitution
 open import Expressions
 open import ExprSubstitution
+open import ExprSubstProperties
 open import SmallStep
 
 ----------------------------------------------------------------------
