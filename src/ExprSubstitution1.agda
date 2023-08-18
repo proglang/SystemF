@@ -534,7 +534,7 @@ module using-sub0′ where
     begin
       sub₁ (Eliftₛ σ* σ >>S sub0′ e′) l₁ here
     ≡⟨ dist-subst' (λ f → {!f l₁ !}) (λ f → f l₁ here) (TSub-id-right σ*) (cong (λ τ* → Tsub τ* T) (TSub-id-right σ*)) (Eliftₛ {T = T} σ* σ >>S sub0′ e′)  ⟩
-      sub₂ ((Eliftₛ {T = {!T!}} σ* σ >>S sub0′ e′) l₁ here)
+      sub₂ ((Eliftₛ  σ* σ >>S sub0′ e′) l₁ here)
     ≡⟨⟩
       sub₂ (sub₃ (Esub _ (sub0′ e′) (Eliftₛ {T = T} σ* σ  l₁ here)))
     ≡⟨⟩
@@ -562,7 +562,8 @@ Goal: subst (λ τ* → ESub τ* (T ◁ Γ₁) Γ₂)
 
 
 Eext-Elift[]~-type : Set
-Eext-Elift[]~-type = ∀ {l}{Δ₁}{Δ₂} {σ* : TSub Δ₁ Δ₂} {Γ₁ : TEnv Δ₁} {Γ₂ : TEnv Δ₂} {T : Type Δ₁ l} (σ : ESub σ* Γ₁ Γ₂) (e′ : Expr Δ₂ Γ₂ (Tsub σ* T))
+Eext-Elift[]~-type =
+  ∀ {l}{Δ₁}{Δ₂} {σ* : TSub Δ₁ Δ₂} {Γ₁ : TEnv Δ₁} {Γ₂ : TEnv Δ₂} {T : Type Δ₁ l} (σ : ESub σ* Γ₁ Γ₂) (e′ : Expr Δ₂ Γ₂ (Tsub σ* T))
   → let r = Eliftₛ {T = T} σ* σ >>S sub0 (subst (Expr _ _) (sym (TidₛT≡T (Tsub σ* T))) e′) in
     let subᵣ = subst (λ τ* → ESub τ* (T ◁ Γ₁) Γ₂) (TSub-id-right σ*) in
     Eextₛ {T = T} σ* σ e′ ~ subᵣ r
@@ -585,7 +586,7 @@ Eext-Elift[]~ {.l₁} {Δ₁} {Δ₂} {σ* = σ*} {Γ₁} {Γ₂} {T = T} σ e�
   let sub₃ = subst (Expr Δ₂ Γ₂) (assoc-sub-sub T  σ* Tidₛ) in
   begin
     e′
-      ≡⟨ sym (elim-subst₃ (Expr Δ₂ Γ₂) (cong (λ σ* → Tsub σ* T) (TSub-id-right σ*)) (assoc-sub-sub T  σ* Tidₛ) (sym (TidₛT≡T (Tsub σ* T))) e′) ⟩
+      ≡⟨ sym (elim-subst₃ (Expr Δ₂ Γ₂) (cong (λ τ* → Tsub τ* T) (TSub-id-right σ*)) (assoc-sub-sub T  σ* Tidₛ) (sym (TidₛT≡T (Tsub σ* T))) e′) ⟩
     sub₁′ (sub₃ (sub₂ e′))
       ≡⟨ refl ⟩
     sub₁′ (sub₃ (Esub _ (sub0 (sub₂ e′)) (` here)))
@@ -593,8 +594,13 @@ Eext-Elift[]~ {.l₁} {Δ₁} {Δ₂} {σ* = σ*} {Γ₁} {Γ₂} {T = T} σ e�
     sub₁′ (sub₃ (Esub _ (sub0 (sub₂ e′)) ((Eliftₛ σ* σ) l₁ here)))
       ≡⟨ refl ⟩
     sub₁′ ((Eliftₛ σ* σ >>S sub0 (sub₂ e′)) l₁ here)
-      ≡⟨ sym (dist-subst' {F = (λ a → ESub a (T ◁ Γ₁) Γ₂)} {G = Expr Δ₂ Γ₂} {!!} (λ f → f l₁ here) (TSub-id-right σ*) (cong (λ σ*₁ → Tsub σ*₁ T) (TSub-id-right σ*)) (Eliftₛ σ* σ >>S
-       sub0 (subst (Expr Δ₂ Γ₂) (sym (TidₛT≡T (Tsub σ* T))) e′))) ⟩
+      ≡⟨ sym (dist-subst' {F = (λ a → ESub a (T ◁ Γ₁) Γ₂)} {G = Expr Δ₂ Γ₂}
+                          (λ τ* → Tsub τ* T)
+                          (λ f → f l₁ here)
+                          (TSub-id-right σ*)
+                          (cong (λ σ*₁ → Tsub σ*₁ T) (TSub-id-right σ*))
+                          (Eliftₛ σ* σ >>S sub0 (subst (Expr Δ₂ Γ₂) (sym (TidₛT≡T (Tsub σ* T))) e′)))
+       ⟩
     sub₁ (Eliftₛ σ* σ >>S sub0 (sub₂ e′)) l₁ here 
   ∎
 Eext-Elift[]~ {l} {Δ₁} {Δ₂} {σ* = σ*} {Γ₁} {Γ₂} {T = T} σ e′ l₁ {T₁} (there x) =
