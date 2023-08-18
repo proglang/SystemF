@@ -272,7 +272,7 @@ LRV←LRG {l = l} (_ ◁* Γ) ρ χ γ Tw lrg (tskip {T = T} x)
   = let r = LRV←LRG {l = l} Γ (REdrop ρ) (Cdropt χ) (Gdropt (subst←RE ρ) γ) T lrg x
     in LRVwk T Γ ρ χ γ x r
 
-Cextend-Elift : {σ* : TSub Δ []} {Γ : TEnv Δ}{T : Type Δ l}{T′ : Type Δ l′}
+Cextend-Elift : ∀ {σ* : TSub Δ []} {Γ : TEnv Δ}{l}{T : Type Δ l}{l′}{T′ : Type Δ l′}
   → (χ : CSub σ* Γ)
   → (w : Value (Tsub σ* T))
   → (e : Expr Δ (T ◁ Γ) T′)
@@ -292,32 +292,37 @@ Cextend-Elift {σ* = σ*} χ w e = begin
 fundamental : ∀ (Γ : TEnv Δ) (ρ : RelEnv Δ)
   → (χ : CSub (subst←RE ρ) Γ)
   → let η = subst-to-env* (subst←RE ρ) [] in (γ : Env Δ Γ η)
-  → ∀ (T : Type Δ l) (e : Expr Δ Γ T)
+  → ∀ {l} (T : Type Δ l) (e : Expr Δ Γ T)
   → LRG Γ ρ χ γ
   → ∃[ v ] (Csub χ e ⇓ v) ∧ LRV T ρ v (E⟦ e ⟧ η γ)
-fundamental Γ ρ χ γ T (` x) lrg = χ _ x , exp-v⇓v _ , LRV←LRG Γ ρ χ γ T lrg x
-fundamental Γ ρ χ γ `ℕ (# n) lrg = V-ℕ n , ⇓-n , refl
-fundamental Γ ρ χ γ (T ⇒ T′) (ƛ e) lrg =
+fundamental Γ ρ χ γ T (` x) lrg =
+  χ _ x ,
+  exp-v⇓v _ ,
+  LRV←LRG Γ ρ χ γ T lrg x
+fundamental Γ ρ χ γ `ℕ (# n) lrg =
+  V-ℕ n ,
+  ⇓-n ,
+  refl
+fundamental Γ ρ χ γ {.(l ⊔ l′)} (_⇒_ {l} {l′} T T′) (ƛ e) lrg =
   (Csub χ (ƛ e) , v-ƛ) ,
   ⇓-ƛ ,
   (λ w z lrv-w-z →
     let lrg′ = (lrv-w-z , substlω (LRG Γ ρ) (sym (Cdrop-Cextend χ w)) (ENVdrop-extend γ z) lrg) in
-    let r = fundamental (T ◁ Γ)
-                ρ
-                (Cextend χ w)
-                (extend γ z)
-                T′
-                e
-                lrg′
-    in case r of λ where
-      (v , ew⇓v , lrv-v) → v , {!ew⇓v!} , lrv-v
+    let r = fundamental (T ◁ Γ) ρ (Cextend χ w) (extend γ z) T′ e lrg′ in
+    case r of λ where
+      (v , ew⇓v , lrv-v) → v ,
+                           subst (_⇓ v) (Cextend-Elift{l′ = l′}{T′} χ w e) ew⇓v ,
+                           lrv-v
     )
 fundamental Γ ρ χ γ T (_·_ {T = T₂}{T′ = .T} e₁ e₂) lrg
   with fundamental Γ ρ χ γ (T₂ ⇒ T) e₁ lrg | fundamental Γ ρ χ γ T₂ e₂ lrg
 ... | (e₃ , v-ƛ) , e₁⇓v₁ , lrv₁ | v₂ , e₂⇓v₂ , lrv₂
   with lrv₁ v₂ (E⟦ e₂ ⟧ (subst-to-env* (subst←RE ρ) []) γ) lrv₂
 ... | v₃ , e₃[]⇓v₃ , lrv₃
-  = v₃ , (⇓-· e₁⇓v₁ e₂⇓v₂ e₃[]⇓v₃) , lrv₃
+  =
+  v₃ ,
+  (⇓-· e₁⇓v₁ e₂⇓v₂ e₃[]⇓v₃) ,
+  lrv₃
 fundamental Γ ρ χ γ (`∀α l , T) (Λ .l ⇒ e) lrg =
   (Csub χ (Λ l ⇒ e) , v-Λ) ,
   ⇓-Λ ,
