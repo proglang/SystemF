@@ -65,7 +65,7 @@ dist-subst′′ :
 dist-subst′′ a _ A→B≡A′→B′ B≡B′ with fun-ext B≡B′ | B≡B′ a
 dist-subst′′ _ _ refl B≡B′ | refl | refl = refl 
 
-dist-elim′′′ :
+subst-elim′′′ :
   ∀ {ℓ}
     {A A₁ A₂ A₃ A₄ A₅ : Set ℓ} 
   → (a : A₄) 
@@ -76,7 +76,7 @@ dist-elim′′′ :
   → (A≡A' : A₅ ≡ A₁)
   → (A≡A₄ : A₄ ≡ A₅)
   → subst id A≡A₁ (subst id A₂≡A (subst id A₃≡A₂ (subst id A₃≡A₄ a))) ≡ subst id A≡A' (subst id A≡A₄ a)
-dist-elim′′′ _ refl refl refl refl refl refl = refl  
+subst-elim′′′ _ refl refl refl refl refl refl = refl  
 
 
 dist-subst' :
