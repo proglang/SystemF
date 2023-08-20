@@ -67,6 +67,8 @@ _∧_ = _×_
 
 -- logical relation
 
+-- relation between a syntactic value and a semantic value
+
 REL : Type [] l → Set (suc l)
 REL {l} T = Value T → ⟦ T ⟧ [] → Set l 
 
@@ -172,6 +174,22 @@ ENVdrop-extend {l = l} {Δ = Δ} {Γ = Γ}{T = T}{η = η} γ z = fun-ext-lvl (�
 
 -- stratified logical relation
 
+module maybe-simpler? where
+        LRV′ : (T : Type Δ l) → (ρ : RelEnv Δ) → REL (Tsub (subst←RE ρ) T)
+        LRV′ (` α) ρ v z = proj₂ (ρ _ α) v z 
+        LRV′ (T₁ ⇒ T₂) ρ (ƛ e , v-ƛ) f =
+          ∀ (w : Value (Tsub (subst←RE ρ) T₁)) →
+          ∀ (z : ⟦ Tsub (subst←RE ρ) T₁ ⟧ []) →
+          LRV′ T₁ ρ w z →
+          ∃[ v ] (e [ exp w ]E ⇓ v) ∧ LRV′ T₂ ρ v (f z)
+        LRV′ (`∀α l , T) ρ (Λ l ⇒ e , v-Λ) F =
+          ∀ (T′ : Type [] l) →
+          ∀ (R : REL T′) →
+          ∃[ v ] (e [ T′ ]ET ⇓ v) ∧ 
+                 let ρ′ = REext ρ (T′ , R)
+                 in LRV′ T ρ′ (subst Value (lemma1 ρ T T′ R) v) {!F (⟦ T′ ⟧ [])!}
+        LRV′ `ℕ ρ (# n , v-n) z = n ≡ z
+
 LRV : (T : Type Δ l) → (ρ : RelEnv Δ)
   → Value (Tsub (subst←RE ρ) T) → ⟦ T ⟧ (subst-to-env* (subst←RE ρ) []) → Set l
 LRV (` α) ρ v z =
@@ -234,6 +252,18 @@ Cdropt {σ* = σ*} χ l {T} x = subst (λ T → Σ (Expr [] ∅ T) Val) (assoc-s
 Cextt : ∀{l} → CSub σ* Γ → (T′ : Type [] l) → CSub (Textₛ σ* T′) (l ◁* Γ)
 Cextt {σ* = σ*} χ T′ _ (tskip {T = T} x) = subst (λ T → Σ (Expr [] ∅ T) Val) (sym (σT≡TextₛσTwkT σ* T)) (χ _ x)
 
+lemma-lrv-wk1 : 
+    (ρ : RelEnv (l₁ ∷ Δ))
+  → (χ : CSub (subst←RE ρ) (l₁ ◁* Γ))
+  → {l : Level} {T : Type Δ l}
+  → (x : inn T Γ)
+  → Cdropt χ l x ≡ subst (λ T → Σ (Expr [] ∅ T) Val) (assoc-sub-ren T _ (subst←RE ρ)) (χ l (tskip x))
+lemma-lrv-wk1 ρ χ {l}{T} here with assoc-sub-ren T (Twkᵣ Tidᵣ) (subst←RE ρ) in eq
+... | rrr = refl
+lemma-lrv-wk1 ρ χ (there x) = refl
+lemma-lrv-wk1 ρ χ (tskip x) = refl
+
+
 LRVwk : ∀ {Δ}{l}{l₁}
   → (T : Type Δ l)
   → (Γ : TEnv Δ)
@@ -243,9 +273,13 @@ LRVwk : ∀ {Δ}{l}{l₁}
   → (x : inn T Γ)
   → LRV T (REdrop ρ) (Cdropt χ l x) (Gdropt (subst←RE ρ) γ l T x)
   → LRV (Twk T) ρ (χ l (tskip x)) (γ l (Twk T) (tskip x))
-LRVwk (` α) Γ ρ χ γ x lrv = {!!}
-LRVwk (T₁ ⇒ T₂) Γ ρ χ γ x lrv = {!!}
-LRVwk (`∀α l , T) Γ ρ χ γ x lrv = {!!}
+LRVwk (` α) Γ ρ χ γ x lrv = lrv
+LRVwk (T₁ ⇒ T₂) Γ ρ χ γ x lrv with χ _ (tskip x)
+... | ƛ e , v-ƛ = 
+  λ w z lrv-T → {!lrv !}
+LRVwk (`∀α l , T) Γ ρ χ γ x lrv with χ _ (tskip x)
+... | Λ l ⇒ e , v-Λ =
+  λ T′ R → {!!}
 LRVwk `ℕ Γ ρ χ γ x lrv
   with χ zero (tskip x) | γ zero `ℕ (tskip x)
 ... | # n , v-n | z = lrv
