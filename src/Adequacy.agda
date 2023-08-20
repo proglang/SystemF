@@ -1,3 +1,6 @@
+{-# OPTIONS --allow-unsolved-metas #-}
+module Adequacy where
+
 open import Level
 open import Data.Product using (_×_; Σ; Σ-syntax; ∃-syntax; _,_; proj₁; proj₂)
 open import Data.Sum using (_⊎_)
@@ -14,12 +17,10 @@ open ≡-Reasoning
 
 open import Expressions
 open import ExprSubstitution
+open import ExprSubstProperties
 open import Types
 open import TypeSubstitution
+open import TypeSubstProperties
 open import Ext
 open import SmallStep
 open import SetOmega
-
-module Adequacy where
-
-

@@ -18,6 +18,7 @@ open import Ext
 open import SetOmega
 open import Types
 open import TypeSubstitution
+open import TypeSubstProperties
 open import Expressions
 open import ExprSubstitution
 

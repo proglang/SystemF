@@ -14,7 +14,7 @@ subst-irrelevant :
 subst-irrelevant refl refl x = refl
 
 elim-subst :
-  ∀ {ℓ ℓ₁} {A : Set ℓ} {a₁ a₂ a₃ a₄ : A}
+  ∀ {ℓ ℓ₁} {A : Set ℓ} {a₁ a₂ : A}
   → (F : A → Set ℓ₁)
   → (a₂≡a₁ : a₂ ≡ a₁)
   → (a₁≡a₂ : a₁ ≡ a₂)
@@ -65,7 +65,7 @@ dist-subst′′ :
 dist-subst′′ a _ A→B≡A′→B′ B≡B′ with fun-ext B≡B′ | B≡B′ a
 dist-subst′′ _ _ refl B≡B′ | refl | refl = refl 
 
-dist-elim′′′ :
+subst-elim′′′ :
   ∀ {ℓ}
     {A A₁ A₂ A₃ A₄ A₅ : Set ℓ} 
   → (a : A₄) 
@@ -76,7 +76,48 @@ dist-elim′′′ :
   → (A≡A' : A₅ ≡ A₁)
   → (A≡A₄ : A₄ ≡ A₅)
   → subst id A≡A₁ (subst id A₂≡A (subst id A₃≡A₂ (subst id A₃≡A₄ a))) ≡ subst id A≡A' (subst id A≡A₄ a)
-dist-elim′′′ _ refl refl refl refl refl refl = refl  
+subst-elim′′′ _ refl refl refl refl refl refl = refl  
+
+subst-elim′′′′ :
+  ∀ {ℓ}
+    {A A₁ A₂ A₃ A₄ A₅ : Set ℓ} 
+  → (A₁≡A : A₁ ≡ A)
+  → (A₂≡A : A₂ ≡ A)
+  → (a₁ : A₁)
+  → (a₂ : A₂)
+  → subst id A₁≡A a₁ ≡ subst id A₂≡A a₂
+subst-elim′′′′ refl refl _ _ = {!   !} 
+
+-- eq′ : A₁ : ⟦ Tren ρ* T ⟧ η₂ ≡
+--         A₂ : ⟦ Tren (Tliftᵣ ρ* l₁) (Twk T) ⟧ (⟦α⟧ ∷ η₂)
+-- eq′   = trans (sym (sym (Tren*-preserves-semantics Tren* T)))
+--         (trans (sym (Tren*-preserves-semantics (wkᵣ∈Ren* η₁ ⟦α⟧) T))
+--          (sym (Tren*-preserves-semantics (Tren*-lift ⟦α⟧ Tren*) (Twk T))))
+-- eq₁ : inn (Twk (Tren ρ* T)) (l₁ ◁* Γ₂) ≡
+--         inn (Tren (Tliftᵣ ρ* l₁) (Twk T)) (l₁ ◁* Γ₂)
+-- eq₁   = cong (λ T₁ → inn T₁ (l₁ ◁* Γ₂)) (sym (↑ρ-TwkT≡Twk-ρT T ρ*))
+-- eq'' : A₃ : ⟦ T ⟧ η₁ ≡ A₁ : ⟦ Tren ρ* T ⟧ η₂
+-- eq''  = sym (Tren*-preserves-semantics Tren* T)
+-- eq' : ⟦ T ⟧ η₁ ≡ ⟦ Tren (Twkᵣ Tidᵣ) T ⟧ (⟦α⟧ ∷ η₁)
+-- eq'   = sym (Tren*-preserves-semantics (wkᵣ∈Ren* η₁ ⟦α⟧) T)
+-- eq : ⟦ Twk T ⟧ (⟦α⟧ ∷ η₁) ≡
+--         A₂ : ⟦ Tren (Tliftᵣ ρ* l₁) (Twk T) ⟧ (⟦α⟧ ∷ η₂)
+-- eq    = sym
+--         (Tren*-preserves-semantics (Tren*-lift ⟦α⟧ Tren*) (Twk T))
+-- eq* : γ₂ l (Tren ρ* T) (ρ x) ≡
+--         subst id (sym (Tren*-preserves-semantics Tren* T)) (γ₁ l T x)
+-- eq*   = Eren* x
+
+subst-shuffle′′′′ :
+  ∀ {ℓ}
+    {A₁ A₂ A₃ A₄ : Set ℓ} 
+  → (a : A₃) 
+  → (A≡A₁ : A₁ ≡ A₂)
+  → (A≡A₂ : A₃ ≡ A₁)
+  → (A≡A₃ : A₄ ≡ A₂)
+  → (A≡A₄ : A₃ ≡ A₄)
+  → subst id A≡A₁ (subst id A≡A₂ a) ≡ subst id A≡A₃ (subst id A≡A₄ a)
+subst-shuffle′′′′ _ refl refl refl refl = refl
 
 
 dist-subst' :
@@ -112,3 +153,4 @@ subst-cong :
   → (a : F (G x))
   → subst F (cong G x≡y) a ≡ subst (λ z → F (G z)) x≡y a
 subst-cong F G refl a = refl
+ 
