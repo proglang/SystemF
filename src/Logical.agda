@@ -166,7 +166,7 @@ ENVdrop-extend : ∀ {l}{Δ}{Γ}{T : Type Δ l}{η : Env* Δ}
   → (γ : Env Δ Γ η)
   → (z : ⟦ T ⟧ η)
   → γ ≡ω ENVdrop {T = T} Γ η (extend γ z)
-ENVdrop-extend {l = l} {Δ = Δ} {Γ = Γ}{T = T}{η = η} γ z = fun-ext-lvl (λ l′ → fun-ext₂ (aux l′))
+ENVdrop-extend {l = l} {Δ = Δ} {Γ = Γ}{T = T}{η = η} γ z = fun-extω (λ l′ → fun-ext₂ (aux l′))
   where
     aux : (l′ : Level) (T′ : Type Δ l′) (x : inn T′ Γ) → γ l′ T′ x ≡ ENVdrop {T = T} Γ η (extend γ z) l′ T′ x
     aux l′ T′ here = refl
