@@ -9,14 +9,17 @@ open import Data.List using (List; []; _∷_; _++_; length; lookup; tabulate)
 open import Data.Unit.Polymorphic.Base using (⊤; tt)
 open import Data.Empty using (⊥)
 open import Data.Nat using (ℕ)
-open import Function using (_∘_; id; case_of_)
+open import Function using (_∘_; id; case_of_; _$-; λ-)
 open import Relation.Binary.PropositionalEquality
-  using (_≡_; _≢_; refl; sym; trans; cong; cong₂; subst; subst₂; resp₂; cong-app; icong; module ≡-Reasoning)
+  using (_≡_; _≢_; refl; sym; trans; cong; cong₂; subst; subst₂; resp₂; cong-app; icong;
+        subst-∘; subst-application; subst-application′; -- Properties
+        module ≡-Reasoning)
 open import Axiom.Extensionality.Propositional using (∀-extensionality; Extensionality)
 open ≡-Reasoning
 
 open import Ext
 open import SetOmega
+open import SubstProperties
 open import Types
 open import TypeSubstitution
 open import TypeSubstProperties
@@ -264,6 +267,44 @@ lemma-lrv-wk1 ρ χ {l}{T} here with assoc-sub-ren T (Twkᵣ Tidᵣ) (subst←RE
 lemma-lrv-wk1 ρ χ (there x) = refl
 lemma-lrv-wk1 ρ χ (tskip x) = refl
 
+lemma-lrv-wk2 :
+  (ρ     : RelEnv (l ∷ Δ))
+  (T₁ : Type Δ l₁) (T₂ : Type Δ l₂)
+  → (e : Expr [] (Tsub (λ l₂ x₁ → proj₁ (ρ l₂ x₁)) (Tren (λ z₁ → there) T₁) ◁ ∅)
+                 (Tsub (λ l₂ x₁ → proj₁ (ρ l₂ x₁)) (Tren (λ z₁ → there) T₂)))
+  -- → subst (λ T → Σ (Expr [] ∅ T) Val)
+  --         (assoc-sub-ren (T₁ ⇒ T₂) (Twkᵣ Tidᵣ) (subst←RE ρ))
+  --         ((ƛ e) , v-ƛ)
+  → let eq = cong₂ _,_ (assoc-sub-ren T₁ (Twkᵣ Tidᵣ) (subst←RE ρ)) (assoc-sub-ren T₂ (Twkᵣ Tidᵣ) (subst←RE ρ)) in
+    subst (λ{ (T₁ , T₂) → Σ (Expr [] ∅ (T₁ ⇒ T₂)) Val }) eq ((ƛ e) , v-ƛ)
+  ≡ ((ƛ (subst (λ{ (T₁ , T₂) → Expr [] (T₁ ◁ ∅) T₂ }) eq e)) , v-ƛ)
+lemma-lrv-wk2 ρ T₁ T₂ e =
+  subst-application′ (λ{ (T₁ , T₂) → Expr [] (T₁ ◁ ∅) T₂ }) (λ{ (T₁ , T₂) e → (ƛ e) , v-ƛ }) (cong₂ _,_ (assoc-sub-ren T₁ (Twkᵣ Tidᵣ) (subst←RE ρ)) (assoc-sub-ren T₂ (Twkᵣ Tidᵣ) (subst←RE ρ)))
+
+lemma-lrv-wk3 :
+  (ρ     : RelEnv (l ∷ Δ))
+  (T₁ : Type Δ l₁) (T₂ : Type Δ l₂)
+  → (e : Expr [] (Tsub (λ l₂ x₁ → proj₁ (ρ l₂ x₁)) (Tren (λ z₁ → there) T₁) ◁ ∅)
+                 (Tsub (λ l₂ x₁ → proj₁ (ρ l₂ x₁)) (Tren (λ z₁ → there) T₂)))
+  → let eq = cong₂ _,_ (assoc-sub-ren T₁ (Twkᵣ Tidᵣ) (subst←RE ρ)) (assoc-sub-ren T₂ (Twkᵣ Tidᵣ) (subst←RE ρ)) in
+    subst (λ T → Σ (Expr [] ∅ T) Val)
+          (assoc-sub-ren (T₁ ⇒ T₂) (Twkᵣ Tidᵣ) (subst←RE ρ))
+          ((ƛ e) , v-ƛ)
+  ≡ ((ƛ (subst (λ{ (T₁ , T₂) → Expr [] (T₁ ◁ ∅) T₂ }) eq e)) , v-ƛ)
+lemma-lrv-wk3 {l₁ = l₁}{l₂ = l₂} ρ T₁ T₂ e =
+  let eq = cong₂ _,_ (assoc-sub-ren T₁ (Twkᵣ Tidᵣ) (subst←RE ρ)) (assoc-sub-ren T₂ (Twkᵣ Tidᵣ) (subst←RE ρ)) in
+  sym (dist-subst' {F = F} {G = G} h aux eq (assoc-sub-ren (T₁ ⇒ T₂) (Twkᵣ Tidᵣ) (subst←RE ρ)) e)
+  where
+    F : Type [] l₁ × Type [] l₂ → Set
+    F (T₁ , T₂) = Expr [] (T₁ ◁ ∅) T₂
+    G : Type [] (l₁ ⊔ l₂) → Set
+    G T = Σ (Expr [] ∅ T) Val
+    h : Type [] l₁ × Type [] l₂ → Type [] (l₁ ⊔ l₂)
+    h (T₁ , T₂) = T₁ ⇒ T₂
+    aux : ∀ {a : Σ (Type [] l₁) (λ _ → Type [] l₂)} →
+      F a → G (h a)
+    aux {a = (T₁ , T₂)} x = (ƛ {!e!}) , v-ƛ
+
 
 LRVwk : ∀ {Δ}{l}{l₁}
   → (T : Type Δ l)
@@ -277,7 +318,10 @@ LRVwk : ∀ {Δ}{l}{l₁}
 LRVwk (` α) Γ ρ χ γ x lrv = lrv
 LRVwk (T₁ ⇒ T₂) Γ ρ χ γ x lrv with χ _ (tskip x)
 ... | ƛ e , v-ƛ = 
-  λ w z lrv-T → {!lrv !}
+  λ w z lrv-T →
+    -- subst F ≡T ((ƛ e) , v-ƛ) --> (subst G ≡T (ƛ e) , v-ƛ)
+    let hyp = lrv in
+    ({!!} , {!!}) , {!!}
 LRVwk (`∀α l , T) Γ ρ χ γ x lrv with χ _ (tskip x)
 ... | Λ l ⇒ e , v-Λ =
   λ T′ R → {!!}
