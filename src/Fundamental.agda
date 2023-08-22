@@ -86,6 +86,22 @@ fundamental Γ ρ χ γ .(T [ T′ ]T) (_∙_ {l = l}{T = T} e T′) lrg
 ... | (Λ .l ⇒ e′ , v-Λ) , e⇓v , lrv
   with lrv (Tsub (subst←RE ρ) T′) 
     (subst (λ ⟦T⟧ → Σ (Expr [] ∅ (Tsub (λ l₂ x → proj₁ (ρ l₂ x)) T′)) Val → ⟦T⟧ → Set l) (sym (subst-preserves (subst←RE ρ) T′)) ((LRV T′) ρ)) 
-... | v₂ , vT′⇓v₂ , lrv₂ =
-  {!  v₂!} , {!vT′⇓v₂!} , {!lrv₂!}
+-- Σ
+--       (Expr [] ∅
+--        (Tsub (λ l₂ x → proj₁ (ρ l₂ x)) (Tsub (Textₛ (λ z → `_) T′) T)))
+--       Val
+-- Have
+-- Σ
+--       (Expr [] ∅
+--        (Tsub (Textₛ (λ z → `_) (Tsub (λ l₂ x → proj₁ (ρ l₂ x)) T′))
+--         (Tsub (Tliftₛ (λ l₂ x → proj₁ (ρ l₂ x)) l) T)))
+--       Val
 
+-- Tsub (Textₛ Tidₛ (Tsub σ T′)) (Tsub (Tliftₛ σ l) T)
+--       ≡ Tsub σ (Tsub (Textₛ Tidₛ T′) T)
+... | v₂ , vT′⇓v₂ , lrv₂ =
+  subst ((λ T → Σ (Expr [] ∅ T) Val)) (sym (σT[T′]≡σ↑T[σT'] (λ l₂ x → proj₁ (ρ l₂ x)) T T′)) v₂ , 
+  {!vT′⇓v₂!} , 
+  {!lrv₂!}
+
+ 
