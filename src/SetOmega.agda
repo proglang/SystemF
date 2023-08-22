@@ -48,28 +48,3 @@ subst₃ : ∀ {b d}{A : Setω}{B : A → Set b}{C : A → Setω}(F : (a : A) �
   → (a₁≡a₂ : a₁ ≡ω a₂) → b₁ ≡ substω B (symω a₁≡a₂) b₂ → c₁ ≡ω substωω C (symω a₁≡a₂) c₂ →  F a₁ b₁ c₁ → F a₂ b₂ c₂
 subst₃ F refl refl refl x = x
 
-
--- ⟦ Tren (Twkᵣ Tidᵣ) (Tren ρ* T) ⟧ (⟦α⟧ ∷ η₂) ≡
---       ⟦ Tren (Tliftᵣ ρ* l₁) (Tren (Twkᵣ Tidᵣ) T) ⟧ (⟦α⟧ ∷ η₂)
--- -- Have
--- ⟦ _x_3272 ⟧ (⟦α⟧ ∷ η₂) ≡ ⟦ _y_3273 ⟧ (⟦α⟧ ∷ η₂)
--- eq′ : ⟦ Tren ρ* T ⟧ η₂ ≡
---         ⟦ Tren (Tliftᵣ ρ* l₁) (Twk T) ⟧ (⟦α⟧ ∷ η₂)
--- eq′   = trans (sym (sym (Tren*-preserves-semantics Tren* T)))
---         (trans (sym (Tren*-preserves-semantics (wkᵣ∈Ren* η₁ ⟦α⟧) T))
---          (sym (Tren*-preserves-semantics (Tren*-lift ⟦α⟧ Tren*) (Twk T))))
--- eq₁ : inn (Twk (Tren ρ* T)) (l₁ ◁* Γ₂) ≡
---         inn (Tren (Tliftᵣ ρ* l₁) (Twk T)) (l₁ ◁* Γ₂)
--- eq₁   = cong (λ T₁ → inn T₁ (l₁ ◁* Γ₂)) (sym (↑ρ-TwkT≡Twk-ρT T ρ*))
--- eq'' : ⟦ T ⟧ η₁ ≡ ⟦ Tren ρ* T ⟧ η₂
--- eq''  = sym (Tren*-preserves-semantics Tren* T)
--- eq' : ⟦ T ⟧ η₁ ≡ ⟦ Tren (Twkᵣ Tidᵣ) T ⟧ (⟦α⟧ ∷ η₁)
--- eq'   = sym (Tren*-preserves-semantics (wkᵣ∈Ren* η₁ ⟦α⟧) T)
--- eq : ⟦ Twk T ⟧ (⟦α⟧ ∷ η₁) ≡
---         ⟦ Tren (Tliftᵣ ρ* l₁) (Twk T) ⟧ (⟦α⟧ ∷ η₂)
--- eq    = sym
---         (Tren*-preserves-semantics (Tren*-lift ⟦α⟧ Tren*) (Twk T))
--- eq* : γ₂ l (Tren ρ* T) (ρ x) ≡
---         subst id (sym (Tren*-preserves-semantics Tren* T)) (γ₁ l T x)
--- eq*   = Eren* x 
-

@@ -7,7 +7,7 @@ open import ExprSubstProperties
 
 open import SmallStep
 
-open import Logical 
+-- open import Logical 
 open import Adequacy
 
 open import Ext

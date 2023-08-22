@@ -84,7 +84,8 @@ fundamental Γ ρ χ γ (`∀α l , T) (Λ .l ⇒ e) lrg =
 fundamental Γ ρ χ γ .(T [ T′ ]T) (_∙_ {l = l}{T = T} e T′) lrg
   with fundamental Γ ρ χ γ (`∀α l , T) e lrg
 ... | (Λ .l ⇒ e′ , v-Λ) , e⇓v , lrv
-  with lrv (Tsub (subst←RE ρ) T′) {!LRV T′ ρ!} -- (λ x y → ⊤)
+  with lrv (Tsub (subst←RE ρ) T′) 
+    (subst (λ ⟦T⟧ → Σ (Expr [] ∅ (Tsub (λ l₂ x → proj₁ (ρ l₂ x)) T′)) Val → ⟦T⟧ → Set l) (sym (subst-preserves (subst←RE ρ) T′)) ((LRV T′) ρ)) 
 ... | v₂ , vT′⇓v₂ , lrv₂ =
-  {!v₂!} , {!vT′⇓v₂!} , {!lrv₂!}
+  {!  v₂!} , {!vT′⇓v₂!} , {!lrv₂!}
 
