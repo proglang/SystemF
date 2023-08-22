@@ -51,7 +51,7 @@ fundamental Γ ρ χ γ {.(l ⊔ l′)} (_⇒_ {l} {l′} T T′) (ƛ e) lrg =
   (Csub χ (ƛ e) , v-ƛ) ,
   ⇓-ƛ ,
   (λ w z lrv-w-z →
-    let lrg′ = (lrv-w-z , substlω (LRG Γ ρ) (sym (Cdrop-Cextend χ w)) (ENVdrop-extend γ z) lrg) in
+    let lrg′ = (lrv-w-z , substlω (LRG Γ ρ) (sym (Cdrop-Cextend {T = T} χ w)) (ENVdrop-extend {T = T} γ z) lrg) in
     let r = fundamental (T ◁ Γ) ρ (Cextend χ w) (extend γ z) T′ e lrg′ in
     case r of λ where
       (v , ew⇓v , lrv-v) → v ,
@@ -86,22 +86,28 @@ fundamental Γ ρ χ γ .(T [ T′ ]T) (_∙_ {l = l}{T = T} e T′) lrg
 ... | (Λ .l ⇒ e′ , v-Λ) , e⇓v , lrv
   with lrv (Tsub (subst←RE ρ) T′) 
     (subst (λ ⟦T⟧ → Σ (Expr [] ∅ (Tsub (λ l₂ x → proj₁ (ρ l₂ x)) T′)) Val → ⟦T⟧ → Set l) (sym (subst-preserves (subst←RE ρ) T′)) ((LRV T′) ρ)) 
--- Σ
---       (Expr [] ∅
---        (Tsub (λ l₂ x → proj₁ (ρ l₂ x)) (Tsub (Textₛ (λ z → `_) T′) T)))
---       Val
--- Have
--- Σ
---       (Expr [] ∅
---        (Tsub (Textₛ (λ z → `_) (Tsub (λ l₂ x → proj₁ (ρ l₂ x)) T′))
---         (Tsub (Tliftₛ (λ l₂ x → proj₁ (ρ l₂ x)) l) T)))
---       Val
+-- last:
+--LRV (Tsub (Textₛ Tidₛ T′) T) 
+--    ρ
+--    (subst (λ T₁ → Σ (Expr [] ∅ T₁) Val) eq₁ v₂)
+--    (subst id eq₃ (E⟦ e ⟧ (subst-to-env* σ* []) γ  (⟦ T′ ⟧ (subst-to-env* σ* []))))
+----------->
+--LRV T
+--    (REext ρ (Tsub σ* T′ , subst (λ ⟦T⟧ →  Σ (Expr [] ∅ (Tsub σ* T′)) Val → ⟦T⟧ → Set l) (sym (subst-preserves σ* (LRV T′ ρ)))))
+--    (subst (λ T₁ → Σ (Expr [] ∅ T₁) Val) eq₂? v₂)
+--    (E⟦ e ⟧ (subst-to-env* σ* []) γ (⟦ Tsub σ* T′ ⟧ []))
 
--- Tsub (Textₛ Tidₛ (Tsub σ T′)) (Tsub (Tliftₛ σ l) T)
---       ≡ Tsub σ (Tsub (Textₛ Tidₛ T′) T)
 ... | v₂ , vT′⇓v₂ , lrv₂ =
-  subst ((λ T → Σ (Expr [] ∅ T) Val)) (sym (σT[T′]≡σ↑T[σT'] (λ l₂ x → proj₁ (ρ l₂ x)) T T′)) v₂ , 
-  {!vT′⇓v₂!} , 
+  let eq₁ = sym (σT[T′]≡σ↑T[σT'] (λ l₂ x → proj₁ (ρ l₂ x)) T T′) in
+  subst ((λ T → Σ (Expr [] ∅ T) Val)) eq₁ v₂ , 
+  subst id (begin 
+    _⇓_ (Esub (Textₛ Tidₛ (Tsub (subst←RE ρ) T′)) (Eextₛ-l Tidₛ Eidₛ) e′) v₂
+    ≡⟨⟩
+      _⇓_ (e′ [ (Tsub (subst←RE ρ) T′) ]ET) v₂
+    ≡⟨ {!   !} ⟩ 
+      _⇓_ (subst (Expr [] ∅) eq₁ (Esub (subst←RE ρ) (λ l₂ x → proj₁ (χ l₂ x)) e ∙ Tsub (subst←RE ρ) T′)) 
+          (subst (λ T₁ → Σ (Expr [] ∅ T₁) Val) eq₁ v₂)
+    ∎) vT′⇓v₂ , 
   {!lrv₂!}
 
- 
+  

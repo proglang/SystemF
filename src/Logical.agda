@@ -313,9 +313,11 @@ lemma-lrv-wk3 {l₁ = l₁}{l₂ = l₂} ρ T₁ T₂ e =
     G T = Σ (Expr [] ∅ T) Val
     h : Type [] l₁ × Type [] l₂ → Type [] (l₁ ⊔ l₂)
     h (T₁ , T₂) = T₁ ⇒ T₂
+    aux' : Type [] l₁ × Type [] l₂ → Set
+    aux' (T₁ , T₂) = Expr [] (T₁ ◁ ∅) T₂ 
     aux : ∀ {a : Σ (Type [] l₁) (λ _ → Type [] l₂)} →
       F a → G (h a)
-    aux {a = (T₁ , T₂)} x = (ƛ {!e!}) , v-ƛ
+    aux {a = (T₁ , T₂)} x = (ƛ (subst aux' (cong₂ _,_ {!  !} {!   !}) e)) , v-ƛ
 
 
 LRVwk : ∀ {Δ}{l}{l₁}
@@ -373,7 +375,7 @@ Cextend-Elift {σ* = σ*} χ w e = begin
     Esub σ* (ES←SC (Cextend χ w)) e
   ≡⟨ cong (λ σ → Esub σ* σ e) (Cextend-Eext χ w) ⟩
     Esub σ* (Eextₛ σ* (ES←SC χ) (exp w)) e
-  ≡⟨ {!  !} ⟩
+  ≡⟨ {!   !} ⟩
     Esub σ* (Eliftₛ σ* (ES←SC χ)) e [ exp w ]E
   ∎
 
@@ -381,3 +383,4 @@ Gdropt-ext≡id : (ρ : RelEnv Δ) (γ : Env Δ Γ (subst-to-env* (subst←RE ρ
   → (Gdropt (subst←RE (REext ρ (T′ , R))) (extend-tskip γ)) ≡ω γ
 Gdropt-ext≡id ρ γ T′ R =
   fun-ext-llω-ω (λ x y z → subst-subst-sym (Tren*-preserves-semantics (λ x₁ → refl) y))
+ 
