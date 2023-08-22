@@ -31,3 +31,13 @@ postulate
 postulate
   fun-extω : {B : (l : Level) → Set l} {f g : (x : Level) → B x} →
     (∀ x → f x ≡ g x) → f ≡ω g
+
+postulate
+  fun-ext-llω-ω :
+    -- ∀{a} {A : Set a}
+    ∀ {b} {B : Level → Set b} {c} {C : (x : Level) (y : B x) → Set c}
+      {D : (x : Level) (y : B x) (z : C x y) → Set x}
+    → {f g : ∀ (x : Level) (y : B x) (z : C x y) → D x y z}
+    → (∀ x y z → f x y z ≡ g x y z)
+    → f ≡ω g
+

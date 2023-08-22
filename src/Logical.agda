@@ -12,7 +12,7 @@ open import Data.Nat using (ℕ)
 open import Function using (_∘_; id; case_of_; _$-; λ-)
 open import Relation.Binary.PropositionalEquality
   using (_≡_; _≢_; refl; sym; trans; cong; cong₂; subst; subst₂; resp₂; cong-app; icong;
-        subst-∘; subst-application; subst-application′; -- Properties
+        subst-∘; subst-application; subst-application′; subst-subst-sym; -- Properties
         module ≡-Reasoning)
 open import Axiom.Extensionality.Propositional using (∀-extensionality; Extensionality)
 open ≡-Reasoning
@@ -27,6 +27,25 @@ open import Expressions
 open import ExprSubstitution
 open import ExprSubstProperties
 open import SmallStep
+
+----------------------------------------------------------------------
+-- auxiliary
+
+
+exprTy : {T : Type Δ l} → Expr Δ Γ T → Type Δ l
+exprTy {T = T} e = T
+
+levelTy : Type Δ l → Level
+levelTy {l = l} T = l
+
+levelEnv : TEnv Δ → Level
+levelEnv ∅ = zero
+levelEnv (T ◁ Γ) = levelTy T ⊔ levelEnv Γ
+levelEnv (l ◁* Γ) = levelEnv Γ
+
+levelΔ : LEnv → Level
+levelΔ [] = zero
+levelΔ (l ∷ Δ) = l ⊔ levelΔ Δ
 
 ----------------------------------------------------------------------
 
@@ -76,7 +95,7 @@ _∧_ = _×_
 REL : Type [] l → Set (suc l)
 REL {l} T = Value T → ⟦ T ⟧ [] → Set l 
 
-RelEnv : LEnv → Setω
+RelEnv : (Δ : LEnv) → Setω
 RelEnv Δ = ∀ l → l ∈ Δ → Σ (Type [] l) REL
 
 REdrop : RelEnv (l ∷ Δ) → RelEnv Δ
@@ -105,6 +124,9 @@ subst←RE-drop ρ l′ (there x) = refl
 subst←RE-drop-ext : ∀ (ρ : RelEnv (l ∷ Δ)) →
   (subst←RE (REdrop ρ)) ≡ (Tdropₛ (subst←RE ρ))
 subst←RE-drop-ext ρ = fun-ext₂ (subst←RE-drop ρ)
+
+REdrop-REext≡id : (ρ : RelEnv Δ) → (T′ : Type [] l) → (R : REL T′) → REdrop (REext ρ (T′ , R)) ≡ω ρ
+REdrop-REext≡id {Δ = Δ} ρ T′ R = refl
 
 -- special case of composition sub o ren
 
@@ -151,17 +173,6 @@ Gdropt σ* γ l T x =
   let r = γ l (Twk T) (tskip x) in
   subst id (Tren*-preserves-semantics {ρ* = Twkᵣ Tidᵣ} {subst-to-env* (Tdropₛ σ*) []} {subst-to-env* σ* []} (wkᵣ∈Ren* (subst-to-env* (Tdropₛ σ*) []) (⟦ σ* _ here ⟧ [])) T) r
 
-exprTy : {T : Type Δ l} → Expr Δ Γ T → Type Δ l
-exprTy {T = T} e = T
-
-levelTy : Type Δ l → Level
-levelTy {l = l} T = l
-
-levelEnv : TEnv Δ → Level
-levelEnv ∅ = zero
-levelEnv (T ◁ Γ) = levelTy T ⊔ levelEnv Γ
-levelEnv (l ◁* Γ) = levelEnv Γ
-
 ENVdrop : ∀ {l}{T : Type Δ l} → (Γ : TEnv Δ) → (η : Env* Δ) → Env Δ (T ◁ Γ) η → Env Δ Γ η
 ENVdrop Γ η γ l T x = γ l T (there x)
 
@@ -179,7 +190,8 @@ ENVdrop-extend {l = l} {Δ = Δ} {Γ = Γ}{T = T}{η = η} γ z = fun-extω (λ 
 -- stratified logical relation
 
 module maybe-simpler? where
-        LRV′ : (T : Type Δ l) → (ρ : RelEnv Δ) → REL (Tsub (subst←RE ρ) T)
+        LRV′ : (T : Type Δ l) → (ρ : RelEnv Δ)
+          → REL (Tsub (subst←RE ρ) T)
         LRV′ (` α) ρ v z = proj₂ (ρ _ α) v z 
         LRV′ (T₁ ⇒ T₂) ρ (ƛ e , v-ƛ) f =
           ∀ (w : Value (Tsub (subst←RE ρ) T₁)) →
@@ -336,8 +348,7 @@ LRG : (Γ : TEnv Δ) → (ρ : RelEnv Δ)
   → let η = subst-to-env* (subst←RE ρ) [] in Env Δ Γ η → Set (levelEnv Γ)
 LRG ∅ ρ χ γ = ⊤
 LRG (T ◁ Γ) ρ χ γ = LRV T ρ (χ _ here) (γ _ T here) ∧  LRG Γ ρ (Cdrop χ) (ENVdrop Γ _ γ)
-LRG (l ◁* Γ) ρ χ γ
-  rewrite sym (subst←RE-drop-ext ρ) = LRG Γ (REdrop ρ) (Cdropt χ) (Gdropt (subst←RE ρ) γ)
+LRG (l ◁* Γ) ρ χ γ = LRG Γ (REdrop ρ) (Cdropt χ) (Gdropt (subst←RE ρ) γ)
 
 -- environment lookup
 
@@ -348,7 +359,6 @@ LRV←LRG : (Γ : TEnv Δ) (ρ : RelEnv Δ) (χ : CSub (subst←RE ρ) Γ) (γ :
 LRV←LRG .(T ◁ _) ρ χ γ T (lrv , lrg) here = lrv
 LRV←LRG (_ ◁ Γ) ρ χ γ T (lrv , lrg) (there x) = LRV←LRG _ ρ (Cdrop χ) (ENVdrop Γ _ γ) T lrg x
 LRV←LRG {l = l} (_ ◁* Γ) ρ χ γ Tw lrg (tskip {T = T} x)
-  rewrite sym (subst←RE-drop-ext ρ)
   = let r = LRV←LRG {l = l} Γ (REdrop ρ) (Cdropt χ) (Gdropt (subst←RE ρ) γ) T lrg x
     in LRVwk T Γ ρ χ γ x r
 
@@ -367,56 +377,7 @@ Cextend-Elift {σ* = σ*} χ w e = begin
     Esub σ* (Eliftₛ σ* (ES←SC χ)) e [ exp w ]E
   ∎
 
--- fundamental theorem
-
-fundamental : ∀ (Γ : TEnv Δ) (ρ : RelEnv Δ)
-  → (χ : CSub (subst←RE ρ) Γ)
-  → let η = subst-to-env* (subst←RE ρ) [] in (γ : Env Δ Γ η)
-  → ∀ {l} (T : Type Δ l) (e : Expr Δ Γ T)
-  → LRG Γ ρ χ γ
-  → ∃[ v ] (Csub χ e ⇓ v) ∧ LRV T ρ v (E⟦ e ⟧ η γ)
-fundamental Γ ρ χ γ T (` x) lrg =
-  χ _ x ,
-  exp-v⇓v _ ,
-  LRV←LRG Γ ρ χ γ T lrg x
-fundamental Γ ρ χ γ `ℕ (# n) lrg =
-  V-ℕ n ,
-  ⇓-n ,
-  refl
-fundamental Γ ρ χ γ {.(l ⊔ l′)} (_⇒_ {l} {l′} T T′) (ƛ e) lrg =
-  (Csub χ (ƛ e) , v-ƛ) ,
-  ⇓-ƛ ,
-  (λ w z lrv-w-z →
-    let lrg′ = (lrv-w-z , substlω (LRG Γ ρ) (sym (Cdrop-Cextend χ w)) (ENVdrop-extend γ z) lrg) in
-    let r = fundamental (T ◁ Γ) ρ (Cextend χ w) (extend γ z) T′ e lrg′ in
-    case r of λ where
-      (v , ew⇓v , lrv-v) → v ,
-                           subst (_⇓ v) (Cextend-Elift{l′ = l′}{T′} χ w e) ew⇓v ,
-                           lrv-v
-    )
-fundamental Γ ρ χ γ T (_·_ {T = T₂}{T′ = .T} e₁ e₂) lrg
-  with fundamental Γ ρ χ γ (T₂ ⇒ T) e₁ lrg | fundamental Γ ρ χ γ T₂ e₂ lrg
-... | (e₃ , v-ƛ) , e₁⇓v₁ , lrv₁ | v₂ , e₂⇓v₂ , lrv₂
-  with lrv₁ v₂ (E⟦ e₂ ⟧ (subst-to-env* (subst←RE ρ) []) γ) lrv₂
-... | v₃ , e₃[]⇓v₃ , lrv₃
-  =
-  v₃ ,
-  (⇓-· e₁⇓v₁ e₂⇓v₂ e₃[]⇓v₃) ,
-  lrv₃
-fundamental Γ ρ χ γ (`∀α l , T) (Λ .l ⇒ e) lrg =
-  (Csub χ (Λ l ⇒ e) , v-Λ) ,
-  ⇓-Λ ,
-  λ T′ R → fundamental (l ◁* Γ)
-                       (REext ρ (T′ , R))
-                       (subst (λ σ → CSub σ (l ◁* Γ)) (sym (subst←RE-ext-ext ρ T′ R)) (Cextt χ T′))
-                       {!!}
-                       {!T!}
-                       {!e!}
-                       {!!}
-fundamental Γ ρ χ γ .(T [ T′ ]T) (_∙_ {l = l}{T = T} e T′) lrg
-  with fundamental Γ ρ χ γ (`∀α l , T) e lrg
-... | (Λ .l ⇒ e′ , v-Λ) , e⇓v , lrv
-  with lrv (Tsub (subst←RE ρ) T′) {!LRV T′ ρ!} -- (λ x y → ⊤)
-... | v₂ , vT′⇓v₂ , lrv₂ =
-  {!v₂!} , {!vT′⇓v₂!} , {!lrv₂!}
-
+Gdropt-ext≡id : (ρ : RelEnv Δ) (γ : Env Δ Γ (subst-to-env* (subst←RE ρ) [])) (T′ : Type [] l) (R : REL T′)
+  → (Gdropt (subst←RE (REext ρ (T′ , R))) (extend-tskip γ)) ≡ω γ
+Gdropt-ext≡id ρ γ T′ R =
+  fun-ext-llω-ω (λ x y z → subst-subst-sym (Tren*-preserves-semantics (λ x₁ → refl) y))

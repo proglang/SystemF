@@ -153,4 +153,4 @@ subst-cong :
   → (a : F (G x))
   → subst F (cong G x≡y) a ≡ subst (λ z → F (G z)) x≡y a
 subst-cong F G refl a = refl
- 
+
