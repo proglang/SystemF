@@ -106,15 +106,19 @@ fundamental Γ ρ χ γ .(T [ T′ ]T) (_∙_ {l = l}{T = T} e T′) lrg
 --    (E⟦ e ⟧ (subst-to-env* σ* []) γ (⟦ Tsub σ* T′ ⟧ []))
 
 ... | v₂ , vT′⇓v₂ , lrv₂ =
+  let σ* = subst←RE ρ in
+  let T′′ = Tsub σ* T′ in
   let eq₁ = sym (σT[T′]≡σ↑T[σT'] (λ l₂ x → proj₁ (ρ l₂ x)) T T′) in
+  -- let eq₂ = sym (σT≡TextₛσTwkT {!   !} {!   !}) in
   subst ((λ T → Σ (Expr [] ∅ T) Val)) eq₁ v₂ , 
   subst id (begin 
-    _⇓_ (Esub (Textₛ Tidₛ (Tsub (subst←RE ρ) T′)) (Eextₛ-l Tidₛ Eidₛ) e′) v₂
-    ≡⟨⟩
-      _⇓_ (e′ [ (Tsub (subst←RE ρ) T′) ]ET) v₂
-    ≡⟨ {!   !} ⟩ 
-      _⇓_ (subst (Expr [] ∅) eq₁ (Esub (subst←RE ρ) (λ l₂ x → proj₁ (χ l₂ x)) e ∙ Tsub (subst←RE ρ) T′)) 
-          (subst (λ T₁ → Σ (Expr [] ∅ T₁) Val) eq₁ v₂)
-    ∎) vT′⇓v₂ , 
+     _⇓_ (e′ [ T′′ ]ET) v₂
+   ≡⟨⟩
+     _⇓_ (Esub (Textₛ Tidₛ T′′) (Eextₛ-l Tidₛ Eidₛ) e′) 
+         v₂  
+   ≡⟨ {!   !} ⟩ 
+     _⇓_ (subst (Expr [] ∅) eq₁ (Esub σ* (λ l₂ x → proj₁ (χ l₂ x)) e ∙ T′′)) 
+         (subst (λ T₁ → Σ (Expr [] ∅ T₁) Val) eq₁ v₂)
+   ∎) vT′⇓v₂ ,  
   {!lrv₂!}
 
