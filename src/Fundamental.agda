@@ -71,7 +71,10 @@ fundamental Γ ρ χ γ (`∀α l , T) (Λ .l ⇒ e) lrg =
   (Csub χ (Λ l ⇒ e) , v-Λ) ,
   ⇓-Λ ,
   λ T′ R →
-    let lrg′ = subst₃ (LRG Γ) (symω (REdrop-REext≡id ρ T′ R)) {!!} {!!} lrg in
+    let lrg′ = subst₃ (LRG Γ)
+                      refl -- (symω (REdrop-REext≡id ρ T′ R))
+                      (sym (Cdropt-Cextt≡id Γ ρ χ l T′ R))
+                      (symω (Gdropt-ext≡id ρ γ T′ R)) lrg in
     let (v , e⇓v , lrv-t)
                       = fundamental (l ◁* Γ)
                                     (REext ρ (T′ , R))
@@ -79,8 +82,13 @@ fundamental Γ ρ χ γ (`∀α l , T) (Λ .l ⇒ e) lrg =
                                     (extend-tskip γ)
                                     T
                                     e
-                                    {!lrg′!}
-    in subst Value (sym (lemma1 ρ T T′ R)) v , {!!} , {!!}
+                                    lrg′ in
+    let v′ = subst Value (sym (lemma1 ρ T T′ R)) v in
+    let e⇓v′ = subst₂ _⇓_ (sym {!Elift-[]≡Cextt Γ ρ χ _ l T e T′ R!}) {!!} e⇓v in
+       v′ ,
+       {!!} ,
+       {!!}
+    -- lemma1 ρ T T′ R : (Tsub (Tliftₛ (subst←RE ρ) l) T [ T′ ]T) ≡ Tsub (subst←RE (REext ρ (T′ , R))) T
 fundamental Γ ρ χ γ .(T [ T′ ]T) (_∙_ {l = l}{T = T} e T′) lrg
   with fundamental Γ ρ χ γ (`∀α l , T) e lrg
 ... | (Λ .l ⇒ e′ , v-Λ) , e⇓v , lrv
@@ -110,4 +118,3 @@ fundamental Γ ρ χ γ .(T [ T′ ]T) (_∙_ {l = l}{T = T} e T′) lrg
     ∎) vT′⇓v₂ , 
   {!lrv₂!}
 
-  
