@@ -383,4 +383,27 @@ Gdropt-ext≡id : (ρ : RelEnv Δ) (γ : Env Δ Γ (subst-to-env* (subst←RE ρ
   → (Gdropt (subst←RE (REext ρ (T′ , R))) (extend-tskip γ)) ≡ω γ
 Gdropt-ext≡id ρ γ T′ R =
   fun-ext-llω-ω (λ x y z → subst-subst-sym (Tren*-preserves-semantics (λ x₁ → refl) y))
- 
+
+Cdropt-Cextt≡id : (Γ : TEnv Δ) (ρ : RelEnv Δ) (χ : CSub (subst←RE ρ) Γ) (l : Level) (T′ : Type [] l) (R : REL T′)
+  → (Cdropt (subst (λ σ → CSub σ (l ◁* Γ)) (sym (subst←RE-ext-ext ρ T′ R)) (Cextt χ T′))) ≡ χ
+Cdropt-Cextt≡id Γ ρ χ l T′ R =
+  let sub₁ = subst (λ σ → CSub σ (l ◁* Γ)) (sym (subst←RE-ext-ext ρ T′ R)) in
+  let sub₂ = subst id refl in
+  begin
+    Cdropt (sub₁ (Cextt χ T′))
+  ≡⟨ dist-subst' {F = (λ σ → CSub σ (l ◁* Γ))} {G = id} (λ x → {!!}) Cdropt (sym (subst←RE-ext-ext ρ T′ R)) refl (Cextt χ T′) ⟩
+    sub₂ (Cdropt (Cextt χ T′))
+  ≡⟨⟩
+    Cdropt (Cextt χ T′)
+  ≡⟨ fun-ext₂″ (λ x y z → elim-subst Value
+       (assoc-sub-ren y (λ z₁ x₁ → there x₁) (Textₛ (λ l₁ x₁ → proj₁ (ρ l₁ x₁)) T′))
+       (sym
+        (trans
+         (assoc-sub-ren y (λ z₁ x₁ → there x₁)
+          (Textₛ (λ l₁ x₁ → proj₁ (ρ l₁ x₁)) T′))
+         (trans
+          (sym (assoc-sub-sub y (λ z₁ → `_) (λ l₁ x₁ → proj₁ (ρ l₁ x₁))))
+          (trans (cong (Tsub (λ l₁ x₁ → proj₁ (ρ l₁ x₁))) (TidₛT≡T y))
+           refl)))) (χ x {y} z))
+  ⟩
+    χ ∎
