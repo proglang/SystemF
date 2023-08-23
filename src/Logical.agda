@@ -407,3 +407,15 @@ Cdropt-Cextt≡id Γ ρ χ l T′ R =
            refl)))) (χ x {y} z))
   ⟩
     χ ∎
+
+Elift-[]≡Eext : (Γ : TEnv Δ) (σ* : TSub Δ []) (σ : ESub σ* Γ ∅) (l′ l : Level) (T′ : Type [] l) (T : Type (l ∷ Δ) l′) (e : Expr (l ∷ Δ) (l ◁* Γ) T)
+  → let lhs = (Esub (Tliftₛ σ* l) (Eliftₛ-l σ* σ) e [ T′ ]ET) in
+    let rhs = (Esub (Textₛ σ* T′) (Eextₛ-l σ* σ) e) in
+    lhs ≡ {!rhs!}
+Elift-[]≡Eext Γ σ* σ l′ l T′ T e = {!!}
+
+Elift-[]≡Cextt : (Γ : TEnv Δ) (ρ : RelEnv Δ) (χ : CSub (subst←RE ρ) Γ) (l′ l : Level) (T : Type (l ∷ Δ) l′) (e : Expr (l ∷ Δ) (l ◁* Γ) T) (T′ : Type [] l) (R : REL T′)
+  → let lhs = (Esub (Tliftₛ (subst←RE ρ) l) (Eliftₛ-l (subst←RE ρ) (ES←SC χ)) e [ T′ ]ET) in
+    let rhs = Csub (subst (λ σ → CSub σ (l ◁* Γ)) (sym (subst←RE-ext-ext ρ T′ R)) (Cextt χ T′)) e in
+    subst (Expr [] ∅) (lemma1 ρ T T′ R) lhs ≡ rhs
+Elift-[]≡Cextt Γ ρ χ l′ l T e T′ R = {!!}
