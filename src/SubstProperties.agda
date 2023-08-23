@@ -1,4 +1,3 @@
-{-# OPTIONS --allow-unsolved-metas #-}
 open import Function
 open import Relation.Binary.PropositionalEquality using (_≡_; refl; sym; trans; cong; cong₂; subst; subst₂; module ≡-Reasoning)
 open import Ext
@@ -78,35 +77,16 @@ subst-elim′′′ :
   → subst id A≡A₁ (subst id A₂≡A (subst id A₃≡A₂ (subst id A₃≡A₄ a))) ≡ subst id A≡A' (subst id A≡A₄ a)
 subst-elim′′′ _ refl refl refl refl refl refl = refl  
 
-subst-elim′′′′ :
-  ∀ {ℓ}
-    {A A₁ A₂ A₃ A₄ A₅ : Set ℓ} 
-  → (A₁≡A : A₁ ≡ A)
-  → (A₂≡A : A₂ ≡ A)
-  → (a₁ : A₁)
-  → (a₂ : A₂)
-  → subst id A₁≡A a₁ ≡ subst id A₂≡A a₂
-subst-elim′′′′ refl refl _ _ = {!   !} 
-
--- eq′ : A₁ : ⟦ Tren ρ* T ⟧ η₂ ≡
---         A₂ : ⟦ Tren (Tliftᵣ ρ* l₁) (Twk T) ⟧ (⟦α⟧ ∷ η₂)
--- eq′   = trans (sym (sym (Tren*-preserves-semantics Tren* T)))
---         (trans (sym (Tren*-preserves-semantics (wkᵣ∈Ren* η₁ ⟦α⟧) T))
---          (sym (Tren*-preserves-semantics (Tren*-lift ⟦α⟧ Tren*) (Twk T))))
--- eq₁ : inn (Twk (Tren ρ* T)) (l₁ ◁* Γ₂) ≡
---         inn (Tren (Tliftᵣ ρ* l₁) (Twk T)) (l₁ ◁* Γ₂)
--- eq₁   = cong (λ T₁ → inn T₁ (l₁ ◁* Γ₂)) (sym (↑ρ-TwkT≡Twk-ρT T ρ*))
--- eq'' : A₃ : ⟦ T ⟧ η₁ ≡ A₁ : ⟦ Tren ρ* T ⟧ η₂
--- eq''  = sym (Tren*-preserves-semantics Tren* T)
--- eq' : ⟦ T ⟧ η₁ ≡ ⟦ Tren (Twkᵣ Tidᵣ) T ⟧ (⟦α⟧ ∷ η₁)
--- eq'   = sym (Tren*-preserves-semantics (wkᵣ∈Ren* η₁ ⟦α⟧) T)
--- eq : ⟦ Twk T ⟧ (⟦α⟧ ∷ η₁) ≡
---         A₂ : ⟦ Tren (Tliftᵣ ρ* l₁) (Twk T) ⟧ (⟦α⟧ ∷ η₂)
--- eq    = sym
---         (Tren*-preserves-semantics (Tren*-lift ⟦α⟧ Tren*) (Twk T))
--- eq* : γ₂ l (Tren ρ* T) (ρ x) ≡
---         subst id (sym (Tren*-preserves-semantics Tren* T)) (γ₁ l T x)
--- eq*   = Eren* x
+-- PJT: does not make sense! why should a1 ≡ a2 hold in the end?
+-- subst-elim′′′′ :
+--   ∀ {ℓ}
+--     {A A₁ A₂ A₃ A₄ A₅ : Set ℓ} 
+--   → (A₁≡A : A₁ ≡ A)
+--   → (A₂≡A : A₂ ≡ A)
+--   → (a₁ : A₁)
+--   → (a₂ : A₂)
+--   → subst id A₁≡A a₁ ≡ subst id A₂≡A a₂
+-- subst-elim′′′′ refl refl a1 a2 = {!!}
 
 subst-shuffle′′′′ :
   ∀ {ℓ}
