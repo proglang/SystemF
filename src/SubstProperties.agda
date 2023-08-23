@@ -99,7 +99,6 @@ subst-shuffle′′′′ :
   → subst id A≡A₁ (subst id A≡A₂ a) ≡ subst id A≡A₃ (subst id A≡A₄ a)
 subst-shuffle′′′′ _ refl refl refl refl = refl
 
-
 dist-subst' :
   ∀ {ℓ ℓ' ℓ₁ ℓ₂} {A : Set ℓ} {B : Set ℓ'} {a₁ a₂ : A}
     {F : A → Set ℓ₁} {G : B → Set ℓ₂}
@@ -122,6 +121,19 @@ dist-subst′′′ :
   → f a ≡ subst id Ba′≡Ba (f a′)
 dist-subst′′′ _ _ _ refl refl = refl
 
+subst-elim′′′′ :
+  ∀ {ℓ₁ ℓ₂}
+    {T : Set ℓ₁} 
+  → (F : T → Set ℓ₁)
+  → (G : T → Set ℓ₁)
+  → {t₁ t₂ : T}
+  → (f : {t : T} → (F t) → (G t) → Set ℓ₂)
+  → (a : F t₁)
+  → (b : G t₁)
+  → (t₁≡t₂ : t₁ ≡ t₂)
+  → f {t₁} a b ≡ f {t₂} (subst F t₁≡t₂ a) (subst G t₁≡t₂ b)
+subst-elim′′′′ _ _ _ _ _ refl = refl
+
 subst-cong :
   ∀ {ℓ}{ℓ₁}{ℓ₂}
     {A₁ : Set ℓ₁}
@@ -133,4 +145,3 @@ subst-cong :
   → (a : F (G x))
   → subst F (cong G x≡y) a ≡ subst (λ z → F (G z)) x≡y a
 subst-cong F G refl a = refl
-

@@ -328,7 +328,7 @@ lemma-lrv-wk3 {l₁ = l₁}{l₂ = l₂} ρ T₁ T₂ e =
     aux' (T₁ , T₂) = Expr [] (T₁ ◁ ∅) T₂ 
     aux : ∀ {a : Σ (Type [] l₁) (λ _ → Type [] l₂)} →
       F a → G (h a)
-    aux {a = (T₁ , T₂)} x = (ƛ (subst aux' (cong₂ _,_ {!  !} {!   !}) e)) , v-ƛ
+    aux {a = (T₁ , T₂)} x = (ƛ (subst aux' (cong₂ _,_ {!    !} {!   !}) e)) , v-ƛ
 
 
 LRVwk : ∀ {Δ}{l}{l₁}

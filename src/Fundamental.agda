@@ -84,11 +84,11 @@ fundamental Γ ρ χ γ (`∀α l , T) (Λ .l ⇒ e) lrg =
                                     e
                                     lrg′ in
     let v′ = subst Value (sym (lemma1 ρ T T′ R)) v in
-    let e⇓v′ = subst₂ _⇓_ (sym (Elift-[]≡Cextt Γ ρ χ _ l T e T′ R)) {!!} e⇓v in
+    let e⇓v′ = subst₂ _⇓_ (sym (Elift-[]≡Cextt Γ ρ χ _ l T e T′ R)) {! !} e⇓v in
     let sub-lrvt = subst₂ (LRV T (REext ρ (T′ , R))) (sym (subst-subst-sym (lemma1 ρ T T′ R))) refl
     in
        v′ ,
-       {!!} ,
+       {!  !} ,
        sub-lrvt lrv-t
 
 {- {}1.2 :
@@ -116,32 +116,46 @@ fundamental Γ ρ χ γ .(T [ T′ ]T) (_∙_ {l = l}{T = T} e T′) lrg
   with lrv (Tsub (subst←RE ρ) T′) 
     (subst (λ ⟦T⟧ → Σ (Expr [] ∅ (Tsub (subst←RE ρ) T′)) Val → ⟦T⟧ → Set l) (sym (subst-preserves (subst←RE ρ) T′)) ((LRV T′) ρ)) 
 -- last:
---LRV (Tsub (Textₛ Tidₛ T′) T) 
---    ρ
---    (subst (λ T₁ → Σ (Expr [] ∅ T₁) Val) eq₁ v₂)
---    (subst id eq₃ (E⟦ e ⟧ (subst-to-env* σ* []) γ  (⟦ T′ ⟧ (subst-to-env* σ* []))))
------------>
---LRV T
---    (REext ρ (Tsub σ* T′ , subst (λ ⟦T⟧ →  Σ (Expr [] ∅ (Tsub σ* T′)) Val → ⟦T⟧ → Set l) (sym (subst-preserves σ* (LRV T′ ρ)))))
---    (subst (λ T₁ → Σ (Expr [] ∅ T₁) Val) eq₂? v₂)
---    (E⟦ e ⟧ (subst-to-env* σ* []) γ (⟦ Tsub σ* T′ ⟧ []))
+-- LRV   (Tsub (Textₛ Tidₛ T′) T) 
+          
+--       ρ
+
+--       (subst Value eq₁ v₂)
+
+--       (subst id eq₂
+--         (E⟦ e ⟧ (subst-to-env* σ* γ
+--         (⟦ T′ ⟧ (subst-to-env* σ* []))))
+-- LRV   T
+
+--       (REext ρ
+--        (Tsub σ* T′ ,
+--         subst
+--         (λ ⟦T⟧ → Σ (Expr [] ∅ (Tsub σ* T′)) Val → ⟦T⟧ → Set l) eq₂ (LRV T′ ρ)))
+
+--       (subst Value eq₁ v₂)
+
+--       (E⟦ e ⟧ (subst-to-env* σ* []) γ
+--         (⟦ Tsub σ* T′ ⟧ []))
 
 ... | v₂ , vT′⇓v₂ , lrv₂ =
   let σ* = subst←RE ρ in
-  let T′′ = Tsub σ* T′ in
   let eq₁ = sym (σT[T′]≡σ↑T[σT'] (subst←RE ρ) T T′) in
-  -- let eq₂ = sym (σT≡TextₛσTwkT {!   !} {!   !}) in
+  let eq₂ = (sym (subst-preserves σ* T′)) in
+  let eq₃ = {!   !} in
+  let eq₄ = {!   !} in
+  let eq₅ = {!   !} in
   let e•T⇓v = ⇓-∙ e⇓v vT′⇓v₂ in
   subst Value eq₁ v₂ , 
-  {!e•T⇓v!} ,
-  -- subst id (begin
-  --    _⇓_ (e′ [ T′′ ]ET) v₂
-  --  ≡⟨⟩
-  --    _⇓_ (Esub (Textₛ Tidₛ T′′) (Eextₛ-l Tidₛ Eidₛ) e′) 
-  --        v₂  
-  --  ≡⟨ {!   !} ⟩
-  --    _⇓_ (subst (Expr [] ∅) eq₁ (Esub σ* (ES←SC χ) e ∙ T′′)) 
-  --        (subst Value eq₁ v₂)
-  --  ∎) vT′⇓v₂ ,  
-  {!lrv₂!}
-
+  subst id (begin 
+      Esub σ* (λ l₂ x → proj₁ (χ l₂ x)) e ∙ Tsub σ* T′ ⇓ v₂
+    ≡⟨ subst-elim′′′′ (Expr [] ∅) Value _⇓_ (Esub σ* (λ l₂ x → proj₁ (χ l₂ x)) e ∙ Tsub σ* T′) v₂ eq₁ ⟩
+      subst (Expr [] ∅) eq₁ (Esub σ* (λ l₂ x → proj₁ (χ l₂ x)) e ∙ Tsub σ* T′) ⇓ subst Value eq₁ v₂ 
+    ∎) e•T⇓v ,
+  subst id (begin 
+      LRV T 
+          (REext ρ (Tsub σ* T′ , subst (λ ⟦T⟧ → Σ (Expr [] ∅ (Tsub σ* T′)) Val → ⟦T⟧ → Set l) eq₂ (LRV T′ ρ)))
+          (subst Value eq₃ v₂)
+          (E⟦ e ⟧ (subst-to-env* σ* []) γ (⟦ Tsub σ* T′ ⟧ []))
+    ≡⟨ {!   !} ⟩
+      LRV (T [ T′ ]T) ρ (subst Value eq₄ v₂) (subst id eq₅ (E⟦ e ⟧ (subst-to-env* σ* []) γ (⟦ T′ ⟧ (subst-to-env* σ* []))))
+    ∎) lrv₂
