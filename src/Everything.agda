@@ -7,8 +7,8 @@ open import ExprSubstProperties
 
 open import SmallStep
 
--- open import Logical 
-open import Adequacy
+open import Logical 
+open import Fundamental
 
 open import Ext
 open import SetOmega
