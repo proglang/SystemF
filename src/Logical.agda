@@ -203,7 +203,18 @@ module maybe-simpler? where
           ∀ (R : REL T′) →
           ∃[ v ] (e [ T′ ]ET ⇓ v) ∧ 
                  let ρ′ = REext ρ (T′ , R)
-                 in LRV′ T ρ′ (subst Value (lemma1 ρ T T′ R) v) {!F (⟦ T′ ⟧ [])!}
+                     z′ = F (⟦ T′ ⟧ [])
+                 in LRV′ T ρ′
+                         (subst Value (lemma1 ρ T T′ R) v)
+                         (subst id (begin
+                           ⟦ Tsub (Tliftₛ (subst←RE ρ) l) T ⟧ (⟦ T′ ⟧ [] ∷ [])
+                         ≡⟨ sym (Tsingle-subst-preserves [] T′ (Tsub (Tliftₛ (subst←RE ρ) l) T)) ⟩
+                           ⟦ Tsub (Tliftₛ (subst←RE ρ) l) T [ T′ ]T ⟧ []
+                         ≡⟨ cong (λ t → ⟦ t ⟧ []) (σ↑T[T′]≡TextₛσT′T (subst←RE ρ) T′ T) ⟩
+                           ⟦ Tsub (Textₛ (subst←RE ρ) T′) T ⟧ []
+                         ≡⟨ sym (cong (λ t → ⟦ Tsub t T ⟧ []) (subst←RE-ext-ext ρ T′ R) ) ⟩
+                           ⟦ Tsub (subst←RE (REext ρ (T′ , R))) T ⟧ []
+                         ∎) z′)
         LRV′ `ℕ ρ (# n , v-n) z = n ≡ z
 
 LRV : (T : Type Δ l) → (ρ : RelEnv Δ)
