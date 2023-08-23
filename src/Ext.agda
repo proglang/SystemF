@@ -27,6 +27,12 @@ postulate
     (∀ (x : A₁) {y : A₂ x} (z : A₃ x y) → f x {y} z ≡ g x {y} z) →
     f ≡ g
 
+postulate 
+  fun-ext₂″ :  ∀ {l₁}{l₂}{l₃}{l₄} {A₁ : Set l₁} {A₂ : A₁ → Set l₂} {A₃ : (x : A₁) → A₂ x → Set l₃}{B : (x : A₁) → (y : A₂ x) → A₃ x y → Set l₄}
+             {f g : (x : A₁) → {y : A₂ x} → (z : A₃ x y) → B x y z} →
+    (∀ (x : A₁) (y : A₂ x) (z : A₃ x y) → f x {y} z ≡ g x {y} z) →
+    f ≡ g
+
 
 postulate
   fun-extω : {B : (l : Level) → Set l} {f g : (x : Level) → B x} →
