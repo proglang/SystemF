@@ -61,38 +61,38 @@ Ewk-l e = Eren tskip e
 -- expression substitutions
 
 ESub : TSub Δ₁ Δ₂ → TEnv Δ₁ → TEnv Δ₂ → Set
-ESub {Δ₁ = Δ₁} {Δ₂ = Δ₂} σ* Γ₁ Γ₂ = ∀ l {T : Type Δ₁ l} → inn T Γ₁ → Expr Δ₂ Γ₂ (Tsub σ* T)
+ESub {Δ₁ = Δ₁} {Δ₂ = Δ₂} σ* Γ₁ Γ₂ = ∀ l (T : Type Δ₁ l) → inn T Γ₁ → Expr Δ₂ Γ₂ (Tsub σ* T)
 
 Eidₛ : ESub Tidₛ Γ Γ
-Eidₛ _ {T = T} rewrite TidₛT≡T T = `_
+Eidₛ _ T rewrite TidₛT≡T T = `_
 
 Ewkₛ : (σ* : TSub Δ₁ Δ₂) → ESub σ* Γ₁ Γ₂ → ESub σ* Γ₁ (T ◁ Γ₂)
-Ewkₛ σ* σ _ {T = T} x = Ewk (σ _ x)
+Ewkₛ σ* σ _ T x = Ewk (σ _ T x)
 
 Edropₛ : (σ* : TSub Δ₁ Δ₂) → ESub σ* (T ◁ Γ₁) Γ₂ → ESub σ* Γ₁ Γ₂
-Edropₛ σ* σ _ x = σ _ (there x)
+Edropₛ σ* σ _ _ x = σ _ _ (there x)
 
 Eliftₛ : ∀ {l} {T : Type Δ₁ l} (σ* : TSub Δ₁ Δ₂) → ESub σ* Γ₁ Γ₂ → ESub σ* (T ◁ Γ₁) ((Tsub σ* T) ◁ Γ₂)
-Eliftₛ _ σ _ here = ` here
-Eliftₛ _ σ _ (there x) = Ewk (σ _ x)
+Eliftₛ _ σ _ _ here = ` here
+Eliftₛ _ σ _ _ (there x) = Ewk (σ _ _ x)
 
 Eliftₛ-l : ∀ {l} → (σ* : TSub Δ₁ Δ₂) → ESub σ* Γ₁ Γ₂ → ESub (Tliftₛ σ* _) (l ◁* Γ₁) (l ◁* Γ₂)
-Eliftₛ-l σ* σ _ (tskip {T = T} x) = subst (Expr _ _) (sym (σ↑-TwkT≡Twk-σT σ* T)) (Ewk-l (σ _ x))
+Eliftₛ-l σ* σ _ _ (tskip {T = T} x) = subst (Expr _ _) (sym (σ↑-TwkT≡Twk-σT σ* T)) (Ewk-l (σ _ _ x))
 
 Esub : (σ* : TSub Δ₁ Δ₂) → ESub σ* Γ₁ Γ₂ → Expr Δ₁ Γ₁ T → Expr Δ₂ Γ₂ (Tsub σ* T)
 Esub σ* σ (# n) = # n
-Esub σ* σ (` x) = σ _ x
+Esub σ* σ (` x) = σ _ _ x
 Esub σ* σ (ƛ e) = ƛ Esub σ* (Eliftₛ σ* σ) e
 Esub σ* σ (e₁ · e₂) = Esub σ* σ e₁ · Esub σ* σ e₂
 Esub σ* σ (Λ l ⇒ e) = Λ l ⇒ Esub (Tliftₛ σ* _) (Eliftₛ-l σ* σ) e
 Esub σ* σ (_∙_ {T = T} e T′) = subst (Expr _ _) (sym (σT[T′]≡σ↑T[σT'] σ* T T′)) (Esub σ* σ e ∙ (Tsub σ* T′))
 
 Eextₛ : (σ* : TSub Δ₁ Δ₂) → ESub σ* Γ₁ Γ₂ → Expr Δ₂ Γ₂ (Tsub σ* T) → ESub σ* (T ◁ Γ₁) Γ₂
-Eextₛ σ* σ e' _ here = e'
-Eextₛ σ* σ e' _ (there x) = σ _ x
+Eextₛ σ* σ e' _ _ here = e'
+Eextₛ σ* σ e' _ _ (there x) = σ _ _ x
 
 Eextₛ-l : (σ* : TSub Δ₁ Δ₂) → ESub σ* Γ₁ Γ₂ → ESub (Textₛ σ* T) (l ◁* Γ₁) Γ₂
-Eextₛ-l {Δ₂ = Δ₂} {Γ₂ = Γ₂} σ* σ _ (tskip {T = T} x) = subst (Expr Δ₂ Γ₂) (sym (σT≡TextₛσTwkT σ* T)) (σ _ x) 
+Eextₛ-l {Δ₂ = Δ₂} {Γ₂ = Γ₂} σ* σ _ _ (tskip {T = T} x) = subst (Expr Δ₂ Γ₂) (sym (σT≡TextₛσTwkT σ* T)) (σ _ _ x) 
 
 _[_]E : Expr Δ (T₁ ◁ Γ) T₂ → Expr Δ Γ T₁ → Expr Δ Γ T₂
 _[_]E {T₁ = T₁} {T₂ = T₂} e e′ = 

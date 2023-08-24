@@ -40,7 +40,7 @@ fundamental : ∀ (Γ : TEnv Δ) (ρ : RelEnv Δ)
   → LRG Γ ρ χ γ
   → ∃[ v ] (Csub χ e ⇓ v) ∧ LRV T ρ v (E⟦ e ⟧ η γ)
 fundamental Γ ρ χ γ T (` x) lrg =
-  χ _ x ,
+  χ _ _ x ,
   exp-v⇓v _ ,
   LRV←LRG Γ ρ χ γ T lrg x
 fundamental Γ ρ χ γ `ℕ (# n) lrg =
@@ -88,14 +88,13 @@ fundamental Γ ρ χ γ (`∀α l , T) (Λ .l ⇒ e) lrg =
         let e⇓v = subst₂ _⇓_ (sym (Elift-[]≡Cextt Γ ρ χ _ l T e T′ R)) refl e⇓v in
         let sub-lrvt = subst₂ (LRV T (REext ρ (T′ , R))) (sym (subst-subst-sym (lemma1 ρ T T′ R))) refl in
         let σ* = (λ l₁ x → proj₁ (ρ l₁ x)) in
-        let 𝕖 = Esub (Textₛ Tidₛ T′) (Eextₛ-l Tidₛ Eidₛ) (Esub (Tliftₛ σ* l) (Eliftₛ-l σ* (λ l₁ x → proj₁ (χ l₁ x))) e) in
-        let eq₁ = (lemma1 ρ T T′ R) in
-        let eq₂ = (sym (lemma1 ρ T T′ R)) in
+        let 𝕖 = Esub (Textₛ Tidₛ T′) (Eextₛ-l Tidₛ Eidₛ) (Esub (Tliftₛ σ* l) (Eliftₛ-l σ* (λ l₁ T x → proj₁ (χ l₁ T x))) e) in
+        let eq = lemma1 ρ T T′ R in
            v′ ,
            subst id (begin 
-              subst (Expr [] ∅) eq₁ 𝕖 ⇓ v
-            ≡⟨ subst-swap′′ (Expr [] ∅) Value _⇓_ 𝕖 v eq₂ eq₁ ⟩
-              𝕖 ⇓ subst Value eq₂ v
+              subst (Expr [] ∅) eq 𝕖 ⇓ v
+            ≡⟨ subst-swap′′ (Expr [] ∅) Value _⇓_ 𝕖 v (sym eq) eq ⟩
+              𝕖 ⇓ subst Value (sym eq) v
             ∎) e⇓v ,
            sub-lrvt lrv-t
 fundamental Γ ρ χ γ .(T [ T′ ]T) (_∙_ {l = l}{T = T} e T′) lrg
@@ -113,9 +112,9 @@ fundamental Γ ρ χ γ .(T [ T′ ]T) (_∙_ {l = l}{T = T} e T′) lrg
   let e•T⇓v = ⇓-∙ e⇓v vT′⇓v₂ in
   subst Value eq₁ v₂ , 
   subst id (begin 
-      Esub σ* (λ l₂ x → proj₁ (χ l₂ x)) e ∙ Tsub σ* T′ ⇓ v₂
-    ≡⟨ subst-elim′′′′ (Expr [] ∅) Value _⇓_ (Esub σ* (λ l₂ x → proj₁ (χ l₂ x)) e ∙ Tsub σ* T′) v₂ eq₁ ⟩
-      subst (Expr [] ∅) eq₁ (Esub σ* (λ l₂ x → proj₁ (χ l₂ x)) e ∙ Tsub σ* T′) ⇓ subst Value eq₁ v₂ 
+      Esub σ* (λ l₂ T x → proj₁ (χ l₂ T x)) e ∙ Tsub σ* T′ ⇓ v₂
+    ≡⟨ subst-elim′′′′ (Expr [] ∅) Value _⇓_ (Esub σ* (λ l₂ T x → proj₁ (χ l₂ T x)) e ∙ Tsub σ* T′) v₂ eq₁ ⟩
+      subst (Expr [] ∅) eq₁ (Esub σ* (λ l₂ T x → proj₁ (χ l₂ T x)) e ∙ Tsub σ* T′) ⇓ subst Value eq₁ v₂ 
     ∎) e•T⇓v ,
   subst id (begin 
       LRV T                                                                                                     -- | connected 

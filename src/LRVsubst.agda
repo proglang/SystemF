@@ -73,7 +73,7 @@ LRVsubst : ∀ {Δ}{l}{l′}
   → LRV (T [ T′ ]T) ρ
         (subst Value (ext-σ-T′≡σ[T′] T′ T ρ R′) v)
         (subst id (sym (Tsingle-subst-preserves η T′ T)) z)
-LRVsubst Γ ρ T′ R′ (` here) v z lrv-t = {!!}
+LRVsubst Γ ρ T′ R′ (` here) v z lrv-t = {! !}
 LRVsubst Γ ρ T′ R′ (` there x) v z lrv-t = {!!}
 LRVsubst Γ ρ T′ R′ (T₁ ⇒ T₂) v z lrv-t = {!!}
 LRVsubst Γ ρ T′ R′ (`∀α l , T) v z lrv-t = {!!}

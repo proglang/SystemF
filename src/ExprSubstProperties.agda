@@ -36,19 +36,19 @@ sub0′ e′ = Eextₛ Tidₛ Eidₛ (subst (Expr _ _) (sym (TidₛT≡T _)) e�
 -- general equality of expression substitutions
 
 _~_ : {σ* : TSub Δ₁ Δ₂} → (σ₁ σ₂ : ESub σ* Γ₁ Γ₂) → Set
-_~_ {Δ₁ = Δ₁} {Γ₁ = Γ₁} σ₁ σ₂ = ∀ l {T : Type Δ₁ l} → (x : inn T Γ₁) → σ₁ l x ≡ σ₂ l x
+_~_ {Δ₁ = Δ₁} {Γ₁ = Γ₁} σ₁ σ₂ = ∀ l (T : Type Δ₁ l) → (x : inn T Γ₁) → σ₁ l T x ≡ σ₂ l T x
 
 ~-lift : ∀ {l} {T : Type Δ₁ l} {σ* : TSub Δ₁ Δ₂} → (σ₁ σ₂ : ESub σ* Γ₁ Γ₂) → σ₁ ~ σ₂ → Eliftₛ {T = T} σ* σ₁ ~ Eliftₛ σ* σ₂
-~-lift σ₁ σ₂ σ₁~σ₂ l here = refl
-~-lift σ₁ σ₂ σ₁~σ₂ l (there x) = cong Ewk (σ₁~σ₂ l x)
+~-lift σ₁ σ₂ σ₁~σ₂ l T here = refl
+~-lift σ₁ σ₂ σ₁~σ₂ l T (there x) = cong Ewk (σ₁~σ₂ l T x)
 
 ~-lift* : ∀ {l : Level} {σ* : TSub Δ₁ Δ₂} → (σ₁ σ₂ : ESub σ* Γ₁ Γ₂) → σ₁ ~ σ₂ → (Eliftₛ-l {l = l} σ* σ₁) ~ Eliftₛ-l σ* σ₂
-~-lift* σ₁ σ₂ σ₁~σ₂ l (tskip x) rewrite σ₁~σ₂ l x = refl
+~-lift* σ₁ σ₂ σ₁~σ₂ l _ (tskip x) rewrite σ₁~σ₂ l _ x = refl
 
 
 Esub~ : {σ* : TSub Δ₁ Δ₂} → (σ₁ σ₂ : ESub σ* Γ₁ Γ₂) → σ₁ ~ σ₂ → (e : Expr Δ₁ Γ₁ T) → Esub σ* σ₁ e ≡ Esub σ* σ₂ e
 Esub~ σ₁ σ₂ σ₁~σ₂ (# n) = refl
-Esub~ σ₁ σ₂ σ₁~σ₂ (` x) = σ₁~σ₂ _ x
+Esub~ σ₁ σ₂ σ₁~σ₂ (` x) = σ₁~σ₂ _ _ x
 Esub~ σ₁ σ₂ σ₁~σ₂ (ƛ e) = cong ƛ_ (Esub~ _ _ (~-lift σ₁ σ₂ σ₁~σ₂) e)
 Esub~ σ₁ σ₂ σ₁~σ₂ (e · e₁) = cong₂ _·_ (Esub~ σ₁ σ₂ σ₁~σ₂ e) (Esub~ σ₁ σ₂ σ₁~σ₂ e₁)
 Esub~ σ₁ σ₂ σ₁~σ₂ (Λ l ⇒ e) = cong (Λ l ⇒_) (Esub~ _ _ (~-lift* {l = l} σ₁ σ₂ σ₁~σ₂) e)
@@ -78,11 +78,20 @@ subst-split F f refl refl refl x₁ x₂ = refl
 
 _>>S_ : ∀ {Δ₁}{Δ₂}{Δ₃}{σ₁* : TSub Δ₁ Δ₂} {σ₂* : TSub Δ₂ Δ₃} {Γ₁ : TEnv Δ₁}{Γ₂ : TEnv Δ₂}{Γ₃ : TEnv Δ₃}
   → ESub σ₁* Γ₁ Γ₂ → ESub σ₂* Γ₂ Γ₃ → ESub (σ₁* ∘ₛₛ σ₂*) Γ₁ Γ₃
-_>>S_ {Δ₃ = Δ₃}{σ₁* = σ₁*}{σ₂* = σ₂*}{Γ₃ = Γ₃} σ₁ σ₂ l {T} x
-  = subst (Expr Δ₃ Γ₃) (assoc-sub-sub T  σ₁* σ₂*) (Esub _ σ₂ (σ₁ l x))
+_>>S_ {Δ₃ = Δ₃}{σ₁* = σ₁*}{σ₂* = σ₂*}{Γ₃ = Γ₃} σ₁ σ₂ l T x
+  = subst (Expr Δ₃ Γ₃) (assoc-sub-sub T  σ₁* σ₂*) (Esub _ σ₂ (σ₁ l _ x))
 
-Eassoc-sub-sub : ∀ {Δ₁}{Δ₂}{Δ₃}
-  → {σ₁* : TSub Δ₁ Δ₂}{σ₂* : TSub Δ₂ Δ₃}
+-- ((l₁ : Level) {T = T₁ : Type Δ₁ l₁} →
+--        inn T₁ (_T_480 (σ₁ = σ₁) (σ₂ = σ₂) ◁ Γ₁) →
+--        Expr Δ₃ (Tsub (σ₁* ∘ₛₛ σ₂*) (_T_480 (σ₁ = σ₁) (σ₂ = σ₂)) ◁ Γ₃)
+--        (Tsub (σ₁* ∘ₛₛ σ₂*) T₁))
+--       ≡
+--       ((l₁ : Level) {T = T₁ : Type Δ₁ l₁} →
+--        inn T₁ (T ◁ Γ₁) →
+--        Expr Δ₃ (Tsub σ₂* (Tsub σ₁* T) ◁ Γ₃) (Tsub (σ₁* ∘ₛₛ σ₂*) T₁))
+
+Eassoc-sub-sub : 
+    {σ₁* : TSub Δ₁ Δ₂}{σ₂* : TSub Δ₂ Δ₃}
   → {Γ₁ : TEnv Δ₁}{Γ₂ : TEnv Δ₂}{Γ₃ : TEnv Δ₃}
   → {T : Type Δ₁ l}
   → (e : Expr Δ₁ Γ₁ T)
@@ -90,9 +99,45 @@ Eassoc-sub-sub : ∀ {Δ₁}{Δ₂}{Δ₃}
   → let lhs = Esub σ₂* σ₂ (Esub σ₁* σ₁ e) in
     let rhs = Esub (σ₁* ∘ₛₛ σ₂*) (σ₁ >>S σ₂) e  in
     subst (Expr Δ₃ Γ₃) (assoc-sub-sub T σ₁* σ₂*) lhs ≡ rhs
+  
+Eassoc-sub↑-sub↑ :
+    {σ₁* : TSub Δ₁ Δ₂}{σ₂* : TSub Δ₂ Δ₃}
+  → {Γ₁ : TEnv Δ₁}{Γ₂ : TEnv Δ₂}{Γ₃ : TEnv Δ₃}
+  → {T : Type Δ₁ l}
+  → {T′ : Type Δ₁ l′}
+  → (e : Expr Δ₁ (T′ ◁  Γ₁) T)
+  → (σ₁ : ESub σ₁* Γ₁ Γ₂) → (σ₂ : ESub σ₂* Γ₂ Γ₃)
+  → let lhs = Esub σ₂* (Eliftₛ {T = Tsub σ₁* T′} σ₂* σ₂) (Esub σ₁* (Eliftₛ σ₁* σ₁) e) in
+    let rhs = Esub (σ₁* ∘ₛₛ σ₂*) (Eliftₛ {T = T′} (σ₁* ∘ₛₛ σ₂*) (σ₁ >>S σ₂)) e  in
+    subst (λ T′ → Expr Δ₃ (T′ ◁ Γ₃) _) (assoc-sub-sub T′ σ₁* σ₂*) (subst (Expr Δ₃ _) (assoc-sub-sub T σ₁* σ₂*) lhs) ≡ rhs
+
+Esub↑-dist-∘ₛₛ : {σ₁* : TSub Δ₁ Δ₂}{σ₂* : TSub Δ₂ Δ₃} {Γ₁ : TEnv Δ₁}{Γ₂ : TEnv Δ₂}{Γ₃ : TEnv Δ₃} 
+    (T : Type Δ₁ l)
+    (σ₁ : ESub σ₁* Γ₁ Γ₂) → (σ₂ : ESub σ₂* Γ₂ Γ₃) 
+  → Eliftₛ {T = T} σ₁* σ₁ >>S Eliftₛ σ₂* σ₂ ≡ 
+    subst ((λ T → ESub _ _ (T ◁ Γ₃))) (sym (assoc-sub-sub T σ₁* σ₂*)) (Eliftₛ {T = T} (σ₁* ∘ₛₛ σ₂*) (σ₁ >>S σ₂))
+Esub↑-dist-∘ₛₛ  T σ₁ σ₂ = fun-ext λ l → {!   !}
+
+Eassoc-sub↑-sub↑ {Δ₃ = Δ₃} {σ₁* = σ₁*} {σ₂* = σ₂*} {Γ₃ = Γ₃} {T = T} {T′ = T′} e σ₁ σ₂ = 
+  let ≡* = Eassoc-sub-sub e (Eliftₛ σ₁* σ₁) (Eliftₛ σ₂* σ₂) in
+  begin 
+    subst (λ T′ → Expr Δ₃ (T′ ◁ Γ₃) _) (assoc-sub-sub T′ σ₁* σ₂*) (subst (Expr Δ₃ _) (assoc-sub-sub T σ₁* σ₂*) 
+          (Esub σ₂* (Eliftₛ σ₂* σ₂) (Esub σ₁* (Eliftₛ σ₁* σ₁) e)))
+  ≡⟨ cong (subst (λ T′ → Expr Δ₃ (T′ ◁ Γ₃) _) (assoc-sub-sub T′ σ₁* σ₂*)) ≡* ⟩
+    subst (λ T′ → Expr Δ₃ (T′ ◁ Γ₃) _) (assoc-sub-sub T′ σ₁* σ₂*) 
+      (Esub (σ₁* ∘ₛₛ σ₂*) (Eliftₛ σ₁* σ₁ >>S Eliftₛ σ₂* σ₂) e)
+  ≡⟨ cong (λ σ → subst (λ T′ → Expr Δ₃ (T′ ◁ Γ₃) _) (assoc-sub-sub T′ σ₁* σ₂*) (Esub (σ₁* ∘ₛₛ σ₂*) σ e)) (Esub↑-dist-∘ₛₛ T′ σ₁ σ₂) ⟩
+    subst (λ T′ → Expr Δ₃ (T′ ◁ Γ₃) _) (assoc-sub-sub T′ σ₁* σ₂*) 
+      (Esub (σ₁* ∘ₛₛ σ₂*)
+        (subst ((λ T → ESub _ _ (T ◁ Γ₃))) (sym (assoc-sub-sub T′ σ₁* σ₂*)) (Eliftₛ (σ₁* ∘ₛₛ σ₂*) (σ₁ >>S σ₂))) 
+      e)
+  ≡⟨ {!   !} ⟩ -- subst elim
+    Esub (σ₁* ∘ₛₛ σ₂*) (Eliftₛ (σ₁* ∘ₛₛ σ₂*) (σ₁ >>S σ₂)) e
+  ∎ 
+
 Eassoc-sub-sub (# n) σ₁ σ₂ = refl
 Eassoc-sub-sub (` x) σ₁ σ₂ = refl
-Eassoc-sub-sub (ƛ e) σ₁ σ₂ = {!!}
+Eassoc-sub-sub (ƛ e) σ₁ σ₂ = {! !}
 Eassoc-sub-sub {σ₁* = σ₁*} {σ₂* = σ₂*} (_·_ {T = T}{T′ = T′} e₁ e₂) σ₁ σ₂ =
   begin
     subst (Expr _ _) (assoc-sub-sub T′ σ₁* σ₂*)
@@ -104,8 +149,9 @@ Eassoc-sub-sub {σ₁* = σ₁*} {σ₂* = σ₂*} (_·_ {T = T}{T′ = T′} e�
     (Esub (σ₁* ∘ₛₛ σ₂*) (σ₁ >>S σ₂) e₁ ·
        Esub (σ₁* ∘ₛₛ σ₂*) (σ₁ >>S σ₂) e₂)
   ∎
-Eassoc-sub-sub (Λ l ⇒ e) σ₁ σ₂ = {!!}
+Eassoc-sub-sub (Λ l ⇒ e) σ₁ σ₂ = {!  !}
 Eassoc-sub-sub (e ∙ T′) σ₁ σ₂ = {!!}
+
 
 TSub-id-right : ∀ (σ* : TSub Δ₁ Δ₂) → (σ* ∘ₛₛ Tidₛ) ≡ σ*
 TSub-id-right {Δ₁ = Δ₁} σ* = fun-ext₂ aux
@@ -140,7 +186,7 @@ sub0-e′-wk-e≡e e′ (e ∙ T′) = {!!}
 
 
 Eext-Elift[]~ : Eext-Elift[]~-type
-Eext-Elift[]~ {.l₁} {Δ₁} {Δ₂} {σ* = σ*} {Γ₁} {Γ₂} {T = T} σ e′ l₁ {.T} here =
+Eext-Elift[]~ {.l₁} {Δ₁} {Δ₂} {σ* = σ*} {Γ₁} {Γ₂} {T = T} σ e′ l₁ (.T) here =
   let sub₁ = subst (λ τ* → ESub τ* (T ◁ Γ₁) Γ₂) (TSub-id-right σ*) in
   let sub₁′ = subst (Expr Δ₂ Γ₂) (cong (λ σ* → Tsub σ* T) (TSub-id-right σ*)) in
   let sub₂ = subst (Expr Δ₂ Γ₂) (sym (TidₛT≡T (Tsub σ* T))) in
@@ -152,41 +198,41 @@ Eext-Elift[]~ {.l₁} {Δ₁} {Δ₂} {σ* = σ*} {Γ₁} {Γ₂} {T = T} σ e�
       ≡⟨ refl ⟩
     sub₁′ (sub₃ (Esub _ (sub0 (sub₂ e′)) (` here)))
       ≡⟨ refl ⟩
-    sub₁′ (sub₃ (Esub _ (sub0 (sub₂ e′)) ((Eliftₛ σ* σ) l₁ here)))
+    sub₁′ (sub₃ (Esub _ (sub0 (sub₂ e′)) ((Eliftₛ σ* σ) l₁ _ here)))
       ≡⟨ refl ⟩
-    sub₁′ ((Eliftₛ σ* σ >>S sub0 (sub₂ e′)) l₁ here)
+    sub₁′ ((Eliftₛ σ* σ >>S sub0 (sub₂ e′)) l₁ _ here)
       ≡⟨ sym (dist-subst' {F = (λ a → ESub a (T ◁ Γ₁) Γ₂)} {G = Expr Δ₂ Γ₂}
                           (λ τ* → Tsub τ* T)
-                          (λ f → f l₁ here)
+                          (λ f → f l₁ _ here)
                           (TSub-id-right σ*)
                           (cong (λ σ*₁ → Tsub σ*₁ T) (TSub-id-right σ*))
                           (Eliftₛ σ* σ >>S sub0 (subst (Expr Δ₂ Γ₂) (sym (TidₛT≡T (Tsub σ* T))) e′)))
        ⟩
-    sub₁ (Eliftₛ σ* σ >>S sub0 (sub₂ e′)) l₁ here 
+    sub₁ (Eliftₛ σ* σ >>S sub0 (sub₂ e′)) l₁ _ here 
   ∎
-Eext-Elift[]~ {l} {Δ₁} {Δ₂} {σ* = σ*} {Γ₁} {Γ₂} {T = T} σ e′ l₁ {T₁} (there x) =
+Eext-Elift[]~ {l} {Δ₁} {Δ₂} {σ* = σ*} {Γ₁} {Γ₂} {T = T} σ e′ l₁ T₁ (there x) =
   let sub₁ = subst (λ τ* → ESub τ* (T ◁ Γ₁) Γ₂) (TSub-id-right σ*) in
   let sub₁′ = subst (Expr Δ₂ Γ₂) (cong (λ τ* → Tsub τ* T₁) (TSub-id-right σ*)) in
   let sub₁″ = subst (λ τ* → Expr Δ₂ Γ₂ (Tsub τ* T₁)) (TSub-id-right σ*) in
   let sub₂ = subst (Expr Δ₂ Γ₂) (sym (TidₛT≡T (Tsub σ* T))) in
   let sub₃ = subst (Expr Δ₂ Γ₂) (assoc-sub-sub T₁ σ* Tidₛ) in
   sym $ begin
-    sub₁ (Eliftₛ σ* σ >>S sub0 (sub₂ e′)) l₁ (there x)
-      ≡⟨ dist-subst' {F = (λ τ* → ESub τ* (T ◁ Γ₁) Γ₂)} {G = (λ τ* → Expr Δ₂ Γ₂ (Tsub τ* T₁))} id (λ τ → τ l₁ (there x)) (TSub-id-right σ*) (TSub-id-right σ*) (Eliftₛ σ* σ >>S sub0 (sub₂ e′)) ⟩
-    sub₁″ ((Eliftₛ σ* σ >>S sub0 (sub₂ e′)) l₁ (there x))
-      ≡⟨ sym (subst-cong (Expr Δ₂ Γ₂) (λ τ* → Tsub τ* T₁) (TSub-id-right σ*) ((Eliftₛ σ* σ >>S sub0 (sub₂ e′)) l₁ (there x))) ⟩
-    sub₁′ ((Eliftₛ σ* σ >>S sub0 (sub₂ e′)) l₁ (there x))
+    sub₁ (Eliftₛ σ* σ >>S sub0 (sub₂ e′)) l₁ _ (there x)
+      ≡⟨ dist-subst' {F = (λ τ* → ESub τ* (T ◁ Γ₁) Γ₂)} {G = (λ τ* → Expr Δ₂ Γ₂ (Tsub τ* T₁))} id (λ τ → τ l₁ _ (there x)) (TSub-id-right σ*) (TSub-id-right σ*) (Eliftₛ σ* σ >>S sub0 (sub₂ e′)) ⟩
+    sub₁″ ((Eliftₛ σ* σ >>S sub0 (sub₂ e′)) l₁ _ (there x))
+      ≡⟨ sym (subst-cong (Expr Δ₂ Γ₂) (λ τ* → Tsub τ* T₁) (TSub-id-right σ*) ((Eliftₛ σ* σ >>S sub0 (sub₂ e′)) l₁ _ (there x))) ⟩
+    sub₁′ ((Eliftₛ σ* σ >>S sub0 (sub₂ e′)) l₁ _ (there x))
       ≡⟨ refl ⟩
-    sub₁′ ((Eliftₛ σ* σ >>S sub0 e′) l₁ (there x))
+    sub₁′ ((Eliftₛ σ* σ >>S sub0 e′) l₁ _ (there x))
       ≡⟨⟩
-    sub₁′ (sub₃ (Esub _ (sub0 e′) (Eliftₛ σ* σ l₁ (there x))))
-      ≡⟨ cong sub₁′ (cong sub₃ (sub0-e′-wk-e≡e {l′ = l} e′ (σ l₁ x))) ⟩
-    sub₁′ (sub₃ ((subst (Expr Δ₂ Γ₂) (sym (TidₛT≡T _)) (σ l₁ x))))
+    sub₁′ (sub₃ (Esub _ (sub0 e′) (Eliftₛ σ* σ l₁ _ (there x))))
+      ≡⟨ cong sub₁′ (cong sub₃ (sub0-e′-wk-e≡e {l′ = l} e′ (σ l₁ _ x))) ⟩
+    sub₁′ (sub₃ ((subst (Expr Δ₂ Γ₂) (sym (TidₛT≡T _)) (σ l₁ _ x))))
       ≡⟨ elim-subst₃ (Expr Δ₂ Γ₂)
            (cong (λ τ* → Tsub τ* T₁) (TSub-id-right σ*))
-           (assoc-sub-sub T₁ σ* Tidₛ) (sym (TidₛT≡T (Tsub σ* T₁))) (σ l₁ x)
+           (assoc-sub-sub T₁ σ* Tidₛ) (sym (TidₛT≡T (Tsub σ* T₁))) (σ l₁ _ x)
        ⟩
-    σ l₁ x
+    σ l₁ _ x
   ∎
 
 
@@ -408,3 +454,4 @@ Eext-Elift[]~ {l} {Δ₁} {Δ₂} {σ* = σ*} {Γ₁} {Γ₂} {T = T} σ e′ l�
 --   ≡⟨⟩
 --     subst id eq' (E⟦ e ∙ T′ ⟧ η₁ γ₁)
 --   ∎ 
+   
