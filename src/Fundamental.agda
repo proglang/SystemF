@@ -85,7 +85,7 @@ fundamental Γ ρ χ γ (`∀α l , T) (Λ .l ⇒ e) lrg =
     |> λ where
       (v , e⇓v , lrv-t) → 
         let v′ = subst Value (sym (lemma1 ρ T T′ R)) v in
-        let e⇓v′ = subst₂ _⇓_ (sym (Elift-[]≡Cextt Γ ρ χ _ l T e T′ R)) {!  !} e⇓v in
+        -- let e⇓v′ = subst₂ _⇓_ (sym (Elift-[]≡Cextt Γ ρ χ _ l T e T′ R)) {!  !} e⇓v in
         let sub-lrvt = subst₂ (LRV T (REext ρ (T′ , R))) (sym (subst-subst-sym (lemma1 ρ T T′ R))) refl
     -- Esub  (λ x x₁ → proj₁ (REext ρ (T′ , R) x x₁))
     --       (λ l₁ z → proj₁ 
@@ -103,7 +103,7 @@ fundamental Γ ρ χ γ (`∀α l , T) (Λ .l ⇒ e) lrg =
     --       subst (λ T₁ → Σ (Expr [] ∅ T₁) Val) eq₁ Tx -- easy
         in
            v′ ,
-           {! !} ,
+           {! e⇓v !} ,
            -- subst id (begin 
            --    {!   !}
            --  ≡⟨ {!   !} ⟩
@@ -148,7 +148,7 @@ fundamental Γ ρ χ γ .(T [ T′ ]T) (_∙_ {l = l}{T = T} e T′) lrg
     ≡⟨ subst-elim′′′′ (Expr [] ∅) Value _⇓_ (Esub σ* (λ l₂ x → proj₁ (χ l₂ x)) e ∙ Tsub σ* T′) v₂ eq₁ ⟩
       subst (Expr [] ∅) eq₁ (Esub σ* (λ l₂ x → proj₁ (χ l₂ x)) e ∙ Tsub σ* T′) ⇓ subst Value eq₁ v₂ 
     ∎) e•T⇓v ,
-  subst id (begin -- or subst₄
+  subst id (begin 
       LRV T                                                                                                     -- | connected 
           (REext ρ (Tsub σ* T′ , subst (λ ⟦T⟧ → Σ (Expr [] ∅ (Tsub σ* T′)) Val → ⟦T⟧ → Set l) eq₂ (LRV T′ ρ)))  -- | to each other
           (subst Value eq₃ v₂) -- easy

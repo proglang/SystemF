@@ -94,7 +94,7 @@ Eext-Elift[]~-type =
 sub0-e′-wk-e≡e : ∀ {Δ}{Γ}{l′}{T′ : Type Δ l′}{l}{T : Type Δ l} → (e′ : Expr Δ Γ (Tsub Tidₛ T′)) (e : Expr Δ Γ T) → 
   Esub Tidₛ (sub0 e′) (Ewk e) ≡ subst (Expr Δ Γ) (sym (TidₛT≡T T)) e
 sub0-e′-wk-e≡e e′ (# n) = refl
-sub0-e′-wk-e≡e e′ (` x) = {!!}
+sub0-e′-wk-e≡e e′ (` x) = {! !}
 sub0-e′-wk-e≡e e′ (ƛ e) = {!!}
 sub0-e′-wk-e≡e e′ (e · e₁) = {!!}
 sub0-e′-wk-e≡e e′ (Λ l ⇒ e) = {!!}

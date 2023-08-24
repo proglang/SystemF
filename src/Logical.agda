@@ -328,7 +328,7 @@ lemma-lrv-wk3 {l₁ = l₁}{l₂ = l₂} ρ T₁ T₂ e =
     aux' (T₁ , T₂) = Expr [] (T₁ ◁ ∅) T₂ 
     aux : ∀ {a : Σ (Type [] l₁) (λ _ → Type [] l₂)} →
       F a → G (h a)
-    aux {a = (T₁ , T₂)} x = (ƛ (subst aux' (cong₂ _,_ {!    !} {!   !}) e)) , v-ƛ
+    aux {a = (T₁ , T₂)} x = (ƛ (subst aux' (cong₂ _,_ {!    !} {!    !}) e)) , v-ƛ
 
 
 LRVwk : ∀ {Δ}{l}{l₁}
@@ -402,7 +402,7 @@ Cdropt-Cextt≡id Γ ρ χ l T′ R =
   let sub₂ = subst id refl in
   begin
     Cdropt (sub₁ (Cextt χ T′))
-  ≡⟨ dist-subst' {F = (λ σ → CSub σ (l ◁* Γ))} {G = id} (λ x → {!!}) Cdropt (sym (subst←RE-ext-ext ρ T′ R)) refl (Cextt χ T′) ⟩
+  ≡⟨ dist-subst' {F = (λ σ → CSub σ (l ◁* Γ))} {G = id} (λ x → CSub (Tdropₛ x) Γ) Cdropt (sym (subst←RE-ext-ext ρ T′ R)) refl (Cextt χ T′) ⟩ 
     sub₂ (Cdropt (Cextt χ T′))
   ≡⟨⟩
     Cdropt (Cextt χ T′)

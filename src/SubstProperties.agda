@@ -77,17 +77,6 @@ subst-elim′′′ :
   → subst id A≡A₁ (subst id A₂≡A (subst id A₃≡A₂ (subst id A₃≡A₄ a))) ≡ subst id A≡A' (subst id A≡A₄ a)
 subst-elim′′′ _ refl refl refl refl refl refl = refl  
 
--- PJT: does not make sense! why should a1 ≡ a2 hold in the end?
--- subst-elim′′′′ :
---   ∀ {ℓ}
---     {A A₁ A₂ A₃ A₄ A₅ : Set ℓ} 
---   → (A₁≡A : A₁ ≡ A)
---   → (A₂≡A : A₂ ≡ A)
---   → (a₁ : A₁)
---   → (a₂ : A₂)
---   → subst id A₁≡A a₁ ≡ subst id A₂≡A a₂
--- subst-elim′′′′ refl refl a1 a2 = {!!}
-
 subst-shuffle′′′′ :
   ∀ {ℓ}
     {A₁ A₂ A₃ A₄ : Set ℓ} 
