@@ -123,6 +123,20 @@ subst-elim′′′′ :
   → f {t₁} a b ≡ f {t₂} (subst F t₁≡t₂ a) (subst G t₁≡t₂ b)
 subst-elim′′′′ _ _ _ _ _ refl = refl
 
+subst-swap′′ :
+  ∀ {ℓ₁ ℓ₂}
+    {T : Set ℓ₁} 
+  → (F : T → Set ℓ₁)
+  → (G : T → Set ℓ₁)
+  → {t₁ t₂ : T}
+  → (f : {t : T} → (F t) → (G t) → Set ℓ₂)
+  → (a : F t₂)
+  → (b : G t₁)
+  → (t₁≡t₂ : t₁ ≡ t₂)
+  → (t₂≡t₁ : t₂ ≡ t₁)
+  → f {t₁} (subst F t₂≡t₁ a) b ≡ f {t₂} a (subst G t₁≡t₂ b)
+subst-swap′′ _ _ _ _ _ refl refl = refl
+
 subst-cong :
   ∀ {ℓ}{ℓ₁}{ℓ₂}
     {A₁ : Set ℓ₁}
