@@ -9,7 +9,7 @@ open import Data.List using (List; []; _∷_; _++_; length; lookup; tabulate)
 open import Data.Unit.Polymorphic.Base using (⊤; tt)
 open import Data.Empty using (⊥)
 open import Data.Nat using (ℕ)
-open import Function using (_∘_; id; case_of_; _$-; λ-)
+open import Function using (_∘_; id; case_of_; _|>_)
 open import Relation.Binary.PropositionalEquality
   using (_≡_; _≢_; refl; sym; trans; cong; cong₂; subst; subst₂; resp₂; cong-app; icong;
         subst-∘; subst-application; subst-application′; subst-subst-sym; -- Properties
@@ -75,40 +75,41 @@ fundamental Γ ρ χ γ (`∀α l , T) (Λ .l ⇒ e) lrg =
                       refl -- (symω (REdrop-REext≡id ρ T′ R))
                       (sym (Cdropt-Cextt≡id Γ ρ χ l T′ R))
                       (symω (Gdropt-ext≡id ρ γ T′ R)) lrg in
-    let (v , e⇓v , lrv-t)
-                      = fundamental (l ◁* Γ)
-                                    (REext ρ (T′ , R))
-                                    (subst (λ σ → CSub σ (l ◁* Γ)) (sym (subst←RE-ext-ext ρ T′ R)) (Cextt χ T′))
-                                    (extend-tskip γ)
-                                    T
-                                    e
-                                    lrg′ in
-    let v′ = subst Value (sym (lemma1 ρ T T′ R)) v in
-    let e⇓v′ = subst₂ _⇓_ (sym (Elift-[]≡Cextt Γ ρ χ _ l T e T′ R)) {!  !} e⇓v in
-    let sub-lrvt = subst₂ (LRV T (REext ρ (T′ , R))) (sym (subst-subst-sym (lemma1 ρ T T′ R))) refl
--- Esub  (λ x x₁ → proj₁ (REext ρ (T′ , R) x x₁))
---       (λ l₁ z → proj₁ 
---         (subst
---           (λ σ → (l₂ : Level) {T = T₁ : Type (l ∷ Δ) l₂} → inn T₁ (l ◁* Γ) → Σ (Expr [] ∅ (Tsub σ T₁)) Val)
---           eq₄
---           (Cextt χ T′) l₁ z))
---       e
---       ⇓
---       Tx -- easy
--- Esub  (Textₛ Tidₛ T′)
---       (Eextₛ-l Tidₛ (λ z {T = T₁} → Eidₛ z | Tsub Tidₛ T₁ | TidₛT≡T T₁))
---       (Esub (Tliftₛ σ* l) (Eliftₛ-l σ* (λ l₁ x → proj₁ (χ l₁ x))) e)
---       ⇓
---       subst (λ T₁ → Σ (Expr [] ∅ T₁) Val) eq₁ Tx -- easy
-    in
-       v′ ,
-       {! !} ,
-       -- subst id (begin 
-       --    {!   !}
-       --  ≡⟨ {!   !} ⟩
-       --    {!   !}
-       --  ∎) e⇓v ,
-       sub-lrvt lrv-t
+    fundamental (l ◁* Γ)
+                (REext ρ (T′ , R))
+                (subst (λ σ → CSub σ (l ◁* Γ)) (sym (subst←RE-ext-ext ρ T′ R)) (Cextt χ T′))
+                (extend-tskip γ)
+                T
+                e
+                lrg′
+    |> λ where
+      (v , e⇓v , lrv-t) → 
+        let v′ = subst Value (sym (lemma1 ρ T T′ R)) v in
+        let e⇓v′ = subst₂ _⇓_ (sym (Elift-[]≡Cextt Γ ρ χ _ l T e T′ R)) {!  !} e⇓v in
+        let sub-lrvt = subst₂ (LRV T (REext ρ (T′ , R))) (sym (subst-subst-sym (lemma1 ρ T T′ R))) refl
+    -- Esub  (λ x x₁ → proj₁ (REext ρ (T′ , R) x x₁))
+    --       (λ l₁ z → proj₁ 
+    --         (subst
+    --           (λ σ → (l₂ : Level) {T = T₁ : Type (l ∷ Δ) l₂} → inn T₁ (l ◁* Γ) → Σ (Expr [] ∅ (Tsub σ T₁)) Val)
+    --           eq₄
+    --           (Cextt χ T′) l₁ z))
+    --       e
+    --       ⇓
+    --       Tx -- easy
+    -- Esub  (Textₛ Tidₛ T′)
+    --       (Eextₛ-l Tidₛ (λ z {T = T₁} → Eidₛ z | Tsub Tidₛ T₁ | TidₛT≡T T₁))
+    --       (Esub (Tliftₛ σ* l) (Eliftₛ-l σ* (λ l₁ x → proj₁ (χ l₁ x))) e)
+    --       ⇓
+    --       subst (λ T₁ → Σ (Expr [] ∅ T₁) Val) eq₁ Tx -- easy
+        in
+           v′ ,
+           {! !} ,
+           -- subst id (begin 
+           --    {!   !}
+           --  ≡⟨ {!   !} ⟩
+           --    {!   !}
+           --  ∎) e⇓v ,
+           sub-lrvt lrv-t
 {- {}1.2 :
 subst Value (sym (lemma1 ρ T T′ R))
       (proj₁
