@@ -85,50 +85,19 @@ fundamental Γ ρ χ γ (`∀α l , T) (Λ .l ⇒ e) lrg =
     |> λ where
       (v , e⇓v , lrv-t) → 
         let v′ = subst Value (sym (lemma1 ρ T T′ R)) v in
-        -- let e⇓v′ = subst₂ _⇓_ (sym (Elift-[]≡Cextt Γ ρ χ _ l T e T′ R)) {!  !} e⇓v in
-        let sub-lrvt = subst₂ (LRV T (REext ρ (T′ , R))) (sym (subst-subst-sym (lemma1 ρ T T′ R))) refl
-    -- Esub  (λ x x₁ → proj₁ (REext ρ (T′ , R) x x₁))
-    --       (λ l₁ z → proj₁ 
-    --         (subst
-    --           (λ σ → (l₂ : Level) {T = T₁ : Type (l ∷ Δ) l₂} → inn T₁ (l ◁* Γ) → Σ (Expr [] ∅ (Tsub σ T₁)) Val)
-    --           eq₄
-    --           (Cextt χ T′) l₁ z))
-    --       e
-    --       ⇓
-    --       Tx -- easy
-    -- Esub  (Textₛ Tidₛ T′)
-    --       (Eextₛ-l Tidₛ (λ z {T = T₁} → Eidₛ z | Tsub Tidₛ T₁ | TidₛT≡T T₁))
-    --       (Esub (Tliftₛ σ* l) (Eliftₛ-l σ* (λ l₁ x → proj₁ (χ l₁ x))) e)
-    --       ⇓
-    --       subst (λ T₁ → Σ (Expr [] ∅ T₁) Val) eq₁ Tx -- easy
-        in
+        let e⇓v = subst₂ _⇓_ (sym (Elift-[]≡Cextt Γ ρ χ _ l T e T′ R)) refl e⇓v in
+        let sub-lrvt = subst₂ (LRV T (REext ρ (T′ , R))) (sym (subst-subst-sym (lemma1 ρ T T′ R))) refl in
+        let σ* = (λ l₁ x → proj₁ (ρ l₁ x)) in
+        let 𝕖 = Esub (Textₛ Tidₛ T′) (Eextₛ-l Tidₛ Eidₛ) (Esub (Tliftₛ σ* l) (Eliftₛ-l σ* (λ l₁ x → proj₁ (χ l₁ x))) e) in
+        let eq₁ = (lemma1 ρ T T′ R) in
+        let eq₂ = (sym (lemma1 ρ T T′ R)) in
            v′ ,
-           {! e⇓v !} ,
-           -- subst id (begin 
-           --    {!   !}
-           --  ≡⟨ {!   !} ⟩
-           --    {!   !}
-           --  ∎) e⇓v ,
+           subst id (begin 
+              subst (Expr [] ∅) eq₁ 𝕖 ⇓ v
+            ≡⟨ subst-swap′′ (Expr [] ∅) Value _⇓_ 𝕖 v eq₂ eq₁ ⟩
+              𝕖 ⇓ subst Value eq₂ v
+            ∎) e⇓v ,
            sub-lrvt lrv-t
-{- {}1.2 :
-subst Value (sym (lemma1 ρ T T′ R))
-      (proj₁
-       (fundamental (l ◁* Γ) (REext ρ (T′ , R))
-        (subst (λ σ → CSub σ (l ◁* Γ)) (sym (subst←RE-ext-ext ρ T′ R))
-         (Cextt χ T′))
-        (extend-tskip γ) T e
-        (subst₃ (LRG Γ) refl (sym (Cdropt-Cextt≡id Γ ρ χ l T′ R))
-         (symω (Gdropt-ext≡id ρ γ T′ R)) lrg)))
-
-{}0 :
-proj₁
-      (fundamental (l ◁* Γ) (REext ρ (T′ , R))
-       (subst (λ σ → CSub σ (l ◁* Γ)) (sym (subst←RE-ext-ext ρ T′ R))
-        (Cextt χ T′))
-       (extend-tskip γ) T e
-       (subst₃ (LRG Γ) refl (sym (Cdropt-Cextt≡id Γ ρ χ l T′ R))
-        (symω (Gdropt-ext≡id ρ γ T′ R)) lrg))
--}
 fundamental Γ ρ χ γ .(T [ T′ ]T) (_∙_ {l = l}{T = T} e T′) lrg
   with fundamental Γ ρ χ γ (`∀α l , T) e lrg
 ... | (Λ .l ⇒ e′ , v-Λ) , e⇓v , lrv
