@@ -1,4 +1,3 @@
-{-# OPTIONS --allow-unsolved-metas #-}
 module ExprSubstitution where
 
 open import Level
@@ -22,8 +21,6 @@ open import Types
 open import TypeSubstitution
 open import TypeSubstProperties
 open import Expressions
-
--- expr substitution
 
 -- expression renamings
 
@@ -60,17 +57,6 @@ Ewk {T = T} e = subst (λ T → Expr _ _ T) (TidᵣT≡T T) (Eren (Ewkᵣ Tidᵣ
 
 Ewk-l : Expr Δ Γ T → Expr (l ∷ Δ) (l ◁* Γ) (Twk T)  
 Ewk-l e = Eren tskip e
-
---Goal
---E⟦
---subst (Expr Δ₂ Γ₂) (sym (ρT[T′]≡ρT[ρ↑T′] ρ* T T′))
---(Eren ρ e ∙ Tren ρ* T′)
---⟧
---η₂ γ₂
---≡
---subst id (sym (Tren*-preserves-semantics Tren* (T [ T′ ]T)))
---(E⟦ e ∙ T′ ⟧ η₁ γ₁ | ⟦ T [ T′ ]T ⟧ η₁
--- | Tsingle-subst-preserves η₁ T′ T)
 
 -- expression substitutions
 

@@ -62,12 +62,50 @@ Esub~ σ₁ σ₂ σ₁~σ₂ (e ∙ T′) rewrite Esub~ σ₁ σ₂ σ₁~σ₂
 ---
 ---     (Eextₛ σ* σ e′) ~  (Eliftₛ σ* σ) >>S sub0 e′
 
+---- specialized ----
+subst-split : ∀ {Δ}
+  → {ℓ : Level}
+  → (F : {l : Level} (t : Type Δ l) → Set ℓ)
+  → (f : ∀ {t₁ : Type Δ l₁}{t₂ : Type Δ l₂} → F (t₁ ⇒ t₂) → F t₁ → F t₂)
+  → {t₁ t₁′ : Type Δ l₁}{t₂ t₂′ : Type Δ l₂}
+  → (eq : (t₁ ⇒ t₂)  ≡ (t₁′ ⇒ t₂′)) (eq₁ : t₁ ≡ t₁′) (eq₂ : t₂ ≡ t₂′)
+  → (x₁ : F (t₁ ⇒ t₂)) (x₂ : F t₁)
+  → subst F eq₂ (f x₁ x₂) ≡ f (subst F eq x₁) (subst F eq₁ x₂)
+subst-split F f refl refl refl x₁ x₂ = refl
+
+
 -- composition of expression substitutions
 
 _>>S_ : ∀ {Δ₁}{Δ₂}{Δ₃}{σ₁* : TSub Δ₁ Δ₂} {σ₂* : TSub Δ₂ Δ₃} {Γ₁ : TEnv Δ₁}{Γ₂ : TEnv Δ₂}{Γ₃ : TEnv Δ₃}
   → ESub σ₁* Γ₁ Γ₂ → ESub σ₂* Γ₂ Γ₃ → ESub (σ₁* ∘ₛₛ σ₂*) Γ₁ Γ₃
 _>>S_ {Δ₃ = Δ₃}{σ₁* = σ₁*}{σ₂* = σ₂*}{Γ₃ = Γ₃} σ₁ σ₂ l {T} x
   = subst (Expr Δ₃ Γ₃) (assoc-sub-sub T  σ₁* σ₂*) (Esub _ σ₂ (σ₁ l x))
+
+Eassoc-sub-sub : ∀ {Δ₁}{Δ₂}{Δ₃}
+  → {σ₁* : TSub Δ₁ Δ₂}{σ₂* : TSub Δ₂ Δ₃}
+  → {Γ₁ : TEnv Δ₁}{Γ₂ : TEnv Δ₂}{Γ₃ : TEnv Δ₃}
+  → {T : Type Δ₁ l}
+  → (e : Expr Δ₁ Γ₁ T)
+  → (σ₁ : ESub σ₁* Γ₁ Γ₂) → (σ₂ : ESub σ₂* Γ₂ Γ₃)
+  → let lhs = Esub σ₂* σ₂ (Esub σ₁* σ₁ e) in
+    let rhs = Esub (σ₁* ∘ₛₛ σ₂*) (σ₁ >>S σ₂) e  in
+    subst (Expr Δ₃ Γ₃) (assoc-sub-sub T σ₁* σ₂*) lhs ≡ rhs
+Eassoc-sub-sub (# n) σ₁ σ₂ = refl
+Eassoc-sub-sub (` x) σ₁ σ₂ = refl
+Eassoc-sub-sub (ƛ e) σ₁ σ₂ = {!!}
+Eassoc-sub-sub {σ₁* = σ₁*} {σ₂* = σ₂*} (_·_ {T = T}{T′ = T′} e₁ e₂) σ₁ σ₂ =
+  begin
+    subst (Expr _ _) (assoc-sub-sub T′ σ₁* σ₂*)
+      (Esub σ₂* σ₂ (Esub σ₁* σ₁ e₁) · Esub σ₂* σ₂ (Esub σ₁* σ₁ e₂))
+  ≡⟨ subst-split (Expr _ _) _·_ (assoc-sub-sub (T ⇒ T′) σ₁* σ₂*) (assoc-sub-sub T σ₁* σ₂*) (assoc-sub-sub T′ σ₁* σ₂*) (Esub σ₂* σ₂ (Esub σ₁* σ₁ e₁)) (Esub σ₂* σ₂ (Esub σ₁* σ₁ e₂)) ⟩
+      (subst (Expr _ _) (assoc-sub-sub (T ⇒ T′) σ₁* σ₂*) (Esub σ₂* σ₂ (Esub σ₁* σ₁ e₁)) ·
+       subst (Expr _ _) (assoc-sub-sub T σ₁* σ₂*) (Esub σ₂* σ₂ (Esub σ₁* σ₁ e₂)))
+  ≡⟨ cong₂ _·_ (Eassoc-sub-sub e₁ σ₁ σ₂) (Eassoc-sub-sub e₂ σ₁ σ₂) ⟩
+    (Esub (σ₁* ∘ₛₛ σ₂*) (σ₁ >>S σ₂) e₁ ·
+       Esub (σ₁* ∘ₛₛ σ₂*) (σ₁ >>S σ₂) e₂)
+  ∎
+Eassoc-sub-sub (Λ l ⇒ e) σ₁ σ₂ = {!!}
+Eassoc-sub-sub (e ∙ T′) σ₁ σ₂ = {!!}
 
 TSub-id-right : ∀ (σ* : TSub Δ₁ Δ₂) → (σ* ∘ₛₛ Tidₛ) ≡ σ*
 TSub-id-right {Δ₁ = Δ₁} σ* = fun-ext₂ aux

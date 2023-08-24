@@ -160,3 +160,17 @@ subst-swap :
   → subst F eq x ≡ y
   → x ≡ subst F (sym eq) y
 subst-swap refl x y refl = refl
+
+-- not sufficiently general
+{-
+subst-split : ∀
+  {T : Set}
+  → {ℓ : Level}
+  → (F : (t : T) → Set ℓ)
+  → (f : {t₁ t₂ t : T} → F t₁ → F t₂ → F t)
+  → {t t′ t₁ t₁′ t₂ t₂′ : T}
+  → (eq : t ≡ t′) (eq₁ : t₁ ≡ t₁′) (eq₂ : t₂ ≡ t₂′)
+  → (x₁ : F t₁) (x₂ : F t₂)
+  → subst F eq (f x₁ x₂) ≡ f (subst F eq₁ x₁) (subst F eq₂ x₂)
+subst-split F f refl refl refl x₁ x₂ = refl
+-}
