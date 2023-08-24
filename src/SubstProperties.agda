@@ -1,3 +1,4 @@
+open import Level
 open import Function
 open import Relation.Binary.PropositionalEquality using (_≡_; refl; sym; trans; cong; cong₂; subst; subst₂; module ≡-Reasoning)
 open import Ext
@@ -134,3 +135,14 @@ subst-cong :
   → (a : F (G x))
   → subst F (cong G x≡y) a ≡ subst (λ z → F (G z)) x≡y a
 subst-cong F G refl a = refl
+
+subst-swap :
+  ∀ {ℓ₁}{ℓ₂} {A : Set ℓ₁}
+    {F : (a : A) → Set ℓ₂}
+    {a₁ a₂ : A}
+    (eq : a₁ ≡ a₂)
+    (x : F a₁)
+    (y : F a₂)
+  → subst F eq x ≡ y
+  → x ≡ subst F (sym eq) y
+subst-swap refl x y refl = refl
