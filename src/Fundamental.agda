@@ -87,8 +87,9 @@ fundamental Γ ρ χ γ (`∀α l , T) (Λ .l ⇒ e) lrg =
         let v′ = subst Value (sym (lemma1 ρ T T′ R)) v in
         let e⇓v = subst₂ _⇓_ (sym (Elift-[]≡Cextt Γ ρ χ _ l T e T′ R)) refl e⇓v in
         let sub-lrvt = subst₂ (LRV T (REext ρ (T′ , R))) (sym (subst-subst-sym (lemma1 ρ T T′ R))) refl in
-        let σ* = (λ l₁ x → proj₁ (ρ l₁ x)) in
-        let 𝕖 = Esub (Textₛ Tidₛ T′) (Eextₛ-l Tidₛ Eidₛ) (Esub (Tliftₛ σ* l) (Eliftₛ-l σ* (λ l₁ T x → proj₁ (χ l₁ T x))) e) in
+        let σ* = subst←RE ρ in
+        let σ = ES←SC χ in
+        let 𝕖 = Esub (Textₛ Tidₛ T′) (Eextₛ-l Tidₛ Eidₛ) (Esub (Tliftₛ σ* l) (Eliftₛ-l σ* σ) e) in
         let eq = lemma1 ρ T T′ R in
            v′ ,
            subst id (begin 
@@ -101,9 +102,13 @@ fundamental Γ ρ χ γ .(T [ T′ ]T) (_∙_ {l = l}{T = T} e T′) lrg
   with fundamental Γ ρ χ γ (`∀α l , T) e lrg
 ... | (Λ .l ⇒ e′ , v-Λ) , e⇓v , lrv
   with lrv (Tsub (subst←RE ρ) T′) 
-    (subst (λ ⟦T⟧ → Σ (Expr [] ∅ (Tsub (subst←RE ρ) T′)) Val → ⟦T⟧ → Set l) (sym (subst-preserves (subst←RE ρ) T′)) ((LRV T′) ρ)) 
+           (subst (λ ⟦T⟧ → Value (Tsub (subst←RE ρ) T′) → ⟦T⟧ → Set l) 
+                  (sym (subst-preserves (subst←RE ρ) T′))
+                  ((LRV T′) ρ)) 
 ... | v₂ , vT′⇓v₂ , lrv₂ =
   let σ* = subst←RE ρ in
+  let σ = ES←SC χ in
+  let η = subst-to-env* σ* [] in
   let eq₁ = sym (σT[T′]≡σ↑T[σT'] (subst←RE ρ) T T′) in
   let eq₂ = (sym (subst-preserves σ* T′)) in
   let eq₃ = {!   !} in
@@ -112,18 +117,18 @@ fundamental Γ ρ χ γ .(T [ T′ ]T) (_∙_ {l = l}{T = T} e T′) lrg
   let e•T⇓v = ⇓-∙ e⇓v vT′⇓v₂ in
   subst Value eq₁ v₂ , 
   subst id (begin 
-      Esub σ* (λ l₂ T x → proj₁ (χ l₂ T x)) e ∙ Tsub σ* T′ ⇓ v₂
-    ≡⟨ subst-elim′′′′ (Expr [] ∅) Value _⇓_ (Esub σ* (λ l₂ T x → proj₁ (χ l₂ T x)) e ∙ Tsub σ* T′) v₂ eq₁ ⟩
-      subst (Expr [] ∅) eq₁ (Esub σ* (λ l₂ T x → proj₁ (χ l₂ T x)) e ∙ Tsub σ* T′) ⇓ subst Value eq₁ v₂ 
+      Esub σ* σ e ∙ Tsub σ* T′ ⇓ v₂
+    ≡⟨ subst-elim′′′′ (Expr [] ∅) Value _⇓_ (Esub σ* σ e ∙ Tsub σ* T′) v₂ eq₁ ⟩
+      subst (Expr [] ∅) eq₁ (Esub σ* σ e ∙ Tsub σ* T′) ⇓ subst Value eq₁ v₂ 
     ∎) e•T⇓v ,
   subst id (begin 
-      LRV T                                                                                                     -- | connected 
-          (REext ρ (Tsub σ* T′ , subst (λ ⟦T⟧ → Σ (Expr [] ∅ (Tsub σ* T′)) Val → ⟦T⟧ → Set l) eq₂ (LRV T′ ρ)))  -- | to each other
+      LRV T                                                                                        -- | connected 
+          (REext ρ (Tsub σ* T′ , subst (λ ⟦T⟧ → Value (Tsub σ* T′) → ⟦T⟧ → Set l) eq₂ (LRV T′ ρ)))  -- | to each other
           (subst Value eq₃ v₂) -- easy
-          (E⟦ e ⟧ (subst-to-env* σ* []) γ (⟦ Tsub σ* T′ ⟧ [])) -- easy
+          (E⟦ e ⟧ η γ (⟦ Tsub σ* T′ ⟧ [])) -- easy
     ≡⟨ {!   !} ⟩
       LRV (T [ T′ ]T) 
           ρ 
           (subst Value eq₄ v₂) -- easy
-          (subst id eq₅ (E⟦ e ⟧ (subst-to-env* σ* []) γ (⟦ T′ ⟧ (subst-to-env* σ* [])))) -- easy
+          (subst id eq₅ (E⟦ e ⟧ η γ (⟦ T′ ⟧ η))) -- easy
     ∎) lrv₂
