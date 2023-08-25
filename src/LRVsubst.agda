@@ -76,6 +76,6 @@ LRVsubst : ∀ {Δ}{l}{l′}
 LRVsubst Γ ρ T′ R′ (` here) v z lrv-t = {! !}
 LRVsubst Γ ρ T′ R′ (` there x) v z lrv-t = {!!}
 LRVsubst Γ ρ T′ R′ (T₁ ⇒ T₂) v z lrv-t = {!!}
-LRVsubst Γ ρ T′ R′ (`∀α l , T) v z lrv-t = {!!}
+LRVsubst Γ ρ T′ R′ (`∀α l , T) v z lrv-t = {! !}
 LRVsubst Γ ρ T′ R′ `ℕ v z lrv-t = {!!}
 
