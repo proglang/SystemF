@@ -8,6 +8,7 @@ open import Data.Fin using (Fin) renaming (zero to fzero; suc to fsuc)
 open import Data.List using (List; []; _∷_; _++_; length; lookup; tabulate)
 open import Data.Unit.Polymorphic.Base using (⊤; tt)
 open import Data.Empty using (⊥)
+open import Data.Unit.Polymorphic.Base using (⊤; tt)
 open import Data.Nat using (ℕ)
 open import Function using (_∘_; id; case_of_; _|>_)
 open import Relation.Binary.PropositionalEquality
@@ -132,3 +133,18 @@ fundamental Γ ρ χ γ .(T [ T′ ]T) (_∙_ {l = l}{T = T} e T′) lrg
           (subst Value eq₄ v₂) -- easy
           (subst id eq₅ (E⟦ e ⟧ η γ (⟦ T′ ⟧ η))) -- easy
     ∎) lrv₂
+
+-- gets better when switching to Logical1!
+Csub-closed : {T : Type [] l} (χ : CSub {[]} (λ l → λ()) ∅) → (e : Expr [] ∅ T) →
+  Csub χ e ≡ subst (Expr _ _) {!!} e
+Csub-closed χ e = {!!}
+
+adequacy : (e : Expr [] ∅ `ℕ) → (n : ℕ)
+  → E⟦ e ⟧ [] (λ l T → λ()) ≡ n
+  → e ⇓ V-ℕ n
+adequacy e n ⟦e⟧≡n
+  with fundamental ∅ (λ l → λ()) (λ l T → λ()) (λ l T → λ()) `ℕ e tt
+... | #m , e⇓#m , lrv-ℕ-m-E⟦e⟧
+  with #m in eq
+... | # m , v-n
+  rewrite trans lrv-ℕ-m-E⟦e⟧ ⟦e⟧≡n = subst (_⇓ V-ℕ n) (Csub-closed (λ l T → λ()) e) e⇓#m
