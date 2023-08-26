@@ -439,3 +439,4 @@ Elift-[]≡Cextt : (Γ : TEnv Δ) (ρ : RelEnv Δ) (χ : CSub (subst←RE ρ) Γ
     let rhs = Csub (subst (λ σ → CSub σ (l ◁* Γ)) (sym (subst←RE-ext-ext ρ T′ R)) (Cextt χ T′)) e in
     subst (Expr [] ∅) (lemma1 ρ T T′ R) lhs ≡ rhs
 Elift-[]≡Cextt Γ ρ χ l′ l T e T′ R = {!!}
+ 

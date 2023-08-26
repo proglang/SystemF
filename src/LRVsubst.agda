@@ -1,3 +1,4 @@
+{-# OPTIONS --allow-unsolved-metas #-}
 module LRVsubst where
 
 open import Level

@@ -25,38 +25,38 @@ open import Expressions
 -- expression renamings
 
 ERen : TRen Δ₁ Δ₂ → TEnv Δ₁ → TEnv Δ₂ → Set
-ERen {Δ₁}{Δ₂} ρ* Γ₁ Γ₂ = ∀ {l} {T : Type Δ₁ l} → inn T Γ₁ → inn (Tren ρ* T) Γ₂
+ERen {Δ₁}{Δ₂} ρ* Γ₁ Γ₂ = ∀ l (T : Type Δ₁ l) → inn T Γ₁ → inn (Tren ρ* T) Γ₂
 
 Eidᵣ : ERen Tidᵣ Γ Γ 
-Eidᵣ {T = T} x rewrite TidᵣT≡T T = x
+Eidᵣ l T x rewrite TidᵣT≡T T = x
 
 Edropᵣ : (ρ* : TRen Δ₁ Δ₂) → ERen ρ* (T ◁ Γ₁) Γ₂ → ERen ρ* Γ₁ Γ₂
-Edropᵣ ρ* ρ x = ρ (there x)
+Edropᵣ ρ* ρ l T x = ρ _ _ (there x)
 
 Ewkᵣ : (ρ* : TRen Δ₁ Δ₂) → ERen ρ* Γ₁ Γ₂ → ERen ρ* Γ₁ (T ◁ Γ₂) 
-Ewkᵣ ρ* ρ x = there (ρ x) 
+Ewkᵣ ρ* ρ l T x = there (ρ _ _ x) 
 
-Eliftᵣ : {ρ* : TRen Δ₁ Δ₂} → ERen ρ* Γ₁ Γ₂ → ERen ρ* (T ◁ Γ₁) (Tren ρ* T ◁ Γ₂)
-Eliftᵣ ρ here = here
-Eliftᵣ ρ (there x) = there (ρ x)
+Eliftᵣ : (ρ* : TRen Δ₁ Δ₂) → ERen ρ* Γ₁ Γ₂ → ERen ρ* (T ◁ Γ₁) (Tren ρ* T ◁ Γ₂)
+Eliftᵣ ρ* ρ _ _ here = here
+Eliftᵣ ρ* ρ _ _ (there x) = there (ρ _ _ x)
 
-Eliftᵣ-l : {ρ* : TRen Δ₁ Δ₂} → ERen ρ* Γ₁ Γ₂ → ERen (Tliftᵣ ρ* l) (l ◁* Γ₁) (l ◁* Γ₂)
-Eliftᵣ-l {Γ₂ = Γ₂} {l = l} {ρ* = ρ*} ρ (tskip x) = subst id (cong (λ T → inn T (l ◁* Γ₂)) (sym (↑ρ-TwkT≡Twk-ρT _ ρ*))) (tskip (ρ x))
+Eliftᵣ-l : (ρ* : TRen Δ₁ Δ₂) → ERen ρ* Γ₁ Γ₂ → ERen (Tliftᵣ ρ* l) (l ◁* Γ₁) (l ◁* Γ₂)
+Eliftᵣ-l {Γ₂ = Γ₂} {l = l} ρ* ρ _ _ (tskip x) = subst id (cong (λ T → inn T (l ◁* Γ₂)) (sym (↑ρ-TwkT≡Twk-ρT _ ρ*))) (tskip (ρ _ _ x))
 
-Eren : {ρ* : TRen Δ₁ Δ₂} → ERen ρ* Γ₁ Γ₂ → Expr Δ₁ Γ₁ T → Expr Δ₂ Γ₂ (Tren ρ* T)
-Eren ρ (# n) = # n
-Eren ρ (` x) = ` ρ x
-Eren ρ (ƛ e) = ƛ Eren (Eliftᵣ ρ) e
-Eren ρ (e₁ · e₂) = Eren ρ e₁ · Eren ρ e₂
-Eren ρ (Λ l ⇒ e) = Λ l ⇒ Eren (Eliftᵣ-l ρ) e
-Eren {Δ₂ = Δ₂} {Γ₂ = Γ₂} {T = .(T [ T′ ]T)} {ρ* = ρ*} ρ (_∙_ {T = T} e T′) = 
-  subst (Expr Δ₂ Γ₂) (sym (ρT[T′]≡ρT[ρ↑T′] ρ* T T′)) (Eren ρ e ∙ Tren ρ* T′)
+Eren : (ρ* : TRen Δ₁ Δ₂) → ERen ρ* Γ₁ Γ₂ → Expr Δ₁ Γ₁ T → Expr Δ₂ Γ₂ (Tren ρ* T)
+Eren ρ* ρ (# n) = # n
+Eren ρ* ρ (` x) = ` ρ _ _ x
+Eren ρ* ρ (ƛ e) = ƛ Eren ρ* (Eliftᵣ ρ* ρ) e
+Eren ρ* ρ (e₁ · e₂) = Eren ρ* ρ e₁ · Eren ρ* ρ e₂
+Eren ρ* ρ (Λ l ⇒ e) = Λ l ⇒ Eren (Tliftᵣ ρ* l) (Eliftᵣ-l ρ* ρ) e
+Eren {Δ₂ = Δ₂} {Γ₂ = Γ₂} {T = .(T [ T′ ]T)} ρ* ρ (_∙_ {T = T} e T′) = 
+  subst (Expr Δ₂ Γ₂) (sym (ρT[T′]≡ρT[ρ↑T′] ρ* T T′)) (Eren ρ* ρ e ∙ Tren ρ* T′)
 
 Ewk : Expr Δ Γ T → Expr Δ (T₁ ◁ Γ) (T) 
-Ewk {T = T} e = subst (λ T → Expr _ _ T) (TidᵣT≡T T) (Eren (Ewkᵣ Tidᵣ Eidᵣ) e)
+Ewk {T = T} e = subst (λ T → Expr _ _ T) (TidᵣT≡T T) (Eren _ (Ewkᵣ Tidᵣ Eidᵣ) e)
 
 Ewk-l : Expr Δ Γ T → Expr (l ∷ Δ) (l ◁* Γ) (Twk T)  
-Ewk-l e = Eren tskip e
+Ewk-l e = Eren _ (λ _ _ → tskip) e
 
 -- expression substitutions
 

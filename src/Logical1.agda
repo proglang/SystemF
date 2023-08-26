@@ -393,7 +393,7 @@ Cextend-Elift : ∀ {σ* : TSub Δ []} {Γ : TEnv Δ}{l}{T : Type Δ l}{l′}{T�
   → (w : Value (Tsub σ* T))
   → (e : Expr Δ (T ◁ Γ) T′)
   → Csub (Cextend χ w) e ≡ (Esub σ* (Eliftₛ σ* χ) e [ exp w ]E)
-Cextend-Elift {σ* = σ*} {Γ = Γ} {T = T} {T′ = T′} χ w e = begin
+Cextend-Elift  {σ* = σ*} {Γ = Γ} {T = T} {l′ = l′} {T′ = T′} χ w e = begin
     Csub (Cextend χ w) e
   ≡⟨⟩
     Esub σ* (Cextend χ w) e
@@ -402,19 +402,19 @@ Cextend-Elift {σ* = σ*} {Γ = Γ} {T = T} {T′ = T′} χ w e = begin
   ≡⟨ Eext-Elift {σ* = σ*} χ (exp w) e ⟩
     Esub σ*
       (subst (λ τ* → ESub τ* (T ◁ Γ) ∅) (TSub-id-right σ*)
-       (Eliftₛ σ* χ >>S
+       (Eliftₛ σ* χ >>SS
         sub0 (subst (Expr [] ∅) (sym (TidₛT≡T (Tsub σ* T))) (exp w))))
       e
   ≡⟨ dist-subst' {F = (λ τ* → ESub τ* (T ◁ Γ) ∅)} {G = Expr [] ∅} 
-     {!!} (λ {τ*} σ → Esub τ* σ e)
+     (λ σ → {! σ l′ ?  !}) (λ {τ*} σ → Esub τ* σ e)
      (TSub-id-right σ*) (cong (λ τ* → Tsub τ* T′) (TSub-id-right σ*))
-     (Eliftₛ σ* χ >>S
+     (Eliftₛ σ* χ >>SS
         sub0 (subst (Expr [] ∅) (sym (TidₛT≡T (Tsub σ* T))) (exp w)))
   ⟩
     subst (Expr [] ∅)
       (cong (λ τ* → Tsub τ* T′) (TSub-id-right σ*))
       (Esub (σ* ∘ₛₛ Tidₛ)
-       (Eliftₛ σ* χ >>S
+       (Eliftₛ σ* χ >>SS
         Eextₛ Tidₛ Eidₛ
         (subst (Expr [] ∅) (sym (TidₛT≡T (Tsub σ* T))) (exp w)))
        e)
@@ -422,7 +422,7 @@ Cextend-Elift {σ* = σ*} {Γ = Γ} {T = T} {T′ = T′} χ w e = begin
     subst (Expr [] ∅)
       (trans (sym (assoc-sub-sub T′ σ* Tidₛ)) (TidₛT≡T (Tsub σ* T′)))
       (Esub (σ* ∘ₛₛ Tidₛ)
-       (Eliftₛ σ* χ >>S
+       (Eliftₛ σ* χ >>SS
         Eextₛ Tidₛ Eidₛ
         (subst (Expr [] ∅) (sym (TidₛT≡T (Tsub σ* T))) (exp w)))
        e)
@@ -430,7 +430,7 @@ Cextend-Elift {σ* = σ*} {Γ = Γ} {T = T} {T′ = T′} χ w e = begin
     subst (Expr [] ∅) (TidₛT≡T (Tsub σ* T′))
       (subst (Expr [] ∅) (sym (assoc-sub-sub T′ σ* Tidₛ))
        (Esub (σ* ∘ₛₛ Tidₛ)
-        (Eliftₛ σ* χ >>S
+        (Eliftₛ σ* χ >>SS
          Eextₛ Tidₛ Eidₛ
          (subst (Expr [] ∅) (sym (TidₛT≡T (Tsub σ* T))) (exp w)))
         e))

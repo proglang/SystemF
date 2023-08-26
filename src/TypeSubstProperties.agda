@@ -23,17 +23,18 @@ open import TypeSubstitution
 
 -- composition of renamings and substituions
 
+_∘ₛᵣ_ : TSub Δ₁ Δ₂ → TRen Δ₂ Δ₃ → TSub Δ₁ Δ₃
+(σ ∘ₛᵣ ρ) _ x = Tren ρ (σ _ x)
+
+_∘ᵣₛ_ : TRen Δ₁ Δ₂ → TSub Δ₂ Δ₃ → TSub Δ₁ Δ₃
+(ρ ∘ᵣₛ σ) _ x = σ _ (ρ _ x)
+
 _∘ₛₛ_ : TSub Δ₁ Δ₂ → TSub Δ₂ Δ₃ → TSub Δ₁ Δ₃
 (σ₁ ∘ₛₛ σ₂) _ x = Tsub σ₂ (σ₁ _ x)
 
 _∘ᵣᵣ_ : TRen Δ₁ Δ₂ → TRen Δ₂ Δ₃ → TRen Δ₁ Δ₃
 (ρ₁ ∘ᵣᵣ ρ₂) _ x = ρ₂ _ (ρ₁ _ x)
 
-_∘ᵣₛ_ : TRen Δ₁ Δ₂ → TSub Δ₂ Δ₃ → TSub Δ₁ Δ₃
-(ρ ∘ᵣₛ σ) _ x = σ _ (ρ _ x)
-
-_∘ₛᵣ_ : TSub Δ₁ Δ₂ → TRen Δ₂ Δ₃ → TSub Δ₁ Δ₃
-(σ ∘ₛᵣ ρ) _ x = Tren ρ (σ _ x)
 
 -- interaction of renamings and substituions
 
