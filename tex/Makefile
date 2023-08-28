@@ -1,4 +1,5 @@
 GOAL= main-tyde23
+SLIDES= slides-tyde23
 TARGET_MODULES= STLC Tagless-final
 TARGET_FILES= agdamacros.tex unicodeletters.tex $(addprefix $(PREFIX)/, $(addsuffix .tex, $(TARGET_MODULES)))
 PREFIX= latex
@@ -7,6 +8,9 @@ ZIPFILES= README.md Makefile $(addsuffix .lagda, $(TARGET_MODULES)) Control/Conc
 ZIPGOAL= supplement-icfp23.zip
 
 ARXIVGOAL= $(GOAL).zip
+
+$(SLIDES).pdf: $(SLIDES).tex $(TARGET_FILES)
+	pdflatex  --synctex=1 -interaction=nonstopmode $(SLIDES)
 
 $(GOAL).pdf: $(GOAL).tex $(TARGET_FILES)
 	pdflatex  --synctex=1 -interaction=nonstopmode $(GOAL)

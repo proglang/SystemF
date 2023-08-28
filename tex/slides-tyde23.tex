@@ -1,0 +1,117 @@
+\documentclass[dvipsnames,aspectratio=169,pdftex]{beamer}
+\usepackage{agda}
+\usepackage{stmaryrd}
+\usepackage{xcolor}
+\usepackage{txfonts}
+
+\usetheme{Madrid}
+
+\title{Towards Tagless Interpretation of Stratified System F}
+\subtitle{Extended Abstract}
+
+\author[Thiemann, Weidner]
+{
+\textbf{Peter Thiemann} \and
+{Marius Weidner} 
+}
+\institute{University of Freiburg, Germany
+}
+\date{September 4, 2023 (TyDe, Seattle, WA, USA)}
+
+
+\AtBeginSection[]{%
+  \begin{frame}<beamer>
+    \frametitle{Outline}
+    \tableofcontents[currentsection]%[sectionstyle=show/show,subsectionstyle=hide/show/hide]
+  \end{frame}
+  \addtocounter{framenumber}{-1}% If you don't want them to affect the slide number
+}
+
+\input{unicodeletters}
+\input{latex/Tagless-final}
+
+\begin{document}
+\begin{frame}{\null}
+  \titlepage 
+\end{frame}
+\begin{frame}
+  \frametitle{Types of System F}
+  \SFType
+  \begin{itemize}
+  \item Polymorphic lambda calculus
+  \item Impredicative: quantification extends over all types
+  \item In $T = \forall \alpha.S$, $\alpha$ ranges over all types including $T$
+  \item Precludes a set-theoretic semantics
+  \end{itemize}
+\end{frame}
+\begin{frame}
+  \begin{center}
+    \includegraphics[scale=0.25]{images/FinitelyStratifiedPolymorphism.png}
+  \end{center}
+\end{frame}
+\begin{frame}
+  \frametitle{Stratification}
+  \begin{itemize}
+  \item Each type has a level
+  \item Quantification is only possible over types at lower level
+  \item Predicativity is retained
+  \item Simple set-theoretic semantics
+  \end{itemize}
+  \pause
+  \TFType
+\end{frame}
+\begin{frame}
+  \frametitle{Semantics of Types}
+  \begin{itemize}
+  \item Leivant's levels correspond to Agda's universe levels, so \dots
+  \end{itemize}
+  \pause
+  \TFTEnvP
+  \pause\vspace{-2\baselineskip}
+  \TFTSemP
+  \begin{itemize}
+  \item Works because we're using \AgdaFunction{Level} in the syntax!
+  \end{itemize}
+\end{frame}
+\begin{frame}
+  \frametitle{Type Environments and Variables}
+  \TFTVEnv
+  \pause\vspace{-2\baselineskip}
+  \TFCleanerinn
+  \begin{itemize}
+  \item Encoding inspired by \emph{System F in Agda, for fun and profit} (Chapman et al, MPC 2019)
+  \end{itemize}
+\end{frame}
+\begin{frame}
+  \frametitle{Syntax of Expressions (Excerpt)}
+  \TFCleanExpr
+\end{frame}
+\begin{frame}
+  \frametitle{Set-Theoretic Semantics of Expressions}
+  \TFExprSem
+\end{frame}
+\begin{frame}
+  \frametitle{Set woes}
+  \begin{itemize}
+  \item \AgdaFunction{Setω} is Agda's sort that contains \AgdaFunction{Set ℓ}, for all \AgdaFunction{ℓ}.
+  \item Some proofs argue about equality in types of sort \AgdaFunction{Setω}:
+    \TFSingleSubstPreserves
+  \item This equality is easy to define, but leads to a proliferation of uninteresting copies of library functions like \AgdaFunction{cong}, \AgdaFunction{subst}, \dots; extensionality axioms, etc
+  \item Extending the calculus with level-polymorphism can be modeled in Agda, but forces a departure from the simple semantics of types.
+  \end{itemize}
+  \begin{exampleblock}{Wish to the  Agda maintainers}
+    \begin{itemize}
+    \item Extend \AgdaFunction{Level} to include a larger subset of ordinals.
+    \end{itemize}
+  \end{exampleblock}
+\end{frame}
+\begin{frame}
+  \frametitle{Where do we go from here?}
+  \begin{itemize}
+  \item All results for Stratified System F apply directly to subsystems like ML.
+  \item Intrinsically typed small-step and big-step semantics.
+  \item Soundness with respect to denotational semantics.
+  \item Logical relation and adequacy.
+  \end{itemize}
+\end{frame}
+\end{document}
