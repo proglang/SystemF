@@ -43,8 +43,13 @@ substωω : ∀ {A : Setω} → (F : (x : A) → Setω) →
   ∀ {x y : A} → x ≡ω y → F x → F y
 substωω f refl x = x
 
-subst₃ : ∀ {b d}{A : Setω}{B : A → Set b}{C : A → Setω}(F : (a : A) → B a → C a → Set d)
+substωlω-l : ∀ {b d}{A : Setω}{B : A → Set b}{C : A → Setω}(F : (a : A) → B a → C a → Set d)
   → {a₁ a₂ : A} {b₁ : B a₁} {b₂ : B a₂} {c₁ : C a₁} {c₂ : C a₂}
   → (a₁≡a₂ : a₁ ≡ω a₂) → b₁ ≡ substω B (symω a₁≡a₂) b₂ → c₁ ≡ω substωω C (symω a₁≡a₂) c₂ →  F a₁ b₁ c₁ → F a₂ b₂ c₂
-subst₃ F refl refl refl x = x
+substωlω-l F refl refl refl x = x
+
+substlωl-l : ∀ {a c d}{A : Set a}{B : A → Setω}{C : A → Set c}(F : (a : A) → B a → C a → Set d)
+  → {a₁ a₂ : A} {b₁ : B a₁} {b₂ : B a₂} {c₁ : C a₁} {c₂ : C a₂}
+  → (a₁≡a₂ : a₁ ≡ a₂) → b₁ ≡ω substωl B (sym a₁≡a₂) b₂ → c₁ ≡ subst C (sym a₁≡a₂) c₂ →  F a₁ b₁ c₁ → F a₂ b₂ c₂
+substlωl-l F refl refl refl x = x
 
