@@ -72,7 +72,7 @@ fundamental Γ ρ χ γ (`∀α l , T) (Λ .l ⇒ e) lrg =
   (Csub χ (Λ l ⇒ e) , v-Λ) ,
   ⇓-Λ ,
   λ T′ R →
-    let lrg′ = subst₃ (LRG Γ)
+    let lrg′ = substωlω-l (LRG Γ)
                       refl -- (symω (REdrop-REext≡id ρ T′ R))
                       (sym (Cdropt-Cextt≡id Γ ρ χ l T′ R))
                       (symω (Gdropt-ext≡id ρ γ T′ R)) lrg in
