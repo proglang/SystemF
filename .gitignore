@@ -9,3 +9,7 @@ auto
 *.bbl
 *.blg
 *.synctex.gz
+*.nav
+*.snm
+*.toc
+_region_.tex
