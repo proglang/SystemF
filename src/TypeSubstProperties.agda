@@ -129,7 +129,7 @@ mutual
   ≡⟨ assoc-sub-ren T (Twkᵣ Tidᵣ) (Tliftₛ σ _) ⟩
     Tsub (σ ∘ₛᵣ λ _ → there) T
   ≡⟨ sym (assoc-ren-sub T σ (Twkᵣ Tidᵣ)) ⟩
-    Tren (Twkᵣ Tidᵣ) (Tsub σ T)
+    Twk (Tsub σ T)
   ∎
 
 

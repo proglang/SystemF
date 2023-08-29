@@ -89,6 +89,7 @@ subst-shuffle′′′′ :
   → subst id A≡A₁ (subst id A≡A₂ a) ≡ subst id A≡A₃ (subst id A≡A₄ a)
 subst-shuffle′′′′ _ refl refl refl refl = refl
 
+
 dist-subst' :
   ∀ {ℓ ℓ' ℓ₁ ℓ₂} {A : Set ℓ} {B : Set ℓ'} {a₁ a₂ : A}
     {F : A → Set ℓ₁} {G : B → Set ℓ₂}
@@ -99,7 +100,7 @@ dist-subst' :
   → (x : F a₁) 
   → f {a₂} (subst F a₁≡a₂ x) ≡ subst G b₁≡b₂ (f {a₁} x)
 dist-subst' _ _ refl refl _ = refl
- 
+
 dist-subst′′′ :
   ∀ {ℓ₁ ℓ₂}
     {A : Set ℓ₁} {B : A → Set ℓ₂} 

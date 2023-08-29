@@ -28,7 +28,7 @@ ERen : TRen Δ₁ Δ₂ → TEnv Δ₁ → TEnv Δ₂ → Set
 ERen {Δ₁}{Δ₂} ρ* Γ₁ Γ₂ = ∀ l (T : Type Δ₁ l) → inn T Γ₁ → inn (Tren ρ* T) Γ₂
 
 Eidᵣ : ERen Tidᵣ Γ Γ 
-Eidᵣ l T x rewrite TidᵣT≡T T = x
+Eidᵣ l T x = subst (λ T → inn T _) (sym (TidᵣT≡T T)) x
 
 Edropᵣ : (ρ* : TRen Δ₁ Δ₂) → ERen ρ* (T ◁ Γ₁) Γ₂ → ERen ρ* Γ₁ Γ₂
 Edropᵣ ρ* ρ l T x = ρ _ _ (there x)
@@ -101,3 +101,4 @@ _[_]E {T₁ = T₁} {T₂ = T₂} e e′ =
 _[_]ET : Expr (l ∷ Δ) (l ◁* Γ) T → (T′ : Type Δ l) → Expr Δ Γ (T [ T′ ]T)
 e [ T ]ET = Esub (Textₛ Tidₛ T) (Eextₛ-l Tidₛ Eidₛ) e
 
+ 

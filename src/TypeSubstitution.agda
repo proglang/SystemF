@@ -65,7 +65,7 @@ Tdropₛ σ* _ x = σ* _ (there x)
 Twkₛ : TSub Δ₁ Δ₂ → TSub Δ₁ (l ∷ Δ₂)
 Twkₛ σ* _ x = Twk (σ* _ x)
 
-Tliftₛ : TSub Δ₁ Δ₂ → (l : Level) → TSub (l ∷ Δ₁) (l ∷ Δ₂)
+Tliftₛ : TSub Δ₁ Δ₂ → (l : Level) → TSub (l ∷ Δ₁) (l ∷ Δ₂)  
 Tliftₛ σ* _ _ here = ` here
 Tliftₛ σ* _ _ (there x) = Twk (σ* _ x)
 

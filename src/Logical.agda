@@ -419,20 +419,20 @@ Cdropt-Cextt≡id Γ ρ χ l T′ R =
   ⟩
     χ ∎
 
-Elift-[]≡Eext : (Γ : TEnv Δ) (σ* : TSub Δ []) (σ : ESub σ* Γ ∅) (l′ l : Level) (T′ : Type [] l) (T : Type (l ∷ Δ) l′) (e : Expr (l ∷ Δ) (l ◁* Γ) T)
-  → let lhs = (Esub (Tliftₛ σ* l) (Eliftₛ-l σ* σ) e [ T′ ]ET) in
-    let rhs = (Esub (Textₛ σ* T′) (Eextₛ-l σ* σ) e) in
-    subst (Expr [] ∅) (σ↑T[T′]≡TextₛσT′T σ* T′ T) lhs ≡ rhs
-Elift-[]≡Eext Γ σ* σ l′ l T′ T e =
-  let sub₀ = subst (Expr [] ∅) (σ↑T[T′]≡TextₛσT′T σ* T′ T) in
-  begin
-    sub₀ (Esub (Tliftₛ σ* l) (Eliftₛ-l σ* σ) e [ T′ ]ET)
-  ≡⟨⟩
-    sub₀ (Esub (Textₛ Tidₛ T′) (Eextₛ-l Tidₛ Eidₛ)
-               (Esub (Tliftₛ σ* l) (Eliftₛ-l σ* σ) e))
-  ≡⟨ {!!} ⟩
-    Esub (Textₛ σ* T′) (Eextₛ-l σ* σ) e
-  ∎
+-- Elift-[]≡Eext : (Γ : TEnv Δ) (σ* : TSub Δ []) (σ : ESub σ* Γ ∅) (l′ l : Level) (T′ : Type [] l) (T : Type (l ∷ Δ) l′) (e : Expr (l ∷ Δ) (l ◁* Γ) T)
+--   → let lhs = (Esub (Tliftₛ σ* l) (Eliftₛ-l σ* σ) e [ T′ ]ET) in
+--     let rhs = (Esub (Textₛ σ* T′) (Eextₛ-l σ* σ) e) in
+--     subst (Expr [] ∅) (σ↑T[T′]≡TextₛσT′T σ* T′ T) lhs ≡ rhs
+-- Elift-[]≡Eext Γ σ* σ l′ l T′ T e =
+--   let sub₀ = subst (Expr [] ∅) (σ↑T[T′]≡TextₛσT′T σ* T′ T) in
+--   begin
+--     sub₀ (Esub (Tliftₛ σ* l) (Eliftₛ-l σ* σ) e [ T′ ]ET)
+--   ≡⟨⟩
+--     sub₀ (Esub (Textₛ Tidₛ T′) (Eextₛ-l Tidₛ Eidₛ)
+--                (Esub (Tliftₛ σ* l) (Eliftₛ-l σ* σ) e))
+--   ≡⟨ {!!} ⟩
+--     Esub (Textₛ σ* T′) (Eextₛ-l σ* σ) e
+--   ∎
 
 Elift-[]≡Cextt : (Γ : TEnv Δ) (ρ : RelEnv Δ) (χ : CSub (subst←RE ρ) Γ) (l′ l : Level) (T : Type (l ∷ Δ) l′) (e : Expr (l ∷ Δ) (l ◁* Γ) T) (T′ : Type [] l) (R : REL T′)
   → let lhs = (Esub (Tliftₛ (subst←RE ρ) l) (Eliftₛ-l (subst←RE ρ) (ES←SC χ)) e [ T′ ]ET) in
