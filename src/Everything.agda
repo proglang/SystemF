@@ -7,7 +7,7 @@ open import ExprSubstProperties
 
 open import SmallStep
 
-open import Logical 
+-- open import Logical 
 open import Logical1
 open import LRVsubst
 open import Fundamental
