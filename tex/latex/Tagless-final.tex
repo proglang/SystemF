@@ -435,18 +435,20 @@
 \AgdaDatatype{Type}\AgdaSpace{}%
 \AgdaBound{Δ}\<%
 \end{code}}
-\newcommand\TFType{%
-\begin{code}%
+\begin{code}[hide]%
 \>[0]\AgdaFunction{LEnv}\AgdaSpace{}%
 \AgdaSymbol{=}\AgdaSpace{}%
 \AgdaDatatype{List}\AgdaSpace{}%
 \AgdaPostulate{Level}\<%
-\\
+\end{code}
+\newcommand\TFType{%
+\begin{code}%
 \>[0]\AgdaKeyword{data}\AgdaSpace{}%
 \AgdaDatatype{Type}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaBound{Δ}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
-\AgdaFunction{LEnv}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaDatatype{List}\AgdaSpace{}%
+\AgdaPostulate{Level}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaPostulate{Level}\AgdaSpace{}%
 \AgdaSymbol{→}\AgdaSpace{}%
@@ -507,7 +509,8 @@
 \AgdaOperator{\AgdaPrimitive{⊔}}\AgdaSpace{}%
 \AgdaGeneralizable{ℓ′}\AgdaSymbol{)}\<%
 \end{code}}
-\begin{code}[hide]%
+\newcommand\TFlevel{%
+\begin{code}%
 \>[0]\AgdaComment{--\ level\ of\ type\ according\ to\ Leivant'91}\<%
 \\
 \>[0]\AgdaFunction{level}\AgdaSpace{}%
@@ -525,9 +528,8 @@
 \AgdaBound{T}\AgdaSpace{}%
 \AgdaSymbol{=}\AgdaSpace{}%
 \AgdaBound{ℓ}\<%
-\\
-%
-\\[\AgdaEmptyExtraSkip]%
+\end{code}}
+\begin{code}[hide]%
 \>[0]\AgdaComment{--\ semantic\ environments\ (mapping\ level\ ℓ\ to\ an\ element\ of\ Set\ ℓ)}\<%
 \end{code}
 \newcommand\TFTEnv{%
@@ -535,7 +537,8 @@
 \>[0]\AgdaKeyword{data}\AgdaSpace{}%
 \AgdaDatatype{DEnv}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
-\AgdaFunction{LEnv}\AgdaSpace{}%
+\AgdaDatatype{List}\AgdaSpace{}%
+\AgdaPostulate{Level}\AgdaSpace{}%
 \AgdaSymbol{→}\AgdaSpace{}%
 \AgdaPrimitive{Setω}\AgdaSpace{}%
 \AgdaKeyword{where}\<%
@@ -562,11 +565,12 @@
 \end{code}}
 \newcommand\TFTEnvP{%
 \begin{code}%
-\>[0]\AgdaComment{--\ meaning\ of\ a\ type\ variable}\<%
+\>[0]\AgdaComment{--\ meaning\ of\ a\ type\ variable\ α}\<%
 \\
 \>[0]\AgdaFunction{DEnv′}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
-\AgdaFunction{LEnv}\AgdaSpace{}%
+\AgdaDatatype{List}\AgdaSpace{}%
+\AgdaPostulate{Level}\AgdaSpace{}%
 \AgdaSymbol{→}\AgdaSpace{}%
 \AgdaPrimitive{Setω}\<%
 \\
@@ -947,7 +951,7 @@
 \\
 %
 \\[\AgdaEmptyExtraSkip]%
-\>[0]\AgdaFunction{Twk}\AgdaSpace{}%
+\>[0]\AgdaFunction{Tweaken}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaDatatype{Type}\AgdaSpace{}%
 \AgdaGeneralizable{Δ}\AgdaSpace{}%
@@ -959,7 +963,7 @@
 \AgdaGeneralizable{Δ}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaGeneralizable{ℓ′}\<%
 \\
-\>[0]\AgdaFunction{Twk}\AgdaSpace{}%
+\>[0]\AgdaFunction{Tweaken}\AgdaSpace{}%
 \AgdaSymbol{=}\AgdaSpace{}%
 \AgdaFunction{Tren}\AgdaSpace{}%
 \AgdaFunction{wkᵣ}\<%
@@ -1251,7 +1255,7 @@
 \>[0][@{}l@{\AgdaIndent{0}}]%
 \>[2]\AgdaSymbol{=}\AgdaSpace{}%
 \AgdaFunction{cong₂}%
-\>[906I]\AgdaSymbol{(λ}\AgdaSpace{}%
+\>[909I]\AgdaSymbol{(λ}\AgdaSpace{}%
 \AgdaBound{t₁}\AgdaSpace{}%
 \AgdaBound{t₂}\AgdaSpace{}%
 \AgdaSymbol{→}\AgdaSpace{}%
@@ -1259,7 +1263,7 @@
 \AgdaSymbol{→}\AgdaSpace{}%
 \AgdaBound{t₂}\AgdaSymbol{))}\<%
 \\
-\>[.][@{}l@{}]\<[906I]%
+\>[.][@{}l@{}]\<[909I]%
 \>[10]\AgdaSymbol{(}\AgdaFunction{ren*-preserves-semantics}\AgdaSpace{}%
 \AgdaSymbol{\{}\AgdaArgument{ρ}\AgdaSpace{}%
 \AgdaSymbol{=}\AgdaSpace{}%
@@ -1535,7 +1539,7 @@
 \AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
 \AgdaBound{σ}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaSymbol{=}\AgdaSpace{}%
-\AgdaFunction{Twk}\AgdaSpace{}%
+\AgdaFunction{Tweaken}\AgdaSpace{}%
 \AgdaBound{T}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
 \AgdaFunction{wkₛ}\AgdaSpace{}%
@@ -1693,7 +1697,8 @@
 \>[0]\AgdaKeyword{data}\AgdaSpace{}%
 \AgdaDatatype{TEnv}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
-\AgdaFunction{LEnv}\AgdaSpace{}%
+\AgdaDatatype{List}\AgdaSpace{}%
+\AgdaPostulate{Level}\AgdaSpace{}%
 \AgdaSymbol{→}\AgdaSpace{}%
 \AgdaPrimitive{Set}\AgdaSpace{}%
 \AgdaKeyword{where}\<%
@@ -1716,7 +1721,7 @@
 \AgdaSymbol{→}\AgdaSpace{}%
 \AgdaDatatype{TEnv}\AgdaSpace{}%
 \AgdaGeneralizable{Δ}%
-\>[37]\AgdaComment{--\ term\ variable}\<%
+\>[37]\AgdaComment{--\ type\ binding}\<%
 \\
 %
 \>[2]\AgdaOperator{\AgdaInductiveConstructor{\AgdaUnderscore{}◁*\AgdaUnderscore{}}}\AgdaSpace{}%
@@ -1731,7 +1736,7 @@
 \AgdaSymbol{(}\AgdaBound{ℓ}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
 \AgdaGeneralizable{Δ}\AgdaSymbol{)}\AgdaSpace{}%
-\AgdaComment{--\ type\ variable}\<%
+\AgdaComment{--\ level\ binding}\<%
 \end{code}}
 \begin{code}[hide]%
 \>[0]\AgdaKeyword{module}\AgdaSpace{}%
@@ -1763,6 +1768,9 @@
 \end{code}
 \newcommand\TFCleanerinn{%
 \begin{code}%
+%
+\>[2]\AgdaComment{--\ term\ variables}\<%
+\\
 %
 \>[2]\AgdaKeyword{data}\AgdaSpace{}%
 \AgdaDatatype{inn}\AgdaSpace{}%
@@ -1807,7 +1815,7 @@
 \AgdaGeneralizable{Γ}\AgdaSpace{}%
 \AgdaSymbol{→}\AgdaSpace{}%
 \AgdaDatatype{inn}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaFunction{Twk}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaFunction{Tweaken}\AgdaSpace{}%
 \AgdaGeneralizable{T}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaGeneralizable{ℓ′}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{◁*}}\AgdaSpace{}%
@@ -1853,13 +1861,13 @@
 \\
 %
 \>[9]\AgdaSymbol{→}%
-\>[1329I]\AgdaDatatype{Expr}\AgdaSpace{}%
+\>[1333I]\AgdaDatatype{Expr}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaBound{ℓ}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{◁*}}\AgdaSpace{}%
 \AgdaBound{Γ}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaBound{T}\<%
 \\
-\>[.][@{}l@{}]\<[1329I]%
+\>[.][@{}l@{}]\<[1333I]%
 \>[11]\AgdaComment{---------------------}\<%
 \\
 %
@@ -1894,13 +1902,13 @@
 \\
 %
 \>[9]\AgdaSymbol{→}%
-\>[1352I]\AgdaSymbol{(}\AgdaBound{T′}\AgdaSpace{}%
+\>[1356I]\AgdaSymbol{(}\AgdaBound{T′}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaDatatype{Type}\AgdaSpace{}%
 \AgdaBound{Δ}\AgdaSpace{}%
 \AgdaGeneralizable{ℓ}\AgdaSymbol{)}\<%
 \\
-\>[.][@{}l@{}]\<[1352I]%
+\>[.][@{}l@{}]\<[1356I]%
 \>[11]\AgdaComment{-----------------------}\<%
 \\
 %
@@ -1947,7 +1955,7 @@
 \\
 %
 \>[2]\AgdaInductiveConstructor{there}%
-\>[1385I]\AgdaSymbol{:}\AgdaSpace{}%
+\>[1389I]\AgdaSymbol{:}\AgdaSpace{}%
 \AgdaSymbol{∀}\AgdaSpace{}%
 \AgdaSymbol{\{}\AgdaBound{T}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
@@ -1959,7 +1967,7 @@
 \AgdaGeneralizable{Δ}\AgdaSpace{}%
 \AgdaGeneralizable{ℓ′}\AgdaSymbol{\}\{}\AgdaBound{Γ}\AgdaSymbol{\}}\<%
 \\
-\>[.][@{}l@{}]\<[1385I]%
+\>[.][@{}l@{}]\<[1389I]%
 \>[8]\AgdaSymbol{→}\AgdaSpace{}%
 \AgdaDatatype{inn}\AgdaSpace{}%
 \AgdaBound{T}\AgdaSpace{}%
@@ -1973,7 +1981,7 @@
 \\
 %
 \>[2]\AgdaInductiveConstructor{tskip}%
-\>[1405I]\AgdaSymbol{:}\AgdaSpace{}%
+\>[1409I]\AgdaSymbol{:}\AgdaSpace{}%
 \AgdaSymbol{∀}\AgdaSpace{}%
 \AgdaSymbol{\{}\AgdaBound{T}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
@@ -1981,14 +1989,14 @@
 \AgdaGeneralizable{Δ}\AgdaSpace{}%
 \AgdaGeneralizable{ℓ}\AgdaSymbol{\}\{}\AgdaBound{Γ}\AgdaSymbol{\}}\<%
 \\
-\>[.][@{}l@{}]\<[1405I]%
+\>[.][@{}l@{}]\<[1409I]%
 \>[8]\AgdaSymbol{→}\AgdaSpace{}%
 \AgdaDatatype{inn}\AgdaSpace{}%
 \AgdaBound{T}\AgdaSpace{}%
 \AgdaBound{Γ}\AgdaSpace{}%
 \AgdaSymbol{→}\AgdaSpace{}%
 \AgdaDatatype{inn}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaFunction{Twk}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaFunction{Tweaken}\AgdaSpace{}%
 \AgdaBound{T}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaGeneralizable{ℓ′}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{◁*}}\AgdaSpace{}%
@@ -2000,7 +2008,8 @@
 \AgdaDatatype{Expr}\AgdaSpace{}%
 \AgdaSymbol{\{}\AgdaBound{Δ}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
-\AgdaFunction{LEnv}\AgdaSymbol{\}}\AgdaSpace{}%
+\AgdaDatatype{List}\AgdaSpace{}%
+\AgdaPostulate{Level}\AgdaSymbol{\}}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaBound{Γ}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaDatatype{TEnv}\AgdaSpace{}%
@@ -2175,9 +2184,11 @@
 \begin{code}%
 \>[0]\AgdaFunction{Env}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaBound{Δ}\AgdaSpace{}%
+\AgdaSymbol{∀}\AgdaSpace{}%
+\AgdaSymbol{\{}\AgdaBound{Δ}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
-\AgdaFunction{LEnv}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaDatatype{List}\AgdaSpace{}%
+\AgdaPostulate{Level}\AgdaSymbol{\}}\AgdaSpace{}%
 \AgdaSymbol{→}\AgdaSpace{}%
 \AgdaDatatype{TEnv}\AgdaSpace{}%
 \AgdaBound{Δ}\AgdaSpace{}%
@@ -2188,7 +2199,7 @@
 \AgdaPrimitive{Setω}\<%
 \\
 \>[0]\AgdaFunction{Env}\AgdaSpace{}%
-\AgdaBound{Δ}\AgdaSpace{}%
+\AgdaSymbol{\{}\AgdaBound{Δ}\AgdaSymbol{\}}\AgdaSpace{}%
 \AgdaBound{Γ}\AgdaSpace{}%
 \AgdaBound{η}\AgdaSpace{}%
 \AgdaSymbol{=}\AgdaSpace{}%
@@ -2227,7 +2238,6 @@
 \>[0][@{}l@{\AgdaIndent{0}}]%
 \>[2]\AgdaSymbol{→}\AgdaSpace{}%
 \AgdaFunction{Env}\AgdaSpace{}%
-\AgdaGeneralizable{Δ}\AgdaSpace{}%
 \AgdaBound{Γ}\AgdaSpace{}%
 \AgdaBound{η}\<%
 \\
@@ -2241,7 +2251,6 @@
 %
 \>[2]\AgdaSymbol{→}\AgdaSpace{}%
 \AgdaFunction{Env}\AgdaSpace{}%
-\AgdaGeneralizable{Δ}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaBound{T}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{◁}}\AgdaSpace{}%
 \AgdaBound{Γ}\AgdaSymbol{)}\AgdaSpace{}%
@@ -2284,14 +2293,10 @@
 \>[0][@{}l@{\AgdaIndent{0}}]%
 \>[2]\AgdaSymbol{→}\AgdaSpace{}%
 \AgdaFunction{Env}\AgdaSpace{}%
-\AgdaBound{Δ}\AgdaSpace{}%
 \AgdaBound{Γ}\AgdaSpace{}%
 \AgdaBound{η}\AgdaSpace{}%
 \AgdaSymbol{→}\AgdaSpace{}%
 \AgdaFunction{Env}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaGeneralizable{ℓ}\AgdaSpace{}%
-\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
-\AgdaBound{Δ}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaGeneralizable{ℓ}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{◁*}}\AgdaSpace{}%
 \AgdaBound{Γ}\AgdaSymbol{)}\AgdaSpace{}%
@@ -2316,21 +2321,21 @@
 \>[0][@{}l@{\AgdaIndent{0}}]%
 \>[2]\AgdaFunction{subst}\AgdaSpace{}%
 \AgdaFunction{id}%
-\>[1662I]\AgdaSymbol{(}\AgdaFunction{sym}%
-\>[1663I]\AgdaSymbol{(}\AgdaFunction{ren*-preserves-semantics}\AgdaSpace{}%
+\>[1663I]\AgdaSymbol{(}\AgdaFunction{sym}%
+\>[1664I]\AgdaSymbol{(}\AgdaFunction{ren*-preserves-semantics}\AgdaSpace{}%
 \AgdaSymbol{\{}\AgdaArgument{ρ}\AgdaSpace{}%
 \AgdaSymbol{=}\AgdaSpace{}%
 \AgdaFunction{wkᵣ}\AgdaSymbol{\}\{}\AgdaBound{η}\AgdaSymbol{\}\{}\AgdaBound{D}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
 \AgdaBound{η}\AgdaSymbol{\}}\<%
 \\
-\>[.][@{}l@{}]\<[1663I]%
+\>[.][@{}l@{}]\<[1664I]%
 \>[16]\AgdaSymbol{(}\AgdaFunction{wkᵣ∈TRen*}\AgdaSpace{}%
 \AgdaBound{η}\AgdaSpace{}%
 \AgdaBound{D}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaBound{T}\AgdaSymbol{))}\<%
 \\
-\>[.][@{}l@{}]\<[1662I]%
+\>[.][@{}l@{}]\<[1663I]%
 \>[11]\AgdaSymbol{(}\AgdaBound{γ}\AgdaSpace{}%
 \AgdaBound{x}\AgdaSymbol{)}\<%
 \end{code}}
@@ -2559,7 +2564,7 @@
 \\
 \>[0][@{}l@{\AgdaIndent{0}}]%
 \>[2]\AgdaFunction{transω}%
-\>[1847I]\AgdaSymbol{(}\AgdaFunction{congωω}\AgdaSpace{}%
+\>[1848I]\AgdaSymbol{(}\AgdaFunction{congωω}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaFunction{apply-env}\AgdaSpace{}%
 \AgdaBound{η₂}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaBound{ρ}\AgdaSpace{}%
@@ -2578,7 +2583,7 @@
 \AgdaBound{η₂}\AgdaSpace{}%
 \AgdaBound{ren*}\AgdaSymbol{)))}\<%
 \\
-\>[.][@{}l@{}]\<[1847I]%
+\>[.][@{}l@{}]\<[1848I]%
 \>[9]\AgdaSymbol{(}\AgdaFunction{conglω}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaOperator{\AgdaInductiveConstructor{\AgdaUnderscore{}∷}}\AgdaSpace{}%
 \AgdaBound{η₁}\AgdaSymbol{)}\AgdaSpace{}%
@@ -2722,7 +2727,7 @@
 \\
 \>[2][@{}l@{\AgdaIndent{0}}]%
 \>[4]\AgdaFunction{trans}%
-\>[1971I]\AgdaSymbol{(}\AgdaFunction{subst-preserves}\AgdaSpace{}%
+\>[1972I]\AgdaSymbol{(}\AgdaFunction{subst-preserves}\AgdaSpace{}%
 \AgdaSymbol{\{}\AgdaArgument{η₂}\AgdaSpace{}%
 \AgdaSymbol{=}\AgdaSpace{}%
 \AgdaBound{D}\AgdaSpace{}%
@@ -2732,7 +2737,7 @@
 \AgdaBound{σ}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaBound{T}\AgdaSymbol{)}\<%
 \\
-\>[.][@{}l@{}]\<[1971I]%
+\>[.][@{}l@{}]\<[1972I]%
 \>[10]\AgdaSymbol{(}\AgdaFunction{congωl}\AgdaSpace{}%
 \AgdaSymbol{(λ}\AgdaSpace{}%
 \AgdaBound{H}\AgdaSpace{}%
@@ -2810,13 +2815,13 @@
 \\
 \>[0][@{}l@{\AgdaIndent{0}}]%
 \>[2]\AgdaFunction{trans}%
-\>[2040I]\AgdaSymbol{(}\AgdaFunction{subst-preserves}\AgdaSpace{}%
+\>[2041I]\AgdaSymbol{(}\AgdaFunction{subst-preserves}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaFunction{singleₛ}\AgdaSpace{}%
 \AgdaFunction{idₛ}\AgdaSpace{}%
 \AgdaBound{T′}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaBound{T}\AgdaSymbol{)}\<%
 \\
-\>[.][@{}l@{}]\<[2040I]%
+\>[.][@{}l@{}]\<[2041I]%
 \>[8]\AgdaSymbol{(}\AgdaFunction{congωl}\AgdaSpace{}%
 \AgdaSymbol{(λ}\AgdaSpace{}%
 \AgdaBound{H}\AgdaSpace{}%
@@ -2859,7 +2864,6 @@
 \AgdaGeneralizable{Δ}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaSymbol{→}\AgdaSpace{}%
 \AgdaFunction{Env}\AgdaSpace{}%
-\AgdaGeneralizable{Δ}\AgdaSpace{}%
 \AgdaBound{Γ}\AgdaSpace{}%
 \AgdaBound{η}\AgdaSpace{}%
 \AgdaSymbol{→}\AgdaSpace{}%

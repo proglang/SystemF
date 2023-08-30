@@ -38,7 +38,7 @@
   \frametitle{Types of System F}
   \SFType
   \begin{itemize}
-  \item Polymorphic lambda calculus
+  \item Polymorphic lambda calculus (Girard, Reynolds)
   \item Impredicative: quantification extends over all types
   \item In $T = \forall \alpha.S$, $\alpha$ ranges over all types including $T$
   \item Precludes a set-theoretic semantics
@@ -59,6 +59,8 @@
   \end{itemize}
   \pause
   \TFType
+  \pause\vspace{-2\baselineskip}
+  \TFlevel
 \end{frame}
 \begin{frame}
   \frametitle{Semantics of Types}
@@ -75,12 +77,13 @@
 \end{frame}
 \begin{frame}
   \frametitle{Type Environments and Variables}
+  \begin{itemize}
+  \item A single environment for type and term variables
+  \item Encoding inspired by \emph{System F in Agda, for fun and profit} (Chapman et al, MPC 2019)
+  \end{itemize}
   \TFTVEnv
   \pause\vspace{-2\baselineskip}
   \TFCleanerinn
-  \begin{itemize}
-  \item Encoding inspired by \emph{System F in Agda, for fun and profit} (Chapman et al, MPC 2019)
-  \end{itemize}
 \end{frame}
 \begin{frame}
   \frametitle{Syntax of Expressions (Excerpt)}
@@ -89,6 +92,8 @@
 \begin{frame}
   \frametitle{Set-Theoretic Semantics of Expressions}
   \TFExprSem
+  where
+  \TFVEnv
 \end{frame}
 \begin{frame}
   \frametitle{Set woes}
@@ -96,12 +101,21 @@
   \item \AgdaFunction{Setω} is Agda's sort that contains \AgdaFunction{Set ℓ}, for all \AgdaFunction{ℓ}.
   \item Some proofs argue about equality in types of sort \AgdaFunction{Setω}:
     \TFSingleSubstPreserves
-  \item This equality is easy to define, but leads to a proliferation of uninteresting copies of library functions like \AgdaFunction{cong}, \AgdaFunction{subst}, \dots; extensionality axioms, etc
-  \item Extending the calculus with level-polymorphism can be modeled in Agda, but forces a departure from the simple semantics of types.
+  \item This equality is easy to define, but leads to a proliferation of uninteresting copies of library functions like \AgdaFunction{cong}, \AgdaFunction{subst}, \dots; equational reasoning; extensionality axioms, and so on.
+  \end{itemize}
+\end{frame}
+\begin{frame}
+  \frametitle{Set woes II}
+  \begin{itemize}
+  \item Consider extending the calculus with level-polymorphism.
+  \item Can be modeled in Agda, but forces a departure from the simple semantics of types.
+  \item A level-polymorphic function is a member of \AgdaFunction{Setω}, but that means the semantics of a type variable can no longer be in  \AgdaFunction{Setω}!
+  \item It must be in \AgdaFunction{Setω₁} $\Longrightarrow$ can't index types by levels, need more equalities, and so on.
   \end{itemize}
   \begin{exampleblock}{Wish to the  Agda maintainers}
     \begin{itemize}
     \item Extend \AgdaFunction{Level} to include a larger subset of ordinals.
+    \item Leivant's 1989 paper \emph{Stratified Polymorphism} suggests a useful subset.
     \end{itemize}
   \end{exampleblock}
 \end{frame}
@@ -110,8 +124,8 @@
   \begin{itemize}
   \item All results for Stratified System F apply directly to subsystems like ML.
   \item Intrinsically typed small-step and big-step semantics.
-  \item Soundness with respect to denotational semantics.
-  \item Logical relation and adequacy.
+  \item Soundness with respect to denotational semantics (stratification required).
+  \item Logical relation and adequacy (stratification required).
   \end{itemize}
 \end{frame}
 \end{document}

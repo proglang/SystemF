@@ -62,32 +62,36 @@ module systemf where
     `_  : Fin Δ → Type Δ
     `∀  : Type (sucℕ Δ) → Type Δ
 \end{code}}
+\begin{code}[hide]
+LEnv = List Level
+\end{code}
 \newcommand\TFType{%
 \begin{code}
-LEnv = List Level
-data Type (Δ : LEnv) : Level → Set where
+data Type (Δ : List Level) : Level → Set where
   nat : Type Δ zero
   _⇒_ : Type Δ ℓ → Type Δ ℓ′ → Type Δ (ℓ ⊔ ℓ′)
   `_  : ℓ ∈ Δ → Type Δ ℓ
   `∀  : ∀ ℓ → Type (ℓ ∷ Δ) ℓ′ → Type Δ (suc ℓ ⊔ ℓ′)
 \end{code}}
-\begin{code}[hide]
+\newcommand\TFlevel{%
+\begin{code}
 -- level of type according to Leivant'91
 level : Type Δ ℓ → Level
 level {ℓ = ℓ} T = ℓ
-
+\end{code}}
+\begin{code}[hide]
 -- semantic environments (mapping level ℓ to an element of Set ℓ)
 \end{code}
 \newcommand\TFTEnv{%
 \begin{code}
-data DEnv : LEnv → Setω where
+data DEnv : List Level → Setω where
   []  : DEnv []
   _∷_ : Set ℓ → DEnv Δ → DEnv (ℓ ∷ Δ)
 \end{code}}
 \newcommand\TFTEnvP{%
 \begin{code}
--- meaning of a type variable
-DEnv′ : LEnv → Setω
+-- meaning of a type variable α
+DEnv′ : List Level → Setω
 DEnv′ Δ = ∀ {ℓ} → (α : ℓ ∈ Δ) → Set ℓ
 \end{code}}
 \begin{code}[hide]
@@ -141,8 +145,8 @@ Tren ρ (T₁ ⇒ T₂) = Tren ρ T₁ ⇒ Tren ρ T₂
 Tren ρ (`∀ lev T) = `∀ lev (Tren (extᵣ ρ) T)
 Tren ρ nat = nat
 
-Twk : Type Δ ℓ′ → Type (ℓ ∷ Δ) ℓ′
-Twk = Tren wkᵣ
+Tweaken : Type Δ ℓ′ → Type (ℓ ∷ Δ) ℓ′
+Tweaken = Tren wkᵣ
 
 -- the action of renaming on semantic environments
 
@@ -216,7 +220,7 @@ idₛ {Δ} = build-id Δ id
 
 wkₛ : Sub Δ₁ Δ₂ → Sub Δ₁ (ℓ ∷ Δ₂)
 wkₛ [] = []
-wkₛ (T ∷ σ) = Twk T ∷ wkₛ σ
+wkₛ (T ∷ σ) = Tweaken T ∷ wkₛ σ
 
 extₛ : Sub Δ₁ Δ₂ → ∀ {ℓ} → Sub (ℓ ∷ Δ₁) (ℓ ∷ Δ₂)
 extₛ σ = ` here ∷ wkₛ σ
@@ -237,10 +241,10 @@ _[_]T T T' = subT (singleₛ idₛ T') T
 \end{code}
 \newcommand\TFTVEnv{%
 \begin{code}
-data TEnv : LEnv → Set where
+data TEnv : List Level → Set where
   ∅    : TEnv []
-  _◁_  : Type Δ ℓ → TEnv Δ → TEnv Δ  -- term variable
-  _◁*_ : ∀ ℓ → TEnv Δ → TEnv (ℓ ∷ Δ) -- type variable
+  _◁_  : Type Δ ℓ → TEnv Δ → TEnv Δ  -- type binding
+  _◁*_ : ∀ ℓ → TEnv Δ → TEnv (ℓ ∷ Δ) -- level binding
 \end{code}}
 \begin{code}[hide]
 module cleaner-expressions where
@@ -251,10 +255,11 @@ module cleaner-expressions where
 \end{code}
 \newcommand\TFCleanerinn{%
 \begin{code}
+  -- term variables
   data inn : Type Δ ℓ → TEnv Δ → Set where
     here  : inn T (T ◁ Γ)
     there : inn T Γ → inn T (T′ ◁ Γ)
-    tskip : inn T Γ → inn (Twk T) (ℓ′ ◁* Γ)
+    tskip : inn T Γ → inn (Tweaken T) (ℓ′ ◁* Γ)
 \end{code}}
 \newcommand\TFCleanExpr{%
 \begin{code}
@@ -280,11 +285,11 @@ data inn : Type Δ ℓ → TEnv Δ → Set where
   there : ∀ {T : Type Δ ℓ}{T′ : Type Δ ℓ′}{Γ}
         → inn T Γ → inn T (T′ ◁ Γ)
   tskip : ∀ {T : Type Δ ℓ}{Γ}
-        → inn T Γ → inn (Twk T) (ℓ′ ◁* Γ)
+        → inn T Γ → inn (Tweaken T) (ℓ′ ◁* Γ)
 \end{code}}
 \newcommand\TFExpr{%
 \begin{code}
-data Expr {Δ : LEnv} (Γ : TEnv Δ) : Type Δ ℓ → Set where
+data Expr {Δ : List Level} (Γ : TEnv Δ) : Type Δ ℓ → Set where
   #_   : ∀ (n : ℕ) → Expr Γ nat
   `_   : ∀ {T : Type Δ ℓ}
        → inn T Γ → Expr Γ T
@@ -303,21 +308,21 @@ data Expr {Δ : LEnv} (Γ : TEnv Δ) : Type Δ ℓ → Set where
 \end{code}
 \newcommand\TFVEnv{%
 \begin{code}
-Env : (Δ : LEnv) → TEnv Δ → DEnv Δ → Setω
-Env Δ Γ η = ∀ {ℓ}{T : Type Δ ℓ} → inn T Γ → 𝓣⟦ T ⟧ η
+Env : ∀ {Δ : List Level} → TEnv Δ → DEnv Δ → Setω
+Env {Δ} Γ η = ∀ {ℓ}{T : Type Δ ℓ} → inn T Γ → 𝓣⟦ T ⟧ η
 \end{code}}
 \begin{code}[hide]
 extend : ∀ {T : Type Δ ℓ}{Γ : TEnv Δ}{η : DEnv Δ}
-  → Env Δ Γ η
+  → Env Γ η
   → 𝓣⟦ T ⟧ η
-  → Env Δ (T ◁ Γ) η
+  → Env (T ◁ Γ) η
 extend γ v here = v
 extend γ v (there x) = γ x
 \end{code}
 \newcommand\TFExtendTskip{%
 \begin{code}
 extend-tskip : ∀ {Δ : LEnv}{Γ : TEnv Δ}{η : DEnv Δ}{D : Set ℓ}
-  → Env Δ Γ η → Env (ℓ ∷ Δ) (ℓ ◁* Γ) (D ∷ η)
+  → Env Γ η → Env (ℓ ◁* Γ) (D ∷ η)
 extend-tskip {η = η} {D = D} γ (tskip{T = T} x) =
   subst id (sym (ren*-preserves-semantics {ρ = wkᵣ}{η}{D ∷ η}
                 (wkᵣ∈TRen* η D) T))
@@ -378,7 +383,7 @@ single-subst-preserves {Δ = Δ} {ℓ = ℓ}{ℓ′ = ℓ′}{η = η} T′ T =
 \newcommand\TFExprSem{%
 \begin{code}
 𝓔⟦_⟧ : ∀ {T : Type Δ ℓ}{Γ : TEnv Δ}
-  → Expr Γ T → (η : DEnv Δ) → Env Δ Γ η → 𝓣⟦ T ⟧ η
+  → Expr Γ T → (η : DEnv Δ) → Env Γ η → 𝓣⟦ T ⟧ η
 𝓔⟦ # n ⟧ η γ = n
 𝓔⟦ ` x ⟧ η γ = γ x
 𝓔⟦ ƛ_ e ⟧ η γ = λ v → 𝓔⟦ e ⟧ η (extend γ v)
