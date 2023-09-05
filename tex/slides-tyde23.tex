@@ -6,7 +6,7 @@
 
 \usetheme{Madrid}
 
-\title{Towards Tagless Interpretation of Stratified System F}
+\title{Towards Tagless Interpretation of Finitely Stratified System F}
 \subtitle{Extended Abstract}
 
 \author[Thiemann, Weidner]
@@ -36,6 +36,7 @@
 \end{frame}
 \begin{frame}
   \frametitle{Types of System F}
+  \framesubtitle{Intrinsically scoped encoding}
   \SFType
   \begin{itemize}
   \item Polymorphic lambda calculus (Girard, Reynolds)
@@ -50,9 +51,10 @@
   \end{center}
 \end{frame}
 \begin{frame}
-  \frametitle{Stratification}
+  \frametitle{Finite Stratification}
+  \framesubtitle{Intrinsically leveled encoding}
   \begin{itemize}
-  \item Each type has a level
+  \item Each type has a level (i.e., a natural number)
   \item Quantification is only possible over types at lower level
   \item Predicativity is retained
   \item Simple set-theoretic semantics
@@ -87,6 +89,7 @@
 \end{frame}
 \begin{frame}
   \frametitle{Syntax of Expressions (Excerpt)}
+  \framesubtitle{Intrinsically typed encoding}
   \TFCleanExpr
 \end{frame}
 \begin{frame}
@@ -109,13 +112,15 @@
   \begin{itemize}
   \item Consider extending the calculus with level-polymorphism.
   \item Can be modeled in Agda, but forces a departure from the simple semantics of types.
-  \item A level-polymorphic function is a member of \AgdaFunction{Setω}, but that means the semantics of a type variable can no longer be in  \AgdaFunction{Setω}!
+  \item A level-polymorphic function is a member of \AgdaFunction{Setω}, but that means the semantics of a type can no longer be in  \AgdaFunction{Setω}!
   \item It must be in \AgdaFunction{Setω₁} $\Longrightarrow$ can't index types by levels, need more equalities, and so on.
   \end{itemize}
   \begin{exampleblock}{Wish to the  Agda maintainers}
     \begin{itemize}
     \item Extend \AgdaFunction{Level} to include a larger subset of ordinals.
-    \item Leivant's 1989 paper \emph{Stratified Polymorphism} suggests a useful subset.
+    \item Leivant's 1989 paper \emph{Stratified Polymorphism} suggests
+      a useful subset.
+    \item Recent work by Bezem, Coquand, Dybjer, Escardo (TYPES 2022)
     \end{itemize}
   \end{exampleblock}
 \end{frame}
