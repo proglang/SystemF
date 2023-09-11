@@ -319,6 +319,13 @@ subst-split-⇓ :
   → e ⇓ subst Value (sym Tₑ≡Tᵥ) v
 subst-split-⇓ e v refl x = x
 
+subst-split-[]E :
+  ∀ {T₁ T₁′ : Type [] l₁} {T₂ T₂′ : Type [] l₂}
+  → (e : Expr [] (T₁ ◁ ∅) T₂) (e′ : Expr [] ∅ T₁′)
+  → (eq₁ : T₁ ≡ T₁′) (eq₂ : T₂ ≡ T₂′)
+  → subst Value eq₂ (e [ subst Value (sym eq₁) e′ ]E) ≡ (subst₂ (λ T₁ T₂ → Expr [] (T₁ ◁ ∅) T₂) eq₁ eq₂ e [ e′ ]E)
+subst-split-[]E e e′ refl refl = refl
+
 Tdrop-σ≡Twk∘σ : ∀ (σ* : TSub (l ∷ Δ₁) Δ₂) → Tdropₛ σ* ≡ Twkᵣ Tidᵣ ∘ᵣₛ σ*
 Tdrop-σ≡Twk∘σ σ* = fun-ext₂ (λ x y → refl)
 
@@ -364,7 +371,24 @@ LRVwk (T₁ ⇒ T₂) ρ v z (e , refl , F) =
     let e⇓v₂′ =   e⇓v₂ in 
     (subst Value (sym (assoc-sub-ren T₂ (Twkᵣ Tidᵣ) (subst←RE ρ))) v₂) ,
     subst-split-⇓ _ v₂ (assoc-sub-ren T₂ (Twkᵣ Tidᵣ) (subst←RE ρ))
-      (subst (_⇓ v₂) {!!} e⇓v₂) , -- easy ;-)
+      (subst (_⇓ v₂)
+             (begin
+               (e [ exp (subst Value (assoc-sub-ren T₁ (Twkᵣ Tidᵣ) (subst←RE ρ)) w₁) ]E)
+             ≡⟨ cong (e [_]E) (dist-subst' {F = Value}{G = Value} id exp (assoc-sub-ren T₁ (Twkᵣ Tidᵣ) (subst←RE ρ)) (sym (sym (assoc-sub-ren T₁ (Twkᵣ Tidᵣ) (subst←RE ρ)))) w₁) ⟩
+               (e [ subst Value (sym (sym (assoc-sub-ren T₁ (Twkᵣ Tidᵣ) (subst←RE ρ)))) (exp w₁) ]E)
+             ≡˘⟨ subst-subst-sym (assoc-sub-ren T₂ (Twkᵣ Tidᵣ) (subst←RE ρ)) ⟩
+               subst Value (assoc-sub-ren T₂ (Twkᵣ Tidᵣ) (subst←RE ρ))
+               (subst Value (sym (assoc-sub-ren T₂ (Twkᵣ Tidᵣ) (subst←RE ρ)))
+               (e [ subst Value (sym (sym (assoc-sub-ren T₁ (Twkᵣ Tidᵣ) (subst←RE ρ)))) (exp w₁) ]E))
+             ≡⟨ cong (subst Value (assoc-sub-ren T₂ (Twkᵣ Tidᵣ) (subst←RE ρ)))
+                     (subst-split-[]E e (exp w₁) (sym (assoc-sub-ren T₁ (Twkᵣ Tidᵣ) (subst←RE ρ))) (sym (assoc-sub-ren T₂ (Twkᵣ Tidᵣ) (subst←RE ρ))))
+              ⟩
+               subst Value (assoc-sub-ren T₂ (Twkᵣ Tidᵣ) (subst←RE ρ))
+               (subst₂ (λ T₃ T₄ → Expr [] (T₃ ◁ ∅) T₄)
+                       (sym (assoc-sub-ren T₁ (Twkᵣ Tidᵣ) (subst←RE ρ)))
+                       (sym (assoc-sub-ren T₂ (Twkᵣ Tidᵣ) (subst←RE ρ))) e [ exp w₁ ]E)
+             ∎) 
+             e⇓v₂) ,
     subst
       (LRV (Twk T₂) ρ (subst Value (sym (assoc-sub-ren T₂ (Twkᵣ Tidᵣ) (subst←RE ρ))) v₂))
       (begin 
