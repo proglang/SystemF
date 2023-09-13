@@ -137,6 +137,11 @@ subst←RE-drop-ext ρ = fun-ext₂ (subst←RE-drop ρ)
 REdrop-REext≡id : (ρ : RelEnv Δ) → (T′ : Type [] l) → (R : REL T′) → REdrop (REext ρ (T′ , R)) ≡ω ρ
 REdrop-REext≡id {Δ = Δ} ρ T′ R = refl
 
+-- holds definitionally
+subst←RE-ren : ∀ (ρ : RelEnv Δ₂) (τ* : TRen Δ₁ Δ₂)
+  → (l′ : Level) (x : l′ ∈ Δ₁) → subst←RE (Tren-act τ* ρ) l′ x ≡ (τ* ∘ᵣₛ subst←RE ρ) l′ x
+subst←RE-ren ρ τ* l′ x = refl
+
 -- special case of composition sub o ren
 
 sublemma : (σ : TSub Δ []) → (Textₛ σ T) ≡ Tliftₛ σ _ ∘ₛₛ Textₛ Tidₛ T
@@ -328,6 +333,35 @@ subst-split-[]E e e′ refl refl = refl
 
 Tdrop-σ≡Twk∘σ : ∀ (σ* : TSub (l ∷ Δ₁) Δ₂) → Tdropₛ σ* ≡ Twkᵣ Tidᵣ ∘ᵣₛ σ*
 Tdrop-σ≡Twk∘σ σ* = fun-ext₂ (λ x y → refl)
+
+-- generalizing LRVwk and LRVst; otherwise the `∀α case does not fly (?)
+
+{- <-- TypeSubstProperties -}
+apply-env-var : (σ* : TSub Δ []) (x : l ∈ Δ) → apply-env (subst-to-env* σ* []) x ≡ ⟦ σ* l x ⟧ []
+apply-env-var σ* here = refl
+apply-env-var σ* (there x) = apply-env-var (Tdropₛ σ*) x
+
+τ*∈Ren* : (τ* : TRen Δ₁ Δ₂) (σ* : TSub Δ₂ []) → TRen* τ* (subst-to-env* (τ* ∘ᵣₛ σ*) []) (subst-to-env* σ* [])
+τ*∈Ren* τ* σ* here = apply-env-var σ* (τ* _ here)
+τ*∈Ren* τ* σ* (there x) = τ*∈Ren* (Tdropᵣ τ*) σ* x
+{- --> TypeSubstProperties -}
+
+LRVren :  ∀ {Δ₁}{Δ₂}{l}
+  → (T : Type Δ₁ l)
+  → (ρ : RelEnv Δ₂)
+  → (τ* : TRen Δ₁ Δ₂)
+  → let σ* = subst←RE ρ
+  in (v : Value (Tsub (subst←RE (Tren-act τ* ρ)) T))
+  → (z : ⟦ T ⟧ (subst-to-env* (subst←RE (Tren-act τ* ρ)) []))
+  → LRV T (Tren-act τ* ρ) v z
+  → LRV (Tren τ* T)
+        ρ
+        (subst Value (sym (assoc-sub-ren T τ* (subst←RE ρ))) v)
+        (subst id (sym (Tren*-preserves-semantics {ρ* = τ*}{subst-to-env* (subst←RE (Tren-act τ* ρ)) []}{subst-to-env* σ* []} (τ*∈Ren* τ* σ*) T)) z)
+LRVren (` x) ρ τ* v z lrv-t = {!lrv-t!}
+LRVren (T₁ ⇒ T₂) ρ τ* v z lrv-t = {!!}
+LRVren (`∀α l , T) ρ τ* v z lrv-t = {!!}
+LRVren `ℕ ρ τ* v z lrv-t = lrv-t
 
 
 LRVwk : ∀ {Δ}{l}{l₁}
