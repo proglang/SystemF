@@ -454,7 +454,28 @@ LRVwk (T₁ ⇒ T₂) ρ v z (e , refl , F) =
           _
         ∎)
       lrv-wk-t2
-LRVwk (`∀α l , T) ρ v z lrv-drop = {!!}
+LRVwk (`∀α l , T) ρ v z (e , v≡Λe , F) =
+  let eqᵢ = (begin
+        step-≡ (Tsub (Tliftₛ (subst←RE (REdrop ρ)) l) T)
+        (step-≡˘ (Tsub (Tliftₛ (Twkᵣ Tidᵣ ∘ᵣₛ subst←RE ρ) l) T)
+         (Tsub (Tliftₛ (subst←RE ρ) l) (Tren (Tliftᵣ (Twkᵣ Tidᵣ) l) T) ∎)
+         (assoc-sub↑-ren↑ T (Twkᵣ Tidᵣ) (subst←RE ρ)))
+        (cong (λ σ* → Tsub (Tliftₛ σ* l) T) (subst←RE-drop-ext ρ))) in
+  let eqₒ = sym (cong (`∀α_,_ l) (assoc-sub↑-ren↑ T (Twkᵣ Tidᵣ) (subst←RE ρ))) in
+  let sub₁ = subst Value eqₒ in
+  subst (Expr _ _) eqᵢ e ,
+  (begin 
+    sub₁ v
+  ≡⟨ cong sub₁ v≡Λe ⟩
+    sub₁ (Λ l ⇒ e)
+  ≡⟨ subst-split-Λ eqₒ eqᵢ e ⟩
+    Λ l ⇒ subst (Expr (l ∷ []) (l ◁* ∅)) eqᵢ e
+  ∎) ,
+  λ T′ R → F T′ R |> λ where
+    (vT[T′] , e[T′]⇓vT[T′] , lrv-t-ρ′) →
+      subst Value (cong (Tsub (Textₛ Tidₛ T′)) (sym (assoc-sub↑-ren↑ T (Twkᵣ Tidᵣ) (subst←RE ρ)))) vT[T′] ,
+      {!e[T′]⇓vT[T′]!} ,
+      {!!}
 LRVwk `ℕ ρ v z lrv-drop = lrv-drop
 
 LRVst = {!!}
