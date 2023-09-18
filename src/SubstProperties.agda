@@ -43,6 +43,15 @@ dist-subst :
   → subst id B≡B′ (f (subst id A≡A′ x)) ≡ subst id A→B≡A′→B′ f x
 dist-subst _ refl refl refl _ = refl
 
+dist-subst-id : 
+  ∀ {ℓ} {A B C : Set ℓ}
+  → (A≡B : B ≡ A)
+  → (B≡C : C ≡ B)
+  → (A≡C : C ≡ A)
+  → (x : C)
+  → subst id A≡B (subst id B≡C x) ≡ subst id A≡C x
+dist-subst-id refl refl refl x = refl
+
 dist-subst′ :
   ∀ {ℓ₁ ℓ₂}
     {A A′ : Set ℓ₁} {B B′ : Set ℓ₂}
