@@ -324,6 +324,14 @@ subst-split-⇓ :
   → e ⇓ subst Value (sym Tₑ≡Tᵥ) v
 subst-split-⇓ e v refl x = x
 
+subst-split-⇓₂ :
+  ∀ {T T′ : Type [] l}
+  → {e v : Value T}
+  → (T≡T′ : T ≡ T′)
+  → e ⇓ v
+  → subst Value T≡T′ e ⇓ subst Value T≡T′ v
+subst-split-⇓₂ refl e⇓v = e⇓v
+
 subst-split-[]E :
   ∀ {T₁ T₁′ : Type [] l₁} {T₂ T₂′ : Type [] l₂}
   → (e : Expr [] (T₁ ◁ ∅) T₂) (e′ : Expr [] ∅ T₁′)
@@ -358,7 +366,13 @@ LRVren :  ∀ {Δ₁}{Δ₂}{l}
         ρ
         (subst Value (sym (assoc-sub-ren T τ* (subst←RE ρ))) v)
         (subst id (sym (Tren*-preserves-semantics {ρ* = τ*}{subst-to-env* (subst←RE (Tren-act τ* ρ)) []}{subst-to-env* σ* []} (τ*∈Ren* τ* σ*) T)) z)
-LRVren (` x) ρ τ* v z lrv-t = {!lrv-t!}
+LRVren {l = l} (` x) ρ τ* v z lrv-t =
+  subst (proj₂ (ρ l (τ* l x)) v)
+        (sym (dist-subst-id (sym (subst-var-preserves (τ* l x) (subst←RE ρ) []))
+                            (sym (τ*∈Ren* τ* (subst←RE ρ) x))
+                            (sym (subst-var-preserves x (subst←RE (λ l₁ x₁ → ρ l₁ (τ* l₁ x₁))) []))
+                            z))
+       lrv-t
 LRVren (T₁ ⇒ T₂) ρ τ* v z lrv-t = {!!}
 LRVren (`∀α l , T) ρ τ* v z lrv-t = {!!}
 LRVren `ℕ ρ τ* v z lrv-t = lrv-t
@@ -389,42 +403,41 @@ LRVst : ∀ {Δ}{l}{l₁}
 
 LRVwk (` α) ρ v z lrv-drop = lrv-drop
 LRVwk (T₁ ⇒ T₂) ρ v z (e , refl , F) =
-  subst₂ (λ T₁ T₂ → Expr [] (T₁ ◁ ∅) T₂)
-         (sym (assoc-sub-ren T₁ (Twkᵣ Tidᵣ) (subst←RE ρ)))
-         (sym (assoc-sub-ren T₂ (Twkᵣ Tidᵣ) (subst←RE ρ)))
-         e ,
-  subst-split-ƛ (sym (assoc-sub-ren (T₁ ⇒ T₂) (Twkᵣ Tidᵣ) (subst←RE ρ))) (sym (assoc-sub-ren T₁ (Twkᵣ Tidᵣ) (subst←RE ρ))) (sym (assoc-sub-ren T₂ (Twkᵣ Tidᵣ) (subst←RE ρ))) e ,
+  let eq-T₁ = (assoc-sub-ren T₁ (Twkᵣ Tidᵣ) (subst←RE ρ)) in
+  let eq-T₂ = (assoc-sub-ren T₂ (Twkᵣ Tidᵣ) (subst←RE ρ)) in
+  subst₂ (λ T₁ T₂ → Expr [] (T₁ ◁ ∅) T₂) (sym eq-T₁) (sym eq-T₂) e ,
+  subst-split-ƛ (sym (assoc-sub-ren (T₁ ⇒ T₂) (Twkᵣ Tidᵣ) (subst←RE ρ))) (sym eq-T₁) (sym eq-T₂) e ,
   λ w₁ z₁ lrv-wk-t1 →
   let σ* = subst←RE ρ in
-  let w₁′ = (subst Value (assoc-sub-ren T₁ (Twkᵣ Tidᵣ) (subst←RE ρ)) w₁) in
+  let w₁′ = (subst Value eq-T₁ w₁) in
   let z₁′ = (subst id ((Tren*-preserves-semantics {ρ* = Twkᵣ Tidᵣ} {subst-to-env* (Tdropₛ σ*) []} {subst-to-env* σ* []} (wkᵣ∈Ren* (subst-to-env* (Tdropₛ σ*) []) (⟦ σ* _ here ⟧ [])) T₁)) z₁) in
   F w₁′ z₁′ (LRVst T₁ ρ w₁ z₁ lrv-wk-t1)
   |> λ where
   (v₂ , e⇓v₂ , lrv-drop-t2) →
     let lrv-wk-t2 = LRVwk T₂ ρ v₂ (z z₁′) lrv-drop-t2 in
     let e⇓v₂′ =   e⇓v₂ in 
-    (subst Value (sym (assoc-sub-ren T₂ (Twkᵣ Tidᵣ) (subst←RE ρ))) v₂) ,
-    subst-split-⇓ _ v₂ (assoc-sub-ren T₂ (Twkᵣ Tidᵣ) (subst←RE ρ))
+    (subst Value (sym eq-T₂) v₂) ,
+    subst-split-⇓ _ v₂ eq-T₂
       (subst (_⇓ v₂)
              (begin
-               (e [ exp (subst Value (assoc-sub-ren T₁ (Twkᵣ Tidᵣ) (subst←RE ρ)) w₁) ]E)
-             ≡⟨ cong (e [_]E) (dist-subst' {F = Value}{G = Value} id exp (assoc-sub-ren T₁ (Twkᵣ Tidᵣ) (subst←RE ρ)) (sym (sym (assoc-sub-ren T₁ (Twkᵣ Tidᵣ) (subst←RE ρ)))) w₁) ⟩
-               (e [ subst Value (sym (sym (assoc-sub-ren T₁ (Twkᵣ Tidᵣ) (subst←RE ρ)))) (exp w₁) ]E)
-             ≡˘⟨ subst-subst-sym (assoc-sub-ren T₂ (Twkᵣ Tidᵣ) (subst←RE ρ)) ⟩
-               subst Value (assoc-sub-ren T₂ (Twkᵣ Tidᵣ) (subst←RE ρ))
-               (subst Value (sym (assoc-sub-ren T₂ (Twkᵣ Tidᵣ) (subst←RE ρ)))
-               (e [ subst Value (sym (sym (assoc-sub-ren T₁ (Twkᵣ Tidᵣ) (subst←RE ρ)))) (exp w₁) ]E))
-             ≡⟨ cong (subst Value (assoc-sub-ren T₂ (Twkᵣ Tidᵣ) (subst←RE ρ)))
-                     (subst-split-[]E e (exp w₁) (sym (assoc-sub-ren T₁ (Twkᵣ Tidᵣ) (subst←RE ρ))) (sym (assoc-sub-ren T₂ (Twkᵣ Tidᵣ) (subst←RE ρ))))
+               (e [ exp (subst Value eq-T₁ w₁) ]E)
+             ≡⟨ cong (e [_]E) (dist-subst' {F = Value}{G = Value} id exp eq-T₁ (sym (sym eq-T₁)) w₁) ⟩
+               (e [ subst Value (sym (sym eq-T₁)) (exp w₁) ]E)
+             ≡˘⟨ subst-subst-sym eq-T₂ ⟩
+               subst Value eq-T₂
+               (subst Value (sym eq-T₂)
+               (e [ subst Value (sym (sym eq-T₁)) (exp w₁) ]E))
+             ≡⟨ cong (subst Value eq-T₂)
+                     (subst-split-[]E e (exp w₁) (sym eq-T₁) (sym eq-T₂))
               ⟩
-               subst Value (assoc-sub-ren T₂ (Twkᵣ Tidᵣ) (subst←RE ρ))
+               subst Value eq-T₂
                (subst₂ (λ T₃ T₄ → Expr [] (T₃ ◁ ∅) T₄)
-                       (sym (assoc-sub-ren T₁ (Twkᵣ Tidᵣ) (subst←RE ρ)))
-                       (sym (assoc-sub-ren T₂ (Twkᵣ Tidᵣ) (subst←RE ρ))) e [ exp w₁ ]E)
+                       (sym eq-T₁)
+                       (sym eq-T₂) e [ exp w₁ ]E)
              ∎) 
              e⇓v₂) ,
     subst
-      (LRV (Twk T₂) ρ (subst Value (sym (assoc-sub-ren T₂ (Twkᵣ Tidᵣ) (subst←RE ρ))) v₂))
+      (LRV (Twk T₂) ρ (subst Value (sym eq-T₂) v₂))
       (begin 
         subst id
         (sym
@@ -473,9 +486,16 @@ LRVwk (`∀α l , T) ρ v z (e , v≡Λe , F) =
   ∎) ,
   λ T′ R → F T′ R |> λ where
     (vT[T′] , e[T′]⇓vT[T′] , lrv-t-ρ′) →
-      subst Value (cong (Tsub (Textₛ Tidₛ T′)) (sym (assoc-sub↑-ren↑ T (Twkᵣ Tidᵣ) (subst←RE ρ)))) vT[T′] ,
-      {!e[T′]⇓vT[T′]!} ,
-      {!!}
+      let eqᵥ = (cong (Tsub (Textₛ Tidₛ T′)) (sym (assoc-sub↑-ren↑ T (Twkᵣ Tidᵣ) (subst←RE ρ)))) in
+      let subᵥ = subst Value eqᵥ in
+      subᵥ vT[T′] ,
+      let r = subst-split-⇓₂ eqᵥ e[T′]⇓vT[T′] in
+      subst id
+            (cong (_⇓ subᵥ vT[T′])
+              (sym (dist-subst' {F = Expr _ _} {G = Value} (_[ T′ ]T) (λ e′ → e′ [ T′ ]ET) eqᵢ eqᵥ e )))
+            r ,
+--      let r = substlωl-l ? ? ? lrv-t-ρ′ in
+      {!LRVwk!}
 LRVwk `ℕ ρ v z lrv-drop = lrv-drop
 
 LRVst = {!!}
