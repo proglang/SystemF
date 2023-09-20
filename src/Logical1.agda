@@ -373,8 +373,45 @@ LRVren {l = l} (` x) ρ τ* v z lrv-t =
                             (sym (subst-var-preserves x (subst←RE (λ l₁ x₁ → ρ l₁ (τ* l₁ x₁))) []))
                             z))
        lrv-t
-LRVren (T₁ ⇒ T₂) ρ τ* v z lrv-t = {!!}
-LRVren (`∀α l , T) ρ τ* v z lrv-t = {!!}
+LRVren (T₁ ⇒ T₂) ρ τ* v z (e , refl , F) =
+  let eq-T₁ = (assoc-sub-ren T₁ τ* (subst←RE ρ)) in
+  let eq-T₂ = (assoc-sub-ren T₂ τ* (subst←RE ρ)) in
+  subst₂ (λ T₁ T₂ → Expr [] (T₁ ◁ ∅) T₂) (sym eq-T₁) (sym eq-T₂) e ,
+  subst-split-ƛ (sym (assoc-sub-ren (T₁ ⇒ T₂) τ* (subst←RE ρ))) (sym eq-T₁) (sym eq-T₂) e , 
+  λ w₁ z₁ lrv-ren-t1 → 
+  let σ* = subst←RE ρ in
+  let w₁′ = (subst Value eq-T₁ w₁) in
+  let z₁′ = (subst id ((Tren*-preserves-semantics {ρ* = τ*} {subst-to-env* (subst←RE (Tren-act τ* ρ)) []} {subst-to-env* σ* []} (τ*∈Ren* τ* σ*) T₁)) z₁) in
+  {!F w₁′ z₁′ !}                -- need reverse action on lrv-ren-t1
+LRVren (`∀α l , T) ρ τ* v z (e , v≡Λe , F) =
+  let eqᵢ = (begin
+             Tsub (Tliftₛ (subst←RE (Tren-act τ* ρ)) l) T
+           ≡⟨ refl ⟩
+             Tsub (Tliftₛ (τ* ∘ᵣₛ subst←RE ρ) l) T
+           ≡˘⟨ assoc-sub↑-ren↑ T τ*  (subst←RE ρ) ⟩
+             Tsub (Tliftₛ (subst←RE ρ) l) (Tren (Tliftᵣ τ* l) T)
+           ∎) in
+  let eqₒ = sym (cong (`∀α_,_ l) (assoc-sub↑-ren↑ T τ* (subst←RE ρ))) in
+  let sub₁ = subst Value eqₒ in
+  subst (Expr _ _) eqᵢ e ,
+  (begin 
+    sub₁ v
+  ≡⟨ cong sub₁ v≡Λe ⟩
+    sub₁ (Λ l ⇒ e)
+  ≡⟨ subst-split-Λ eqₒ eqᵢ e ⟩
+    Λ l ⇒ subst (Expr (l ∷ []) (l ◁* ∅)) eqᵢ e
+  ∎) ,
+  λ T′ R → F T′ R |> λ where
+    (vT[T′] , e[T′]⇓vT[T′] , lrv-t-ρ′) →
+      let eqᵥ = (cong (Tsub (Textₛ Tidₛ T′)) (sym (assoc-sub↑-ren↑ T τ* (subst←RE ρ)))) in
+      let subᵥ = subst Value eqᵥ in
+      subᵥ vT[T′] ,
+      let r = subst-split-⇓₂ eqᵥ e[T′]⇓vT[T′] in
+      subst id
+            (cong (_⇓ subᵥ vT[T′])
+              (sym (dist-subst' {F = Expr _ _} {G = Value} (_[ T′ ]T) (λ e′ → e′ [ T′ ]ET) eqᵢ eqᵥ e )))
+            r ,
+      {!!}
 LRVren `ℕ ρ τ* v z lrv-t = lrv-t
 
 
