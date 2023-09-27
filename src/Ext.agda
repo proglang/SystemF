@@ -40,6 +40,11 @@ postulate
     (∀ x → f x ≡ g x) → f ≡ω g
 
 postulate
+  fun-extω₂ : ∀ {A : (l : Level) → Set}{B : (l : Level) → A l → Set l}
+    {f g : (x : Level) (y : A x) → B x y} →
+    (∀ x y → f x y ≡ g x y) → f ≡ω g
+
+postulate
   fun-ext-llω-ω :
     -- ∀{a} {A : Set a}
     ∀ {b} {B : Level → Set b} {c} {C : (x : Level) (y : B x) → Set c}
