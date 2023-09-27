@@ -177,6 +177,16 @@ lemma1 {l = l} ρ T T′ R =
     Tsub (subst←RE (REext ρ (T′ , R))) T
     ∎
 
+postulate
+  relenv-ext : ∀ {Δ}{f g : RelEnv Δ} → (∀ l x → f l x ≡ g l x) → f ≡ω g
+
+Tren-act-REext-ext : (ρ : RelEnv Δ₂) (τ* : TRen Δ₁ Δ₂) (T′ : Type [] l) (R : REL T′) → ∀ l₂ x₂ → (REext (Tren-act τ* ρ) (T′ , R)) l₂ x₂ ≡ Tren-act (Tliftᵣ τ* l) (REext ρ (T′ , R)) l₂ x₂
+Tren-act-REext-ext ρ τ* T′ R l₂ here = refl
+Tren-act-REext-ext ρ τ* T′ R l₂ (there x₂) = refl
+
+Tren-act-REext : (ρ : RelEnv Δ₂) (τ* : TRen Δ₁ Δ₂) (T′ : Type [] l) (R : REL T′) → (REext (Tren-act τ* ρ) (T′ , R)) ≡ω Tren-act (Tliftᵣ τ* l) (REext ρ (T′ , R))
+Tren-act-REext ρ τ* T′ R = relenv-ext (Tren-act-REext-ext ρ τ* T′ R)
+
 -- auxiliary
 
 
@@ -324,6 +334,15 @@ subst-split-⇓ :
   → e ⇓ subst Value (sym Tₑ≡Tᵥ) v
 subst-split-⇓ e v refl x = x
 
+subst-split-⇓′ :
+  ∀ {Tₑ Tᵥ : Type [] l}
+  → (e : Value Tₑ)
+  → (v : Value Tᵥ)
+  → (Tₑ≡Tᵥ : Tₑ ≡ Tᵥ)
+  → e ⇓ subst Value (sym Tₑ≡Tᵥ) v
+  → subst Value Tₑ≡Tᵥ e ⇓ v
+subst-split-⇓′ e v refl x = x
+
 subst-split-⇓₂ :
   ∀ {T T′ : Type [] l}
   → {e v : Value T}
@@ -354,6 +373,24 @@ apply-env-var σ* (there x) = apply-env-var (Tdropₛ σ*) x
 τ*∈Ren* τ* σ* (there x) = τ*∈Ren* (Tdropᵣ τ*) σ* x
 {- --> TypeSubstProperties -}
 
+{- CONSTRUCTION
+substω-subst : ∀ {ℓ}{ℓ′} {X : Setω} {A : Set ℓ}
+  {a₁ a₂ a₃ : A}
+  {x₁ x₂ : X}
+  {G : A → Set ℓ′}
+  {F : X → Set ℓ′}
+  → (x₁≡x₂ : x₁ ≡ω x₂)
+  → (a₁≡a₂ : a₁ ≡ a₂)
+  → (a₁≡a₃ : a₁ ≡ a₃)
+  → F x₂ ≡ G a₂
+  → (x : G a₁)
+  -- → substω F X≡ωY (subst G B≡A x) ≡ subst G C≡A x
+  → substω {!F!} {!!} (subst G a₁≡a₃ x) ≡ subst G a₁≡a₂ x
+substω-subst = {!!}
+-}
+
+-- action of renaming on the logical relation
+
 LRVren :  ∀ {Δ₁}{Δ₂}{l}
   → (T : Type Δ₁ l)
   → (ρ : RelEnv Δ₂)
@@ -366,6 +403,22 @@ LRVren :  ∀ {Δ₁}{Δ₂}{l}
         ρ
         (subst Value (sym (assoc-sub-ren T τ* (subst←RE ρ))) v)
         (subst id (sym (Tren*-preserves-semantics {ρ* = τ*}{subst-to-env* (subst←RE (Tren-act τ* ρ)) []}{subst-to-env* σ* []} (τ*∈Ren* τ* σ*) T)) z)
+
+LRVren′ :  ∀ {Δ₁}{Δ₂}{l}
+  → (T : Type Δ₁ l)
+  → (ρ : RelEnv Δ₂)
+  → (τ* : TRen Δ₁ Δ₂)
+  → let σ* = subst←RE ρ
+  in (v : Value (Tsub (subst←RE ρ) (Tren τ* T)))
+  → (z : ⟦ Tren τ* T ⟧ (subst-to-env* (subst←RE ρ) []))
+  → LRV (Tren τ* T) ρ v z
+  → LRV T
+        (Tren-act τ* ρ)
+        (subst Value (assoc-sub-ren T τ* (subst←RE ρ)) v)
+        (subst id (Tren*-preserves-semantics {ρ* = τ*}{subst-to-env* (subst←RE (Tren-act τ* ρ)) []}{subst-to-env* σ* []} (τ*∈Ren* τ* σ*) T) z)
+
+--
+
 LRVren {l = l} (` x) ρ τ* v z lrv-t =
   subst (proj₂ (ρ l (τ* l x)) v)
         (sym (dist-subst-id (sym (subst-var-preserves (τ* l x) (subst←RE ρ) []))
@@ -382,7 +435,36 @@ LRVren (T₁ ⇒ T₂) ρ τ* v z (e , refl , F) =
   let σ* = subst←RE ρ in
   let w₁′ = (subst Value eq-T₁ w₁) in
   let z₁′ = (subst id ((Tren*-preserves-semantics {ρ* = τ*} {subst-to-env* (subst←RE (Tren-act τ* ρ)) []} {subst-to-env* σ* []} (τ*∈Ren* τ* σ*) T₁)) z₁) in
-  {!F w₁′ z₁′ !}                -- need reverse action on lrv-ren-t1
+  let lrv-ren-t1′ = LRVren′ T₁ ρ τ* w₁ z₁ lrv-ren-t1 in
+  F w₁′ z₁′ lrv-ren-t1′ |> λ where
+    (v₂ , e[w₁]⇓v₂ , lrv-t2-v) →
+      (subst Value (sym (assoc-sub-ren T₂ τ* (subst←RE ρ))) v₂)
+      ,
+      let eq-⇓ = begin (subst₂ (λ T₃ T₄ → Expr [] (T₃ ◁ ∅) T₄) (sym eq-T₁) (sym eq-T₂) e [ exp w₁ ]E)
+                       ⇓ subst Value (sym eq-T₂) v₂
+                  ≡˘⟨ cong (_⇓ subst Value (sym eq-T₂) v₂)
+                           (subst-split-[]E e (exp w₁) (sym eq-T₁) (sym (assoc-sub-ren T₂ τ* (subst←RE ρ))) ) ⟩
+                     subst Value (sym eq-T₂) (e [ subst Value (sym (sym eq-T₁)) (exp w₁) ]E)
+                           ⇓ subst Value (sym eq-T₂) v₂
+                  ≡˘⟨ cong
+                       (λ e′ →
+                          subst Value (sym eq-T₂) (e [ e′ ]E) ⇓
+                          subst Value (sym eq-T₂) v₂)
+                       (dist-subst' {F = Value} {G = Value} id exp eq-T₁ (sym (sym eq-T₁)) w₁) ⟩
+                     subst Value (sym eq-T₂) (e [ exp (subst Value eq-T₁ w₁) ]E) ⇓ subst Value (sym eq-T₂) v₂ ∎ in
+      let e[w₁]⇓v₂′ = subst-split-⇓₂ (sym eq-T₂) e[w₁]⇓v₂ in
+      subst id (sym eq-⇓) e[w₁]⇓v₂′
+      ,
+      let lrv-t2-v′ = LRVren T₂ ρ τ* v₂ (z z₁′) lrv-t2-v in
+      subst (LRV (Tren τ* T₂) ρ (subst Value (sym (assoc-sub-ren T₂ τ* (subst←RE ρ))) v₂))
+            (begin subst id
+                         (sym (Tren*-preserves-semantics (τ*∈Ren* τ* (subst←RE ρ)) T₂))
+                         (z
+                           (subst id (Tren*-preserves-semantics (τ*∈Ren* τ* (subst←RE ρ)) T₁) z₁))
+             ≡⟨ dist-subst z (Tren*-preserves-semantics (τ*∈Ren* τ* (subst←RE ρ)) T₁) (sym (Tren*-preserves-semantics (τ*∈Ren* τ* (subst←RE ρ)) (T₁ ⇒ T₂))) (sym (Tren*-preserves-semantics (τ*∈Ren* τ* (subst←RE ρ)) T₂)) z₁ ⟩
+               refl)            -- cannot write this term because it has blocked constraints
+            lrv-t2-v′
+
 LRVren (`∀α l , T) ρ τ* v z (e , v≡Λe , F) =
   let eqᵢ = (begin
              Tsub (Tliftₛ (subst←RE (Tren-act τ* ρ)) l) T
@@ -405,15 +487,51 @@ LRVren (`∀α l , T) ρ τ* v z (e , v≡Λe , F) =
     (vT[T′] , e[T′]⇓vT[T′] , lrv-t-ρ′) →
       let eqᵥ = (cong (Tsub (Textₛ Tidₛ T′)) (sym (assoc-sub↑-ren↑ T τ* (subst←RE ρ)))) in
       let subᵥ = subst Value eqᵥ in
-      subᵥ vT[T′] ,
+      subᵥ vT[T′]
+      ,
       let r = subst-split-⇓₂ eqᵥ e[T′]⇓vT[T′] in
       subst id
             (cong (_⇓ subᵥ vT[T′])
               (sym (dist-subst' {F = Expr _ _} {G = Value} (_[ T′ ]T) (λ e′ → e′ [ T′ ]ET) eqᵢ eqᵥ e )))
-            r ,
-      {!!}
+            r
+      ,
+      let eq-vtt = (begin
+                     (Tsub (Tliftₛ (subst←RE (Tren-act τ* ρ)) l) T [ T′ ]T)
+                   ≡⟨ σ↑T[T′]≡TextₛσT′T (subst←RE (Tren-act τ* ρ)) T′ T ⟩
+                     Tsub (Textₛ (subst←RE (Tren-act τ* ρ)) T′) T
+                   ≡˘⟨ cong (λ σ → Tsub σ T) (subst←RE-ext-ext (Tren-act τ* ρ) T′ R) ⟩
+                     Tsub (subst←RE (REext (Tren-act τ* ρ) (T′ , R))) T
+                   ≡⟨ congωl (λ ρ → Tsub (subst←RE ρ) T) (Tren-act-REext ρ τ* T′ R) ⟩
+                     Tsub (subst←RE (Tren-act (Tliftᵣ τ* l) (REext ρ (T′ , R)))) T
+                   ∎) in
+      let lrv = LRVren T
+                       (REext ρ (T′ , R))
+                       (Tliftᵣ τ* l)
+                       (subst Value eq-vtt vT[T′])
+                       (z (⟦ T′ ⟧ []))
+                       (dep-substωll (LRV T) (Tren-act-REext ρ τ* T′ R) {!!} {!!} lrv-t-ρ′) in
+      let eq-A→B≡A′→B′ = (sym (dep-ext (λ { α → Tren*-preserves-semantics (Tren*-lift α (τ*∈Ren* τ* (subst←RE ρ))) T}))) in
+      let eq-B≡B′ = (sym (Tren*-preserves-semantics {ρ* = Tliftᵣ τ* l} (τ*∈Ren* (Tliftᵣ τ* l) (subst←RE (REext ρ (T′ , R)))) T)) in
+      subst₂ (LRV (Tren (Tliftᵣ τ* l) T) (REext ρ (T′ , R)))
+             (trans (subst-subst eq-vtt {sym (assoc-sub-ren T (Tliftᵣ τ* l) (subst←RE (REext ρ (T′ , R))))})
+                    (trans (subst-irrelevant {F = Value} _ _ vT[T′])
+                           (sym (subst-subst eqᵥ {lemma1 ρ (Tren (Tliftᵣ τ* l) T) T′ R}))))
+             (sym (dist-subst' {F = id} {G = id} {!!} (λ x → {!z!}) eq-A→B≡A′→B′ eq-B≡B′ z))
+             lrv
+
 LRVren `ℕ ρ τ* v z lrv-t = lrv-t
 
+
+--
+
+LRVren′ {l = l} (` x) ρ τ* v z lrv-t =
+  let ds = (dist-subst-id (sym (subst-var-preserves x (subst←RE (λ l₁ x₁ → ρ l₁ (τ* l₁ x₁))) [])) (τ*∈Ren* τ* (subst←RE ρ) x) (sym (subst-var-preserves (τ* l x) (subst←RE ρ) [])) z) in
+  subst (proj₂ (ρ l (τ* l x)) v) (sym ds) lrv-t
+LRVren′ (T₁ ⇒ T₂) ρ τ* v z lrv-t = {!!}
+LRVren′ (`∀α l , T) ρ τ* v z lrv-t = {!!}
+LRVren′ `ℕ ρ τ* v z lrv-t = lrv-t
+
+----------------------------------------------------------------------
 
 LRVwk : ∀ {Δ}{l}{l₁}
   → (T : Type Δ l)
