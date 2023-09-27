@@ -53,3 +53,11 @@ substlωl-l : ∀ {a c d}{A : Set a}{B : A → Setω}{C : A → Set c}(F : (a : 
   → (a₁≡a₂ : a₁ ≡ a₂) → b₁ ≡ω substωl B (sym a₁≡a₂) b₂ → c₁ ≡ subst C (sym a₁≡a₂) c₂ →  F a₁ b₁ c₁ → F a₂ b₂ c₂
 substlωl-l F refl refl refl x = x
 
+
+dep-substωl : ∀ {a b}{A : Setω}{B : A → Set a} → (F : (x : A) → B x → Set b) →
+  ∀ {x₁ y₁ : A} {x₂ : B x₁} {y₂ : B y₁} → (x₁≡y₁ : x₁ ≡ω y₁) → substω B x₁≡y₁ x₂ ≡ y₂ → F x₁ x₂ → F y₁ y₂
+dep-substωl F refl refl a = a
+
+dep-substωll : ∀ {a b c}{A : Setω}{B : A → Set a}{C : A → Set c} → (F : (x : A) → B x → C x → Set b) →
+  ∀ {x₁ y₁ : A} {x₂ : B x₁} {y₂ : B y₁} {x₃ : C x₁} {y₃ : C y₁} → (x₁≡y₁ : x₁ ≡ω y₁) → substω B x₁≡y₁ x₂ ≡ y₂ → substω C x₁≡y₁ x₃ ≡ y₃ → F x₁ x₂ x₃ → F y₁ y₂ y₃
+dep-substωll F refl refl refl a = a
