@@ -61,3 +61,31 @@ dep-substωl F refl refl a = a
 dep-substωll : ∀ {a b c}{A : Setω}{B : A → Set a}{C : A → Set c} → (F : (x : A) → B x → C x → Set b) →
   ∀ {x₁ y₁ : A} {x₂ : B x₁} {y₂ : B y₁} {x₃ : C x₁} {y₃ : C y₁} → (x₁≡y₁ : x₁ ≡ω y₁) → substω B x₁≡y₁ x₂ ≡ y₂ → substω C x₁≡y₁ x₃ ≡ y₃ → F x₁ x₂ x₃ → F y₁ y₂ y₃
 dep-substωll F refl refl refl a = a
+
+
+substω-∘ :
+  ∀ {b c} {A : Setω} {B : Set b}
+    {a b : A}
+  → (F : B → Set c)
+  → (G : A → B)
+  → {x : F (G a)}
+  → (eq : a ≡ω b)
+  → substω (λ z → F (G z)) eq x ≡ subst F (congωl G eq) x
+substω-∘ G F refl = refl
+
+{- definitional -}
+substω-id :
+  ∀ {ℓ} {A : Setω} {a : A}
+  → (F : A → Set ℓ)
+  → (eq : a ≡ω a)
+  → {x : F a}
+  → substω F eq x ≡ x
+substω-id F refl = refl
+
+substω-elim :
+  ∀ {ℓ} {A : Setω} {a b : A}
+  → (F : A → Set ℓ)
+  → (eq₁ eq₂ : a ≡ω b)
+  → {x : F a}
+  → substω F eq₁ x ≡ substω F eq₂ x
+substω-elim F refl refl = refl
