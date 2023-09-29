@@ -384,6 +384,15 @@ apply-env-var σ* (there x) = apply-env-var (Tdropₛ σ*) x
 τ*∈Ren* : (τ* : TRen Δ₁ Δ₂) (σ* : TSub Δ₂ []) → TRen* τ* (subst-to-env* (τ* ∘ᵣₛ σ*) []) (subst-to-env* σ* [])
 τ*∈Ren* τ* σ* here = apply-env-var σ* (τ* _ here)
 τ*∈Ren* τ* σ* (there x) = τ*∈Ren* (Tdropᵣ τ*) σ* x
+
+σ[T′]≡↑τ*∘ext-ext : (ρ : RelEnv Δ₂) (τ* : TRen Δ₁ Δ₂) (T′ : Type [] l) → ∀ l′ x →  Textₛ (τ* ∘ᵣₛ subst←RE ρ) T′ l′ x ≡ (Tliftᵣ τ* l ∘ᵣₛ Textₛ (subst←RE ρ) T′) l′ x
+σ[T′]≡↑τ*∘ext-ext ρ τ* T′ l′ here = refl
+σ[T′]≡↑τ*∘ext-ext ρ τ* T′ l′ (there x) = refl
+
+σ[T′]≡↑τ*∘ext : (ρ : RelEnv Δ₂) (τ* : TRen Δ₁ Δ₂) (T′ : Type [] l) →  Textₛ (τ* ∘ᵣₛ subst←RE ρ) T′ ≡ (Tliftᵣ τ* l ∘ᵣₛ Textₛ (subst←RE ρ) T′)
+σ[T′]≡↑τ*∘ext ρ τ* T′ = fun-ext₂ (σ[T′]≡↑τ*∘ext-ext ρ τ* T′)
+
+
 {- --> TypeSubstProperties -}
 
 
@@ -594,7 +603,21 @@ LRVren′ (`∀α l , T) ρ τ* v z (e , v≡Λe , F) =
       subst Value eqᵥ vT[T′] ,
       let r = subst-split-⇓₂ eqᵥ e[T′]⇓vT[T′] in
       subst id (cong (_⇓ subst Value eqᵥ vT[T′]) (sym (dist-subst' {F = Expr _ _} {G = Value} (_[ T′ ]T) (_[ T′ ]ET) eqᵢ eqᵥ e))) r ,
-      {!!}
+      let eq-vtt = begin
+                     (Tsub (Tliftₛ (subst←RE ρ) l) (Tren (Tliftᵣ τ* l) T) [ T′ ]T)
+                   ≡⟨ cong (_[ T′ ]T) (assoc-sub↑-ren↑ T τ* (subst←RE ρ)) ⟩
+                     (Tsub (Tliftₛ (τ* ∘ᵣₛ subst←RE ρ) l) T [ T′ ]T)
+                   ≡⟨ σ↑T[T′]≡TextₛσT′T (τ* ∘ᵣₛ subst←RE ρ) T′ T ⟩
+                     Tsub (Textₛ (τ* ∘ᵣₛ subst←RE ρ) T′) T
+                   ≡⟨ cong (λ σ → Tsub σ T) (σ[T′]≡↑τ*∘ext ρ τ* T′) ⟩
+                     Tsub (Tliftᵣ τ* l ∘ᵣₛ Textₛ (subst←RE ρ) T′) T
+                   ≡˘⟨  assoc-sub-ren T (Tliftᵣ τ* l) (Textₛ (subst←RE ρ) T′) ⟩
+                     Tsub (Textₛ (subst←RE ρ) T′) (Tren (Tliftᵣ τ* l) T)
+                   ≡˘⟨ cong (λ σ → Tsub σ (Tren (Tliftᵣ τ* l) T)) (subst←RE-ext-ext ρ T′ R) ⟩
+                     Tsub (subst←RE (REext ρ (T′ , R))) (Tren (Tliftᵣ τ* l) T)
+                   ∎ in
+      let lrv = LRVren′ T (REext ρ (T′ , R)) (Tliftᵣ τ* l) (subst Value eq-vtt vT[T′]) in
+      {! lrv!}
 
 LRVren′ `ℕ ρ τ* v z lrv-t = lrv-t
 
