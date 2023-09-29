@@ -361,6 +361,19 @@ subst-split-[]E e e′ refl refl = refl
 Tdrop-σ≡Twk∘σ : ∀ (σ* : TSub (l ∷ Δ₁) Δ₂) → Tdropₛ σ* ≡ Twkᵣ Tidᵣ ∘ᵣₛ σ*
 Tdrop-σ≡Twk∘σ σ* = fun-ext₂ (λ x y → refl)
 
+
+dist-subst'' :
+  ∀ {ℓ ℓ' ℓ''} {a₁ a₂ : Set ℓ}
+  → (arg : Set ℓ → Set ℓ')
+  → (res : Set ℓ → Set ℓ'')
+  → (f : ∀ {a} → arg a → res a)
+  → (a₁≡a₂ : a₁ ≡ a₂)
+  → (b₁≡b₂ : res a₁ ≡ res a₂)
+  → (x : arg a₁) 
+  → f {a₂} (subst id (cong arg a₁≡a₂) x) ≡ subst id b₁≡b₂ (f {a₁} x)
+dist-subst'' _ _ _ refl refl _ = refl
+
+
 -- generalizing LRVwk and LRVst; otherwise the `∀α case does not fly (?)
 
 {- <-- TypeSubstProperties -}
@@ -505,13 +518,15 @@ LRVren (`∀α l , T) ρ τ* v z (e , v≡Λe , F) =
                                      lrv-t-ρ′) in
       let eq-A→B≡A′→B′ = (sym (dep-ext (λ { α → Tren*-preserves-semantics {ρ* = Tliftᵣ τ* l}{η₁ = α ∷ subst-to-env* (subst←RE (Tren-act τ* ρ)) []}{η₂ = α ∷ (subst-to-env* (subst←RE ρ) [])}
                                                   (Tren*-lift α (τ*∈Ren* τ* (subst←RE ρ))) T}))) in
-      let eq-B≡B′ = (sym (Tren*-preserves-semantics {ρ* = Tliftᵣ τ* l}{η₁ = subst-to-env* (subst←RE (REext (Tren-act τ* ρ) (T′ , R))) []}{η₂ = subst-to-env* {!!} []}
+      let eq-B≡B′ = (sym (Tren*-preserves-semantics {ρ* = Tliftᵣ τ* l}{η₁ = subst-to-env* (subst←RE (REext (Tren-act τ* ρ) (T′ , R))) []}{η₂ = subst-to-env* (subst←RE (REext ρ (T′ , R))) []}
                                                     (τ*∈Ren* (Tliftᵣ τ* l) (subst←RE (REext ρ (T′ , R)))) T)) in
       subst₂ (LRV (Tren (Tliftᵣ τ* l) T) (REext ρ (T′ , R)))
              (trans (subst-subst eq-vtt {sym (assoc-sub-ren T (Tliftᵣ τ* l) (subst←RE (REext ρ (T′ , R))))})
                     (trans (subst-irrelevant {F = Value} _ _ vT[T′])
                            (sym (subst-subst eqᵥ {lemma1 ρ (Tren (Tliftᵣ τ* l) T) T′ R}))))
-             (sym (dist-subst' {F = id} {G = id} {!!} (λ x → {!z!}) eq-A→B≡A′→B′ eq-B≡B′ z))
+             (sym {!!})
+             -- (sym (dist-subst' {F = id} {G = id} {!!} (λ x → {!z!}) eq-A→B≡A′→B′ eq-B≡B′ z))
+             -- f : ((α : Set l) → ⟦ Tren (Tliftᵣ τ* l) T ⟧ (α ∷ subst-to-env* (subst←RE ρ) [])) → ⟦ Tren (Tliftᵣ τ* l) T ⟧ (⟦ T′ ⟧ [] ∷ subst-to-env* (subst←RE ρ) [])
              lrv
 
 LRVren `ℕ ρ τ* v z lrv-t = lrv-t
@@ -550,9 +565,37 @@ LRVren′ (T₁ ⇒ T₂) ρ τ* v z (e , refl , F) =
       let e[w₁]⇓v₂′ = subst-split-⇓₂ eq-T₂ e[w₁]⇓v₂ in
       subst id (sym eq-⇓) e[w₁]⇓v₂′
       ,
+      let lrv-t2-v′ = LRVren′ T₂ ρ τ* v₂ (z z₁′) lrv-t2-v in
+      subst (LRV T₂ (Tren-act τ* ρ) (subst Value (assoc-sub-ren T₂ τ* (subst←RE ρ)) v₂))
+            (begin subst id
+                         (Tren*-preserves-semantics (τ*∈Ren* τ* (subst←RE ρ)) T₂)
+                         (z (subst id (sym (Tren*-preserves-semantics (τ*∈Ren* τ* (subst←RE ρ)) T₁)) z₁))
+             ≡⟨ dist-subst z
+                  (sym (Tren*-preserves-semantics (τ*∈Ren* τ* (subst←RE ρ)) T₁))
+                  (Tren*-preserves-semantics (τ*∈Ren* τ* (subst←RE ρ)) (T₁ ⇒ T₂))
+                  (Tren*-preserves-semantics (τ*∈Ren* τ* (subst←RE ρ)) T₂) z₁ ⟩
+             refl)              -- cannot write this term because of blocked constraints
+            lrv-t2-v′
+
+LRVren′ (`∀α l , T) ρ τ* v z (e , v≡Λe , F) =
+  let eqᵢ = assoc-sub↑-ren↑ T τ*  (subst←RE ρ) in
+  let eqₒ = cong (`∀α_,_ l) eqᵢ in
+  (subst (Expr (l ∷ []) (l ◁* ∅)) eqᵢ e) ,
+  (begin
+    subst Value eqₒ v
+  ≡⟨ cong (subst Value eqₒ) v≡Λe ⟩
+    subst Value eqₒ (Λ l ⇒ e)
+  ≡⟨ subst-split-Λ eqₒ eqᵢ e ⟩
+    (Λ l ⇒ subst (Expr (l ∷ []) (l ◁* ∅)) (assoc-sub↑-ren↑ T τ* (subst←RE ρ)) e)
+  ∎) ,
+  λ T′ R → F T′ R |> λ where
+    (vT[T′] , e[T′]⇓vT[T′] , lrv-t-ρ′) →
+      let eqᵥ = (cong (Tsub (Textₛ Tidₛ T′)) eqᵢ) in
+      subst Value eqᵥ vT[T′] ,
+      let r = subst-split-⇓₂ eqᵥ e[T′]⇓vT[T′] in
+      subst id (cong (_⇓ subst Value eqᵥ vT[T′]) (sym (dist-subst' {F = Expr _ _} {G = Value} (_[ T′ ]T) (_[ T′ ]ET) eqᵢ eqᵥ e))) r ,
       {!!}
 
-LRVren′ (`∀α l , T) ρ τ* v z lrv-t = {!!}
 LRVren′ `ℕ ρ τ* v z lrv-t = lrv-t
 
 ----------------------------------------------------------------------
@@ -705,7 +748,7 @@ LRV←LRG {l = l} (l₁ ◁* Γ) ρ χ γ Tw lrg (tskip {T = T} x)
     let γ-tskip-x = γ l (Twk T) (tskip x) in
     let γ-drop-x  = Gdropt (subst←RE ρ) γ l T x in
     let γ-tskip-drop-≡ : γ-tskip-x ≡ subst id (sym (Tren*-preserves-semantics {ρ* = Twkᵣ Tidᵣ} {subst-to-env* (Tdropₛ σ*) []} {subst-to-env* σ* []} (wkᵣ∈Ren* (subst-to-env* (Tdropₛ σ*) []) (⟦ σ* _ here ⟧ [])) T)) γ-drop-x
-        γ-tskip-drop-≡ = subst-sym-subst {P = {!id!}} (Tren*-preserves-semantics {ρ* = Twkᵣ Tidᵣ}  {subst-to-env* (Tdropₛ σ*) []} {subst-to-env* σ* []} (λ q → refl) T)
+        γ-tskip-drop-≡ = subst-sym-subst {P = λ x₁ → {!x₁!}} (Tren*-preserves-semantics {ρ* = Twkᵣ Tidᵣ}  {subst-to-env* (Tdropₛ σ*) []} {subst-to-env* σ* []} (λ q → refl) T)
     in
     let ih = LRV←LRG {l = l} Γ (REdrop ρ) (Cdropt χ) (Gdropt (subst←RE ρ) γ) T lrg x in
     let r = LRVwk T ρ χ-drop-x γ-drop-x ih
