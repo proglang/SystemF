@@ -373,21 +373,6 @@ apply-env-var σ* (there x) = apply-env-var (Tdropₛ σ*) x
 τ*∈Ren* τ* σ* (there x) = τ*∈Ren* (Tdropᵣ τ*) σ* x
 {- --> TypeSubstProperties -}
 
-{- CONSTRUCTION
-substω-subst : ∀ {ℓ}{ℓ′} {X : Setω} {A : Set ℓ}
-  {a₁ a₂ a₃ : A}
-  {x₁ x₂ : X}
-  {G : A → Set ℓ′}
-  {F : X → Set ℓ′}
-  → (x₁≡x₂ : x₁ ≡ω x₂)
-  → (a₁≡a₂ : a₁ ≡ a₂)
-  → (a₁≡a₃ : a₁ ≡ a₃)
-  → F x₂ ≡ G a₂
-  → (x : G a₁)
-  -- → substω F X≡ωY (subst G B≡A x) ≡ subst G C≡A x
-  → substω {!F!} {!!} (subst G a₁≡a₃ x) ≡ subst G a₁≡a₂ x
-substω-subst = {!!}
--}
 
 -- action of renaming on the logical relation
 
@@ -515,9 +500,11 @@ LRVren (`∀α l , T) ρ τ* v z (e , v≡Λe , F) =
                                      (trans (substω-∘ Value (λ ρ → Tsub (subst←RE ρ) T) (Tren-act-REext ρ τ* T′ R))
                                             (trans (subst-subst (lemma1 (Tren-act τ* ρ) T T′ R) {y≡z = (congωl (λ ρ₁ → Tsub (subst←RE ρ₁) T) (Tren-act-REext ρ τ* T′ R))}{p = vT[T′]})
                                             (subst-irrelevant {F = Value} _ _ vT[T′])))
-                                     {! !}
+                                     (trans (substω-∘ (λ{ (σ₀ , σ) → ⟦ T ⟧ (⟦ σ₀ ⟧ [] ∷ subst-to-env* σ [])}) (λ ρ → let σ = subst←RE ρ in (σ l here , Tdropₛ σ)) (Tren-act-REext ρ τ* T′ R))
+                                            (subst-id (λ{ (σ₀ , σ) → ⟦ T ⟧ (⟦ σ₀ ⟧ [] ∷ subst-to-env* σ [])}) (congωl (λ ρ₁ → subst←RE ρ₁ l here , Tdropₛ (subst←RE ρ₁)) (Tren-act-REext ρ τ* T′ R))))
                                      lrv-t-ρ′) in
-      let eq-A→B≡A′→B′ = (sym (dep-ext (λ { α → Tren*-preserves-semantics {ρ* = Tliftᵣ τ* l}{η₁ = subst-to-env* (subst←RE {!!}) []} (Tren*-lift α (τ*∈Ren* τ* (subst←RE ρ))) T}))) in
+      let eq-A→B≡A′→B′ = (sym (dep-ext (λ { α → Tren*-preserves-semantics {ρ* = Tliftᵣ τ* l}{η₁ = α ∷ subst-to-env* (subst←RE (Tren-act τ* ρ)) []}{η₂ = α ∷ (subst-to-env* (subst←RE ρ) [])}
+                                                  (Tren*-lift α (τ*∈Ren* τ* (subst←RE ρ))) T}))) in
       let eq-B≡B′ = (sym (Tren*-preserves-semantics {ρ* = Tliftᵣ τ* l}{η₁ = subst-to-env* (subst←RE (REext (Tren-act τ* ρ) (T′ , R))) []}{η₂ = subst-to-env* {!!} []}
                                                     (τ*∈Ren* (Tliftᵣ τ* l) (subst←RE (REext ρ (T′ , R)))) T)) in
       subst₂ (LRV (Tren (Tliftᵣ τ* l) T) (REext ρ (T′ , R)))
