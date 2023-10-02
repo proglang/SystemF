@@ -243,25 +243,20 @@ module maybe-simpler? where
                          ∎) z′)
         LRV′ `ℕ ρ u z = ∃[ n ] (u ≡ (# n)) ∧ (n ≡ z)
 
-LRV : (T : Type Δ l) → (ρ : RelEnv Δ)
+𝓥⟦_⟧ : (T : Type Δ l) → (ρ : RelEnv Δ)
   → Value (Tsub (subst←RE ρ) T) → ⟦ T ⟧ (subst-to-env* (subst←RE ρ) []) → Set l
-LRV (` α) ρ v z =
+𝓥⟦ ` α ⟧ ρ v z =
   proj₂ (ρ _ α) v (subst id (sym (subst-var-preserves α (subst←RE ρ) [])) z)
-LRV (T₁ ⇒ T₂) ρ u f =
+𝓥⟦ T₁ ⇒ T₂ ⟧ ρ u f =
   ∃[ e ] (u ≡ ƛ e) ∧
-  ∀ (w : Value (Tsub (subst←RE ρ) T₁)) →
-  ∀ (z : ⟦ T₁ ⟧ (subst-to-env* (subst←RE ρ) [])) →
-  LRV T₁ ρ w z →
-  ∃[ v ] (e [ exp w ]E ⇓ v)
-       ∧ LRV T₂ ρ v (f z)
-LRV (`∀α l , T) ρ u F =
+  ∀ w z → 𝓥⟦_⟧ T₁ ρ w z → ∃[ v ] (e [ exp w ]E ⇓ v) ∧ 𝓥⟦_⟧ T₂ ρ v (f z)
+𝓥⟦ `∀α l , T ⟧ ρ u F =
   ∃[ e ] (u ≡ Λ l ⇒ e) ∧
-  ∀ (T′ : Type [] l) →
-  ∀ (R : REL T′) →
+  ∀ T′ R →
   ∃[ v ] (e [ T′ ]ET ⇓ v)
        ∧ let ρ′ = REext ρ (T′ , R)
-         in LRV T ρ′ (subst Value (lemma1 ρ T T′ R) v) (F (⟦ T′ ⟧ []))
-LRV `ℕ ρ u z =
+         in 𝓥⟦_⟧ T ρ′ (subst Value (lemma1 ρ T T′ R) v) (F (⟦ T′ ⟧ []))
+𝓥⟦ `ℕ ⟧ ρ u z =
   ∃[ n ] (u ≡ (# n)) ∧ (n ≡ z)
 
 -- closing value substitution
@@ -434,8 +429,8 @@ LRVren :  ∀ {Δ₁}{Δ₂}{l}
   → let σ* = subst←RE ρ
   in (v : Value (Tsub (subst←RE (Tren-act τ* ρ)) T))
   → (z : ⟦ T ⟧ (subst-to-env* (subst←RE (Tren-act τ* ρ)) []))
-  → LRV T (Tren-act τ* ρ) v z
-  → LRV (Tren τ* T)
+  → 𝓥⟦ T ⟧ (Tren-act τ* ρ) v z
+  → 𝓥⟦ Tren τ* T ⟧
         ρ
         (subst Value (sym (assoc-sub-ren T τ* (subst←RE ρ))) v)
         (subst id (sym (Tren*-preserves-semantics {ρ* = τ*}{subst-to-env* (subst←RE (Tren-act τ* ρ)) []}{subst-to-env* σ* []} (τ*∈Ren* τ* σ*) T)) z)
@@ -447,8 +442,8 @@ LRVren′ :  ∀ {Δ₁}{Δ₂}{l}
   → let σ* = subst←RE ρ
   in (v : Value (Tsub (subst←RE ρ) (Tren τ* T)))
   → (z : ⟦ Tren τ* T ⟧ (subst-to-env* (subst←RE ρ) []))
-  → LRV (Tren τ* T) ρ v z
-  → LRV T
+  → 𝓥⟦ Tren τ* T ⟧ ρ v z
+  → 𝓥⟦ T ⟧
         (Tren-act τ* ρ)
         (subst Value (assoc-sub-ren T τ* (subst←RE ρ)) v)
         (subst id (Tren*-preserves-semantics {ρ* = τ*}{subst-to-env* (subst←RE (Tren-act τ* ρ)) []}{subst-to-env* σ* []} (τ*∈Ren* τ* σ*) T) z)
@@ -493,7 +488,7 @@ LRVren (T₁ ⇒ T₂) ρ τ* v z (e , refl , F) =
       subst id (sym eq-⇓) e[w₁]⇓v₂′
       ,
       let lrv-t2-v′ = LRVren T₂ ρ τ* v₂ (z z₁′) lrv-t2-v in
-      subst (LRV (Tren τ* T₂) ρ (subst Value (sym (assoc-sub-ren T₂ τ* (subst←RE ρ))) v₂))
+      subst (𝓥⟦ Tren τ* T₂ ⟧ ρ (subst Value (sym (assoc-sub-ren T₂ τ* (subst←RE ρ))) v₂))
             (begin subst id
                          (sym (Tren*-preserves-semantics (τ*∈Ren* τ* (subst←RE ρ)) T₂))
                          (z
@@ -546,7 +541,7 @@ LRVren (`∀α l , T) ρ τ* v z (e , v≡Λe , F) =
                        (Tliftᵣ τ* l)
                        (subst Value eq-vtt vT[T′])
                        (z (⟦ T′ ⟧ []))
-                       (dep-substωll (LRV T) 
+                       (dep-substωll (𝓥⟦ T ⟧) 
                                      (Tren-act-REext ρ τ* T′ R)
                                      (trans (substω-∘ Value (λ ρ → Tsub (subst←RE ρ) T) (Tren-act-REext ρ τ* T′ R))
                                             (trans (subst-subst (lemma1 (Tren-act τ* ρ) T T′ R) {y≡z = (congωl (λ ρ₁ → Tsub (subst←RE ρ₁) T) (Tren-act-REext ρ τ* T′ R))}{p = vT[T′]})
@@ -558,7 +553,7 @@ LRVren (`∀α l , T) ρ τ* v z (e , v≡Λe , F) =
                                                   (Tren*-lift α (τ*∈Ren* τ* (subst←RE ρ))) T}))) in
       let eq-B≡B′ = (sym (Tren*-preserves-semantics {ρ* = Tliftᵣ τ* l}{η₁ = subst-to-env* (subst←RE (REext (Tren-act τ* ρ) (T′ , R))) []}{η₂ = subst-to-env* (subst←RE (REext ρ (T′ , R))) []}
                                                     (τ*∈Ren* (Tliftᵣ τ* l) (subst←RE (REext ρ (T′ , R)))) T)) in
-      subst₂ (LRV (Tren (Tliftᵣ τ* l) T) (REext ρ (T′ , R)))
+      subst₂ (𝓥⟦ Tren (Tliftᵣ τ* l) T ⟧ (REext ρ (T′ , R)))
              (trans (subst-subst eq-vtt {sym (assoc-sub-ren T (Tliftᵣ τ* l) (subst←RE (REext ρ (T′ , R))))})
                     (trans (subst-irrelevant {F = Value} _ _ vT[T′])
                            (sym (subst-subst eqᵥ {lemma1 ρ (Tren (Tliftᵣ τ* l) T) T′ R}))))
@@ -605,7 +600,7 @@ LRVren′ (T₁ ⇒ T₂) ρ τ* v z (e , refl , F) =
       subst id (sym eq-⇓) e[w₁]⇓v₂′
       ,
       let lrv-t2-v′ = LRVren′ T₂ ρ τ* v₂ (z z₁′) lrv-t2-v in
-      subst (LRV T₂ (Tren-act τ* ρ) (subst Value (assoc-sub-ren T₂ τ* (subst←RE ρ)) v₂))
+      subst (𝓥⟦ T₂ ⟧ (Tren-act τ* ρ) (subst Value (assoc-sub-ren T₂ τ* (subst←RE ρ)) v₂))
             (begin subst id
                          (Tren*-preserves-semantics (τ*∈Ren* τ* (subst←RE ρ)) T₂)
                          (z (subst id (sym (Tren*-preserves-semantics (τ*∈Ren* τ* (subst←RE ρ)) T₁)) z₁))
@@ -651,8 +646,8 @@ LRVren′ (`∀α l , T) ρ τ* v z (e , v≡Λe , F) =
                         (Tliftᵣ τ* l)
                         (subst Value eq-vtt vT[T′])
                         (z (⟦ T′ ⟧ []))
-                        (subst (λ vv → LRV (Tren (Tliftᵣ τ* l) T) (REext ρ (T′ , R)) vv (z (⟦ T′ ⟧ []))) (subst-irrelevant (lemma1 ρ (Tren (Tliftᵣ τ* l) T) T′ R) eq-vtt vT[T′]) lrv-t-ρ′) in
-      dep-substωll (LRV T)
+                        (subst (λ vv → 𝓥⟦ Tren (Tliftᵣ τ* l) T ⟧ (REext ρ (T′ , R)) vv (z (⟦ T′ ⟧ []))) (subst-irrelevant (lemma1 ρ (Tren (Tliftᵣ τ* l) T) T′ R) eq-vtt vT[T′]) lrv-t-ρ′) in
+      dep-substωll (𝓥⟦ T ⟧)
                    (symω (Tren-act-REext ρ τ* T′ R))
                    (trans
                       (substω-∘ Value (λ ρρ → Tsub (subst←RE ρρ) T)
@@ -691,14 +686,14 @@ LRVwk : ∀ {Δ}{l}{l₁}
   → let σ* = subst←RE ρ
   in (v : Value (Tsub (Tdropₛ σ*) T))
   → (z : ⟦ T ⟧ (subst-to-env* (Tdropₛ σ*) []))
-  → LRV T (REdrop ρ) v z
-  → LRV (Twk T)
+  → 𝓥⟦ T ⟧ (REdrop ρ) v z
+  → 𝓥⟦ Twk T ⟧
         ρ
         (subst Value (sym (assoc-sub-ren T (Twkᵣ Tidᵣ) (subst←RE ρ))) v)
         (subst id (sym (Tren*-preserves-semantics {ρ* = Twkᵣ Tidᵣ} {subst-to-env* (Tdropₛ σ*) []} {subst-to-env* σ* []} (wkᵣ∈Ren* (subst-to-env* (Tdropₛ σ*) []) (⟦ σ* _ here ⟧ [])) T)) z)
 LRVwk T ρ v z lrv-drop =
   let r = LRVren T ρ (Twkᵣ Tidᵣ) v z lrv-drop
-  in subst (LRV (Twk T) ρ (subst Value (sym (assoc-sub-ren T (Twkᵣ Tidᵣ) (subst←RE ρ))) v))
+  in subst (𝓥⟦ Twk T ⟧ ρ (subst Value (sym (assoc-sub-ren T (Twkᵣ Tidᵣ) (subst←RE ρ))) v))
            (subst-irrelevant {F = id}
              (sym (Tren*-preserves-semantics (τ*∈Ren* (Twkᵣ Tidᵣ) (subst←RE ρ)) T))
              (sym (Tren*-preserves-semantics (wkᵣ∈Ren* (subst-to-env* (Tdropₛ (subst←RE ρ)) []) (⟦ subst←RE ρ _ here ⟧ [])) T))
@@ -707,19 +702,20 @@ LRVwk T ρ v z lrv-drop =
 
 -- extended LR on environments
 
-LRG : (Γ : TEnv Δ) → (ρ : RelEnv Δ)
+𝓖⟦_⟧ : (Γ : TEnv Δ) → (ρ : RelEnv Δ)
   → CSub (subst←RE ρ) Γ
   → let η = subst-to-env* (subst←RE ρ) [] in Env Δ Γ η → Set (levelEnv Γ)
-LRG ∅ ρ χ γ = ⊤
-LRG (T ◁ Γ) ρ χ γ = LRV T ρ (χ _ _ here) (γ _ T here) ∧  LRG Γ ρ (Cdrop χ) (ENVdrop Γ _ γ)
-LRG (l ◁* Γ) ρ χ γ = LRG Γ (REdrop ρ) (Cdropt χ) (Gdropt (subst←RE ρ) γ)
+𝓖⟦ ∅ ⟧ ρ χ γ = ⊤
+𝓖⟦ T ◁ Γ ⟧ ρ χ γ = 𝓥⟦ T ⟧ ρ (χ _ _ here) (γ _ T here)
+                 ∧ 𝓖⟦ Γ ⟧ ρ (Cdrop χ) (ENVdrop Γ _ γ)
+𝓖⟦ l ◁* Γ ⟧ ρ χ γ = 𝓖⟦ Γ ⟧ (REdrop ρ) (Cdropt χ) (Gdropt (subst←RE ρ) γ)
 
 -- environment lookup
 
 LRV←LRG : (Γ : TEnv Δ) (ρ : RelEnv Δ) (χ : CSub (subst←RE ρ) Γ) (γ : Env Δ Γ (subst-to-env* (subst←RE ρ) [])) (T : Type Δ l)
-  → LRG Γ ρ χ γ
+  → 𝓖⟦_⟧ Γ ρ χ γ
   → (x : inn T Γ)
-  → LRV T ρ (χ l _ x) (γ l T x)
+  → 𝓥⟦ T ⟧ ρ (χ l _ x) (γ l T x)
 LRV←LRG .(T ◁ _) ρ χ γ T (lrv , lrg) here = lrv
 LRV←LRG (_ ◁ Γ) ρ χ γ T (lrv , lrg) (there x) = LRV←LRG _ ρ (Cdrop χ) (ENVdrop Γ _ γ) T lrg x
 LRV←LRG {l = l} (l₁ ◁* Γ) ρ χ γ Tw lrg (tskip {T = T} x)
@@ -746,7 +742,7 @@ LRV←LRG {l = l} (l₁ ◁* Γ) ρ χ γ Tw lrg (tskip {T = T} x)
     in
     let ih = LRV←LRG {l = l} Γ (REdrop ρ) (Cdropt χ) (Gdropt (subst←RE ρ) γ) T lrg x in
     let r = LRVwk T ρ χ-drop-x γ-drop-x ih
-    in subst₂ (LRV (Twk T) ρ) (sym χ-tskip-drop-≡) (sym γ-tskip-drop-≡) r
+    in subst₂ (𝓥⟦ Twk T ⟧ ρ) (sym χ-tskip-drop-≡) (sym γ-tskip-drop-≡) r
 
 Cextend-Elift : ∀ {σ* : TSub Δ []} {Γ : TEnv Δ}{l}{T : Type Δ l}{l′}{T′ : Type Δ l′}
   → (χ : CSub σ* Γ)
