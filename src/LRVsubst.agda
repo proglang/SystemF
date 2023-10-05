@@ -57,9 +57,46 @@ ext-σ-T′≡σ[T′] T′ T ρ R′ =
     Tsub (subst←RE ρ) (T [ T′ ]T)
   ∎ 
 
--- need to generalize to general type substitution
+-- generalizing to general type substitution
 
-LRVsubst : ∀ {Δ}{l}{l′}
+Tsub-act : TSub Δ₁ Δ₂ → RelEnv Δ₂ → RelEnv Δ₁
+Tsub-act σ* ρ = λ l x → let ρ* = subst←RE ρ in let T₂ = σ* l x in Tsub ρ* T₂ , (λ x₁ x₂ → ⊤)
+
+-- holds definitionally
+subst←RE-sub : ∀ (ρ : RelEnv Δ₂) (τ* : TSub Δ₁ Δ₂)
+  → (l′ : Level) (x : l′ ∈ Δ₁) → subst←RE (Tsub-act τ* ρ) l′ x ≡ (τ* ∘ₛₛ subst←RE ρ) l′ x
+subst←RE-sub ρ τ* l′ x = refl
+
+LRVsubst : ∀ {Δ₁}{Δ₂}{l}
+  → (T : Type Δ₁ l)
+  → (ρ : RelEnv Δ₂)
+  → (τ* : TSub Δ₁ Δ₂)
+  → let ρ* = subst←RE ρ
+  in (v : Value (Tsub (subst←RE (Tsub-act τ* ρ)) T))
+  → (z : ⟦ T ⟧ (subst-to-env* (subst←RE (Tsub-act τ* ρ)) []))
+  → 𝓥⟦ T ⟧ (Tsub-act τ* ρ) v z
+  → 𝓥⟦ Tsub τ* T ⟧ ρ 
+       (subst Value (sym (assoc-sub-sub T τ* (subst←RE ρ))) v)
+       (subst id (sym (begin
+                        ⟦ Tsub τ* T ⟧ (subst-to-env* (subst←RE ρ) [])
+                      ≡⟨ subst-preserves τ* T ⟩
+                        ⟦ T ⟧ (subst-to-env* τ* (subst-to-env* (subst←RE ρ) []))
+                      ≡⟨ congωl ⟦ T ⟧ (subst-to-env*-comp τ* (subst←RE ρ) []) ⟩
+                        ⟦ T ⟧ (subst-to-env* (τ* ∘ₛₛ subst←RE ρ) [])
+                      ≡⟨⟩
+                        ⟦ T ⟧ (subst-to-env* (subst←RE (Tsub-act τ* ρ)) [])
+                      ∎)) z)
+LRVsubst (` x) ρ τ* v z lrv-t = {!!}
+LRVsubst (T₁ ⇒ T₂) ρ τ* v z lrv-t = {!!}
+LRVsubst (`∀α l , T) ρ τ* v z lrv-t = {!!}
+LRVsubst `ℕ ρ τ* v z (n , v≡#n , n≡z) = 
+  n ,
+  v≡#n ,
+  trans n≡z (sym (subst-id id _))
+
+-- the case for single substitution (not sufficiently general)
+
+LRVsubst1 : ∀ {Δ}{l}{l′}
   → (Γ : TEnv Δ)
   → (ρ : RelEnv Δ)
   → let η = (subst-to-env* (subst←RE ρ) [])
@@ -74,10 +111,10 @@ LRVsubst : ∀ {Δ}{l}{l′}
   → 𝓥⟦ T [ T′ ]T ⟧ ρ
         (subst Value (ext-σ-T′≡σ[T′] T′ T ρ R′) v)
         (subst id (sym (Tsingle-subst-preserves η T′ T)) z)
-LRVsubst Γ ρ T′ R′ (` x) v z lrv-t = {! !}
-LRVsubst Γ ρ T′ R′ (T₁ ⇒ T₂) v z lrv-t = {!!}
-LRVsubst Γ ρ T′ R′ (`∀α l , T) v z lrv-t = {! !}
-LRVsubst Γ ρ T′ R′ `ℕ v z (n , v≡#n , n≡z) =
+LRVsubst1 Γ ρ T′ R′ (` x) v z lrv-t = {! !}
+LRVsubst1 Γ ρ T′ R′ (T₁ ⇒ T₂) v z lrv-t = {!!}
+LRVsubst1 Γ ρ T′ R′ (`∀α l , T) v z lrv-t = {! !}
+LRVsubst1 Γ ρ T′ R′ `ℕ v z (n , v≡#n , n≡z) =
   n ,
   trans (subst-id Value (ext-σ-T′≡σ[T′] T′ `ℕ ρ R′)) v≡#n ,
   trans n≡z (trans (subst-∘ {P = id} {f = λ ⟦T′⟧ → ℕ} (sym (subst-preserves (subst←RE ρ) T′)))
