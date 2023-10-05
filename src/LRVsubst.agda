@@ -27,7 +27,7 @@ open import Expressions
 open import ExprSubstitution
 open import ExprSubstProperties
 open import SmallStep
-open import Logical
+open import Logical1
 
 
 Text-sub-sub : ∀ {l′}{Δ₁}{Δ₂}
@@ -70,13 +70,16 @@ LRVsubst : ∀ {Δ}{l}{l′}
   in (T : Type (l′ ∷ Δ) l)
   → (v : Value (Tsub (subst←RE ρ′) T))
   → (z : ⟦ T ⟧ (⟦ T′ ⟧ η ∷ η))
-  → LRV T ρ′ v (subst (λ ⟦T′⟧ → ⟦ T ⟧ (⟦T′⟧ ∷ η)) (sym (subst-preserves (subst←RE ρ) T′)) z)
-  → LRV (T [ T′ ]T) ρ
+  → 𝓥⟦ T ⟧ ρ′ v (subst (λ ⟦T′⟧ → ⟦ T ⟧ (⟦T′⟧ ∷ η)) (sym (subst-preserves (subst←RE ρ) T′)) z)
+  → 𝓥⟦ T [ T′ ]T ⟧ ρ
         (subst Value (ext-σ-T′≡σ[T′] T′ T ρ R′) v)
         (subst id (sym (Tsingle-subst-preserves η T′ T)) z)
-LRVsubst Γ ρ T′ R′ (` here) v z lrv-t = {! !}
-LRVsubst Γ ρ T′ R′ (` there x) v z lrv-t = {!!}
+LRVsubst Γ ρ T′ R′ (` x) v z lrv-t = {! !}
 LRVsubst Γ ρ T′ R′ (T₁ ⇒ T₂) v z lrv-t = {!!}
 LRVsubst Γ ρ T′ R′ (`∀α l , T) v z lrv-t = {! !}
-LRVsubst Γ ρ T′ R′ `ℕ v z lrv-t = {!!}
-
+LRVsubst Γ ρ T′ R′ `ℕ v z (n , v≡#n , n≡z) =
+  n ,
+  trans (subst-id Value (ext-σ-T′≡σ[T′] T′ `ℕ ρ R′)) v≡#n ,
+  trans n≡z (trans (subst-∘ {P = id} {f = λ ⟦T′⟧ → ℕ} (sym (subst-preserves (subst←RE ρ) T′)))
+                   (subst-irrelevant (cong (λ ⟦T′⟧ → ℕ) (sym (subst-preserves (subst←RE ρ) T′)))
+                                     (sym (Tsingle-subst-preserves (subst-to-env* (subst←RE ρ) []) T′ `ℕ)) z))
