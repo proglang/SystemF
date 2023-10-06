@@ -249,13 +249,13 @@ module maybe-simpler? where
   proj₂ (ρ _ α) v (subst id (sym (subst-var-preserves α (subst←RE ρ) [])) z)
 𝓥⟦ T₁ ⇒ T₂ ⟧ ρ u f =
   ∃[ e ] (u ≡ ƛ e) ∧
-  ∀ w z → 𝓥⟦_⟧ T₁ ρ w z → ∃[ v ] (e [ exp w ]E ⇓ v) ∧ 𝓥⟦_⟧ T₂ ρ v (f z)
+  ∀ w z → 𝓥⟦ T₁ ⟧ ρ w z → ∃[ v ] (e [ exp w ]E ⇓ v) ∧ 𝓥⟦ T₂ ⟧ ρ v (f z)
 𝓥⟦ `∀α l , T ⟧ ρ u F =
   ∃[ e ] (u ≡ Λ l ⇒ e) ∧
   ∀ T′ R →
   ∃[ v ] (e [ T′ ]ET ⇓ v)
        ∧ let ρ′ = REext ρ (T′ , R)
-         in 𝓥⟦_⟧ T ρ′ (subst Value (lemma1 ρ T T′ R) v) (F (⟦ T′ ⟧ []))
+         in 𝓥⟦ T ⟧ ρ′ (subst Value (lemma1 ρ T T′ R) v) (F (⟦ T′ ⟧ []))
 𝓥⟦ `ℕ ⟧ ρ u z =
   ∃[ n ] (u ≡ (# n)) ∧ (n ≡ z)
 
