@@ -474,7 +474,7 @@ LRVren (T₁ ⇒ T₂) ρ τ* v z (e , refl , F) =
       let eq-⇓ = begin (subst₂ (λ T₃ T₄ → Expr [] (T₃ ◁ ∅) T₄) (sym eq-T₁) (sym eq-T₂) e [ exp w₁ ]E)
                        ⇓ subst Value (sym eq-T₂) v₂
                   ≡˘⟨ cong (_⇓ subst Value (sym eq-T₂) v₂)
-                           (subst-split-[]E e (exp w₁) (sym eq-T₁) (sym (assoc-sub-ren T₂ τ* (subst←RE ρ))) ) ⟩
+                           (subst-split-[]E e (exp w₁) (sym eq-T₁) (sym eq-T₂) ) ⟩
                      subst Value (sym eq-T₂) (e [ subst Value (sym (sym eq-T₁)) (exp w₁) ]E)
                            ⇓ subst Value (sym eq-T₂) v₂
                   ≡˘⟨ cong
@@ -488,7 +488,7 @@ LRVren (T₁ ⇒ T₂) ρ τ* v z (e , refl , F) =
       subst id (sym eq-⇓) e[w₁]⇓v₂′
       ,
       let lrv-t2-v′ = LRVren T₂ ρ τ* v₂ (z z₁′) lrv-t2-v in
-      subst (𝓥⟦ Tren τ* T₂ ⟧ ρ (subst Value (sym (assoc-sub-ren T₂ τ* (subst←RE ρ))) v₂))
+      subst (𝓥⟦ Tren τ* T₂ ⟧ ρ (subst Value (sym eq-T₂) v₂))
             (begin subst id
                          (sym (Tren*-preserves-semantics (τ*∈Ren* τ* (subst←RE ρ)) T₂))
                          (z

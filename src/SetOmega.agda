@@ -12,6 +12,9 @@ data _≡ω_ {A : Setω} (x : A) : A → Setω where
 congωl : ∀ {b} {A : Setω} {B : Set b} (f : A → B) {x y : A} → x ≡ω y → f x ≡ f y
 congωl f refl = refl
 
+congωωl : ∀ {b} {A : Setω} {B : Setω} {C : Set b} (f : A → B → C) {x y : A} {x′ y′ : B} → x ≡ω y → x′ ≡ω y′ → f x x′ ≡ f y y′
+congωωl f refl refl = refl
+
 conglω : ∀ {a} {A : Set a} {B : Setω} (f : A → B) {x y : A} → x ≡ y → f x ≡ω f y
 conglω f refl = refl
 
