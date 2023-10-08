@@ -321,10 +321,10 @@ subst-preserves-type =
   → ⟦ Tsub σ* T ⟧ η₂ ≡ ⟦ T ⟧ (subst-to-env* σ* η₂)
 
 subst-preserves : subst-preserves-type
-subst-preserves {η₂ = η₂} σ* (` x) = subst-var-preserves x σ* η₂
-subst-preserves {η₂ = η₂} σ* (T₁ ⇒ T₂)
-  rewrite subst-preserves{η₂ = η₂} σ* T₁
-  |  subst-preserves{η₂ = η₂} σ* T₂ = refl
+subst-preserves {η₂ = η₂} σ* (` x) =
+  subst-var-preserves x σ* η₂
+subst-preserves {η₂ = η₂} σ* (T₁ ⇒ T₂) =
+  cong₂ (λ A B → A → B) (subst-preserves{η₂ = η₂} σ* T₁) (subst-preserves{η₂ = η₂} σ* T₂)
 subst-preserves {η₂ = η₂} σ* (`∀α l , T) =
   dep-ext (λ ⟦α⟧ →
     trans (subst-preserves {η₂ = ⟦α⟧ ∷ η₂} (Tliftₛ σ* _) T)
