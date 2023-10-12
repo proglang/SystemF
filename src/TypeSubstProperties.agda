@@ -170,7 +170,7 @@ TliftᵣTidᵣ≡Tidᵣ _ _ = fun-ext₂ λ where
 TidᵣT≡T : ∀ (T : Type Δ l) → Tren Tidᵣ T ≡ T
 TidᵣT≡T (` x) = refl
 TidᵣT≡T (T₁ ⇒ T₂) = cong₂ _⇒_ (TidᵣT≡T T₁) (TidᵣT≡T T₂)
-TidᵣT≡T {Δ = Δ} (`∀α l , T) rewrite TliftᵣTidᵣ≡Tidᵣ Δ l = cong (`∀α l ,_) (TidᵣT≡T T)
+TidᵣT≡T {Δ = Δ} (`∀α l , T) = cong (`∀α l ,_) (trans (cong (λ ρ → Tren ρ T) (TliftᵣTidᵣ≡Tidᵣ Δ l)) (TidᵣT≡T T))
 TidᵣT≡T `ℕ = refl
 
 ρ[T]≡[ρT]ρ↑ : ∀ (T : Type Δ₁ l) (ρ : TRen Δ₁ Δ₂) →
@@ -200,7 +200,7 @@ TliftₛTidₛ≡Tidₛ _ _ = fun-ext₂ λ where
 TidₛT≡T : ∀ (T : Type Δ l) → Tsub Tidₛ T ≡ T       
 TidₛT≡T (` x) = refl
 TidₛT≡T (T₁ ⇒ T₂) = cong₂ _⇒_ (TidₛT≡T T₁) (TidₛT≡T T₂)
-TidₛT≡T {Δ = Δ} (`∀α l , T) rewrite TliftₛTidₛ≡Tidₛ Δ l = cong (`∀α l ,_) (TidₛT≡T T)
+TidₛT≡T {Δ = Δ} (`∀α l , T) = cong (`∀α l ,_) (trans (cong (λ σ → Tsub σ T) (TliftₛTidₛ≡Tidₛ Δ l)) (TidₛT≡T T))
 TidₛT≡T `ℕ = refl
 
 σ[T]≡[σT]σ↑ : ∀ (T : Type Δ₁ l) (σ : TSub Δ₁ Δ₂) →
@@ -278,10 +278,7 @@ Tren*-lift α Tren* (there x) = Tren* x
 Tren*-preserves-semantics : ∀ {ρ* : TRen Δ₁ Δ₂}{η₁ : Env* Δ₁}{η₂ : Env* Δ₂}
   → (Tren* : TRen* ρ* η₁ η₂) → (T : Type Δ₁ l) →  ⟦ Tren ρ* T ⟧ η₂ ≡ ⟦ T ⟧ η₁
 Tren*-preserves-semantics {ρ* = ρ*} {η₁} {η₂} Tren* (` x) = Tren* x
-Tren*-preserves-semantics {ρ* = ρ*} {η₁} {η₂} Tren* (T₁ ⇒ T₂)
-  rewrite Tren*-preserves-semantics {ρ* = ρ*} {η₁} {η₂} Tren* T₁
-  | Tren*-preserves-semantics {ρ* = ρ*} {η₁} {η₂} Tren* T₂
-  = refl
+Tren*-preserves-semantics {ρ* = ρ*} {η₁} {η₂} Tren* (T₁ ⇒ T₂) = cong₂ (λ A₁ A₂ → A₁ → A₂) (Tren*-preserves-semantics {ρ* = ρ*} {η₁} {η₂} Tren* T₁) (Tren*-preserves-semantics {ρ* = ρ*} {η₁} {η₂} Tren* T₂)
 Tren*-preserves-semantics {ρ* = ρ*} {η₁} {η₂} Tren* (`∀α l , T) = dep-ext λ where 
   α → Tren*-preserves-semantics{ρ* = Tliftᵣ ρ* _}{α ∷ η₁}{α ∷ η₂} (Tren*-lift {ρ* = ρ*} α Tren*) T
 Tren*-preserves-semantics Tren* `ℕ = refl
@@ -300,9 +297,8 @@ subst-var-preserves (there x) σ* η₂ = subst-var-preserves x (Tdropₛ σ*) �
 subst-to-env*-wk : (σ*  : TSub Δ₁ Δ₂) → (α  : Set l) → (η₂ : Env* Δ₂) → 
   subst-to-env* (Twkₛ σ*) (α ∷ η₂) ≡ω subst-to-env* σ* η₂
 subst-to-env*-wk {Δ₁ = []} σ* α η₂ = refl
-subst-to-env*-wk {Δ₁ = l ∷ Δ₁} σ* α η₂
-  rewrite Tren*-preserves-semantics {ρ* = Twkᵣ Tidᵣ}{η₂}{α ∷ η₂} (wkᵣ∈Ren* η₂ α) (σ* _ here)
-  = congωω (⟦ (σ* _ here) ⟧ η₂ ∷_) (subst-to-env*-wk (Tdropₛ σ*) α η₂)
+subst-to-env*-wk {Δ₁ = l ∷ Δ₁} σ* α η₂ = transω (conglω (_∷ subst-to-env* (Tdropₛ (Twkₛ σ*)) (α ∷ η₂)) (Tren*-preserves-semantics {ρ* = Twkᵣ Tidᵣ}{η₂}{α ∷ η₂} (wkᵣ∈Ren* η₂ α) (σ* _ here)))
+                                               (congωω (⟦ (σ* _ here) ⟧ η₂ ∷_) (subst-to-env*-wk (Tdropₛ σ*) α η₂))
 
 subst-to-env*-build : ∀ (ρ* : TRen Δ₁ Δ₂) (η₁ : Env* Δ₁) (η₂ : Env* Δ₂) → TRen* ρ* η₁ η₂
   → subst-to-env* (λ _ x → ` ρ* _ x) η₂ ≡ω η₁
