@@ -179,3 +179,26 @@ subst-id :
   → subst F eq x ≡ x
 subst-id F refl = refl
 
+eta-subst : ∀ {lv lz lr}
+  → {V : Set lv} {Z₁ Z₂ : Set lz} {R : Set lr}
+  → (h : V → Z₁ → R)
+  → (z₁≡z₂ : Z₁ ≡ Z₂)
+  → subst (λ Z → V → Z → R) z₁≡z₂ h ≡ λ v → subst (λ Z → Z → R) z₁≡z₂ (h v)
+eta-subst h refl = refl
+
+app-subst : ∀ {lz lr}
+  →  {Z₁ Z₂ : Set lz} {R : Set lr}
+  → (h : Z₁ → R)
+  → (z₁≡z₂ : Z₁ ≡ Z₂)
+  → (λ z → h (subst id (sym z₁≡z₂) z)) ≡ subst (λ Z → Z → R) z₁≡z₂ h
+app-subst h refl = refl
+
+
+subst₂→subst : ∀ {l a b}{A : Set a}{B : Set b}
+  → {a : A}{b b′ : B}
+  → (F : A → B → Set l)
+  → (eq : b ≡ b′)
+  → (x : F a b)
+  → subst₂ F refl eq x ≡ subst (F a) eq x
+subst₂→subst F refl x = refl
+
