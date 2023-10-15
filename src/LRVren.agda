@@ -98,6 +98,25 @@ LRVren-eq (T₁ ⇒ T₂) ρ τ* = {!!}
 LRVren-eq (`∀α l , T) ρ τ* = {!!}
 LRVren-eq `ℕ ρ τ* = refl
 
+
+eta-subst₂ : ∀ {lv lz lr}
+  → {V₁ V₂ : Set lv} {Z₁ Z₂ : Set lz} {R : Set lr}
+  → (h : V₁ → Z₁ → R)
+  → (v₁≡v₂ : V₁ ≡ V₂)
+  → (z₁≡z₂ : Z₁ ≡ Z₂)
+  → subst₂ (λ V Z → V → Z → R) v₁≡v₂ z₁≡z₂ h ≡ λ v₂ z₂ → h (subst id (sym v₁≡v₂) v₂) (subst id (sym z₁≡z₂) z₂)
+eta-subst₂ h refl refl = refl
+
+subst₂-subst-subst : ∀ {lv lz lr}
+  → {V : Set lv} {Z : Set lz} {R : Set lr}
+  → {v₁ v₂ : V}{z₁ z₂ : Z}
+  → (F : V → Z → Set lr)
+  → (v₁≡v₂ : v₁ ≡ v₂)
+  → (z₁≡z₂ : z₁ ≡ z₂)
+  → (x : F v₁ z₁)
+  → subst₂ F v₁≡v₂ z₁≡z₂ x ≡ subst (λ v → F v z₂) v₁≡v₂ (subst (F v₁) z₁≡z₂ x)
+subst₂-subst-subst F refl refl x = refl
+
 LRVren-eq′ :  ∀ {Δ₁}{Δ₂}{l}
   → (T : Type Δ₁ l)
   → (ρ : RelEnv Δ₂)
@@ -147,6 +166,73 @@ LRVren-eq′ {l = l} (` α) ρ τ* v z =
          (subst id (sym (subst-var-preserves (τ* l α) (subst←RE ρ) [])) z₁))
       v z
   ∎
-LRVren-eq′ (T₁ ⇒ T₂) ρ τ* v z = {!!}
+LRVren-eq′ (T₁ ⇒ T₂) ρ τ* v z =
+  begin
+    (∃[ e ]
+         (v ≡ (ƛ e)) ∧
+         ((w : Value (Tsub (subst←RE (Tren-act τ* ρ)) T₁))
+          (z₁ : ⟦ T₁ ⟧ (subst-to-env* (subst←RE (Tren-act τ* ρ)) [])) →
+          𝓥⟦ T₁ ⟧ (Tren-act τ* ρ) w z₁ →
+          ∃-syntax
+          (λ v₁ → (e [ exp w ]E) ⇓ v₁ ∧ 𝓥⟦ T₂ ⟧ (Tren-act τ* ρ) v₁ (z z₁))))
+  ≡⟨ {!!} ⟩
+          subst
+            (λ v₁ →
+               Value v₁ →
+               (⟦ T₁ ⟧ (subst-to-env* (subst←RE (Tren-act τ* ρ)) []) →
+                ⟦ T₂ ⟧ (subst-to-env* (subst←RE (Tren-act τ* ρ)) [])) →
+               Set _)
+            (cong₂ _⇒_ (assoc-sub-ren T₁ τ* (subst←RE ρ))
+             (assoc-sub-ren T₂ τ* (subst←RE ρ)))
+            (subst
+             (λ zz →
+                Value
+                (Tsub (subst←RE ρ) (Tren τ* T₁) ⇒ Tsub (subst←RE ρ) (Tren τ* T₂)) →
+                zz → Set _)
+             (cong₂ (λ A₁ A₂ → A₁ → A₂)
+              (Tren*-preserves-semantics (τ*∈Ren* τ* (subst←RE ρ)) T₁)
+              (Tren*-preserves-semantics (τ*∈Ren* τ* (subst←RE ρ)) T₂))
+             (λ u f →
+                ∃-syntax
+                (λ e →
+                   (u ≡ (ƛ e)) ∧
+                   ((w : Value (Tsub (subst←RE ρ) (Tren τ* T₁)))
+                    (z₁ : ⟦ Tren τ* T₁ ⟧ (subst-to-env* (subst←RE ρ) [])) →
+                    𝓥⟦ Tren τ* T₁ ⟧ ρ w z₁ →
+                    ∃-syntax
+                    (λ v₁ → (e [ exp w ]E) ⇓ v₁ ∧ 𝓥⟦ Tren τ* T₂ ⟧ ρ v₁ (f z₁))))))
+      v z
+
+  ≡˘⟨ cong (λ H → H v z) 
+           (subst₂-subst-subst (λ vv zz → Value vv → zz → Set _) 
+             ((cong₂ _⇒_ (assoc-sub-ren T₁ τ* (subst←RE ρ)) (assoc-sub-ren T₂ τ* (subst←RE ρ))))
+             ((cong₂ (λ A₁ A₂ → A₁ → A₂)
+               (Tren*-preserves-semantics (τ*∈Ren* τ* (subst←RE ρ)) T₁)
+               (Tren*-preserves-semantics (τ*∈Ren* τ* (subst←RE ρ)) T₂)))
+             (λ u f →
+               (∃[ e ]
+                  (u ≡ (ƛ e)) ∧
+                  ((w : Value (Tsub (subst←RE ρ) (Tren τ* T₁)))
+                   (z₁ : ⟦ Tren τ* T₁ ⟧ (subst-to-env* (subst←RE ρ) [])) →
+                   𝓥⟦ Tren τ* T₁ ⟧ ρ w z₁ →
+                   ∃-syntax
+                   (λ v₁ → (e [ exp w ]E) ⇓ v₁ ∧ 𝓥⟦ Tren τ* T₂ ⟧ ρ v₁ (f z₁)))))) ⟩
+    subst₂ (λ vv zz → Value vv → zz → Set _)
+      (cong₂ _⇒_ 
+        (assoc-sub-ren T₁ τ* (subst←RE ρ))
+        (assoc-sub-ren T₂ τ* (subst←RE ρ)))
+      (cong₂ (λ A₁ A₂ → A₁ → A₂)
+        (Tren*-preserves-semantics (τ*∈Ren* τ* (subst←RE ρ)) T₁)
+        (Tren*-preserves-semantics (τ*∈Ren* τ* (subst←RE ρ)) T₂))
+      (λ u f →
+         (∃[ e ]
+            (u ≡ (ƛ e)) ∧
+            ((w : Value (Tsub (subst←RE ρ) (Tren τ* T₁)))
+             (z₁ : ⟦ Tren τ* T₁ ⟧ (subst-to-env* (subst←RE ρ) [])) →
+             𝓥⟦ Tren τ* T₁ ⟧ ρ w z₁ →
+             ∃-syntax
+             (λ v₁ → (e [ exp w ]E) ⇓ v₁ ∧ 𝓥⟦ Tren τ* T₂ ⟧ ρ v₁ (f z₁)))))
+      v z
+  ∎ 
 LRVren-eq′ (`∀α l , T) ρ τ* v z = {!!}
 LRVren-eq′ `ℕ ρ τ* v z = refl
