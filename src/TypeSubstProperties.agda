@@ -239,20 +239,20 @@ TidₛT≡T `ℕ = refl
     Tsub σ T
   ∎
 
-σ↑T[T′]≡TextₛσT′T : (σ* : TSub Δ []) (T′ : Type [] l) (T : Type (l ∷ Δ) l′)
-  → Tsub (Tliftₛ σ* l) T [ T′ ]T ≡ Tsub (Textₛ σ* T′) T
-σ↑T[T′]≡TextₛσT′T σ* T′ T =
-  begin
-    Tsub (Textₛ (λ z → `_) T′) (Tsub (Tliftₛ σ* _) T)
-  ≡⟨ assoc-sub-sub T _ _ ⟩
-    Tsub (Tliftₛ σ* _ ∘ₛₛ Textₛ (λ z → `_) T′) T
-  ≡⟨ cong (λ τ* → Tsub τ* T) (fun-ext₂ aux) ⟩
-    Tsub (Textₛ σ* T′) T
-  ∎
-  where
-    aux : ∀ {l}{Δ}{σ* : TSub Δ []} {T′ : Type [] l} → (x : Level) (y : x ∈ (l ∷ Δ)) → (Tliftₛ σ* l ∘ₛₛ Textₛ (λ z → `_) T′) x y ≡ Textₛ σ* T′ x y
-    aux _ here = refl
-    aux {σ* = σ*}{T′ = T′} x (there y) = trans (assoc-sub-ren (σ* x y) (λ z x₁ → there x₁) (Textₛ (λ z → `_) T′)) (TidₛT≡T (σ* x y))
+-- σ↑T[T′]≡TextₛσT′T : (σ* : TSub Δ []) (T′ : Type [] l) (T : Type (l ∷ Δ) l′)
+--   → Tsub (Tliftₛ σ* l) T [ T′ ]T ≡ Tsub (Textₛ σ* T′) T
+-- σ↑T[T′]≡TextₛσT′T σ* T′ T =
+--   begin
+--     Tsub (Textₛ (λ z → `_) T′) (Tsub (Tliftₛ σ* _) T)
+--   ≡⟨ assoc-sub-sub T _ _ ⟩
+--     Tsub (Tliftₛ σ* _ ∘ₛₛ Textₛ (λ z → `_) T′) T
+--   ≡⟨ cong (λ τ* → Tsub τ* T) (fun-ext₂ aux) ⟩
+--     Tsub (Textₛ σ* T′) T
+--   ∎
+--   where
+--     aux : ∀ {l}{Δ}{σ* : TSub Δ []} {T′ : Type [] l} → (x : Level) (y : x ∈ (l ∷ Δ)) → (Tliftₛ σ* l ∘ₛₛ Textₛ (λ z → `_) T′) x y ≡ Textₛ σ* T′ x y
+--     aux _ here = refl
+--     aux {σ* = σ*}{T′ = T′} x (there y) = trans (assoc-sub-ren (σ* x y) (λ z x₁ → there x₁) (Textₛ (λ z → `_) T′)) (TidₛT≡T (σ* x y))
 
 -- the action of renaming on semantic environments
 
