@@ -1,4 +1,5 @@
 open import Level
+open import Data.Product
 open import Function
 open import Relation.Binary.PropositionalEquality using (_≡_; refl; sym; trans; cong; cong₂; subst; subst₂; module ≡-Reasoning)
 open import Ext
@@ -171,6 +172,16 @@ subst-swap :
   → x ≡ subst F (sym eq) y
 subst-swap refl x y refl = refl
 
+subst-swap-eq :
+  ∀ {ℓ₁}{ℓ₂} {A : Set ℓ₁}
+    {F : (a : A) → Set ℓ₂}
+    {a₁ a₂ : A}
+    (eq : a₁ ≡ a₂)
+    (x : F a₁)
+    (y : F a₂)
+  → (subst F eq x ≡ y) ≡ (x ≡ subst F (sym eq) y)
+subst-swap-eq refl x y = refl
+
 subst-id :
   ∀ {ℓ ℓ′} {A : Set ℓ′} {a : A}
   → (F : A → Set ℓ)
@@ -201,4 +212,55 @@ subst₂→subst : ∀ {l a b}{A : Set a}{B : Set b}
   → (x : F a b)
   → subst₂ F refl eq x ≡ subst (F a) eq x
 subst₂→subst F refl x = refl
+
+
+eta-subst₂ : ∀ {lv lz lr}
+  → {V₁ V₂ : Set lv} {Z₁ Z₂ : Set lz} {R : Set lr}
+  → (h : V₁ → Z₁ → R)
+  → (v₁≡v₂ : V₁ ≡ V₂)
+  → (z₁≡z₂ : Z₁ ≡ Z₂)
+  → subst₂ (λ V Z → V → Z → R) v₁≡v₂ z₁≡z₂ h ≡ λ v₂ z₂ → h (subst id (sym v₁≡v₂) v₂) (subst id (sym z₁≡z₂) z₂)
+eta-subst₂ h refl refl = refl
+
+
+subst₂-subst-subst : ∀ {lv lz lr}
+  → {V : Set lv} {Z : Set lz} {R : Set lr}
+  → {v₁ v₂ : V}{z₁ z₂ : Z}
+  → (F : V → Z → Set lr)
+  → (v₁≡v₂ : v₁ ≡ v₂)
+  → (z₁≡z₂ : z₁ ≡ z₂)
+  → (x : F v₁ z₁)
+  → subst₂ F v₁≡v₂ z₁≡z₂ x ≡ subst (λ v → F v z₂) v₁≡v₂ (subst (F v₁) z₁≡z₂ x)
+subst₂-subst-subst F refl refl x = refl
+
+
+sigma-subst : ∀ {a}{l}
+  → {A A′ : Set a}
+  → (f : A → Set l)
+  → (A≡A′ : A ≡ A′)
+  → Σ A f ≡  Σ A′ (λ a′ → f (subst id (sym A≡A′) a′))
+sigma-subst f refl = refl
+
+pi-subst : ∀ {a}{l}
+  → {A A′ : Set a}
+  → (f : A → Set l)
+  → (A′≡A : A′ ≡ A)
+  → ((x : A) → f x) ≡ ((x : A′) → f (subst id A′≡A x))
+pi-subst f refl = refl
+
+subst₂-∘ : ∀ {a b c l}{A : Set a}{B : Set b}{C : Set c}{a₁ a₂ : A}{b₁ b₂ : B}
+  → (P : C → Set l)
+  → (f : A → B → C)
+  → (eq₁ : a₁ ≡ a₂)
+  → (eq₂ : b₁ ≡ b₂)
+  → (x : P (f a₁ b₁))
+  → subst₂ (P ∘₂ f) eq₁ eq₂ x ≡ subst P (cong₂ f eq₁ eq₂) x
+subst₂-∘ P f refl refl x = refl
+
+sym-cong₂ : ∀ {a b c}{A : Set a}{B : Set b}{C : Set c}{a₁ a₂ : A}{b₁ b₂ : B}
+  → (f : A → B → C)
+  → (eq₁ : a₁ ≡ a₂)
+  → (eq₂ : b₁ ≡ b₂)
+  → sym (cong₂ f eq₁ eq₂) ≡ cong₂ f (sym eq₁) (sym eq₂)
+sym-cong₂ f refl refl = refl
 
