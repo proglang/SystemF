@@ -71,7 +71,7 @@ apply-env (_ ∷ η) (there x) = apply-env η x
 -- the meaning of a stratified type in terms of Agda universes
 
 ⟦_⟧ : (T : Type Δ l) → Env* Δ → Set l
-⟦ ` x ⟧ η = apply-env η {!   !}
+⟦ ` α ⟧ η = apply-env η α  
 ⟦ T₁ ⇒ T₂ ⟧ η = ⟦ T₁ ⟧ η → ⟦ T₂ ⟧ η
 ⟦ `∀α l , T ⟧ η = (α : Set l) → ⟦ T ⟧ (α ∷ η)
 ⟦ `ℕ ⟧ η = ℕ
