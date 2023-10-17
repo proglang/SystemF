@@ -1,4 +1,4 @@
-module Simple.SystemF where
+module SystemF where
 
 open import Level
 open import Data.List using (List; []; _∷_)
@@ -7,7 +7,7 @@ open import Relation.Binary.PropositionalEquality using (_≡_; refl; sym; cong;
 
 open ≡-Reasoning
 
-open import Simple.Kits
+open import Kits
 
 -- Fixities --------------------------------------------------------------------
 

@@ -1,4 +1,4 @@
-module Simple.Kits where
+module Kits where
 
 open import Data.Nat using (ℕ; zero; suc)
 open import Data.List using (List; []; _∷_; drop; _++_)
