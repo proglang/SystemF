@@ -213,6 +213,7 @@ ENVdrop-extend {l = l} {Δ = Δ} {Γ = Γ}{T = T}{η = η} γ z = fun-extω (λ 
 
 -- stratified logical relation
 
+{-
 module maybe-simpler? where
         LRV′ : (T : Type Δ l) → (ρ : RelEnv Δ)
           → REL (Tsub (subst←RE ρ) T)
@@ -242,6 +243,7 @@ module maybe-simpler? where
                            ⟦ Tsub (subst←RE (REext ρ (T′ , R))) T ⟧ []
                          ∎) z′)
         LRV′ `ℕ ρ u z = ∃[ n ] (u ≡ (# n)) ∧ (n ≡ z)
+-}
 
 𝓥⟦_⟧ : (T : Type Δ l) → (ρ : RelEnv Δ)
   → Value (Tsub (subst←RE ρ) T) → ⟦ T ⟧ (subst-to-env* (subst←RE ρ) []) → Set l
