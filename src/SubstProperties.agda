@@ -264,3 +264,10 @@ sym-cong₂ : ∀ {a b c}{A : Set a}{B : Set b}{C : Set c}{a₁ a₂ : A}{b₁ b
   → sym (cong₂ f eq₁ eq₂) ≡ cong₂ f (sym eq₁) (sym eq₂)
 sym-cong₂ f refl refl = refl
 
+subst-cong₂ : ∀ {a b}{A₁ A₁′ : Set a}{A₂ A₂′ : Set b}
+  → (eq₁ : A₁ ≡ A₁′)
+  → (eq₂ : A₂ ≡ A₂′)
+  → (f : A₁′ → A₂′)
+  → (x : A₁)
+  → subst id (sym eq₂) (f (subst id eq₁ x)) ≡ subst id (cong₂ (λ A₁ A₂ → A₁ → A₂) (sym eq₁) (sym eq₂)) f x
+subst-cong₂ refl refl f x = refl
