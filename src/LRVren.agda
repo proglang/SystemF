@@ -213,7 +213,12 @@ LRVren-eq′ (T₁ ⇒ T₂) ρ τ* v z =
                                 (sym (assoc-sub-ren T₁ τ* (subst←RE ρ)))
                                 (sym (assoc-sub-ren T₂ τ* (subst←RE ρ)))
                               e))
-                          ≡⟨ cong ((_ ≡_) ∘ ƛ_) (subst₂-∘ id (λ A₁ A₂ → Expr [] (A₁ ◁ ∅) A₂) (sym (assoc-sub-ren T₁ τ* (subst←RE ρ))) (sym (assoc-sub-ren T₂ τ* (subst←RE ρ))) e) ⟩
+                          ≡⟨ cong ((subst id
+                             (sym
+                              (cong Value
+                               (cong₂ _⇒_ (assoc-sub-ren T₁ τ* (subst←RE ρ))
+                                (assoc-sub-ren T₂ τ* (subst←RE ρ)))))
+                             v ≡_) ∘ ƛ_) (subst₂-∘ id (λ A₁ A₂ → Expr [] (A₁ ◁ ∅) A₂) (sym (assoc-sub-ren T₁ τ* (subst←RE ρ))) (sym (assoc-sub-ren T₂ τ* (subst←RE ρ))) e) ⟩
                             (subst id
                              (sym
                               (cong Value
@@ -227,7 +232,12 @@ LRVren-eq′ (T₁ ⇒ T₂) ρ τ* v z =
                                 (sym (assoc-sub-ren T₁ τ* (subst←RE ρ)))
                                 (sym (assoc-sub-ren T₂ τ* (subst←RE ρ))))
                               e))
-                          ≡˘⟨ cong ((_ ≡_) ∘ ƛ_ ∘ (λ p → subst id p e)) (sym-cong₂ (λ A₁ A₂ → Expr [] (A₁ ◁ ∅) A₂) (assoc-sub-ren T₁ τ* (subst←RE ρ)) (assoc-sub-ren T₂ τ* (subst←RE ρ))) ⟩
+                          ≡˘⟨ cong (((subst id
+                             (sym
+                              (cong Value
+                               (cong₂ _⇒_ (assoc-sub-ren T₁ τ* (subst←RE ρ))
+                                (assoc-sub-ren T₂ τ* (subst←RE ρ)))))
+                             v) ≡_) ∘ ƛ_ ∘ (λ p → subst id p e)) (sym-cong₂ (λ A₁ A₂ → Expr [] (A₁ ◁ ∅) A₂) (assoc-sub-ren T₁ τ* (subst←RE ρ)) (assoc-sub-ren T₂ τ* (subst←RE ρ))) ⟩
                         (subst id
                          (sym
                           (cong Value
@@ -304,7 +314,43 @@ LRVren-eq′ (T₁ ⇒ T₂) ρ τ* v z =
                                         ≡⟨ cong (Σ _) 
                                                 (fun-ext (λ v₂ →
                                                   cong₂ _∧_
-                                                    {!!}
+                                                    (begin
+                                                      (e [ exp w ]E) ⇓ subst id (sym (cong Value (sym (assoc-sub-ren T₂ τ* (subst←RE ρ))))) v₂
+                                                    ≡⟨ cong (λ K → (e [ exp w ]E) ⇓ subst id K v₂)
+                                                            (sym-cong (sym (assoc-sub-ren T₂ τ* (subst←RE ρ)))) ⟩
+                                                      (e [ exp w ]E) ⇓ subst id (cong Value (sym (sym (assoc-sub-ren T₂ τ* (subst←RE ρ))))) v₂
+                                                    ≡˘⟨ cong (λ K → (e [ exp w ]E) ⇓ K)
+                                                             (subst-∘ {P = id} {f = Value} (sym (sym (assoc-sub-ren T₂ τ* (subst←RE ρ))))) ⟩
+                                                      (e [ exp w ]E) ⇓ subst Value (sym (sym (assoc-sub-ren T₂ τ* (subst←RE ρ)))) v₂
+                                                    ≡˘⟨ subst-split-eq-⇓ (e [ exp w ]E) v₂ (sym (assoc-sub-ren T₂ τ* (subst←RE ρ))) ⟩
+                                                      subst Value (sym (assoc-sub-ren T₂ τ* (subst←RE ρ))) (e [ exp w ]E) ⇓ v₂
+                                                    ≡˘⟨ cong (λ K → subst Value (sym (assoc-sub-ren T₂ τ* (subst←RE ρ))) (e [ K ]E) ⇓ v₂)
+                                                             (subst-sym-subst {P = Value} (sym (assoc-sub-ren T₁ τ* (subst←RE ρ)))) ⟩
+                                                      subst Value (sym (assoc-sub-ren T₂ τ* (subst←RE ρ)))
+                                                            (e [ subst Value (sym (sym (assoc-sub-ren T₁ τ* (subst←RE ρ)))) (exp (subst Value (sym (assoc-sub-ren T₁ τ* (subst←RE ρ))) w)) ]E) ⇓ v₂
+                                                    ≡⟨ cong (λ K → subst Value (sym (assoc-sub-ren T₂ τ* (subst←RE ρ)))
+                                                            (e [ subst Value (sym (sym (assoc-sub-ren T₁ τ* (subst←RE ρ)))) (exp K) ]E) ⇓ v₂)
+                                                           (subst-∘ {P = id} {f = Value} (sym (assoc-sub-ren T₁ τ* (subst←RE ρ)))) ⟩
+                                                      subst Value (sym (assoc-sub-ren T₂ τ* (subst←RE ρ)))
+                                                            (e [ subst Value (sym (sym (assoc-sub-ren T₁ τ* (subst←RE ρ)))) (exp (subst id (cong Value (sym (assoc-sub-ren T₁ τ* (subst←RE ρ)))) w)) ]E) ⇓ v₂
+                                                    ≡⟨ cong (λ K → K ⇓ v₂)
+                                                            (subst-split-[]E e (exp (subst id (cong Value (sym (assoc-sub-ren T₁ τ* (subst←RE ρ)))) w)) (sym (assoc-sub-ren T₁ τ* (subst←RE ρ))) (sym (assoc-sub-ren T₂ τ* (subst←RE ρ)))) ⟩
+                                                      (subst₂ (λ A₁ → Expr [] (A₁ ◁ ∅)) (sym (assoc-sub-ren T₁ τ* (subst←RE ρ))) (sym (assoc-sub-ren T₂ τ* (subst←RE ρ)))
+                                                       e [ exp (subst id (cong Value (sym (assoc-sub-ren T₁ τ* (subst←RE ρ)))) w) ]E) ⇓ v₂
+                                                    ≡⟨ cong (λ K → (K [ exp (subst id (cong Value (sym (assoc-sub-ren T₁ τ* (subst←RE ρ)))) w) ]E) ⇓ v₂)
+                                                            (subst₂-∘ id (λ A₁ → Expr [] (A₁ ◁ ∅)) (sym (assoc-sub-ren T₁ τ* (subst←RE ρ))) (sym (assoc-sub-ren T₂ τ* (subst←RE ρ))) e) ⟩
+                                                      (subst id
+                                                        (cong₂ (λ A₁ → Expr [] (A₁ ◁ ∅)) (sym (assoc-sub-ren T₁ τ* (subst←RE ρ))) (sym (assoc-sub-ren T₂ τ* (subst←RE ρ))))
+                                                       e [ exp (subst id (cong Value (sym (assoc-sub-ren T₁ τ* (subst←RE ρ)))) w) ]E)
+                                                      ⇓ v₂
+                                                    ≡˘⟨ cong (λ K → (subst id K e [ exp (subst id (cong Value (sym (assoc-sub-ren T₁ τ* (subst←RE ρ)))) w) ]E) ⇓ v₂)
+                                                             (sym-cong₂ (λ A₁ → Expr [] (A₁ ◁ ∅)) (assoc-sub-ren T₁ τ* (subst←RE ρ)) (assoc-sub-ren T₂ τ* (subst←RE ρ))) ⟩
+                                                      (subst id
+                                                       (sym
+                                                        (cong₂ (λ A₁ → Expr [] (A₁ ◁ ∅)) (assoc-sub-ren T₁ τ* (subst←RE ρ)) (assoc-sub-ren T₂ τ* (subst←RE ρ))))
+                                                       e [ exp (subst id (cong Value (sym (assoc-sub-ren T₁ τ* (subst←RE ρ)))) w) ]E)
+                                                      ⇓ v₂
+                                                    ∎)
                                                     (let IH-eq₂ = LRVren-eq′ T₂ ρ τ* (subst id (sym (cong Value (sym (assoc-sub-ren T₂ τ* (subst←RE ρ))))) v₂) (z
                                                                                      (subst id (Tren*-preserves-semantics (τ*∈Ren* τ* (subst←RE ρ)) T₁) z₁))
                                                     in begin
