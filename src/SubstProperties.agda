@@ -224,7 +224,7 @@ eta-subst₂ h refl refl = refl
 
 
 subst₂-subst-subst : ∀ {lv lz lr}
-  → {V : Set lv} {Z : Set lz} {R : Set lr}
+  → {V : Set lv} {Z : Set lz}
   → {v₁ v₂ : V}{z₁ z₂ : Z}
   → (F : V → Z → Set lr)
   → (v₁≡v₂ : v₁ ≡ v₂)
