@@ -331,6 +331,14 @@ subst-split-⇓ :
   → e ⇓ subst Value (sym Tₑ≡Tᵥ) v
 subst-split-⇓ e v refl x = x
 
+subst-split-eq-⇓ :
+  ∀ {Tₑ Tᵥ : Type [] l}
+  → (e : Value Tₑ)
+  → (v : Value Tᵥ)
+  → (Tₑ≡Tᵥ : Tₑ ≡ Tᵥ)
+  → subst Value Tₑ≡Tᵥ e ⇓ v ≡ e ⇓ subst Value (sym Tₑ≡Tᵥ) v
+subst-split-eq-⇓ e v refl = refl
+
 subst-split-⇓′ :
   ∀ {Tₑ Tᵥ : Type [] l}
   → (e : Value Tₑ)
