@@ -899,7 +899,97 @@ LRVren-eq′ (`∀α l , T) ρ τ* v z =
                  e))
               ∎)
             ----------------------------------------
-            {!!}))
+            (dep-ext (λ T′ → dep-ext (λ R →
+             begin
+               Σ (Value (Tsub (Tliftₛ (τ* ∘ᵣₛ subst←RE ρ) l) T [ T′ ]T))
+                 (λ v₁ →
+                    (e [ T′ ]ET) ⇓ v₁ ∧
+                    𝓥⟦ T ⟧ (REext (Tren-act τ* ρ) (T′ , R))
+                    (subst Value (lemma1 (Tren-act τ* ρ) T T′ R) v₁) (z (⟦ T′ ⟧ [])))
+             ≡⟨ cong (Σ (Value (Tsub (Tliftₛ (τ* ∘ᵣₛ subst←RE ρ) l) T [ T′ ]T)))
+               (fun-ext (λ v₁ →
+               cong₂ _∧_
+               --------------------
+               (begin
+                 (e [ T′ ]ET) ⇓ v₁
+               ≡⟨ {!!} ⟩
+                 (subst id
+                   (sym
+                    (cong (Expr (l ∷ []) (l ◁* ∅))
+                     (assoc-sub↑-ren↑ T τ* (subst←RE ρ))))
+                   e [ T′ ]ET)
+                  ⇓
+                  subst id (sym (cong Value (cong (_[ T′ ]T) (assoc-sub↑-ren↑ T τ* (subst←RE ρ))))) v₁
+               ∎)
+               --------------------
+               {!!}
+               --------------------
+               ))
+            ⟩
+               Σ (Value (Tsub (Tliftₛ (τ* ∘ᵣₛ subst←RE ρ) l) T [ T′ ]T))
+                               (λ v₁ →
+                                  (subst id
+                                   (sym
+                                    (cong (Expr (l ∷ []) (l ◁* ∅))
+                                     (assoc-sub↑-ren↑ T τ* (subst←RE ρ))))
+                                   e
+                                   [ T′ ]ET)
+                                  ⇓
+                                  subst id
+                                  (sym
+                                   (cong Value (cong (_[ T′ ]T) (assoc-sub↑-ren↑ T τ* (subst←RE ρ)))))
+                                  v₁
+                                  ∧
+                                  𝓥⟦ Tren (Tliftᵣ τ* l) T ⟧ (REext ρ (T′ , R))
+                                  (subst Value (lemma1 ρ (Tren (Tliftᵣ τ* l) T) T′ R)
+                                   (subst id
+                                    (sym
+                                     (cong Value (cong (_[ T′ ]T) (assoc-sub↑-ren↑ T τ* (subst←RE ρ)))))
+                                    v₁))
+                                  (subst id
+                                   (sym
+                                    (dep-ext
+                                     (λ { α → Tren*-preserves-semantics
+                                              (Tren*-lift α (τ*∈Ren* τ* (subst←RE ρ))) T
+                                        })))
+                                   z (⟦ T′ ⟧ [])))
+             ≡˘⟨ sigma-subst (λ v₂ →
+                    (subst id
+                     (sym
+                      (cong (Expr (l ∷ []) (l ◁* ∅))
+                       (assoc-sub↑-ren↑ T τ* (subst←RE ρ))))
+                     e
+                     [ T′ ]ET)
+                    ⇓ v₂
+                    ∧
+                    𝓥⟦ Tren (Tliftᵣ τ* l) T ⟧ (REext ρ (T′ , R))
+                    (subst Value (lemma1 ρ (Tren (Tliftᵣ τ* l) T) T′ R) v₂)
+                    (subst id
+                     (sym
+                      (dep-ext
+                       (λ { α → Tren*-preserves-semantics
+                                (Tren*-lift α (τ*∈Ren* τ* (subst←RE ρ))) T
+                          })))
+                     z (⟦ T′ ⟧ []))) (cong Value (cong (_[ T′ ]T) (assoc-sub↑-ren↑ T τ* (subst←RE ρ)))) ⟩
+               Σ (Value (Tsub (Tliftₛ (subst←RE ρ) l) (Tren (Tliftᵣ τ* l) T) [ T′ ]T))
+                 (λ v₂ →
+                    (subst id
+                     (sym
+                      (cong (Expr (l ∷ []) (l ◁* ∅))
+                       (assoc-sub↑-ren↑ T τ* (subst←RE ρ))))
+                     e
+                     [ T′ ]ET)
+                    ⇓ v₂
+                    ∧
+                    𝓥⟦ Tren (Tliftᵣ τ* l) T ⟧ (REext ρ (T′ , R))
+                    (subst Value (lemma1 ρ (Tren (Tliftᵣ τ* l) T) T′ R) v₂)
+                    (subst id
+                     (sym
+                      (dep-ext
+                       (λ { α → Tren*-preserves-semantics
+                                (Tren*-lift α (τ*∈Ren* τ* (subst←RE ρ))) T
+                          })))
+                     z (⟦ T′ ⟧ []))) ∎)))))
             ----------------------------------------
        ⟩
       Σ (Expr (l ∷ []) (l ◁* ∅) (Tsub (Tliftₛ (τ* ∘ᵣₛ subst←RE ρ) l) T))
