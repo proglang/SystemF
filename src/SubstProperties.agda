@@ -182,6 +182,16 @@ subst-swap-eq :
   → (subst F eq x ≡ y) ≡ (x ≡ subst F (sym eq) y)
 subst-swap-eq refl x y = refl
 
+subst-swap-eq′ :
+  ∀ {ℓ₁}{ℓ₂} {A : Set ℓ₁}
+    {F : (a : A) → Set ℓ₂}
+    {a₁ a₂ : A}
+    (eq : a₂ ≡ a₁)
+    (x : F a₁)
+    (y : F a₂)
+  → (x ≡ subst F eq y) ≡ (subst F (sym eq) x ≡ y)
+subst-swap-eq′ refl x y = refl
+
 subst-id :
   ∀ {ℓ ℓ′} {A : Set ℓ′} {a : A}
   → (F : A → Set ℓ)
