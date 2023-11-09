@@ -92,3 +92,21 @@ substω-elim :
   → {x : F a}
   → substω F eq₁ x ≡ substω F eq₂ x
 substω-elim F refl refl = refl
+
+dcongωl : ∀ {b} {A : Setω} {B : A → Set b}
+  → (f : (a : A) → B a)
+  → {x y : A}
+  → (x≡ωy : x ≡ω y)
+  → f x ≡ substω B (symω x≡ωy) (f y)
+dcongωl f refl = refl
+
+substω-congω : ∀ {ℓ}{ℓ₁}
+    {A₁ : Set ℓ₁}
+    {A₂ : Setω}
+  → (F : A₁ → Set ℓ)
+  → (G : A₂ → A₁)
+  → {x y : A₂}
+  → (x≡y : x ≡ω y)
+  → (a : F (G x))
+  → substω (λ z → F (G z)) x≡y a ≡ subst F (congωl G x≡y) a
+substω-congω F G refl a = refl
