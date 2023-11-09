@@ -281,3 +281,14 @@ subst-cong₂ : ∀ {a b}{A₁ A₁′ : Set a}{A₂ A₂′ : Set b}
   → (x : A₁)
   → subst id (sym eq₂) (f (subst id eq₁ x)) ≡ subst id (cong₂ (λ A₁ A₂ → A₁ → A₂) (sym eq₁) (sym eq₂)) f x
 subst-cong₂ refl refl f x = refl
+
+subst-fun : ∀ {ℓ}{ℓa ℓb ℓz}{Z : Set ℓz}{A : Z → Set ℓa}{B : Z → Set ℓb} {z₁ z₂ : Z}
+  → (z₁≡z₂ : z₁ ≡ z₂)
+  → (f : A z₁ → B z₁ → Set ℓ)
+  → subst (λ (z : Z) → A z → B z → Set ℓ) z₁≡z₂ f ≡ λ a b → f (subst A (sym z₁≡z₂) a) (subst B (sym z₁≡z₂) b)
+subst-fun refl f = refl
+
+subst-const : ∀ {a}{A : Set a}{x y : A}
+  → (x≡y : x ≡ y)
+  → subst (λ z → A) x≡y x ≡ x
+subst-const refl = refl
