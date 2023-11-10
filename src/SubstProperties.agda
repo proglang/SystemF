@@ -288,7 +288,8 @@ subst-fun : ∀ {ℓ}{ℓa ℓb ℓz}{Z : Set ℓz}{A : Z → Set ℓa}{B : Z �
   → subst (λ (z : Z) → A z → B z → Set ℓ) z₁≡z₂ f ≡ λ a b → f (subst A (sym z₁≡z₂) a) (subst B (sym z₁≡z₂) b)
 subst-fun refl f = refl
 
-subst-const : ∀ {a}{A : Set a}{x y : A}
+subst-const : ∀ {a b}{A : Set a}{B : Set b}{x y : A}
   → (x≡y : x ≡ y)
-  → subst (λ z → A) x≡y x ≡ x
+  → {z : B}
+  → subst (λ (z : A) → B) x≡y z ≡ z
 subst-const refl = refl
