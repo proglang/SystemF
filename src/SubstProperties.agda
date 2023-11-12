@@ -258,6 +258,15 @@ pi-subst : ∀ {a}{l}
   → ((x : A) → f x) ≡ ((x : A′) → f (subst id A′≡A x))
 pi-subst f refl = refl
 
+subst₂-∘₁ : ∀ {a b c l}{A : Set a}{B : Set b}{C : Set c}{a₁ a₂ : A}{b₁ b₂ : B}
+  → (P : C → B → Set l)
+  → (f : A → C)
+  → (eq₁ : a₁ ≡ a₂)
+  → (eq₂ : b₁ ≡ b₂)
+  → (x : P (f a₁) b₁)
+  → subst₂ (P ∘ f) eq₁ eq₂ x ≡ subst₂ P (cong f eq₁) eq₂ x
+subst₂-∘₁ P f refl refl x = refl
+
 subst₂-∘ : ∀ {a b c l}{A : Set a}{B : Set b}{C : Set c}{a₁ a₂ : A}{b₁ b₂ : B}
   → (P : C → Set l)
   → (f : A → B → C)
