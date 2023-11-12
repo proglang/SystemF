@@ -1754,3 +1754,124 @@ LRVren-eq :  ∀ {Δ₁}{Δ₂}{l}
            (Tren*-preserves-semantics {ρ* = τ*}{subst-to-env* (subst←RE (Tren-act τ* ρ)) []}{subst-to-env* σ* []} (τ*∈Ren* τ* σ*) T)
            (𝓥⟦ Tren τ* T ⟧ ρ)
 LRVren-eq T ρ τ* = fun-ext (λ v → fun-ext (λ z → LRVren-eq′ T ρ τ* v z))
+
+LRVwk-eq : ∀ {Δ}{l}{l₁}
+  → (T : Type Δ l)
+  → (ρ : RelEnv (l₁ ∷ Δ))
+  → let σ* = subst←RE ρ
+  in (v : Value (Tsub (Tdropₛ σ*) T))
+  → (z : ⟦ T ⟧ (subst-to-env* (Tdropₛ σ*) []))
+  → 𝓥⟦ T ⟧ (REdrop ρ) v z
+  ≡ 𝓥⟦ Twk T ⟧
+        ρ
+        (subst Value (sym (assoc-sub-ren T (Twkᵣ Tidᵣ) (subst←RE ρ))) v)
+        (subst id (sym (Tren*-preserves-semantics {ρ* = Twkᵣ Tidᵣ} {subst-to-env* (Tdropₛ σ*) []} {subst-to-env* σ* []} (wkᵣ∈Ren* (subst-to-env* (Tdropₛ σ*) []) (⟦ σ* _ here ⟧ [])) T)) z)
+LRVwk-eq T ρ v z =
+  begin
+    𝓥⟦ T ⟧ (REdrop ρ) v z
+  ≡⟨ LRVren-eq′ T ρ (Twkᵣ Tidᵣ) v z ⟩
+    subst₂ (λ vv zz → Value vv → zz → Set _)
+      (assoc-sub-ren T (Twkᵣ Tidᵣ) (subst←RE ρ))
+      (Tren*-preserves-semantics (τ*∈Ren* (Twkᵣ Tidᵣ) (subst←RE ρ)) T)
+      (𝓥⟦ Tren (Twkᵣ Tidᵣ) T ⟧ ρ) v z
+  ≡⟨ cong (λ K → K v z) (subst₂-∘₁ (λ vv zz → vv → zz → Set _) Value (assoc-sub-ren T (Twkᵣ Tidᵣ) (subst←RE ρ)) (Tren*-preserves-semantics (τ*∈Ren* (Twkᵣ Tidᵣ) (subst←RE ρ)) T) (𝓥⟦ Tren (Twkᵣ Tidᵣ) T ⟧ ρ)) ⟩
+    subst₂ (λ vv zz → vv → zz → Set _)
+      (cong Value (assoc-sub-ren T (Twkᵣ Tidᵣ) (subst←RE ρ)))
+      (Tren*-preserves-semantics (τ*∈Ren* (Twkᵣ Tidᵣ) (subst←RE ρ)) T)
+      (𝓥⟦ Tren (Twkᵣ Tidᵣ) T ⟧ ρ) v z
+  ≡⟨ cong (λ K → K v z) (subst₂-subst-subst (λ vv zz → vv → zz → Set _) (cong Value (assoc-sub-ren T (Twkᵣ Tidᵣ) (subst←RE ρ))) (Tren*-preserves-semantics (τ*∈Ren* (Twkᵣ Tidᵣ) (subst←RE ρ)) T) (𝓥⟦ Tren (Twkᵣ Tidᵣ) T ⟧ ρ)) ⟩
+    subst
+      (λ v₁ →
+         v₁ → ⟦ T ⟧ (subst-to-env* (Tdropₛ (subst←RE ρ)) []) → Set _)
+      (cong Value (assoc-sub-ren T (Twkᵣ Tidᵣ) (subst←RE ρ)))
+      (subst
+       (λ zz →
+          Value (Tsub (subst←RE ρ) (Tren (Twkᵣ Tidᵣ) T)) → zz → Set _)
+       (Tren*-preserves-semantics (τ*∈Ren* (Twkᵣ Tidᵣ) (subst←RE ρ)) T)
+       (𝓥⟦ Tren (Twkᵣ Tidᵣ) T ⟧ ρ))
+      v z
+  ≡⟨ cong (λ K → subst
+      (λ v₁ →
+         v₁ → ⟦ T ⟧ (subst-to-env* (Tdropₛ (subst←RE ρ)) []) → Set _)
+      (cong Value (assoc-sub-ren T (Twkᵣ Tidᵣ) (subst←RE ρ)))
+      K v z)
+    (eta-subst (𝓥⟦ Tren (Twkᵣ Tidᵣ) T ⟧ ρ) (Tren*-preserves-semantics (τ*∈Ren* (Twkᵣ Tidᵣ) (subst←RE ρ)) T) ) ⟩
+    subst
+      (λ v₁ →
+         v₁ → ⟦ T ⟧ (subst-to-env* (Tdropₛ (subst←RE ρ)) []) → Set _)
+      (cong Value (assoc-sub-ren T (Twkᵣ Tidᵣ) (subst←RE ρ)))
+      (λ v₁ →
+         subst (λ Z → Z → Set _)
+         (Tren*-preserves-semantics (τ*∈Ren* (Twkᵣ Tidᵣ) (subst←RE ρ)) T)
+         (𝓥⟦ Tren (Twkᵣ Tidᵣ) T ⟧ ρ v₁))
+      v z
+  ≡˘⟨ cong (λ K → K v z) (app-subst (λ v₁ →
+         subst (λ Z → Z → Set _)
+         (Tren*-preserves-semantics (τ*∈Ren* (Twkᵣ Tidᵣ) (subst←RE ρ)) T)
+         (𝓥⟦ Tren (Twkᵣ Tidᵣ) T ⟧ ρ v₁))
+         (cong Value (assoc-sub-ren T (Twkᵣ Tidᵣ) (subst←RE ρ)))) ⟩
+    subst (λ Z → Z → Set _)
+      (Tren*-preserves-semantics (τ*∈Ren* (Twkᵣ Tidᵣ) (subst←RE ρ)) T)
+      (𝓥⟦ Tren (Twkᵣ Tidᵣ) T ⟧ ρ
+       (subst id
+        (sym (cong Value (assoc-sub-ren T (Twkᵣ Tidᵣ) (subst←RE ρ)))) v))
+      z
+  ≡˘⟨ cong (λ K → K z) (app-subst (𝓥⟦ Tren (Twkᵣ Tidᵣ) T ⟧ ρ
+       (subst id
+        (sym (cong Value (assoc-sub-ren T (Twkᵣ Tidᵣ) (subst←RE ρ)))) v))
+        (Tren*-preserves-semantics (τ*∈Ren* (Twkᵣ Tidᵣ) (subst←RE ρ)) T)) ⟩
+    𝓥⟦ Tren (Twkᵣ Tidᵣ) T ⟧ ρ
+      (subst id
+       (sym (cong Value (assoc-sub-ren T (Twkᵣ Tidᵣ) (subst←RE ρ)))) v)
+      (subst id
+       (sym
+        (Tren*-preserves-semantics (τ*∈Ren* (Twkᵣ Tidᵣ) (subst←RE ρ)) T))
+       z)
+  ≡⟨ cong (λ K → 𝓥⟦ Tren (Twkᵣ Tidᵣ) T ⟧ ρ
+      (subst id K v)
+      (subst id
+       (sym
+        (Tren*-preserves-semantics (τ*∈Ren* (Twkᵣ Tidᵣ) (subst←RE ρ)) T))
+       z))
+     (sym-cong {f = Value} (assoc-sub-ren T (Twkᵣ Tidᵣ) (subst←RE ρ))) ⟩
+    𝓥⟦ Tren (Twkᵣ Tidᵣ) T ⟧ ρ
+      (subst id
+       (cong Value (sym (assoc-sub-ren T (Twkᵣ Tidᵣ) (subst←RE ρ)))) v)
+      (subst id
+       (sym
+        (Tren*-preserves-semantics (τ*∈Ren* (Twkᵣ Tidᵣ) (subst←RE ρ)) T))
+       z)
+  ≡˘⟨ cong (λ K → 𝓥⟦ Tren (Twkᵣ Tidᵣ) T ⟧ ρ
+      K
+      (subst id
+       (sym
+        (Tren*-preserves-semantics (τ*∈Ren* (Twkᵣ Tidᵣ) (subst←RE ρ)) T))
+       z))
+    (subst-∘ {P = id} {f = Value} (sym (assoc-sub-ren T (Twkᵣ Tidᵣ) (subst←RE ρ)))) ⟩
+    𝓥⟦ Tren (Twkᵣ Tidᵣ) T ⟧ ρ
+      (subst (id ∘ Value)
+       (sym (assoc-sub-ren T (Twkᵣ Tidᵣ) (subst←RE ρ))) v)
+      (subst id
+       (sym
+        (Tren*-preserves-semantics (τ*∈Ren* (Twkᵣ Tidᵣ) (subst←RE ρ)) T))
+       z)
+  ≡⟨ cong
+       (𝓥⟦ Twk T ⟧ ρ
+        (subst Value (sym (assoc-sub-ren T (Twkᵣ Tidᵣ) (subst←RE ρ))) v))
+       (subst-irrelevant {F = id} (sym
+        (Tren*-preserves-semantics (τ*∈Ren* (Twkᵣ Tidᵣ) (subst←RE ρ)) T))
+        (sym
+        (Tren*-preserves-semantics
+         (wkᵣ∈Ren* (subst-to-env* (Tdropₛ (subst←RE ρ)) [])
+          (⟦ subst←RE ρ _ here ⟧ []))
+         T)) z) ⟩
+    𝓥⟦ Twk T ⟧ ρ
+      (subst Value (sym (assoc-sub-ren T (Twkᵣ Tidᵣ) (subst←RE ρ))) v)
+      (subst id
+       (sym
+        (Tren*-preserves-semantics
+         (wkᵣ∈Ren* (subst-to-env* (Tdropₛ (subst←RE ρ)) [])
+          (⟦ subst←RE ρ _ here ⟧ []))
+         T))
+       z)
+  ∎
