@@ -247,7 +247,7 @@ module maybe-simpler? where
 𝓥⟦_⟧ : (T : Type Δ l) → (ρ : RelEnv Δ)
   → Value (Tsub (subst←RE ρ) T) → ⟦ T ⟧ (subst-to-env* (subst←RE ρ) []) → Set l
 𝓥⟦ ` α ⟧ ρ v z =
-  proj₂ (ρ _ α) v (subst id (sym (subst-var-preserves α (subst←RE ρ) [])) z)
+  (v ⇓ v) ∧ proj₂ (ρ _ α) v (subst id (sym (subst-var-preserves α (subst←RE ρ) [])) z)
 𝓥⟦ T₁ ⇒ T₂ ⟧ ρ u f =
   ∃[ e ] (u ≡ ƛ e) ∧
   ∀ w z → 𝓥⟦ T₁ ⟧ ρ w z → ∃[ v ] (e [ exp w ]E ⇓ v) ∧ 𝓥⟦ T₂ ⟧ ρ v (f z)
@@ -259,6 +259,11 @@ module maybe-simpler? where
          in 𝓥⟦ T ⟧ ρ′ (subst Value (lemma1 ρ T T′ R) v) (F (⟦ T′ ⟧ []))
 𝓥⟦ `ℕ ⟧ ρ u z =
   ∃[ n ] (u ≡ (# n)) ∧ (n ≡ z)
+
+
+𝓔⟦_⟧ : (T : Type Δ l) → (ρ : RelEnv Δ)
+  → Value (Tsub (subst←RE ρ) T) → ⟦ T ⟧ (subst-to-env* (subst←RE ρ) []) → Set l
+𝓔⟦ T ⟧ ρ e z = ∃[ v ] (e ⇓ v) ∧ 𝓥⟦ T ⟧ ρ v z
 
 -- closing value substitution
 

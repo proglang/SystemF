@@ -33,7 +33,7 @@ open import LRVren
 ----------------------------------------------------------------------
 
 𝓥⟦w⟧⇒w⇓w : ∀ {l} → (T : Type Δ l) (ρ : RelEnv Δ) (w : Value (Tsub (subst←RE ρ) T)) (z : ⟦ T ⟧ (subst-to-env* (subst←RE ρ) [])) → 𝓥⟦ T ⟧ ρ w z → w ⇓ w
-𝓥⟦w⟧⇒w⇓w (` x₁) ρ w z x = {!proj₂ (ρ _ x₁) w!}
+𝓥⟦w⟧⇒w⇓w (` α) ρ w z (w⇓w , _) = w⇓w
 𝓥⟦w⟧⇒w⇓w (T₁ ⇒ T₂) ρ .(ƛ e) z (e , refl , _) = ⇓-ƛ
 𝓥⟦w⟧⇒w⇓w (`∀α l , T) ρ w z (e , refl , _) = ⇓-Λ
 𝓥⟦w⟧⇒w⇓w `ℕ ρ w z (n , refl , _) = ⇓-n
@@ -48,36 +48,38 @@ Elift-[]≡Cextt Γ ρ χ l′ l T e T′ R = {!!}
 
 -- fundamental theorem
 
-fundamental : ∀ (Γ : TEnv Δ) (ρ : RelEnv Δ)
-  → (χ : CSub (subst←RE ρ) Γ)
-  → let η = subst-to-env* (subst←RE ρ) [] in (γ : Env Δ Γ η)
-  → ∀ {l} (T : Type Δ l) (e : Expr Δ Γ T)
+fundamental : ∀ (Γ : TEnv Δ)
+  → ∀ {l} (T : Type Δ l)
+  → (e : Expr Δ Γ T)
+  → (ρ : RelEnv Δ)
+  → let σ* = subst←RE ρ in (χ : CSub σ* Γ)
+  → let η = subst-to-env* σ* [] in (γ : Env Δ Γ η)
   → 𝓖⟦ Γ ⟧ ρ χ γ
-  → ∃[ v ] (Csub χ e ⇓ v) ∧ 𝓥⟦ T ⟧ ρ v (E⟦ e ⟧ η γ)
+  → 𝓔⟦ T ⟧ ρ (Csub χ e) (E⟦ e ⟧ η γ)
 
-fundamental Γ ρ χ γ .`ℕ (# n) lrg =
-  # n , ⇓-n , n , refl , refl
+fundamental Γ .`ℕ (# n) ρ χ γ 𝓖⟦Γ⟧ =
+  # n , ⇓-n , n , (refl , refl)
 
-fundamental Γ ρ χ γ T (` x) lrg =
+fundamental Γ T (` x) ρ χ γ 𝓖⟦Γ⟧ =
   let w = χ _ _ x in
-  let 𝓥⟦w⟧ = 𝓖-lookup Γ ρ χ γ T lrg x in
-  w , {!!} , 𝓥⟦w⟧
+  let 𝓥⟦w⟧ = 𝓖-lookup Γ ρ χ γ T 𝓖⟦Γ⟧ x in
+  w , 𝓥⟦w⟧⇒w⇓w T ρ w _ 𝓥⟦w⟧ , 𝓥⟦w⟧
 
-fundamental Γ ρ χ γ (T₁ ⇒ T₂) (ƛ e) lrg =
+fundamental Γ (T₁ ⇒ T₂) (ƛ e) ρ χ γ lrg =
   Csub χ (ƛ e) ,
   ⇓-ƛ ,
   Esub _ (Eliftₛ _ χ) e ,
   refl ,
   (λ w z lrv-w-z →
     let lrg′ = (lrv-w-z , substlω (𝓖⟦ Γ ⟧ ρ) (sym (Cdrop-Cextend {T = T₁} χ w)) (ENVdrop-extend {T = T₁} γ z) lrg) in
-    let r = fundamental (T₁ ◁ Γ) ρ (Cextend χ w) (extend γ z) T₂ e lrg′ in
+    let r = fundamental (T₁ ◁ Γ) T₂ e ρ (Cextend χ w) (extend γ z) lrg′ in
     case r of λ where
       (v , ew⇓v , lrv-v) → v ,
                            subst (_⇓ v) (Cextend-Elift χ w e) ew⇓v ,
                            lrv-v)
 
-fundamental Γ ρ χ γ T (_·_ {T = T₂} {T′ = .T} e₁ e₂) lrg
-  with fundamental Γ ρ χ γ (T₂ ⇒ T) e₁ lrg | fundamental Γ ρ χ γ T₂ e₂ lrg
+fundamental Γ T (_·_ {T = T₂} {T′ = .T} e₁ e₂) ρ χ γ lrg
+  with fundamental Γ (T₂ ⇒ T) e₁ ρ χ γ lrg | fundamental Γ T₂ e₂ ρ χ γ lrg
 ... | v₁ , e₁⇓v₁ , e₁′ , refl , lrv₁ | v₂ , e₂⇓v₂ , lrv₂
   with lrv₁ v₂ (E⟦ e₂ ⟧ (subst-to-env* (subst←RE ρ) []) γ) lrv₂
 ... | v₃ , e₃[]⇓v₃ , lrv₃
@@ -85,7 +87,7 @@ fundamental Γ ρ χ γ T (_·_ {T = T₂} {T′ = .T} e₁ e₂) lrg
     ⇓-· e₁⇓v₁ e₂⇓v₂ e₃[]⇓v₃ ,
     lrv₃
 
-fundamental Γ ρ χ γ (`∀α .l , T) (Λ l ⇒ e) lrg = 
+fundamental Γ (`∀α .l , T) (Λ l ⇒ e) ρ χ γ lrg = 
   Csub χ (Λ l ⇒ e) ,
   ⇓-Λ ,
   Esub (Tliftₛ (subst←RE ρ) l) (Eliftₛ-l (subst←RE ρ) χ) e ,
@@ -96,11 +98,11 @@ fundamental Γ ρ χ γ (`∀α .l , T) (Λ l ⇒ e) lrg =
                       (sym (Cdropt-Cextt≡id Γ ρ χ l T′ R))
                       (symω (Gdropt-ext≡id ρ γ T′ R)) lrg in
     fundamental (l ◁* Γ)
+                T
+                e
                 (REext ρ (T′ , R))
                 (subst (λ σ → CSub σ (l ◁* Γ)) (sym (subst←RE-ext-ext ρ T′ R)) (Cextt χ T′))
                 (extend-tskip γ)
-                T
-                e
                 lrg′
     |> λ where
       (v , e⇓v , lrv-t) → 
@@ -119,8 +121,8 @@ fundamental Γ ρ χ γ (`∀α .l , T) (Λ l ⇒ e) lrg =
             ∎) e⇓v ,
            sub-lrvt lrv-t
 
-fundamental Γ ρ χ γ .(T [ T′ ]T) (_∙_ {l = l}{T = T} e  T′) lrg
-  with fundamental Γ ρ χ γ (`∀α l , T) e lrg
+fundamental Γ .(T [ T′ ]T) (_∙_ {l = l}{T = T} e  T′) ρ χ γ lrg
+  with fundamental Γ (`∀α l , T) e ρ χ γ lrg
 ... | v , e⇓v , e′ , refl , lrv
   with lrv (Tsub (subst←RE ρ) T′) 
            (subst (λ ⟦T⟧ → Value (Tsub (subst←RE ρ) T′) → ⟦T⟧ → Set l) 
@@ -141,53 +143,14 @@ fundamental Γ ρ χ γ .(T [ T′ ]T) (_∙_ {l = l}{T = T} e  T′) lrg
     ∎) e•T⇓v ,
   {!lrv₂!}
 
--- fundamental Γ ρ χ γ T (` x) lrg =
---   χ _ _ x ,
---   exp-v⇓v _ ,
---   LRV←LRG Γ ρ χ γ T lrg x
-
--- fundamental Γ ρ χ γ .(T [ T′ ]T) (_∙_ {l = l}{T = T} e T′) lrg
---   with fundamental Γ ρ χ γ (`∀α l , T) e lrg
--- ... | (Λ .l ⇒ e′ , v-Λ) , e⇓v , lrv
---   with lrv (Tsub (subst←RE ρ) T′) 
---            (subst (λ ⟦T⟧ → Value (Tsub (subst←RE ρ) T′) → ⟦T⟧ → Set l) 
---                   (sym (subst-preserves (subst←RE ρ) T′))
---                   ((LRV T′) ρ)) 
--- ... | v₂ , vT′⇓v₂ , lrv₂ =
---   let σ* = subst←RE ρ in
---   let σ = ES←SC χ in
---   let η = subst-to-env* σ* [] in
---   let eq₁ = sym (σT[T′]≡σ↑T[σT'] (subst←RE ρ) T T′) in
---   let eq₂ = (sym (subst-preserves σ* T′)) in
---   let eq₃ = {!   !} in
---   let eq₄ = {!   !} in
---   let eq₅ = {!   !} in
---   let e•T⇓v = ⇓-∙ e⇓v vT′⇓v₂ in
---   subst Value eq₁ v₂ , 
---   subst id (begin 
---       Esub σ* σ e ∙ Tsub σ* T′ ⇓ v₂
---     ≡⟨ subst-elim′′′′ (Expr [] ∅) Value _⇓_ (Esub σ* σ e ∙ Tsub σ* T′) v₂ eq₁ ⟩
---       subst (Expr [] ∅) eq₁ (Esub σ* σ e ∙ Tsub σ* T′) ⇓ subst Value eq₁ v₂ 
---     ∎) e•T⇓v ,
---   subst id (begin 
---       LRV T                                                                                        -- | connected 
---           (REext ρ (Tsub σ* T′ , subst (λ ⟦T⟧ → Value (Tsub σ* T′) → ⟦T⟧ → Set l) eq₂ (LRV T′ ρ)))  -- | to each other
---           (subst Value eq₃ v₂) -- easy
---           (E⟦ e ⟧ η γ (⟦ Tsub σ* T′ ⟧ [])) -- easy
---     ≡⟨ {!   !} ⟩
---       LRV (T [ T′ ]T) 
---           ρ 
---           (subst Value eq₄ v₂) -- easy
---           (subst id eq₅ (E⟦ e ⟧ η γ (⟦ T′ ⟧ η))) -- easy
---     ∎) lrv₂
 
 
--- adequacy : (e : Expr [] ∅ `ℕ) → (n : ℕ)
---   → E⟦ e ⟧ [] (λ l T → λ()) ≡ n
---   → e ⇓ V-ℕ n
--- adequacy e n ⟦e⟧≡n
---   with fundamental ∅ (λ l → λ()) (λ l T → λ()) (λ l T → λ()) `ℕ e tt
--- ... | #m , e⇓#m , lrv-ℕ-m-E⟦e⟧
---   with #m in eq
--- ... | # m , v-n
---   rewrite trans lrv-ℕ-m-E⟦e⟧ ⟦e⟧≡n = subst (_⇓ V-ℕ n) (Csub-closed (λ l T → λ()) e) e⇓#m
+-- -- adequacy : (e : Expr [] ∅ `ℕ) → (n : ℕ)
+-- --   → E⟦ e ⟧ [] (λ l T → λ()) ≡ n
+-- --   → e ⇓ V-ℕ n
+-- -- adequacy e n ⟦e⟧≡n
+-- --   with fundamental ∅ (λ l → λ()) (λ l T → λ()) (λ l T → λ()) `ℕ e tt
+-- -- ... | #m , e⇓#m , lrv-ℕ-m-E⟦e⟧
+-- --   with #m in eq
+-- -- ... | # m , v-n
+-- --   rewrite trans lrv-ℕ-m-E⟦e⟧ ⟦e⟧≡n = subst (_⇓ V-ℕ n) (Csub-closed (λ l T → λ()) e) e⇓#m
