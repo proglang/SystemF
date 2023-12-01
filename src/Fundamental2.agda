@@ -32,8 +32,11 @@ open import LRVren
 
 ----------------------------------------------------------------------
 
+𝓥⟦w⟧ᶜ⇒w⇓w : ∀ {l} → (T : Type [] l) (w : Value T) (z : ⟦ T ⟧ []) → let q =  𝓥⟦ T ⟧ (λ l₁ → (λ{ ()})) {!!} z in {!!} → w ⇓ w
+𝓥⟦w⟧ᶜ⇒w⇓w = {!!}
+
 𝓥⟦w⟧⇒w⇓w : ∀ {l} → (T : Type Δ l) (ρ : RelEnv Δ) (w : Value (Tsub (subst←RE ρ) T)) (z : ⟦ T ⟧ (subst-to-env* (subst←RE ρ) [])) → 𝓥⟦ T ⟧ ρ w z → w ⇓ w
-𝓥⟦w⟧⇒w⇓w (` α) ρ w z (w⇓w , _) = w⇓w
+𝓥⟦w⟧⇒w⇓w (` α) ρ w z 𝓥⟦w⟧ = {!!}
 𝓥⟦w⟧⇒w⇓w (T₁ ⇒ T₂) ρ .(ƛ e) z (e , refl , _) = ⇓-ƛ
 𝓥⟦w⟧⇒w⇓w (`∀α l , T) ρ w z (e , refl , _) = ⇓-Λ
 𝓥⟦w⟧⇒w⇓w `ℕ ρ w z (n , refl , _) = ⇓-n
@@ -45,6 +48,16 @@ Elift-[]≡Cextt : (Γ : TEnv Δ) (ρ : RelEnv Δ) (χ : CSub (subst←RE ρ) Γ
     subst (Expr [] ∅) (lemma1 ρ T T′ R) lhs ≡ rhs
 Elift-[]≡Cextt Γ ρ χ l′ l T e T′ R = {!!}
 
+χ-val-extend :  ∀ (Γ : TEnv Δ)
+  → (ρ : RelEnv Δ)
+  → let σ* = subst←RE ρ in (χ : CSub σ* Γ)
+  → (w       : Value (Tsub (subst←RE ρ) T₁))
+  → (w ⇓ w)
+  → (∀ {l′} (T′ : Type Δ l′) (x : inn T′ Γ) → χ _ _ x ⇓ χ _ _ x)
+  → ∀ {l′} (T′ : Type Δ l′) (x : inn T′ (T₁ ◁ Γ)) →
+      Cextend χ w l′ T′ x ⇓ Cextend χ w l′ T′ x
+χ-val-extend Γ ρ χ w w⇓w χ-val T′ here = {!!} -- need w⇓w
+χ-val-extend Γ ρ χ w w⇓w χ-val T′ (there x₁) = χ-val T′ x₁
 
 -- fundamental theorem
 
@@ -54,32 +67,33 @@ fundamental : ∀ (Γ : TEnv Δ)
   → (ρ : RelEnv Δ)
   → let σ* = subst←RE ρ in (χ : CSub σ* Γ)
   → let η = subst-to-env* σ* [] in (γ : Env Δ Γ η)
+  → (∀ {l′} (T′ : Type Δ l′) (x : inn T′ Γ) → χ _ _ x ⇓ χ _ _ x)
   → 𝓖⟦ Γ ⟧ ρ χ γ
   → 𝓔⟦ T ⟧ ρ (Csub χ e) (E⟦ e ⟧ η γ)
 
-fundamental Γ .`ℕ (# n) ρ χ γ 𝓖⟦Γ⟧ =
+fundamental Γ .`ℕ (# n) ρ χ γ χ-val 𝓖⟦Γ⟧ =
   # n , ⇓-n , n , (refl , refl)
 
-fundamental Γ T (` x) ρ χ γ 𝓖⟦Γ⟧ =
+fundamental Γ T (` x) ρ χ γ χ-val 𝓖⟦Γ⟧ =
   let w = χ _ _ x in
   let 𝓥⟦w⟧ = 𝓖-lookup Γ ρ χ γ T 𝓖⟦Γ⟧ x in
-  w , 𝓥⟦w⟧⇒w⇓w T ρ w _ 𝓥⟦w⟧ , 𝓥⟦w⟧
+  w , χ-val T x , 𝓥⟦w⟧
 
-fundamental Γ (T₁ ⇒ T₂) (ƛ e) ρ χ γ lrg =
+fundamental Γ (T₁ ⇒ T₂) (ƛ e) ρ χ γ χ-val lrg =
   Csub χ (ƛ e) ,
   ⇓-ƛ ,
   Esub _ (Eliftₛ _ χ) e ,
   refl ,
   (λ w z lrv-w-z →
     let lrg′ = (lrv-w-z , substlω (𝓖⟦ Γ ⟧ ρ) (sym (Cdrop-Cextend {T = T₁} χ w)) (ENVdrop-extend {T = T₁} γ z) lrg) in
-    let r = fundamental (T₁ ◁ Γ) T₂ e ρ (Cextend χ w) (extend γ z) lrg′ in
+    let r = fundamental (T₁ ◁ Γ) T₂ e ρ (Cextend χ w) (extend γ z) (χ-val-extend Γ ρ χ w {!!} χ-val) lrg′ in
     case r of λ where
       (v , ew⇓v , lrv-v) → v ,
                            subst (_⇓ v) (Cextend-Elift χ w e) ew⇓v ,
                            lrv-v)
 
-fundamental Γ T (_·_ {T = T₂} {T′ = .T} e₁ e₂) ρ χ γ lrg
-  with fundamental Γ (T₂ ⇒ T) e₁ ρ χ γ lrg | fundamental Γ T₂ e₂ ρ χ γ lrg
+fundamental Γ T (_·_ {T = T₂} {T′ = .T} e₁ e₂) ρ χ γ χ-val lrg
+  with fundamental Γ (T₂ ⇒ T) e₁ ρ χ γ χ-val lrg | fundamental Γ T₂ e₂ ρ χ γ χ-val lrg
 ... | v₁ , e₁⇓v₁ , e₁′ , refl , lrv₁ | v₂ , e₂⇓v₂ , lrv₂
   with lrv₁ v₂ (E⟦ e₂ ⟧ (subst-to-env* (subst←RE ρ) []) γ) lrv₂
 ... | v₃ , e₃[]⇓v₃ , lrv₃
@@ -87,7 +101,7 @@ fundamental Γ T (_·_ {T = T₂} {T′ = .T} e₁ e₂) ρ χ γ lrg
     ⇓-· e₁⇓v₁ e₂⇓v₂ e₃[]⇓v₃ ,
     lrv₃
 
-fundamental Γ (`∀α .l , T) (Λ l ⇒ e) ρ χ γ lrg = 
+fundamental Γ (`∀α .l , T) (Λ l ⇒ e) ρ χ γ χ-val lrg = 
   Csub χ (Λ l ⇒ e) ,
   ⇓-Λ ,
   Esub (Tliftₛ (subst←RE ρ) l) (Eliftₛ-l (subst←RE ρ) χ) e ,
@@ -103,6 +117,7 @@ fundamental Γ (`∀α .l , T) (Λ l ⇒ e) ρ χ γ lrg =
                 (REext ρ (T′ , R))
                 (subst (λ σ → CSub σ (l ◁* Γ)) (sym (subst←RE-ext-ext ρ T′ R)) (Cextt χ T′))
                 (extend-tskip γ)
+                {!!}
                 lrg′
     |> λ where
       (v , e⇓v , lrv-t) → 
@@ -121,8 +136,8 @@ fundamental Γ (`∀α .l , T) (Λ l ⇒ e) ρ χ γ lrg =
             ∎) e⇓v ,
            sub-lrvt lrv-t
 
-fundamental Γ .(T [ T′ ]T) (_∙_ {l = l}{T = T} e  T′) ρ χ γ lrg
-  with fundamental Γ (`∀α l , T) e ρ χ γ lrg
+fundamental Γ .(T [ T′ ]T) (_∙_ {l = l}{T = T} e  T′) ρ χ γ χ-val lrg
+  with fundamental Γ (`∀α l , T) e ρ χ γ χ-val lrg
 ... | v , e⇓v , e′ , refl , lrv
   with lrv (Tsub (subst←RE ρ) T′) 
            (subst (λ ⟦T⟧ → Value (Tsub (subst←RE ρ) T′) → ⟦T⟧ → Set l) 

@@ -336,3 +336,4 @@ Tsingle-subst-preserves {Δ = Δ} {l = l}{l′ = l′} η T′ T =
 subst-to-env*-comp : (σ* : TSub Δ₁ Δ₂) → (τ* : TSub Δ₂ Δ₃) → (η : Env* Δ₃) → subst-to-env* σ* (subst-to-env* τ* η) ≡ω subst-to-env* (σ* ∘ₛₛ τ*) η
 subst-to-env*-comp {Δ₁ = []} σ* τ* η = refl
 subst-to-env*-comp {Δ₁ = l ∷ Δ₁} σ* τ* η = conglωω _∷_ (sym (subst-preserves τ* (σ* l here))) (subst-to-env*-comp (Tdropₛ σ*) τ* η)
+

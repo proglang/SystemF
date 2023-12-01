@@ -1,4 +1,5 @@
-module Logical1 where
+{-# OPTIONS --allow-unsolved-metas #-}
+module Logical2 where
 
 open import Level
 open import Data.Product using (_×_; Σ; Σ-syntax; ∃-syntax; _,_; proj₁; proj₂)
@@ -31,9 +32,6 @@ open import SmallStep
 -- auxiliary
 
 
-exprTy : {T : Type Δ l} → Expr Δ Γ T → Type Δ l
-exprTy {T = T} e = T
-
 levelTy : Type Δ l → Level
 levelTy {l = l} T = l
 
@@ -42,45 +40,45 @@ levelEnv ∅ = zero
 levelEnv (T ◁ Γ) = levelTy T ⊔ levelEnv Γ
 levelEnv (l ◁* Γ) = levelEnv Γ
 
-levelΔ : LEnv → Level
-levelΔ [] = zero
-levelΔ (l ∷ Δ) = l ⊔ levelΔ Δ
 
 ----------------------------------------------------------------------
 
 -- big step call by value semantics (analogous to Benton et al)
 
+CExpr : Type [] l → Set
+CExpr T = Expr [] ∅ T
+
+data isValue : ∀ {l}{T : Type [] l} → CExpr T → Set where
+  V-♯ : ∀ {n}
+    → isValue (# n)
+  V-ƛ : ∀ {l₁ l₂}{T₁ : Type [] l₁}{T₂ : Type [] l₂}{e : Expr [] (T₁ ◁ ∅) T₂}
+    → isValue (ƛ e)
+  V-Λ : ∀ {l₁ l₂}{T′ : Type (l₁ ∷ []) l₂}{e : Expr (l₁ ∷ []) (l₁ ◁* ∅) T′}
+    → isValue (Λ l₁ ⇒ e)
+
 Value : Type [] l → Set
-Value T = Expr [] ∅ T
+Value T = Σ (CExpr T) isValue
 
-V-ℕ :  (n : ℕ) → Value `ℕ
-V-ℕ n = # n
-
-V-ƛ : ∀ {T : Type [] l}{T′ : Type [] l′} → Expr [] (T ◁ ∅) T′ → Value (T ⇒ T′)
-V-ƛ e = ƛ e
-
-V-Λ : ∀ (l : Level) → {T : Type (l ∷ []) l′} → Expr (l ∷ []) (l ◁* ∅) T → Value (`∀α l , T)
-V-Λ l e = Λ l ⇒ e
-
-exp : Value T → Expr [] ∅ T
-exp = id
+exp : Value T → CExpr T
+exp = proj₁
 
 -- big step semantics
 
 variable v v₂ : Value T
 
 infix 15 _⇓_
-data _⇓_ : Expr [] ∅ T → Value T → Set where
-  ⇓-n : ∀ {n} → (# n) ⇓ V-ℕ n
-  ⇓-ƛ : (ƛ e) ⇓ V-ƛ e
-  ⇓-· : e₁ ⇓ V-ƛ e → e₂ ⇓ v₂ → (e [ exp v₂ ]E) ⇓ v → (e₁ · e₂) ⇓ v
-  ⇓-Λ : (Λ l ⇒ e) ⇓ V-Λ l e
-  ⇓-∙ : e₁ ⇓ V-Λ l e → (e [ T ]ET) ⇓ v → (e₁ ∙ T) ⇓ v
+data _⇓_ : CExpr T → Value T → Set where
+  ⇓-n : # n ⇓ (# n , V-♯)
+  ⇓-ƛ : ƛ e ⇓ (ƛ e , V-ƛ)
+  ⇓-· : e₁ ⇓ (ƛ e , V-ƛ)
+      → e₂ ⇓ v₂
+      → (e [ exp v₂ ]E) ⇓ v
+      → (e₁ · e₂) ⇓ v
+  ⇓-Λ : Λ l ⇒ e ⇓ (Λ l ⇒ e , V-Λ)
+  ⇓-∙ : e₁ ⇓ (Λ l ⇒ e , V-Λ)
+      → (e [ T ]ET) ⇓ v
+      → (e₁ ∙ T) ⇓ v
 
--- exp-v⇓v : ∀ (v : Value T) → exp v ⇓ v
--- exp-v⇓v (.(# _) , v-n) = ⇓-n
--- exp-v⇓v (.(ƛ _) , v-ƛ) = ⇓-ƛ
--- exp-v⇓v (.(Λ _ ⇒ _) , v-Λ) = ⇓-Λ
 
 infixl 10 _∧_
 _∧_ = _×_
@@ -89,17 +87,11 @@ _∧_ = _×_
 
 -- relation between a syntactic value and a semantic value
 
-REL : Type [] l → Set (suc l)
+REL : ∀ {l} → Type [] l → Set (suc l)
 REL {l} T = Value T → ⟦ T ⟧ [] → Set l 
 
 RelEnv : (Δ : LEnv) → Setω
 RelEnv Δ = ∀ l → l ∈ Δ → Σ (Type [] l) REL
-
-RELIrred : ∀ {l}{T : Type [] l} → REL T → Set l
-RELIrred r = ∀ v z → r v z → v ⇓ v
-
-RelEnvIrred : RelEnv Δ → Setω
-RelEnvIrred ρ = ∀ l x → RELIrred (proj₂ (ρ l x)) 
 
 -- type renaming acting on RelEnv by composition
 
@@ -194,7 +186,6 @@ Tren-act-REext ρ τ* T′ R = relenv-ext (Tren-act-REext-ext ρ τ* T′ R)
 
 -- auxiliary
 
-
 Gdropt : (σ* : TSub (l ∷ Δ) [])
   → Env (l ∷ Δ) (l ◁* Γ) (subst-to-env* σ* [])
   → Env Δ Γ (subst-to-env* (Tdropₛ σ*) [])
@@ -218,90 +209,76 @@ ENVdrop-extend {l = l} {Δ = Δ} {Γ = Γ}{T = T}{η = η} γ z = fun-extω (λ 
 
 -- stratified logical relation
 
-{-
-module maybe-simpler? where
-        LRV′ : (T : Type Δ l) → (ρ : RelEnv Δ)
-          → REL (Tsub (subst←RE ρ) T)
-        LRV′ (` α) ρ v z = proj₂ (ρ _ α) v z 
-        LRV′ (T₁ ⇒ T₂) ρ u f =
-          ∃[ e ] (u ≡ ƛ e) ∧
-          ∀ (w : Value (Tsub (subst←RE ρ) T₁)) →
-          ∀ (z : ⟦ Tsub (subst←RE ρ) T₁ ⟧ []) →
-          LRV′ T₁ ρ w z →
-          ∃[ v ] (e [ exp w ]E ⇓ v) ∧ LRV′ T₂ ρ v (f z)
-        LRV′ (`∀α l , T) ρ u F =
-          ∃[ e ] (u ≡ Λ l ⇒ e) ∧
-          ∀ (T′ : Type [] l) →
-          ∀ (R : REL T′) →
-          ∃[ v ] (e [ T′ ]ET ⇓ v) ∧ 
-                 let ρ′ = REext ρ (T′ , R)
-                     z′ = F (⟦ T′ ⟧ [])
-                 in LRV′ T ρ′
-                         (subst Value (lemma1 ρ T T′ R) v)
-                         (subst id (begin
-                           ⟦ Tsub (Tliftₛ (subst←RE ρ) l) T ⟧ (⟦ T′ ⟧ [] ∷ [])
-                         ≡⟨ sym (Tsingle-subst-preserves [] T′ (Tsub (Tliftₛ (subst←RE ρ) l) T)) ⟩
-                           ⟦ Tsub (Tliftₛ (subst←RE ρ) l) T [ T′ ]T ⟧ []
-                         ≡⟨ cong (λ t → ⟦ t ⟧ []) (σ↑T[T′]≡TextₛσT′T (subst←RE ρ) T′ T) ⟩
-                           ⟦ Tsub (Textₛ (subst←RE ρ) T′) T ⟧ []
-                         ≡⟨ sym (cong (λ t → ⟦ Tsub t T ⟧ []) (subst←RE-ext-ext ρ T′ R) ) ⟩
-                           ⟦ Tsub (subst←RE (REext ρ (T′ , R))) T ⟧ []
-                         ∎) z′)
-        LRV′ `ℕ ρ u z = ∃[ n ] (u ≡ (# n)) ∧ (n ≡ z)
--}
-
 𝓥⟦_⟧ : (T : Type Δ l) → (ρ : RelEnv Δ)
   → Value (Tsub (subst←RE ρ) T) → ⟦ T ⟧ (subst-to-env* (subst←RE ρ) []) → Set l
 𝓥⟦ ` α ⟧ ρ v z =
   proj₂ (ρ _ α) v (subst id (sym (subst-var-preserves α (subst←RE ρ) [])) z)
 𝓥⟦ T₁ ⇒ T₂ ⟧ ρ u f =
-  ∃[ e ] (u ≡ ƛ e) ∧
+  ∃[ e ] (exp u ≡ ƛ e) ∧
   ∀ w z → 𝓥⟦ T₁ ⟧ ρ w z → ∃[ v ] (e [ exp w ]E ⇓ v) ∧ 𝓥⟦ T₂ ⟧ ρ v (f z)
 𝓥⟦ `∀α l , T ⟧ ρ u F =
-  ∃[ e ] (u ≡ Λ l ⇒ e) ∧
+  ∃[ e ] (exp u ≡ Λ l ⇒ e) ∧
   ∀ T′ R →
   ∃[ v ] (e [ T′ ]ET ⇓ v)
        ∧ let ρ′ = REext ρ (T′ , R)
          in 𝓥⟦ T ⟧ ρ′ (subst Value (lemma1 ρ T T′ R) v) (F (⟦ T′ ⟧ []))
 𝓥⟦ `ℕ ⟧ ρ u z =
-  ∃[ n ] (u ≡ (# n)) ∧ (n ≡ z)
+  ∃[ n ] (exp u ≡ (# n)) ∧ (n ≡ z)
 
 
 𝓔⟦_⟧ : (T : Type Δ l) → (ρ : RelEnv Δ)
-  → Value (Tsub (subst←RE ρ) T) → ⟦ T ⟧ (subst-to-env* (subst←RE ρ) []) → Set l
+  → CExpr (Tsub (subst←RE ρ) T) → ⟦ T ⟧ (subst-to-env* (subst←RE ρ) []) → Set l
 𝓔⟦ T ⟧ ρ e z = ∃[ v ] (e ⇓ v) ∧ 𝓥⟦ T ⟧ ρ v z
 
 -- closing value substitution
 
+module different-attempt where
+  CSub : TSub Δ [] → TEnv Δ → Set
+  CSub σ* Γ = Σ (ESub σ* Γ ∅) λ σ → ∀ l T x → isValue (σ l T x)
+
+  ES←SC : {σ* : TSub Δ []} → CSub σ* Γ → ESub σ* Γ ∅
+  ES←SC = proj₁
+
+  Csub : {Γ : TEnv Δ} {σ* : TSub Δ []} → CSub σ* Γ → Expr Δ Γ T → CExpr (Tsub σ* T)
+  Csub {σ* = σ*} χ e = Esub σ* (proj₁ χ) e
+
+  Cdrop : ∀ {l} {T : Type Δ l} → CSub σ* (T ◁ Γ) → CSub σ* Γ
+  proj₁ (Cdrop (σ , σ-val)) = λ l₁ T₁ x → σ l₁ T₁ (there x)
+  proj₂ (Cdrop (σ , σ-val)) = λ l₁ T₁ x → σ-val l₁ T₁ (there x)
+
+
 CSub : TSub Δ [] → TEnv Δ → Set
-CSub {Δ} σ* Γ = ESub σ* Γ ∅
+CSub {Δ} σ* Γ = ∀ l (T : Type Δ l) → inn T Γ → Value (Tsub σ* T)
 
 ES←SC : {σ* : TSub Δ []} → CSub σ* Γ → ESub σ* Γ ∅
-ES←SC = id
+ES←SC χ = λ l T x → proj₁ (χ l T x)
 
-Csub : {Γ : TEnv Δ} {σ* : TSub Δ []} → CSub σ* Γ → Expr Δ Γ T → Expr [] ∅ (Tsub σ* T)
-Csub {σ* = σ*} χ e = Esub σ* χ e
+Csub : {Γ : TEnv Δ} {σ* : TSub Δ []} → CSub σ* Γ → Expr Δ Γ T → CExpr (Tsub σ* T)
+Csub {σ* = σ*} χ e = Esub σ* (ES←SC χ) e
 
 Cdrop : ∀ {l} {T : Type Δ l} → CSub σ* (T ◁ Γ) → CSub σ* Γ
-Cdrop χ _ _ x = χ _ _ (there x)
+Cdrop χ l T x = χ l T (there x)
 
 Cextend : ∀ {l} {T : Type Δ l} → CSub σ* Γ → Value (Tsub σ* T) → CSub σ* (T ◁ Γ)
 Cextend χ v _ _ here = v
 Cextend χ v _ _ (there x) = χ _ _ x
 
 Cextend-Eext : ∀ {l} {T : Type Δ l} → (χ : CSub σ* Γ) → (w : Value (Tsub σ* T)) → 
-  Cextend {T = T} χ w ≡ Eextₛ _ χ (exp w)
-Cextend-Eext {Δ = Δ} {σ* = σ*} {Γ = Γ} {T = T} χ w = fun-ext λ l → fun-ext λ T′ → fun-ext λ x → aux l T′ x
-  where
-    aux : (l : Level) (T′ : Type Δ l) (x : inn T′ (T ◁ Γ)) →
-      (Cextend χ w) l _ x ≡ Eextₛ σ* χ (exp w) l _ x
-    aux l _ here = refl
-    aux l _ (there x) = refl
+  Cextend {T = T} χ w ≡ {!Eextₛ _ (ES←SC χ) (exp w)!}
+  -- Eextₛ _ χ (exp w)
+Cextend-Eext {Δ = Δ} {σ* = σ*} {Γ = Γ} {T = T} χ w = {!!}
+  -- fun-ext λ l → fun-ext λ T′ → fun-ext λ x → aux l T′ x
+  -- where
+  --   aux : (l : Level) (T′ : Type Δ l) (x : inn T′ (T ◁ Γ)) →
+  --     (Cextend′ χ w) l _ x ≡ Eextₛ σ* χ (exp w) l _ x
+  --   aux l _ here = refl
+  --   aux l _ (there x) = refl
 
 Cdrop-Cextend : ∀ {l} {σ* : TSub Δ []} {T : Type Δ l}
   → (χ : CSub σ* Γ) → (v : Value (Tsub σ* T))
   → Cdrop {l = l} {T = T} (Cextend {l = l} χ v) ≡ χ
-Cdrop-Cextend {Δ = Δ} {Γ = Γ} {l = l} {T = T} χ v = fun-ext λ l′ → fun-ext λ T′ → fun-ext λ x → aux l′ T′ x
+Cdrop-Cextend {Δ = Δ} {Γ = Γ} {l = l} {T = T} χ v =
+  fun-ext λ l′ → fun-ext λ T′ → fun-ext λ x → aux l′ T′ x
   where
     aux : ∀ l′ (T′ : Type Δ l′) → (x : inn T′ Γ) → Cdrop {T = T} (Cextend χ v) l′ _ x ≡ χ l′ _ x
     aux _ _ here = refl
@@ -333,7 +310,7 @@ subst-split-ƛ :
   → (eq₁ : t₁ ≡ t₁′)
   → (eq₂ : t₂ ≡ t₂′)
   → (a : Expr [] (t₁ ◁ ∅) t₂)
-  → subst (Expr [] ∅) eq (ƛ a) ≡ ƛ subst₂ (λ T₁ T₂ → Expr [] (T₁ ◁ ∅) T₂) eq₁ eq₂ a
+  → subst CExpr eq (ƛ a) ≡ ƛ subst₂ (λ T₁ T₂ → Expr [] (T₁ ◁ ∅) T₂) eq₁ eq₂ a
 subst-split-ƛ refl refl refl a = refl
 
 subst-split-Λ :
@@ -341,49 +318,57 @@ subst-split-Λ :
   → (eqₒ : `∀α l , tᵢ ≡ `∀α l , tᵢ′)
   → (eqᵢ : tᵢ ≡ tᵢ′)
   → (a : Expr [ l ] (l ◁* ∅) tᵢ)
-  → subst (Expr [] ∅) eqₒ (Λ l ⇒ a) ≡ Λ l ⇒ subst (Expr [ l ] (l ◁* ∅)) eqᵢ a
+  → subst CExpr eqₒ (Λ l ⇒ a) ≡ Λ l ⇒ subst (Expr [ l ] (l ◁* ∅)) eqᵢ a
 subst-split-Λ refl refl a = refl
 
 subst-split-⇓ :
   ∀ {Tₑ Tᵥ : Type [] l}
-  → (e : Value Tₑ)
+  → (e : CExpr Tₑ)
   → (v : Value Tᵥ)
   → (Tₑ≡Tᵥ : Tₑ ≡ Tᵥ)
-  → subst Value Tₑ≡Tᵥ e ⇓ v
+  → subst CExpr Tₑ≡Tᵥ e ⇓ v
   → e ⇓ subst Value (sym Tₑ≡Tᵥ) v
 subst-split-⇓ e v refl x = x
 
 subst-split-eq-⇓ :
   ∀ {Tₑ Tᵥ : Type [] l}
-  → (e : Value Tₑ)
+  → (e : CExpr Tₑ)
   → (v : Value Tᵥ)
   → (Tₑ≡Tᵥ : Tₑ ≡ Tᵥ)
-  → subst Value Tₑ≡Tᵥ e ⇓ v ≡ e ⇓ subst Value (sym Tₑ≡Tᵥ) v
+  → subst CExpr Tₑ≡Tᵥ e ⇓ v ≡ e ⇓ subst Value (sym Tₑ≡Tᵥ) v
 subst-split-eq-⇓ e v refl = refl
 
 subst-split-⇓′ :
   ∀ {Tₑ Tᵥ : Type [] l}
-  → (e : Value Tₑ)
+  → (e : CExpr Tₑ)
   → (v : Value Tᵥ)
   → (Tₑ≡Tᵥ : Tₑ ≡ Tᵥ)
   → e ⇓ subst Value (sym Tₑ≡Tᵥ) v
-  → subst Value Tₑ≡Tᵥ e ⇓ v
+  → subst CExpr Tₑ≡Tᵥ e ⇓ v
 subst-split-⇓′ e v refl x = x
 
 subst-split-⇓₂ :
   ∀ {T T′ : Type [] l}
-  → {e v : Value T}
+  → {e : CExpr T}
+  → {v : Value T}
   → (T≡T′ : T ≡ T′)
   → e ⇓ v
-  → subst Value T≡T′ e ⇓ subst Value T≡T′ v
+  → subst CExpr T≡T′ e ⇓ subst Value T≡T′ v
 subst-split-⇓₂ refl e⇓v = e⇓v
 
 subst-split-[]E :
   ∀ {T₁ T₁′ : Type [] l₁} {T₂ T₂′ : Type [] l₂}
-  → (e : Expr [] (T₁ ◁ ∅) T₂) (e′ : Expr [] ∅ T₁′)
+  → (e : Expr [] (T₁ ◁ ∅) T₂) (e′ : CExpr T₁′)
   → (eq₁ : T₁ ≡ T₁′) (eq₂ : T₂ ≡ T₂′)
-  → subst Value eq₂ (e [ subst Value (sym eq₁) e′ ]E) ≡ (subst₂ (λ T₁ T₂ → Expr [] (T₁ ◁ ∅) T₂) eq₁ eq₂ e [ e′ ]E)
+  → subst CExpr eq₂ (e [ subst CExpr (sym eq₁) e′ ]E) ≡ (subst₂ (λ T₁ T₂ → Expr [] (T₁ ◁ ∅) T₂) eq₁ eq₂ e [ e′ ]E)
 subst-split-[]E e e′ refl refl = refl
+
+subst-split-[]E′ :
+  ∀ {T₁ T₁′ : Type [] l₁} {T₂ T₂′ : Type [] l₂}
+  → (e : Expr [] (T₁ ◁ ∅) T₂) (e′ : CExpr T₁′)
+  → (eq₁ : T₁′ ≡ T₁) (eq₂ : T₂ ≡ T₂′)
+  → subst CExpr eq₂ (e [ subst CExpr eq₁ e′ ]E) ≡ (subst₂ (λ T₁ T₂ → Expr [] (T₁ ◁ ∅) T₂) (sym eq₁) eq₂ e [ e′ ]E)
+subst-split-[]E′ e e′ refl refl = refl
 
 Tdrop-σ≡Twk∘σ : ∀ (σ* : TSub (l ∷ Δ₁) Δ₂) → Tdropₛ σ* ≡ Twkᵣ Tidᵣ ∘ᵣₛ σ*
 Tdrop-σ≡Twk∘σ σ* = fun-ext₂ (λ x y → refl)
@@ -429,8 +414,6 @@ dist-subst*-sym a→b f a₁≡a₂ b₁≡b₂ x
   with fun-ext a₁≡a₂
 dist-subst*-sym a→b f a₁≡a₂ refl x | refl = refl
 
-
--- generalizing LRVwk and LRVst; otherwise the `∀α case does not fly (?)
 
 {- <-- TypeSubstProperties -}
 apply-env-var : (σ* : TSub Δ []) (x : l ∈ Δ) → apply-env (subst-to-env* σ* []) x ≡ ⟦ σ* l x ⟧ []
