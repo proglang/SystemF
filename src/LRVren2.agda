@@ -1029,7 +1029,59 @@ LRVren-eq′ (`∀α l , T) ρ τ* v z =
             (subst Value (lemma1 (Tren-act τ* ρ) T T′ R) v₁) (z (⟦ T′ ⟧ []))))
     ≡⟨ cong₂ _∧_
     ----------------------------------------
-    {!!}
+    (begin
+      exp v ≡
+        (Λ l ⇒
+         subst id
+         (sym
+          (sym
+           (cong (Expr (l ∷ []) (l ◁* ∅))
+            (assoc-sub↑-ren↑ T τ* (subst←RE ρ)))))
+         e)
+    ≡⟨ cong (λ H → exp v ≡ (Λ l ⇒ subst id (sym H) e))
+            (sym-cong {f = (Expr (l ∷ []) (l ◁* ∅))} (assoc-sub↑-ren↑ T τ* (subst←RE ρ)) ) ⟩
+      exp v ≡
+        (Λ l ⇒
+         subst id
+         (sym
+          (cong (Expr (l ∷ []) (l ◁* ∅))
+           (sym (assoc-sub↑-ren↑ T τ* (subst←RE ρ)))))
+         e)
+    ≡⟨ cong (λ H → exp v ≡ (Λ l ⇒ subst id H e))
+            (sym-cong  {f = (Expr (l ∷ []) (l ◁* ∅))} (sym (assoc-sub↑-ren↑ T τ* (subst←RE ρ)))) ⟩
+      exp v ≡
+        (Λ l ⇒
+         subst id
+         (cong (Expr (l ∷ []) (l ◁* ∅))
+          (sym (sym (assoc-sub↑-ren↑ T τ* (subst←RE ρ)))))
+         e)
+    ≡˘⟨ cong (λ H → exp v ≡ (Λ l ⇒ H))
+        (subst-∘ {P = id} {f = (Expr (l ∷ []) (l ◁* ∅))} (sym (sym (assoc-sub↑-ren↑ T τ* (subst←RE ρ)))) {e} ) ⟩
+      exp v ≡
+        (Λ l ⇒
+         subst (id ∘ Expr (l ∷ []) (l ◁* ∅))
+         (sym (sym (assoc-sub↑-ren↑ T τ* (subst←RE ρ)))) e)
+    ≡˘⟨ cong (λ H → exp v ≡ H)
+             (subst-split-Λ (cong (`∀α_,_ l) (assoc-sub↑-ren↑ T τ* (subst←RE ρ))) (sym (sym (assoc-sub↑-ren↑ T τ* (subst←RE ρ)))) e) ⟩
+      exp v ≡
+        subst CExpr (cong (`∀α_,_ l) (assoc-sub↑-ren↑ T τ* (subst←RE ρ)))
+        (Λ l ⇒ e)
+    ≡⟨ subst-swap-eq′ {F = CExpr} (cong (`∀α_,_ l) (assoc-sub↑-ren↑ T τ* (subst←RE ρ))) (exp v) (Λ l ⇒ e)  ⟩
+      subst CExpr
+        (sym (cong (`∀α_,_ l) (assoc-sub↑-ren↑ T τ* (subst←RE ρ)))) (exp v)
+        ≡ (Λ l ⇒ e)
+    ≡˘⟨ cong (_≡ Λ l ⇒ e) ( dist-subst' {F = Value} {G = CExpr} id exp (sym (cong (`∀α_,_ l) (assoc-sub↑-ren↑ T τ* (subst←RE ρ)))) (sym (cong (`∀α_,_ l) (assoc-sub↑-ren↑ T τ* (subst←RE ρ)))) v) ⟩
+      exp (subst Value (sym (cong (`∀α_,_ l) (assoc-sub↑-ren↑ T τ* (subst←RE ρ)))) v)
+        ≡ (Λ l ⇒ e)
+    ≡⟨ cong (λ H → exp H ≡ (Λ l ⇒ e))
+             (subst-∘ {P = id} {f = Value} (sym (cong (`∀α_,_ l) (assoc-sub↑-ren↑ T τ* (subst←RE ρ)))) {v} ) ⟩
+      exp (subst id (cong Value (sym (cong (`∀α_,_ l) (assoc-sub↑-ren↑ T τ* (subst←RE ρ))))) v)
+        ≡ (Λ l ⇒ e)
+    ≡˘⟨ cong (λ H → exp (subst id H v) ≡ (Λ l ⇒ e))
+             (sym-cong {f = Value} (cong (`∀α_,_ l) (assoc-sub↑-ren↑ T τ* (subst←RE ρ))) ) ⟩
+      exp (subst id (sym (cong Value (cong (`∀α_,_ l) (assoc-sub↑-ren↑ T τ* (subst←RE ρ))))) v)
+        ≡ (Λ l ⇒ e)
+    ∎)
     ----------------------------------------
     {!!}
     ----------------------------------------
