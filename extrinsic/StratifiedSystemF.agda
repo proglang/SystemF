@@ -3,6 +3,7 @@ module StratifiedSystemF where
 -- open import Level using (Level) renaming (zero to lzero; suc to lsuc)
 open import Data.Nat using (ℕ; zero; suc)
 open import Data.List using (List; []; _∷_)
+open import Data.Fin using (Fin; zero; suc)
 open import Data.Product using (_×_; Σ; Σ-syntax; ∃-syntax; _,_; proj₁; proj₂)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl; sym; cong; cong₂; subst; module ≡-Reasoning)
 
@@ -13,19 +14,17 @@ open import Kits
 -- Fixities --------------------------------------------------------------------
 
 infix   3  _⊢_  _↪_  _⊢_∶_
-infixr  5  λx_  Λα_  ∀α_ def_；_ trait[o∶_]_；_ impl_；_ some_ Maybe_ ƛ[_]_ [_]⇒_
-infixr  6  _⇒_ _↓_ _∶α⇒_ 
-infixl  6  _·_  _∙_ _•[_]_
-infix   7  `_ ⇝_
+infixr  5  λx_  Λα_  ∀α_ `let_；_ trait[o∶_]_；_ impl[_∶_]_；_ some_ Maybe_ ƛ[_]_ [_]⇒_ ref_
+infixr  6  _⇒_ _↓_ _∶_ 
+infixl  6  _·_  
+infix   7  `_ 
 
 -- Sorts -----------------------------------------------------------------------
 
 data Sort : SortTy → Set where
-  𝕖     : Sort Var
+  𝕖     : ℕ → Sort Var
   𝕥     : Sort Var
-  𝕠     : Sort Var
   𝕔     : Sort Var
-  𝕚     : Sort NoVar
   𝕜     : Sort NoVar
 
 -- Syntax ----------------------------------------------------------------------
@@ -35,44 +34,64 @@ private variable
   s s₁ s₂ s₃ s' s₁' s₂' s₃'  : Sort st
   S S₁ S₂ S₃ S' S₁' S₂' S₃'  : List (Sort Var)
   x y z x₁ x₂                : S ∋ s
+  n n₁ n₂                    : ℕ
+
+-- impls for functions, what is the function type? 
+-- -> see Maybe (α → α), what do we apply the Λα. to? 
+-- -> type substiution in the semantic neccessary with the function type, which we dont know without type inference of the argument applyed
+--  solution 1: type semantics
+--  solution 2: type inference in semantics
+--  solution 3: erase type information from expressions
+
+-- impl block depend on other impl blocks, does not work with substiution
+-- -> stores
+-- -> how do we translate these stores with lists of impl blocks?
+-- trait eq : ∀α. α → α → Bool in 
+-- impl eq : Bool → Bool → Bool ...
+-- impl eq : ∀α. [eq : α → α → Bool] => Maybe α → Maybe α → Bool
+--   Λα. λx. → Λβ. ƛ(eq : α → α → Bool). λx. λy. ...
+-- impl eq : ∀α. [eq : α → α → Bool] => ∀β. [eq : β → β → Bool] => (α, β) → (α, β) → Bool
+ 
+
+-- eq Bool true false
+-- eq (Maybe Bool) (some true) (some false)
+-- -> eq_mb Bool (some true) (some false)
+-- eq (Bool, Bool) (true, true) (true, true)
+-- -> eq_pr Bool ∎ Bool ∎ (true, true) (true, true)
 
 data _⊢_ : List (Sort Var) → Sort st → Set where
   -- System F
   `_              : S ∋ s → S ⊢ s                
-  λx_             : (𝕖 ∷ S) ⊢ 𝕖 → S ⊢ 𝕖          
-  Λα_             : (𝕥 ∷ S) ⊢ 𝕖 → S ⊢ 𝕖 
+  λx_             : (𝕖 n ∷ S) ⊢ 𝕖 n → S ⊢ 𝕖 n          
+  Λα_             : S ⊢ 𝕖 n → S ⊢ 𝕖 n 
   ∀α_             : (𝕥 ∷ S) ⊢ 𝕥 → S ⊢ 𝕥 
-  _·_             : S ⊢ 𝕖 → S ⊢ 𝕖 → S ⊢ 𝕖
-  _∙_             : S ⊢ 𝕖 → S ⊢ 𝕥 → S ⊢ 𝕖 
+  _·_             : S ⊢ 𝕖 n → S ⊢ 𝕖 n → S ⊢ 𝕖 n
+  _∙              : S ⊢ 𝕖 n → S ⊢ 𝕖 n 
   _⇒_             : S ⊢ 𝕥 → S ⊢ 𝕥 → S ⊢ 𝕥
-  def_；_         : S ⊢ 𝕖 → (𝕖 ∷ S) ⊢ 𝕖 → S ⊢ 𝕖
+  `let_；_        : S ⊢ 𝕖 n → (𝕖 n ∷ S) ⊢ 𝕖 n → S ⊢ 𝕖 n
   ★               : S ⊢ 𝕜
   -- Overloading
-  trait[o∶_]_；_  : S ⊢ 𝕥 → (𝕠 ∷ S) ⊢ 𝕚 → (𝕠 ∷ S) ⊢ 𝕖 → S ⊢ 𝕖
-  impl_；_        : S ⊢ 𝕖 → S ⊢ 𝕚 → S ⊢ 𝕚
-  ∅               : S ⊢ 𝕚
-  _•[_]_          : S ⊢ 𝕠 → S ⊢ 𝕖 → S ⊢ 𝕖
-  ⇝_              : S ⊢ 𝕚 → S ⊢ 𝕠 
-  _,_             : S ⊢ 𝕥 → S ⊢ 𝕥 → S ⊢ 𝕥   
+  trait[o∶_]_；_  : S ⊢ 𝕥 → S ⊢ 𝕖 (suc n) → S ⊢ 𝕖 (suc n) → S ⊢ 𝕖 n 
+  impl[_∶_]_；_   : Fin n → S ⊢ 𝕥 → S ⊢ 𝕖 n → S ⊢ 𝕖 n → S ⊢ 𝕖 n  
+  ref_            : Fin n → S ⊢ 𝕖 n  
   -- Constraints 
-  _∶α⇒_           : S ⊢ 𝕠 → S ⊢ 𝕥 → S ⊢ 𝕔
-  ƛ[_]_           : S ⊢ 𝕔 → (𝕔 ∷ S) ⊢ 𝕖 → S ⊢ 𝕖  
+  _∶_             : S ⊢ 𝕖 n → S ⊢ 𝕥 → S ⊢ 𝕔
+  ƛ[_]_           : S ⊢ 𝕔 → S ⊢ 𝕖 n → S ⊢ 𝕖 n  
   [_]⇒_           : S ⊢ 𝕔 → S ⊢ 𝕥 → S ⊢ 𝕥
   -- Exemplary expressions & types
-  true            : S ⊢ 𝕖 
-  false           : S ⊢ 𝕖
-  _↓_             : S ⊢ 𝕖 → S ⊢ 𝕖 → S ⊢ 𝕖 -- {nor} is a complete operator set for propositional logic 
+  true            : S ⊢ 𝕖 n 
+  false           : S ⊢ 𝕖 n
+  _↓_             : S ⊢ 𝕖 n → S ⊢ 𝕖 n → S ⊢ 𝕖 n -- {nor} is a complete operator set for propositional logic 
   𝔹               : S ⊢ 𝕥
-  none            : S ⊢ 𝕖
-  some_           : S ⊢ 𝕖 → S ⊢ 𝕖
-  case_[x→_；_]   : S ⊢ 𝕖 → (𝕖 ∷ S) ⊢ 𝕖 → S ⊢ 𝕖 → S ⊢ 𝕖
+  none            : S ⊢ 𝕖 n
+  some_           : S ⊢ 𝕖 n → S ⊢ 𝕖 n
+  case_[x→_；_]   : S ⊢ 𝕖 n → (𝕖 n ∷ S) ⊢ 𝕖 n → S ⊢ 𝕖 n → S ⊢ 𝕖 n
   Maybe_          : S ⊢ 𝕥 → S ⊢ 𝕥
 
 -- example program with overloading:
 -- 
 -- ```
 -- trait eq : ∀α. α → α → Bool 
---
 -- impl eq for Bool → Bool → Bool with
 --      eq x y = x ↔ y
 -- impl eq for ∀α. [eq : α → α → Bool] → Maybe α → Maybe α → Bool
@@ -80,12 +99,12 @@ data _⊢_ : List (Sort Var) → Sort st → Set where
 --      eq none     none     = true
 --      eq _        _        = false
 --
--- eq (some true) (some true)
+-- (ref eq) (some 5) (some 5)
 -- ``` 
 --
 -- attempt #1:
 -- 
--- _ : [] ⊢ 𝕖
+-- _ : [] ⊢ 𝕖 n
 -- _ = trait[o∶ ∀α ` zero ⇒ ` zero ⇒ 𝔹 ] 
 --       impl ` zero ∶ -- ∶ 𝔹 ⇒ 𝔹 ⇒ 𝔹 (is given by implementation)
 --         λx λx (` zero ↓ ` zero) ↓ (` (suc zero) ↓ ` (suc zero)) ； -- (x₁ ↓ x₁) ↓ (x₂ ↓ x₂) ≡ x₁ ↔ x₂
@@ -97,19 +116,19 @@ data _⊢_ : List (Sort Var) → Sort st → Set where
 --       (` zero •[ 𝔹 , ∅ ] (some true) · (some true))
 -- 
 -- attempt #2:
-_ : [] ⊢ 𝕖 
-_ = trait[o∶ ∀α ` zero ⇒ ` zero ⇒ 𝔹 ] 
-      impl λx λx 
-        (` zero ↓ ` zero) ↓ (` (suc zero) ↓ ` (suc zero)) ； 
-      impl Λα ƛ[ ` suc zero ∶α⇒ ` zero ⇒ 𝔹 ] λx λx 
-        case ` (suc zero) 
-          [x→  case ` (suc zero) [x→ ` suc (suc (suc (suc (suc (suc zero))))) •[  ] ` (suc zero) · ` zero ； false ] ； 
-          case ` zero [x→ false ； true ] ] ； ∅ ； 
-    {!   !}
+-- _ : [] ⊢ 𝕖 n 
+-- _ = trait[o∶ ∀α ` zero ⇒ ` zero ⇒ 𝔹 ] 
+--       impl λx λx 
+--         (` zero ↓ ` zero) ↓ (` (suc zero) ↓ ` (suc zero)) ； 
+--       impl Λα ƛ[ ` suc zero ∶α⇒ ` zero ⇒ 𝔹 ] λx λx 
+--         case ` (suc zero) 
+--           [x→  case ` (suc zero) [x→ ` suc (suc (suc (suc (suc (suc zero))))) •[  ] ` (suc zero) · ` zero ； false ] ； 
+--           case ` zero [x→ false ； true ] ] ； ∅ ； 
+--     {!   !}
 
 
 private variable
-  e e₁ e₂ e₃ e' e₁' e₂'  : S ⊢ 𝕖
+  e e₁ e₂ e₃ e' e₁' e₂'  : S ⊢ 𝕖 n
   t t₁ t₂ t₃ t' t₁' t₂'  : S ⊢ 𝕥
   c c₁ c₂ c₃ c' c₁' c₂'  : S ⊢ 𝕔
   k k₁ k₂ k₃ k' k₁' k₂'  : S ⊢ 𝕜
@@ -129,17 +148,17 @@ SystemF-Syntax = record
 open Syntax SystemF-Syntax hiding (Sort; _⊢_; `_)
 
 -- Can be derived in the full framework.
-_⋯_ : ∀ ⦃ K : Kit _∋/⊢_ ⦄ → S₁ ⊢ s → S₁ –[ K ]→ S₂ → S₂ ⊢ s
-(` x)                  ⋯ ϕ = `/id (x & ϕ)
-(λx e)                 ⋯ ϕ = λx e ⋯ (ϕ ↑ 𝕖)
-(Λα e)                 ⋯ ϕ = Λα e ⋯ (ϕ ↑ 𝕥)
-(∀α t)                 ⋯ ϕ = ∀α t ⋯ (ϕ ↑ 𝕥)
-(e₁ · e₂)              ⋯ ϕ = e₁ ⋯ ϕ · e₂ ⋯ ϕ
-(e ∙ t)                ⋯ ϕ = e ⋯ ϕ ∙ t ⋯ ϕ
-(t₁ ⇒ t₂)              ⋯ ϕ = t₁ ⋯ ϕ ⇒ t₂ ⋯ ϕ
-(def e₂ ； e₁)         ⋯ ϕ = def e₂ ⋯ ϕ ； e₁ ⋯ (ϕ ↑ 𝕖)
-★                      ⋯ ϕ = ★
--- (trait[o∶ c ] t)       ⋯ ϕ = trait[o∶ c ⋯ ϕ ] t ⋯ (ϕ ↑ 𝕠)
+-- _⋯_ : ∀ ⦃ K : Kit _∋/⊢_ ⦄ → S₁ ⊢ s → S₁ –[ K ]→ S₂ → S₂ ⊢ s
+-- (` x)                  ⋯ ϕ = `/id (x & ϕ)
+-- (λx e)                 ⋯ ϕ = λx e ⋯ (ϕ ↑ 𝕖 n)
+-- (Λα e)                 ⋯ ϕ = Λα e ⋯ (ϕ ↑ 𝕥)
+-- (∀α t)                 ⋯ ϕ = ∀α t ⋯ (ϕ ↑ 𝕥)
+-- (e₁ · e₂)              ⋯ ϕ = e₁ ⋯ ϕ · e₂ ⋯ ϕ
+-- (e ∙ t)                ⋯ ϕ = e ⋯ ϕ ∙ t ⋯ ϕ
+-- (t₁ ⇒ t₂)              ⋯ ϕ = t₁ ⋯ ϕ ⇒ t₂ ⋯ ϕ
+-- (`let e₂ ； e₁)         ⋯ ϕ = `let e₂ ⋯ ϕ ； e₁ ⋯ (ϕ ↑ 𝕖 n)
+-- ★                      ⋯ ϕ = ★
+-- (trait[o∶ c ] t)       ⋯ ϕ = trait[o∶ c ⋯ ϕ ] t ⋯ (ϕ ↑ 𝕖 n)
 -- (impl o ∶ e₁ ； e₂)    ⋯ ϕ = impl o ⋯ ϕ ∶ e₁ ⋯ ϕ ； e₂ ⋯ ϕ
 -- (o •[ ts ] e)          ⋯ ϕ = o ⋯ ϕ  •[ ts ⋯ ϕ ] e ⋯ ϕ
 -- ∅                      ⋯ ϕ = ∅
@@ -147,15 +166,15 @@ _⋯_ : ∀ ⦃ K : Kit _∋/⊢_ ⦄ → S₁ ⊢ s → S₁ –[ K ]→ S₂ �
 -- (o ∶α⇒ e)              ⋯ ϕ = o ⋯ ϕ ∶α⇒ e ⋯ ϕ
 -- (ƛ[ c ] e)             ⋯ ϕ = ƛ[ c ⋯ ϕ ] e ⋯ (ϕ ↑ 𝕔)
 -- ([ c ]⇒ t)             ⋯ ϕ = [ c ⋯ ϕ ]⇒ t ⋯ ϕ
-e                      ⋯ ϕ = {!   !}
-true                   ⋯ ϕ = true
-false                  ⋯ ϕ = false
-(e₁ ↓ e₂)              ⋯ ϕ = e₁ ⋯ ϕ ↓ e₂ ⋯ ϕ
-𝔹                      ⋯ ϕ = 𝔹
-none                   ⋯ ϕ = none
-(some e)               ⋯ ϕ = some (e ⋯ ϕ)
-case e [x→ e₁ ； e₂ ]  ⋯ ϕ = case (e ⋯ ϕ) [x→  e₁ ⋯ (ϕ ↑ 𝕖) ； e₂ ⋯ ϕ  ]
-(Maybe e)              ⋯ ϕ = Maybe (e ⋯ ϕ)
+-- e                      ⋯ ϕ = {!   !}
+-- true                   ⋯ ϕ = true
+-- false                  ⋯ ϕ = false
+-- (e₁ ↓ e₂)              ⋯ ϕ = e₁ ⋯ ϕ ↓ e₂ ⋯ ϕ
+-- 𝔹                      ⋯ ϕ = 𝔹
+-- none                   ⋯ ϕ = none
+-- (some e)               ⋯ ϕ = some (e ⋯ ϕ)
+-- case e [x→ e₁ ； e₂ ]  ⋯ ϕ = case (e ⋯ ϕ) [x→  e₁ ⋯ (ϕ ↑ 𝕖 n) ； e₂ ⋯ ϕ  ]
+-- (Maybe e)              ⋯ ϕ = Maybe (e ⋯ ϕ)
 
 {-
 -- Can be derived in the full framework.
@@ -163,7 +182,7 @@ case e [x→ e₁ ； e₂ ]  ⋯ ϕ = case (e ⋯ ϕ) [x→  e₁ ⋯ (ϕ ↑ �
 ⋯-id ⦃ K ⦄ (` x)     = `/`-is-` ⦃ K ⦄ x
 ⋯-id (t₁ · t₂)       = cong₂ _·_ (⋯-id t₁) (⋯-id t₂)
 ⋯-id (λx t)          = cong λx_ (
-  t ⋯ (id ↑ 𝕖)  ≡⟨ cong (t ⋯_) (~-ext id↑~id) ⟩
+  t ⋯ (id ↑ 𝕖 n)  ≡⟨ cong (t ⋯_) (~-ext id↑~id) ⟩
   t ⋯ id        ≡⟨ ⋯-id t ⟩
   t             ∎)
 ⋯-id (Λ[α: l ] t)    = cong Λ[α: l ]_ (
@@ -195,10 +214,10 @@ open Traversal SystemF-Traversal hiding (_⋯_; ⋯-id)
 ⋯-fusion (t₁ · t₂)      ϕ₁ ϕ₂ = cong₂ _·_  (⋯-fusion t₁ ϕ₁ ϕ₂)
                                           (⋯-fusion t₂ ϕ₁ ϕ₂)
 ⋯-fusion (λx t)         ϕ₁ ϕ₂ = cong λx_ (
-  (t ⋯ (ϕ₁ ↑ 𝕖)) ⋯ (ϕ₂ ↑ 𝕖)   ≡⟨ ⋯-fusion t (ϕ₁ ↑ 𝕖) (ϕ₂ ↑ 𝕖) ⟩
-  t ⋯ ((ϕ₁ ↑ 𝕖) ·ₖ (ϕ₂ ↑ 𝕖))  ≡⟨ cong (t ⋯_) (sym (
-                                   ~-ext (dist-↑-· 𝕖 ϕ₁ ϕ₂))) ⟩
-  t ⋯ ((ϕ₁ ·ₖ ϕ₂) ↑ 𝕖)        ∎)
+  (t ⋯ (ϕ₁ ↑ 𝕖 n)) ⋯ (ϕ₂ ↑ 𝕖 n)   ≡⟨ ⋯-fusion t (ϕ₁ ↑ 𝕖 n) (ϕ₂ ↑ 𝕖 n) ⟩
+  t ⋯ ((ϕ₁ ↑ 𝕖 n) ·ₖ (ϕ₂ ↑ 𝕖 n))  ≡⟨ cong (t ⋯_) (sym (
+                                   ~-ext (dist-↑-· 𝕖 n ϕ₁ ϕ₂))) ⟩
+  t ⋯ ((ϕ₁ ·ₖ ϕ₂) ↑ 𝕖 n)        ∎)
 ⋯-fusion (Λ[α: l ] t)         ϕ₁ ϕ₂ = cong Λ[α: l ]_ (
   (t ⋯ (ϕ₁ ↑ 𝕥)) ⋯ (ϕ₂ ↑ 𝕥)
     ≡⟨ ⋯-fusion t (ϕ₁ ↑ 𝕥) (ϕ₂ ↑ 𝕥) ⟩
@@ -230,7 +249,7 @@ open ComposeTraversal SystemF-CTraversal hiding (⋯-fusion)
 
 SystemF-Types : Types
 SystemF-Types = record
-  { ↑ᵗ = λ { 𝕖 → _ , 𝕥 ; 𝕥 → _ , 𝕜 ; 𝕜 → _ , 𝕜 ; 𝕠 → _ , 𝕜 ; 𝕔 → _ , 𝕜  } }
+  { ↑ᵗ = λ { 𝕖 n → _ , 𝕥 ; 𝕥 → _ , 𝕜 ; 𝕜 → _ , 𝕜 ; 𝕖 n → _ , 𝕜 ; 𝕔 → _ , 𝕜  } }
 
 open Types SystemF-Types
 
@@ -242,10 +261,10 @@ data _⊢_∶_ : Ctx S → S ⊢ s → S ∶⊢ s → Set where
   ⊢`  :  ∀ {x : S ∋ s} {T : S ∶⊢ s} →
          Γ ∋ x ∶ T →
          Γ ⊢ ` x ∶ T
-  ⊢λ  :  ∀ {e : (𝕖 ∷ S) ⊢ 𝕖} →
+  ⊢λ  :  ∀ {e : (𝕖 n ∷ S) ⊢ 𝕖 n} →
          (t₁ ∷ₜ Γ) ⊢ e ∶ (wk _ t₂) →
          Γ ⊢ λx e ∶ t₁ ⇒ t₂
-  ⊢Λ  :  (★[ l ] ∷ₜ Γ) ⊢ e ∶ t₂ →
+  ⊢Λ  :  (★[ l ] ∷ₜ Γ) ⊢ wk e ∶ t₂ →
          Γ ⊢ Λ[α: l ] e ∶ ∀[α∶ l ] t₂
   ⊢·  :  Γ ⊢ t₁ ∶ ★[ l ] →
          Γ ⊢ e₁ ∶ t₁ ⇒ t₂ →
@@ -296,7 +315,7 @@ open TypingTraversal SystemF-TTraversal hiding (_⊢⋯_)
 -- Semantics -------------------------------------------------------------------
 
 data _↪_ : S ⊢ s → S ⊢ s → Set where
-  β-λ   :  ∀ {e₂ : S ⊢ 𝕖} → (λx e₁) · e₂ ↪ e₁ ⋯ ⦅ e₂ ⦆
+  β-λ   :  ∀ {e₂ : S ⊢ 𝕖 n} → (λx e₁) · e₂ ↪ e₁ ⋯ ⦅ e₂ ⦆
   β-Λ   :  ∀ {t₂ : S ⊢ 𝕥} → (Λ[α: l ] e₁) ∙ t₂ ↪ e₁ ⋯ ⦅ t₂ ⦆
   ξ-λ   :  e ↪ e' → λx e ↪ λx e'
   ξ-Λ   :  e ↪ e' → Λ[α: l ] e ↪ Λ[α: l ] e'
@@ -335,7 +354,7 @@ subject-reduction (⊢∙ ⊢t₁ ⊢t₂ ⊢e₁) (ξ-∙₁ e₁↪e₁') =
 -- extₜ Γ ⟦t⟧ _ _∋_.zero refl = ⟦t⟧
 -- extₜ Γ ⟦t⟧ l (_∋_.suc x) ⊢x = Γ l x {!  !}
 -- 
--- extₜ-t : Envₜ Γ → Envₜ (_∷ₜ_ {s = 𝕖} t Γ)
+-- extₜ-t : Envₜ Γ → Envₜ (_∷ₜ_ {s = 𝕖 n} t Γ)
 -- extₜ-t Γ _ (_∋_.suc x) ⊢x = Γ _ x {!   !}
 -- 
 -- ⟦_⟧ₜ : Γ ⊢ t ∶ ★[ l ] → Envₜ Γ → Set l
@@ -344,14 +363,14 @@ subject-reduction (⊢∙ ⊢t₁ ⊢t₂ ⊢e₁) (ξ-∙₁ e₁↪e₁') =
 -- ⟦ ⊢∀ {l = l} ⊢t ⟧ₜ η = (⟦t⟧ : Set l) → ⟦ ⊢t ⟧ₜ (extₜ η ⟦t⟧)
 -- 
 -- Envₑ : (Γ : Ctx S) → Envₜ Γ → Setω
--- Envₑ {S = S} Γ η = ∀ (l : Level) (x : S ∋ 𝕖) (t : S ⊢ 𝕥) (⊢t : Γ ⊢ t ∶ ★[ l ]) → 
+-- Envₑ {S = S} Γ η = ∀ (l : Level) (x : S ∋ 𝕖 n) (t : S ⊢ 𝕥) (⊢t : Γ ⊢ t ∶ ★[ l ]) → 
 --   Γ ∋ x ∶ t → 
 --   ⟦ ⊢t ⟧ₜ η 
 -- 
 -- extₑ : ∀ {⊢t : Γ ⊢ t ∶ ★[ l ]} {η : Envₜ Γ} → 
 --   Envₑ Γ η → 
 --   ⟦ ⊢t ⟧ₜ η →
---   Envₑ (_∷ₜ_ {s = 𝕖} t Γ) (extₜ-t η)
+--   Envₑ (_∷ₜ_ {s = 𝕖 n} t Γ) (extₜ-t η)
 -- extₑ Γ ⟦e⟧ = {!   !}
 -- 
 -- extₑ-t : ∀ {η : Envₜ Γ} → 
