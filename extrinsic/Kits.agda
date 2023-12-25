@@ -413,33 +413,33 @@ record Syntax : Set₁ where
               Γ₂             ∋*/⊢* ϕ       ∶ Γ₁ →
               (t : S₁ ∶⊢ s) →
               ((t ⋯ ϕ) ∷ₜ Γ₂) ∋*/⊢* (ϕ ↑ s) ∶ (t ∷ₜ Γ₁)
-            _∋↑/⊢↑_ {S₁} {S₂} {s} {Γ₁} {Γ₂} {ϕ} ⊢ϕ t {sx} x@zero _ refl =
+            _∋↑/⊢↑_ {S₁} {S₂} {s} {Γ₁} {Γ₂} {ϕ} ⊢ϕ t {sx} zero _ refl =
               subst (  ((t ⋯ ϕ) ∷ₜ Γ₂) ∋/⊢ (zero & (ϕ ↑ s)) ∶_ )
                     (  t ⋯ ϕ ⋯ weakenᵣ s                      ≡⟨ ⋯-↑-wk t ϕ s ⟩
                        t ⋯ weakenᵣ s ⋯ (ϕ ↑ s)                ≡⟨⟩
                        wk-telescope (t ∷ₜ Γ₁) zero ⋯ (ϕ ↑ s)  ∎ )
                     (  id/⊢` {x = zero} {Γ = (t ⋯ ϕ) ∷ₜ Γ₂} refl )
-            _∋↑/⊢↑_ {S₁} {S₂} {s} {Γ₁} {Γ₂} {ϕ} ⊢ϕ t {sx} x@(suc y) _ refl =
-              subst (((t ⋯ ϕ) ∷ₜ Γ₂) ∋/⊢ (suc y & (ϕ ↑ s)) ∶_)
-                    (wk-telescope Γ₁ y ⋯ ϕ ⋯ weakenᵣ s         ≡⟨ ⋯-↑-wk _ ϕ s ⟩
-                     wk-telescope Γ₁ y ⋯ weakenᵣ s ⋯ (ϕ ↑ s)   ≡⟨⟩
-                     wk-telescope (t ∷ₜ Γ₁) (suc y) ⋯ (ϕ ↑ s)  ∎)
-                    (∋wk/⊢wk _ _ _ _ (⊢ϕ y _ refl))
+            _∋↑/⊢↑_ {S₁} {S₂} {s} {Γ₁} {Γ₂} {ϕ} ⊢ϕ t {sx} (suc x) _ refl =
+              subst (((t ⋯ ϕ) ∷ₜ Γ₂) ∋/⊢ (suc x & (ϕ ↑ s)) ∶_)
+                    (wk-telescope Γ₁ x ⋯ ϕ ⋯ weakenᵣ s         ≡⟨ ⋯-↑-wk _ ϕ s ⟩
+                     wk-telescope Γ₁ x ⋯ weakenᵣ s ⋯ (ϕ ↑ s)   ≡⟨⟩
+                     wk-telescope (t ∷ₜ Γ₁) (suc x) ⋯ (ϕ ↑ s)  ∎)
+                    (∋wk/⊢wk _ _ _ _ (⊢ϕ x _ refl))
 
             ⊢⦅_⦆ : ∀ {s S} {Γ : Ctx S} {t : S ∋/⊢ s} {T : S ∶⊢ s}
               → Γ ∋/⊢ t ∶ T 
               → Γ ∋*/⊢* ⦅ t ⦆ ∶ (T ∷ₜ Γ)
-            ⊢⦅_⦆ {s} {S} {Γ} {t} {T} ⊢x/t x@zero _ refl =
+            ⊢⦅_⦆ {s} {S} {Γ} {t} {T} ⊢x/t zero _ refl =
               subst (Γ ∋/⊢ t ∶_)
                     (T                                   ≡⟨ sym (wk-cancels-⦅⦆-⋯ T t) ⟩
                      T ⋯ weakenᵣ _ ⋯ ⦅ t ⦆               ≡⟨⟩
                      wk-telescope (T ∷ₜ Γ) zero ⋯ ⦅ t ⦆  ∎)
                     ⊢x/t
-            ⊢⦅_⦆ {s} {S} {Γ} {t} {T} ⊢x/t x@(suc y) _ refl =
-              subst (Γ ∋/⊢ id/` y ∶_)
-                    (wk-telescope Γ y                       ≡⟨ sym (wk-cancels-⦅⦆-⋯ _ t) ⟩
-                     wk-telescope Γ y ⋯ weakenᵣ _ ⋯ ⦅ t ⦆   ≡⟨⟩
-                     wk-telescope (T ∷ₜ Γ) (suc y) ⋯ ⦅ t ⦆  ∎)
+            ⊢⦅_⦆ {s} {S} {Γ} {t} {T} ⊢x/t (suc x) _ refl =
+              subst (Γ ∋/⊢ id/` x ∶_)
+                    (wk-telescope Γ x                      ≡⟨ sym (wk-cancels-⦅⦆-⋯ _ t) ⟩
+                     wk-telescope Γ x ⋯ weakenᵣ _ ⋯ ⦅ t ⦆   ≡⟨⟩
+                     wk-telescope (T ∷ₜ Γ) (suc x) ⋯ ⦅ t ⦆  ∎)
                     (id/⊢` refl)
 
           open TypingKit ⦃ … ⦄ public

@@ -1,11 +1,10 @@
 module StratifiedSystemF where
 
--- open import Level using (Level) renaming (zero to lzero; suc to lsuc)
 open import Data.Nat using (ℕ; zero; suc)
 open import Data.List using (List; []; _∷_)
 open import Data.Fin using (Fin; zero; suc)
 open import Data.Product using (_×_; Σ; Σ-syntax; ∃-syntax; _,_; proj₁; proj₂)
-open import Relation.Binary.PropositionalEquality using (_≡_; refl; sym; cong; cong₂; subst; module ≡-Reasoning)
+open import Relation.Binary.PropositionalEquality using (_≡_; refl; sym; trans; cong; cong₂; subst; module ≡-Reasoning)
 
 open ≡-Reasoning
 
@@ -14,23 +13,29 @@ open import Kits
 -- Fixities --------------------------------------------------------------------
 
 infix   3  _⊢_  _↪_  _⊢_∶_
-infixr  5  λx_  Λα_  ∀α_ `let_；_ trait[o∶_]_；_ impl[_∶_]_；_ some_ Maybe_ ƛ[_]_ [_]⇒_ ref_
+infixr  5  λx_  Λα_  ∀α_ letrec_；_ trait[o∶_]_ impl[_∶_]_；_ ƛ[_]_ [_]⇒_
 infixr  6  _⇒_ _↓_ _∶_ 
 infixl  6  _·_  
-infix   7  `_ 
+infix   6 _∙ _•
+infix   7  `_ Maybe_ some_ ref_ ζ_
 
 -- Sorts -----------------------------------------------------------------------
 
+data TySort : Set where
+  m : TySort
+  p : TySort
+
 data Sort : SortTy → Set where
   𝕖     : ℕ → Sort Var
-  𝕥     : Sort Var
-  𝕔     : Sort Var
+  𝕥     : TySort → ℕ → Sort Var
+  𝕔     : ℕ → Sort Var
   𝕜     : Sort NoVar
 
 -- Syntax ----------------------------------------------------------------------
 
 private variable
-  st                         : SortTy
+  st st₁ st₂ st₃ st' st₁' st₂' : SortTy
+  ts ts₁ ts₂ ts₃ ts' ts₁' ts₂' : TySort
   s s₁ s₂ s₃ s' s₁' s₂' s₃'  : Sort st
   S S₁ S₂ S₃ S' S₁' S₂' S₃'  : List (Sort Var)
   x y z x₁ x₂                : S ∋ s
@@ -63,74 +68,58 @@ data _⊢_ : List (Sort Var) → Sort st → Set where
   -- System F
   `_              : S ∋ s → S ⊢ s                
   λx_             : (𝕖 n ∷ S) ⊢ 𝕖 n → S ⊢ 𝕖 n          
-  Λα_             : S ⊢ 𝕖 n → S ⊢ 𝕖 n 
-  ∀α_             : (𝕥 ∷ S) ⊢ 𝕥 → S ⊢ 𝕥 
+  Λα_             : (𝕥 m n ∷ S) ⊢ 𝕖 n → S ⊢ 𝕖 n 
+  ∀α_             : (𝕥 m n ∷ S) ⊢ 𝕥 ts n → S ⊢ 𝕥 p n 
+  ζ_              : S ⊢ 𝕥 ts n → S ⊢ 𝕥 m n -- do not use in language! neccessary for translation from constraints in system o to higher order functions in system f 
+                                           -- we could also add a third index to the type sort that indicates the use of forbidden "zeta lifting" (i.e. using system f types)
   _·_             : S ⊢ 𝕖 n → S ⊢ 𝕖 n → S ⊢ 𝕖 n
   _∙              : S ⊢ 𝕖 n → S ⊢ 𝕖 n 
-  _⇒_             : S ⊢ 𝕥 → S ⊢ 𝕥 → S ⊢ 𝕥
-  `let_；_        : S ⊢ 𝕖 n → (𝕖 n ∷ S) ⊢ 𝕖 n → S ⊢ 𝕖 n
+  _⇒_             : S ⊢ 𝕥 m n → S ⊢ 𝕥 m n → S ⊢ 𝕥 m n
+  letrec_；_      : (𝕖 n ∷ S) ⊢ 𝕖 n → (𝕖 n ∷ S) ⊢ 𝕖 n → S ⊢ 𝕖 n
   ★               : S ⊢ 𝕜
   -- Overloading
-  trait[o∶_]_；_  : S ⊢ 𝕥 → S ⊢ 𝕖 (suc n) → S ⊢ 𝕖 (suc n) → S ⊢ 𝕖 n 
-  impl[_∶_]_；_   : Fin n → S ⊢ 𝕥 → S ⊢ 𝕖 n → S ⊢ 𝕖 n → S ⊢ 𝕖 n  
+  trait[o∶_]_     : S ⊢ 𝕥 ts n → S ⊢ 𝕖 (suc n) → S ⊢ 𝕖 n -- rust would allow S ⊢ t ts (suc n), so maybe we should too?
+  impl[_∶_]_；_   : Fin n → S ⊢ 𝕥 ts n → S ⊢ 𝕖 n → S ⊢ 𝕖 n → S ⊢ 𝕖 n  
   ref_            : Fin n → S ⊢ 𝕖 n  
+  
   -- Constraints 
-  _∶_             : S ⊢ 𝕖 n → S ⊢ 𝕥 → S ⊢ 𝕔
-  ƛ[_]_           : S ⊢ 𝕔 → S ⊢ 𝕖 n → S ⊢ 𝕖 n  
-  [_]⇒_           : S ⊢ 𝕔 → S ⊢ 𝕥 → S ⊢ 𝕥
+  _∶_             : Fin n → S ⊢ 𝕥 m n → S ⊢ 𝕔 n
+  ƛ[_]_           : S ⊢ 𝕔 n → (𝕔 n ∷ S) ⊢ 𝕖 n → S ⊢ 𝕖 n  
+  _•              : S ⊢ 𝕖 n → S ⊢ 𝕖 n 
+  [_]⇒_           : S ⊢ 𝕔 n → S ⊢ 𝕥 ts n → S ⊢ 𝕥 p n
   -- Exemplary expressions & types
   true            : S ⊢ 𝕖 n 
   false           : S ⊢ 𝕖 n
   _↓_             : S ⊢ 𝕖 n → S ⊢ 𝕖 n → S ⊢ 𝕖 n -- {nor} is a complete operator set for propositional logic 
-  𝔹               : S ⊢ 𝕥
+  Bool            : S ⊢ 𝕥 m n
   none            : S ⊢ 𝕖 n
   some_           : S ⊢ 𝕖 n → S ⊢ 𝕖 n
   case_[x→_；_]   : S ⊢ 𝕖 n → (𝕖 n ∷ S) ⊢ 𝕖 n → S ⊢ 𝕖 n → S ⊢ 𝕖 n
-  Maybe_          : S ⊢ 𝕥 → S ⊢ 𝕥
+  Maybe_          : S ⊢ 𝕥 m n → S ⊢ 𝕥 m n
 
--- example program with overloading:
--- 
--- ```
--- trait eq : ∀α. α → α → Bool 
--- impl eq for Bool → Bool → Bool with
---      eq x y = x ↔ y
--- impl eq for ∀α. [eq : α → α → Bool] → Maybe α → Maybe α → Bool
---      eq (some x) (some y) = eq x y 
---      eq none     none     = true
---      eq _        _        = false
---
--- (ref eq) (some 5) (some 5)
--- ``` 
---
--- attempt #1:
--- 
--- _ : [] ⊢ 𝕖 n
--- _ = trait[o∶ ∀α ` zero ⇒ ` zero ⇒ 𝔹 ] 
---       impl ` zero ∶ -- ∶ 𝔹 ⇒ 𝔹 ⇒ 𝔹 (is given by implementation)
---         λx λx (` zero ↓ ` zero) ↓ (` (suc zero) ↓ ` (suc zero)) ； -- (x₁ ↓ x₁) ↓ (x₂ ↓ x₂) ≡ x₁ ↔ x₂
---       impl ` zero ∶ -- ∶ ∀α [ suc zero ∶ (` zero ⇒ ` zero ⇒ 𝔹) ]⇒ Maybe ` zero ⇒ (Maybe ` zero) ⇒ 𝔹 
---         Λα ƛ[ ` suc zero ∶α⇒ ` zero ⇒ 𝔹 ] λx λx 
---             case ` (suc zero) 
---               [x→ case ` (suc zero) [x→ ` suc (suc (suc (suc (suc (suc zero))))) •[ ∅ ] ` zero · ` suc zero ； false ] ； 
---               case ` zero [x→ false ； true ] ] ； 
---       (` zero •[ 𝔹 , ∅ ] (some true) · (some true))
--- 
--- attempt #2:
--- _ : [] ⊢ 𝕖 n 
--- _ = trait[o∶ ∀α ` zero ⇒ ` zero ⇒ 𝔹 ] 
---       impl λx λx 
---         (` zero ↓ ` zero) ↓ (` (suc zero) ↓ ` (suc zero)) ； 
---       impl Λα ƛ[ ` suc zero ∶α⇒ ` zero ⇒ 𝔹 ] λx λx 
---         case ` (suc zero) 
---           [x→  case ` (suc zero) [x→ ` suc (suc (suc (suc (suc (suc zero))))) •[  ] ` (suc zero) · ` zero ； false ] ； 
---           case ` zero [x→ false ； true ] ] ； ∅ ； 
---     {!   !}
+-- example program with overloading: 
+_ : [] ⊢ 𝕖 zero
+_ = trait[o∶ ∀α ` zero ⇒ ` zero ⇒ Bool ] 
+    impl[ zero ∶ Bool ⇒ Bool ⇒ Bool ] λx λx (` zero ↓ ` zero) ↓ (` (suc zero) ↓ ` (suc zero)) ； 
+    impl[ zero ∶ ∀α [ zero ∶ ` zero ⇒ ` zero ⇒ Bool ]⇒ Maybe ` zero ⇒ Maybe ` zero ⇒ Bool ] 
+        Λα ƛ[ zero ∶ ` zero ⇒ ` zero ⇒ Bool ] λx λx 
+          case `  (suc zero) [x→ case ` (suc zero) [x→ ref zero · ` zero · ` (suc zero) ； false ] ； 
+                             case ` zero [x→ false ； true ] ] ； 
+    ref zero · some true · some true
+--  (Λα ƛ[ zero ∶ ` zero ⇒ ` zero ⇒ Bool ] λx λx ..) ∙ • · some true · some true
 
+-- .. and its translation:
+_ : [] ⊢ 𝕖 zero
+_ = letrec λx λx (` zero ↓ ` zero) ↓ (` (suc zero) ↓ ` (suc zero)) ； 
+    letrec Λα λx λx λx 
+          case `  (suc zero) [x→ case ` (suc zero) [x→ ` (suc (suc (suc (suc zero)))) · ` zero · ` (suc zero) ； false ] ； 
+                             case ` zero [x→ false ； true ] ] ； 
+    ` zero ∙ · ` (suc zero) · some true · some true
 
 private variable
   e e₁ e₂ e₃ e' e₁' e₂'  : S ⊢ 𝕖 n
-  t t₁ t₂ t₃ t' t₁' t₂'  : S ⊢ 𝕥
-  c c₁ c₂ c₃ c' c₁' c₂'  : S ⊢ 𝕔
+  t t₁ t₂ t₃ t' t₁' t₂'  : S ⊢ 𝕥 ts n
+  c c₁ c₂ c₃ c' c₁' c₂'  : S ⊢ 𝕔 n
   k k₁ k₂ k₃ k' k₁' k₂'  : S ⊢ 𝕜
   E E₁ E₂ E₃ E' E₁' E₂'  : S ⊢ s
 
@@ -148,55 +137,103 @@ SystemF-Syntax = record
 open Syntax SystemF-Syntax hiding (Sort; _⊢_; `_)
 
 -- Can be derived in the full framework.
--- _⋯_ : ∀ ⦃ K : Kit _∋/⊢_ ⦄ → S₁ ⊢ s → S₁ –[ K ]→ S₂ → S₂ ⊢ s
--- (` x)                  ⋯ ϕ = `/id (x & ϕ)
--- (λx e)                 ⋯ ϕ = λx e ⋯ (ϕ ↑ 𝕖 n)
--- (Λα e)                 ⋯ ϕ = Λα e ⋯ (ϕ ↑ 𝕥)
--- (∀α t)                 ⋯ ϕ = ∀α t ⋯ (ϕ ↑ 𝕥)
--- (e₁ · e₂)              ⋯ ϕ = e₁ ⋯ ϕ · e₂ ⋯ ϕ
--- (e ∙ t)                ⋯ ϕ = e ⋯ ϕ ∙ t ⋯ ϕ
--- (t₁ ⇒ t₂)              ⋯ ϕ = t₁ ⋯ ϕ ⇒ t₂ ⋯ ϕ
--- (`let e₂ ； e₁)         ⋯ ϕ = `let e₂ ⋯ ϕ ； e₁ ⋯ (ϕ ↑ 𝕖 n)
--- ★                      ⋯ ϕ = ★
--- (trait[o∶ c ] t)       ⋯ ϕ = trait[o∶ c ⋯ ϕ ] t ⋯ (ϕ ↑ 𝕖 n)
--- (impl o ∶ e₁ ； e₂)    ⋯ ϕ = impl o ⋯ ϕ ∶ e₁ ⋯ ϕ ； e₂ ⋯ ϕ
--- (o •[ ts ] e)          ⋯ ϕ = o ⋯ ϕ  •[ ts ⋯ ϕ ] e ⋯ ϕ
--- ∅                      ⋯ ϕ = ∅
--- (t , ts)               ⋯ ϕ = t ⋯ ϕ , ts ⋯ ϕ
--- (o ∶α⇒ e)              ⋯ ϕ = o ⋯ ϕ ∶α⇒ e ⋯ ϕ
--- (ƛ[ c ] e)             ⋯ ϕ = ƛ[ c ⋯ ϕ ] e ⋯ (ϕ ↑ 𝕔)
--- ([ c ]⇒ t)             ⋯ ϕ = [ c ⋯ ϕ ]⇒ t ⋯ ϕ
--- e                      ⋯ ϕ = {!   !}
--- true                   ⋯ ϕ = true
--- false                  ⋯ ϕ = false
--- (e₁ ↓ e₂)              ⋯ ϕ = e₁ ⋯ ϕ ↓ e₂ ⋯ ϕ
--- 𝔹                      ⋯ ϕ = 𝔹
--- none                   ⋯ ϕ = none
--- (some e)               ⋯ ϕ = some (e ⋯ ϕ)
--- case e [x→ e₁ ； e₂ ]  ⋯ ϕ = case (e ⋯ ϕ) [x→  e₁ ⋯ (ϕ ↑ 𝕖 n) ； e₂ ⋯ ϕ  ]
--- (Maybe e)              ⋯ ϕ = Maybe (e ⋯ ϕ)
+_⋯_ : ∀ ⦃ K : Kit _∋/⊢_ ⦄ → S₁ ⊢ s → S₁ –[ K ]→ S₂ → S₂ ⊢ s
+(` x)                    ⋯ ϕ = `/id (x & ϕ)
+(λx e)                   ⋯ ϕ = λx e ⋯ (ϕ ↑ _)
+(Λα e)                   ⋯ ϕ = Λα e ⋯ (ϕ ↑ _)
+(∀α t)                   ⋯ ϕ = ∀α t ⋯ (ϕ ↑ _)
+(ζ t)                    ⋯ ϕ = ζ t ⋯ ϕ
+(e₁ · e₂)                ⋯ ϕ = e₁ ⋯ ϕ · e₂ ⋯ ϕ
+(e ∙)                    ⋯ ϕ = e ⋯ ϕ ∙
+(t₁ ⇒ t₂)                ⋯ ϕ = t₁ ⋯ ϕ ⇒ t₂ ⋯ ϕ
+(letrec e₂ ； e₁)        ⋯ ϕ = letrec e₂ ⋯ (ϕ ↑ _) ； e₁ ⋯ (ϕ ↑ _)
+★                        ⋯ ϕ = ★
+(trait[o∶ t ] e)         ⋯ ϕ = trait[o∶ t ⋯ ϕ ] e ⋯ ϕ
+(impl[ o ∶ t ] e₁ ； e₂) ⋯ ϕ = impl[ o ∶ t ⋯ ϕ ] e₁ ⋯ ϕ ； e₂ ⋯ ϕ
+(ref o)                  ⋯ ϕ = ref o
+(o ∶ t)                  ⋯ ϕ = o ∶ t ⋯ ϕ
+(ƛ[ c ] e)               ⋯ ϕ = ƛ[ c ⋯ ϕ ] e ⋯ (ϕ ↑ _)
+(e •)                    ⋯ ϕ = e ⋯ ϕ •
+([ c ]⇒ t)               ⋯ ϕ = [ c ⋯ ϕ ]⇒ t ⋯ ϕ
+true                     ⋯ ϕ = true
+false                    ⋯ ϕ = false
+(e₁ ↓ e₂)                ⋯ ϕ = e₁ ⋯ ϕ ↓ e₂ ⋯ ϕ
+Bool                     ⋯ ϕ = Bool
+none                     ⋯ ϕ = none
+(some e)                 ⋯ ϕ = some e ⋯ ϕ
+case e [x→ e₁ ； e₂ ]    ⋯ ϕ = case e ⋯ ϕ [x→ e₁ ⋯ (ϕ ↑ _) ； e₂ ⋯ ϕ ]
+(Maybe t)                ⋯ ϕ = Maybe t ⋯ ϕ
 
-{-
+cong₃ : ∀ {l} {A B C D : Set l} (f : A → B → C → D) {x y u v p q} → 
+        x ≡ y → u ≡ v → p ≡ q → f x u p ≡ f y v q
+cong₃ f refl refl refl = refl
+
 -- Can be derived in the full framework.
 ⋯-id : ∀ ⦃ K : Kit _∋/⊢_ ⦄ (t : S ⊢ s) → t ⋯ id ⦃ K ⦄ ≡ t
-⋯-id ⦃ K ⦄ (` x)     = `/`-is-` ⦃ K ⦄ x
-⋯-id (t₁ · t₂)       = cong₂ _·_ (⋯-id t₁) (⋯-id t₂)
-⋯-id (λx t)          = cong λx_ (
-  t ⋯ (id ↑ 𝕖 n)  ≡⟨ cong (t ⋯_) (~-ext id↑~id) ⟩
-  t ⋯ id        ≡⟨ ⋯-id t ⟩
-  t             ∎)
-⋯-id (Λ[α: l ] t)    = cong Λ[α: l ]_ (
-  t ⋯ (id ↑ 𝕥)  ≡⟨ cong (t ⋯_) (~-ext id↑~id) ⟩
-  t ⋯ id        ≡⟨ ⋯-id t ⟩
-  t             ∎)
-⋯-id (∀[α∶ l ] t₂)  = cong ∀[α∶ l ]_ (
-  t₂ ⋯ (id ↑ 𝕥)  ≡⟨ cong (t₂ ⋯_) (~-ext id↑~id) ⟩
-  t₂ ⋯ id        ≡⟨ ⋯-id t₂ ⟩
-  t₂             ∎)
-⋯-id (t₁ ∙ t₂)       = cong₂ _∙_ (⋯-id t₁) (⋯-id t₂)
-⋯-id (t₁ ⇒ t₂)       = cong₂ _⇒_ (⋯-id t₁) (⋯-id t₂)
-⋯-id ★[ l ]          = refl
+⋯-id ⦃ K ⦄ (` x)             = `/`-is-` ⦃ K ⦄ x
+⋯-id (λx e)                   = cong λx_ (trans (cong (e ⋯_) (~-ext id↑~id)) (⋯-id e))
+⋯-id (Λα e)                   = cong Λα_ (trans (cong (e ⋯_) (~-ext id↑~id)) (⋯-id e))
+⋯-id (∀α t)                   = cong ∀α_ (trans (cong (t ⋯_) (~-ext id↑~id)) (⋯-id t))
+⋯-id (ζ t)                    = cong ζ_ (⋯-id t)
+⋯-id (e₁ · e₂)                = cong₂ _·_ (⋯-id e₁) (⋯-id e₂)
+⋯-id (e ∙)                    = cong _∙ (⋯-id e)
+⋯-id (t₁ ⇒ t₂)                = cong₂ _⇒_ (⋯-id t₁) (⋯-id t₂)
+⋯-id (letrec e₂ ； e₁)        = cong₂ letrec_；_ (trans (cong (e₂ ⋯_) (~-ext id↑~id)) (⋯-id e₂)) (trans (cong (e₁ ⋯_) (~-ext id↑~id)) (⋯-id e₁))
+⋯-id ★                        = refl
+⋯-id (trait[o∶ t ] e)         = cong₂ trait[o∶_]_ (⋯-id t) (⋯-id e)
+⋯-id (impl[ o ∶ t ] e₁ ； e₂) = cong₃ impl[ o ∶_]_；_ (⋯-id t) (⋯-id e₁) (⋯-id e₂)
+⋯-id (ref o)                  = refl
+⋯-id (o ∶ e)                  = cong (o ∶_) (⋯-id e)
+⋯-id (ƛ[ c ] e)               = cong₂ ƛ[_]_ (⋯-id c) (trans (cong (e ⋯_) (~-ext id↑~id)) (⋯-id e))
+⋯-id (e •)                    = cong _• (⋯-id e)
+⋯-id ([ c ]⇒ t)               = cong₂ [_]⇒_ (⋯-id c) (⋯-id t)
+⋯-id true                     = refl
+⋯-id false                    = refl
+⋯-id (e₁ ↓ e₂)                = cong₂ _↓_ (⋯-id e₁) (⋯-id e₂)
+⋯-id Bool                     = refl
+⋯-id none                     = refl
+⋯-id (some e)                 = cong some_ (⋯-id e)
+⋯-id case e [x→ e₁ ； e₂ ]    = cong₃ case_[x→_；_] (⋯-id e) (trans (cong (e₁ ⋯_) (~-ext id↑~id)) (⋯-id e₁)) (⋯-id e₂)
+⋯-id (Maybe t)                = cong Maybe_ (⋯-id t)
 
+SystemO-Traversal : Traversal
+SystemO-Traversal = record
+  { _⋯_ = _⋯_ ; ⋯-id = ⋯-id ; ⋯-var = λ x ϕ → refl }
+
+open Traversal SystemO-Traversal hiding (_⋯_; ⋯-id)
+
+⋯-fusion :
+  ∀ ⦃ K₁ : Kit _∋/⊢₁_ ⦄ ⦃ K₂ : Kit _∋/⊢₂_ ⦄ ⦃ K : Kit _∋/⊢_ ⦄
+    ⦃ W₁ : WkKit K₁ ⦄ ⦃ C : ComposeKit K₁ K₂ K ⦄
+    (t : S₁ ⊢ s) (ϕ₁ : S₁ –[ K₁ ]→ S₂) (ϕ₂ : S₂ –[ K₂ ]→ S₃)
+  → (t ⋯ ϕ₁) ⋯ ϕ₂ ≡ t ⋯ (ϕ₁ ·ₖ ϕ₂)
+⋯-fusion (` x) ϕ₁ ϕ₂ = {!   !}
+⋯-fusion (λx e) ϕ₁ ϕ₂ = {!   !}
+⋯-fusion (Λα e) ϕ₁ ϕ₂ = {!   !}
+⋯-fusion (∀α e) ϕ₁ ϕ₂ = {!   !}
+⋯-fusion (ζ e) ϕ₁ ϕ₂ = {!   !}
+⋯-fusion (e · e₁) ϕ₁ ϕ₂ = {!   !}
+⋯-fusion (e ∙) ϕ₁ ϕ₂ = {!   !}
+⋯-fusion (e ⇒ e₁) ϕ₁ ϕ₂ = {!   !}
+⋯-fusion (letrec e ； e₁) ϕ₁ ϕ₂ = {!   !}
+⋯-fusion ★ ϕ₁ ϕ₂ = {!   !}
+⋯-fusion (trait[o∶ e ] e₁) ϕ₁ ϕ₂ = {!   !}
+⋯-fusion (impl[ x ∶ e ] e₁ ； e₂) ϕ₁ ϕ₂ = {!   !}
+⋯-fusion (ref x) ϕ₁ ϕ₂ = {!   !}
+⋯-fusion (x ∶ e) ϕ₁ ϕ₂ = {!   !}
+⋯-fusion (ƛ[ e ] e₁) ϕ₁ ϕ₂ = {!   !}
+⋯-fusion (e •) ϕ₁ ϕ₂ = {!   !}
+⋯-fusion ([ e ]⇒ e₁) ϕ₁ ϕ₂ = {!   !}
+⋯-fusion true ϕ₁ ϕ₂ = {!   !}
+⋯-fusion false ϕ₁ ϕ₂ = {!   !}
+⋯-fusion (e ↓ e₁) ϕ₁ ϕ₂ = {!   !}
+⋯-fusion Bool ϕ₁ ϕ₂ = {!   !}
+⋯-fusion none ϕ₁ ϕ₂ = {!   !}
+⋯-fusion (some e) ϕ₁ ϕ₂ = {!   !}
+⋯-fusion case e [x→ e₁ ； e₂ ] ϕ₁ ϕ₂ = {!   !}
+⋯-fusion (Maybe e) ϕ₁ ϕ₂ = {!   !}
+
+{-
 -- Can be derived in the full framework.
 SystemF-Traversal : Traversal
 SystemF-Traversal = record
@@ -389,4 +426,4 @@ subject-reduction (⊢∙ ⊢t₁ ⊢t₂ ⊢e₁) (ξ-∙₁ e₁↪e₁') =
 -- ⟦ ⊢Λ ⊢e ⟧ₑ (⊢∀ ⊢t) γ = λ ⟦t⟧ → ⟦ ⊢e ⟧ₑ ⊢t (extₑ-t γ ⟦t⟧)
 -- ⟦ ⊢· ⊢t₁ ⊢e₁ ⊢e₂ ⟧ₑ ⊢t γ = (⟦ ⊢e₁ ⟧ₑ (⊢⇒ ⊢t₁ ⊢t) γ) (⟦ ⊢e₂ ⟧ₑ ⊢t₁ γ)
 -- ⟦_⟧ₑ {η = η} (⊢∙ ⊢t₁ ⊢t₂ ⊢e) ⊢t γ = {! (⟦ ⊢e ⟧ₑ (⊢∀ ⊢t₁) γ) (⟦ ⊢t₂ ⟧ₜ η) !} 
--} 
+-}   
