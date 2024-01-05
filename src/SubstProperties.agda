@@ -302,3 +302,8 @@ subst-const : ∀ {a b}{A : Set a}{B : Set b}{x y : A}
   → {z : B}
   → subst (λ (z : A) → B) x≡y z ≡ z
 subst-const refl = refl
+
+sym-sym : ∀ {a}{A : Set a}{x₁ x₂ : A}
+  → (eq : x₁ ≡ x₂)
+  → sym (sym eq) ≡ eq
+sym-sym refl = refl
