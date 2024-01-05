@@ -1177,7 +1177,344 @@ LRVren-eq′ (`∀α l , T) ρ τ* v z =
           (subst Value (lemma1 (Tren-act τ* ρ) T T′ R)
            (subst id (sym (cong Value (cong (_[ T′ ]T) (sym (assoc-sub↑-ren↑ T τ* (subst←RE ρ)))))) v₁))
           (z (⟦ T′ ⟧ []))
-      ≡⟨ {!!} ⟩
+      ≡⟨ cong (λ K → K (subst Value (lemma1 (Tren-act τ* ρ) T T′ R)
+           (subst id (sym (cong Value (cong (_[ T′ ]T) (sym (assoc-sub↑-ren↑ T τ* (subst←RE ρ)))))) v₁))
+          (z (⟦ T′ ⟧ []))) (dcongωl 𝓥⟦ T ⟧ (Tren-act-REext ρ τ* T′ R)) ⟩
+        substω (λ z₁ → Value (Tsub (subst←RE z₁) T) → ⟦ T ⟧ (subst-to-env* (subst←RE z₁) []) → Set _)
+          (symω (Tren-act-REext ρ τ* T′ R))
+          (𝓥⟦ T ⟧ (Tren-act (Tliftᵣ τ* l) (REext ρ (T′ , R))))
+          (subst Value (lemma1 (Tren-act τ* ρ) T T′ R)
+           (subst id
+            (sym
+             (cong Value
+              (cong (_[ T′ ]T) (sym (assoc-sub↑-ren↑ T τ* (subst←RE ρ))))))
+            v₁))
+          (z (⟦ T′ ⟧ []))
+      ≡⟨ cong (λ K → K 
+          (subst Value (lemma1 (Tren-act τ* ρ) T T′ R)
+           (subst id
+            (sym
+             (cong Value
+              (cong (_[ T′ ]T) (sym (assoc-sub↑-ren↑ T τ* (subst←RE ρ))))))
+            v₁))
+          (z (⟦ T′ ⟧ []))) (substω-congω (λ z₁ → Value (Tsub z₁ T) → ⟦ T ⟧ (subst-to-env* z₁ []) → Set _) subst←RE (symω (Tren-act-REext ρ τ* T′ R)) (𝓥⟦ T ⟧ (Tren-act (Tliftᵣ τ* l) (REext ρ (T′ , R)))) )
+       ⟩
+        subst
+          (λ z₁ → Value (Tsub z₁ T) → ⟦ T ⟧ (subst-to-env* z₁ []) → Set _)
+          (congωl subst←RE (symω (Tren-act-REext ρ τ* T′ R)))
+          (𝓥⟦ T ⟧ (Tren-act (Tliftᵣ τ* l) (REext ρ (T′ , R))))
+          (subst Value (lemma1 (Tren-act τ* ρ) T T′ R)
+           (subst id
+            (sym
+             (cong Value
+              (cong (_[ T′ ]T) (sym (assoc-sub↑-ren↑ T τ* (subst←RE ρ))))))
+            v₁))
+          (z (⟦ T′ ⟧ []))
+      ≡⟨ cong (λ K → K 
+          (subst Value (lemma1 (Tren-act τ* ρ) T T′ R)
+           (subst id
+            (sym
+             (cong Value
+              (cong (_[ T′ ]T) (sym (assoc-sub↑-ren↑ T τ* (subst←RE ρ))))))
+            v₁))
+          (z (⟦ T′ ⟧ []))) (subst-fun (congωl subst←RE (symω (Tren-act-REext ρ τ* T′ R))) (𝓥⟦ T ⟧ (Tren-act (Tliftᵣ τ* l) (REext ρ (T′ , R)))))
+       ⟩
+        𝓥⟦ T ⟧ (Tren-act (Tliftᵣ τ* l) (REext ρ (T′ , R)))
+          (subst (λ z₁ → Value (Tsub z₁ T))
+           (sym (congωl subst←RE (symω (Tren-act-REext ρ τ* T′ R))))
+           (subst Value (lemma1 (Tren-act τ* ρ) T T′ R)
+            (subst id
+             (sym
+              (cong Value
+               (cong (_[ T′ ]T) (sym (assoc-sub↑-ren↑ T τ* (subst←RE ρ))))))
+             v₁)))
+          (subst (λ z₁ → ⟦ T ⟧ (subst-to-env* z₁ []))
+           (sym (congωl subst←RE (symω (Tren-act-REext ρ τ* T′ R))))
+           (z (⟦ T′ ⟧ [])))
+      ≡⟨ LRVren-eq′ T (REext ρ (T′ , R)) (Tliftᵣ τ* l) _ _  ⟩
+        subst₂ (λ vv zz → Value vv → zz → Set _)
+          (assoc-sub-ren T (Tliftᵣ τ* l) (subst←RE (REext ρ (T′ , R))))
+          (Tren*-preserves-semantics
+           (τ*∈Ren* (Tliftᵣ τ* l) (subst←RE (REext ρ (T′ , R)))) T)
+          (𝓥⟦ Tren (Tliftᵣ τ* l) T ⟧ (REext ρ (T′ , R)))
+          (subst (λ z₁ → Value (Tsub z₁ T))
+           (sym (congωl subst←RE (symω (Tren-act-REext ρ τ* T′ R))))
+           (subst Value (lemma1 (Tren-act τ* ρ) T T′ R)
+            (subst id
+             (sym
+              (cong Value
+               (cong (_[ T′ ]T) (sym (assoc-sub↑-ren↑ T τ* (subst←RE ρ))))))
+             v₁)))
+          (subst (λ z₁ → ⟦ T ⟧ (subst-to-env* z₁ []))
+           (sym (congωl subst←RE (symω (Tren-act-REext ρ τ* T′ R))))
+           (z (⟦ T′ ⟧ [])))
+      ≡⟨ cong (λ K → K 
+          (subst (λ z₁ → Value (Tsub z₁ T))
+           (sym (congωl subst←RE (symω (Tren-act-REext ρ τ* T′ R))))
+           (subst Value (lemma1 (Tren-act τ* ρ) T T′ R)
+            (subst id
+             (sym
+              (cong Value
+               (cong (_[ T′ ]T) (sym (assoc-sub↑-ren↑ T τ* (subst←RE ρ))))))
+             v₁)))
+          (subst (λ z₁ → ⟦ T ⟧ (subst-to-env* z₁ []))
+           (sym (congωl subst←RE (symω (Tren-act-REext ρ τ* T′ R))))
+           (z (⟦ T′ ⟧ [])))) (subst₂-subst-subst (λ vv zz → Value vv → zz → Set _)
+                                      (assoc-sub-ren T (Tliftᵣ τ* l) (subst←RE (REext ρ (T′ , R))))
+                                      (Tren*-preserves-semantics (τ*∈Ren* (Tliftᵣ τ* l) (subst←RE (REext ρ (T′ , R)))) T)
+                                      (𝓥⟦ Tren (Tliftᵣ τ* l) T ⟧ (REext ρ (T′ , R)))) ⟩
+        subst
+          (λ v₂ → Value v₂ → ⟦ T ⟧ (subst-to-env* (subst←RE (Tren-act (Tliftᵣ τ* l) (REext ρ (T′ , R)))) []) → Set _)
+          (assoc-sub-ren T (Tliftᵣ τ* l) (subst←RE (REext ρ (T′ , R))))
+          (subst
+           (λ zz → Value (Tsub (subst←RE (REext ρ (T′ , R))) (Tren (Tliftᵣ τ* l) T)) → zz → Set _)
+           (Tren*-preserves-semantics (τ*∈Ren* (Tliftᵣ τ* l) (subst←RE (REext ρ (T′ , R)))) T)
+           (𝓥⟦ Tren (Tliftᵣ τ* l) T ⟧ (REext ρ (T′ , R))))
+          (subst (λ z₁ → Value (Tsub z₁ T))
+           (sym (congωl subst←RE (symω (Tren-act-REext ρ τ* T′ R))))
+           (subst Value (lemma1 (Tren-act τ* ρ) T T′ R)
+            (subst id
+             (sym
+              (cong Value
+               (cong (_[ T′ ]T) (sym (assoc-sub↑-ren↑ T τ* (subst←RE ρ))))))
+             v₁)))
+          (subst (λ z₁ → ⟦ T ⟧ (subst-to-env* z₁ []))
+           (sym (congωl subst←RE (symω (Tren-act-REext ρ τ* T′ R))))
+           (z (⟦ T′ ⟧ [])))
+      ≡⟨ cong (λ K → K 
+          (subst (λ z₁ → Value (Tsub z₁ T))
+           (sym (congωl subst←RE (symω (Tren-act-REext ρ τ* T′ R))))
+           (subst Value (lemma1 (Tren-act τ* ρ) T T′ R)
+            (subst id
+             (sym
+              (cong Value
+               (cong (_[ T′ ]T) (sym (assoc-sub↑-ren↑ T τ* (subst←RE ρ))))))
+             v₁)))
+          (subst (λ z₁ → ⟦ T ⟧ (subst-to-env* z₁ []))
+           (sym (congωl subst←RE (symω (Tren-act-REext ρ τ* T′ R))))
+           (z (⟦ T′ ⟧ [])))) ((subst-fun (assoc-sub-ren T (Tliftᵣ τ* l) (subst←RE (REext ρ (T′ , R)))) (subst
+                        (λ zz →
+                           Value (Tsub (subst←RE (REext ρ (T′ , R))) (Tren (Tliftᵣ τ* l) T)) →
+                           zz → Set _)
+                        (Tren*-preserves-semantics
+                         (τ*∈Ren* (Tliftᵣ τ* l) (subst←RE (REext ρ (T′ , R)))) T)
+                        (𝓥⟦ Tren (Tliftᵣ τ* l) T ⟧ (REext ρ (T′ , R)))) )) ⟩
+        subst
+          (λ zz →
+             Value (Tsub (subst←RE (REext ρ (T′ , R))) (Tren (Tliftᵣ τ* l) T)) →
+             zz → Set _)
+          (Tren*-preserves-semantics
+           (τ*∈Ren* (Tliftᵣ τ* l) (subst←RE (REext ρ (T′ , R)))) T)
+          (𝓥⟦ Tren (Tliftᵣ τ* l) T ⟧ (REext ρ (T′ , R)))
+          (subst (λ v₂ → Value v₂)
+           (sym (assoc-sub-ren T (Tliftᵣ τ* l) (subst←RE (REext ρ (T′ , R)))))
+           (subst (λ z₁ → Value (Tsub z₁ T))
+            (sym (congωl subst←RE (symω (Tren-act-REext ρ τ* T′ R))))
+            (subst Value (lemma1 (Tren-act τ* ρ) T T′ R)
+             (subst id
+              (sym
+               (cong Value
+                (cong (_[ T′ ]T) (sym (assoc-sub↑-ren↑ T τ* (subst←RE ρ))))))
+              v₁))))
+          (subst
+           (λ v₂ →
+              ⟦ T ⟧
+              (subst-to-env*
+               (subst←RE (Tren-act (Tliftᵣ τ* l) (REext ρ (T′ , R)))) []))
+           (sym (assoc-sub-ren T (Tliftᵣ τ* l) (subst←RE (REext ρ (T′ , R)))))
+           (subst (λ z₁ → ⟦ T ⟧ (subst-to-env* z₁ []))
+            (sym (congωl subst←RE (symω (Tren-act-REext ρ τ* T′ R))))
+            (z (⟦ T′ ⟧ []))))
+      ≡⟨ cong (λ K → K 
+          (subst (λ v₂ → Value v₂)
+           (sym (assoc-sub-ren T (Tliftᵣ τ* l) (subst←RE (REext ρ (T′ , R)))))
+           (subst (λ z₁ → Value (Tsub z₁ T))
+            (sym (congωl subst←RE (symω (Tren-act-REext ρ τ* T′ R))))
+            (subst Value (lemma1 (Tren-act τ* ρ) T T′ R)
+             (subst id
+              (sym
+               (cong Value
+                (cong (_[ T′ ]T) (sym (assoc-sub↑-ren↑ T τ* (subst←RE ρ))))))
+              v₁))))
+          (subst
+           (λ v₂ →
+              ⟦ T ⟧
+              (subst-to-env*
+               (subst←RE (Tren-act (Tliftᵣ τ* l) (REext ρ (T′ , R)))) []))
+           (sym (assoc-sub-ren T (Tliftᵣ τ* l) (subst←RE (REext ρ (T′ , R)))))
+           (subst (λ z₁ → ⟦ T ⟧ (subst-to-env* z₁ []))
+            (sym (congωl subst←RE (symω (Tren-act-REext ρ τ* T′ R))))
+            (z (⟦ T′ ⟧ []))))) (subst-fun (Tren*-preserves-semantics (τ*∈Ren* (Tliftᵣ τ* l) (subst←RE (REext ρ (T′ , R)))) T) (𝓥⟦ Tren (Tliftᵣ τ* l) T ⟧ (REext ρ (T′ , R)))) ⟩
+        𝓥⟦ Tren (Tliftᵣ τ* l) T ⟧ (REext ρ (T′ , R))
+          (subst
+           (λ v₂ →
+              Value (Tsub (subst←RE (REext ρ (T′ , R))) (Tren (Tliftᵣ τ* l) T)))
+           (sym
+            (Tren*-preserves-semantics
+             (τ*∈Ren* (Tliftᵣ τ* l) (subst←RE (REext ρ (T′ , R)))) T))
+           (subst (λ v₂ → Value v₂)
+            (sym (assoc-sub-ren T (Tliftᵣ τ* l) (subst←RE (REext ρ (T′ , R)))))
+            (subst (λ z₁ → Value (Tsub z₁ T))
+             (sym (congωl subst←RE (symω (Tren-act-REext ρ τ* T′ R))))
+             (subst Value (lemma1 (Tren-act τ* ρ) T T′ R)
+              (subst id
+               (sym
+                (cong Value
+                 (cong (_[ T′ ]T) (sym (assoc-sub↑-ren↑ T τ* (subst←RE ρ))))))
+               v₁)))))
+          (subst (λ v₂ → v₂)
+           (sym
+            (Tren*-preserves-semantics
+             (τ*∈Ren* (Tliftᵣ τ* l) (subst←RE (REext ρ (T′ , R)))) T))
+           (subst
+            (λ v₂ →
+               ⟦ T ⟧
+               (subst-to-env*
+                (subst←RE (Tren-act (Tliftᵣ τ* l) (REext ρ (T′ , R)))) []))
+            (sym (assoc-sub-ren T (Tliftᵣ τ* l) (subst←RE (REext ρ (T′ , R)))))
+            (subst (λ z₁ → ⟦ T ⟧ (subst-to-env* z₁ []))
+             (sym (congωl subst←RE (symω (Tren-act-REext ρ τ* T′ R))))
+             (z (⟦ T′ ⟧ [])))))
+      ≡⟨ cong₂ (𝓥⟦ Tren (Tliftᵣ τ* l) T ⟧ (REext ρ (T′ , R)))
+      ----------------------------------------
+        (begin
+          subst
+            (λ v₂ →
+               Value (Tsub (subst←RE (REext ρ (T′ , R))) (Tren (Tliftᵣ τ* l) T)))
+            (sym
+             (Tren*-preserves-semantics
+              (τ*∈Ren* (Tliftᵣ τ* l) (subst←RE (REext ρ (T′ , R)))) T))
+            (subst (λ v₂ → Value v₂)
+             (sym (assoc-sub-ren T (Tliftᵣ τ* l) (subst←RE (REext ρ (T′ , R)))))
+             (subst (λ z₁ → Value (Tsub z₁ T))
+              (sym (congωl subst←RE (symω (Tren-act-REext ρ τ* T′ R))))
+              (subst Value (lemma1 (Tren-act τ* ρ) T T′ R)
+               (subst id
+                (sym
+                 (cong Value
+                  (cong (_[ T′ ]T) (sym (assoc-sub↑-ren↑ T τ* (subst←RE ρ))))))
+                v₁))))
+        ≡⟨ subst-const (sym
+             (Tren*-preserves-semantics
+              (τ*∈Ren* (Tliftᵣ τ* l) (subst←RE (REext ρ (T′ , R)))) T)) ⟩
+          subst Value
+            (sym (assoc-sub-ren T (Tliftᵣ τ* l) (subst←RE (REext ρ (T′ , R)))))
+            (subst (λ z₁ → Value (Tsub z₁ T))
+             (sym (congωl subst←RE (symω (Tren-act-REext ρ τ* T′ R))))
+             (subst Value (lemma1 (Tren-act τ* ρ) T T′ R)
+              (subst id
+               (sym
+                (cong Value
+                 (cong (_[ T′ ]T) (sym (assoc-sub↑-ren↑ T τ* (subst←RE ρ))))))
+               v₁)))
+        ≡⟨ cong (subst Value (sym (assoc-sub-ren T (Tliftᵣ τ* l) (subst←RE (REext ρ (T′ , R))))))
+            (subst-∘ {P = Value}{f = λ z₁ → Tsub z₁ T} (sym (congωl subst←RE (symω (Tren-act-REext ρ τ* T′ R)))) {(subst Value (lemma1 (Tren-act τ* ρ) T T′ R)
+              (subst id
+               (sym
+                (cong Value
+                 (cong (_[ T′ ]T) (sym (assoc-sub↑-ren↑ T τ* (subst←RE ρ))))))
+               v₁))} ) ⟩
+          subst Value
+            (sym (assoc-sub-ren T (Tliftᵣ τ* l) (subst←RE (REext ρ (T′ , R)))))
+            (subst Value
+             (cong (λ z₁ → Tsub z₁ T)
+              (sym (congωl subst←RE (symω (Tren-act-REext ρ τ* T′ R)))))
+             (subst Value (lemma1 (Tren-act τ* ρ) T T′ R)
+              (subst id
+               (sym
+                (cong Value
+                 (cong (_[ T′ ]T) (sym (assoc-sub↑-ren↑ T τ* (subst←RE ρ))))))
+               v₁)))
+        ≡⟨ cong (λ H → subst Value
+            (sym (assoc-sub-ren T (Tliftᵣ τ* l) (subst←RE (REext ρ (T′ , R)))))
+            (subst Value
+             (cong (λ z₁ → Tsub z₁ T)
+              (sym (congωl subst←RE (symω (Tren-act-REext ρ τ* T′ R)))))
+             (subst Value (lemma1 (Tren-act τ* ρ) T T′ R)
+              (subst id H v₁)))) (sym-cong {f = Value} (cong (_[ T′ ]T) (sym (assoc-sub↑-ren↑ T τ* (subst←RE ρ))))) ⟩
+          subst Value
+            (sym (assoc-sub-ren T (Tliftᵣ τ* l) (subst←RE (REext ρ (T′ , R)))))
+            (subst Value
+             (cong (λ z₁ → Tsub z₁ T)
+              (sym (congωl subst←RE (symω (Tren-act-REext ρ τ* T′ R)))))
+             (subst Value (lemma1 (Tren-act τ* ρ) T T′ R)
+              (subst id
+               (cong Value
+                (sym (cong (_[ T′ ]T) (sym (assoc-sub↑-ren↑ T τ* (subst←RE ρ))))))
+               v₁)))
+        ≡˘⟨ cong (λ H → subst Value
+            (sym (assoc-sub-ren T (Tliftᵣ τ* l) (subst←RE (REext ρ (T′ , R)))))
+            (subst Value
+             (cong (λ z₁ → Tsub z₁ T)
+              (sym (congωl subst←RE (symω (Tren-act-REext ρ τ* T′ R)))))
+             (subst Value (lemma1 (Tren-act τ* ρ) T T′ R)
+              H))) (subst-∘ {P = id}{f = Value} (sym (cong (_[ T′ ]T) (sym (assoc-sub↑-ren↑ T τ* (subst←RE ρ))))) {v₁}) ⟩
+          subst Value
+            (sym (assoc-sub-ren T (Tliftᵣ τ* l) (subst←RE (REext ρ (T′ , R)))))
+            (subst Value
+             (cong (λ z₁ → Tsub z₁ T)
+              (sym (congωl subst←RE (symω (Tren-act-REext ρ τ* T′ R)))))
+             (subst Value (lemma1 (Tren-act τ* ρ) T T′ R)
+              (subst Value
+               (sym (cong (_[ T′ ]T) (sym (assoc-sub↑-ren↑ T τ* (subst←RE ρ)))))
+               v₁)))
+        ≡⟨ subst-subst {P = Value} (cong (λ z₁ → Tsub z₁ T)
+              (sym (congωl subst←RE (symω (Tren-act-REext ρ τ* T′ R))))) {(sym (assoc-sub-ren T (Tliftᵣ τ* l) (subst←RE (REext ρ (T′ , R)))))} ⟩
+          subst Value
+            (trans
+             (cong (λ z₁ → Tsub z₁ T)
+              (sym (congωl subst←RE (symω (Tren-act-REext ρ τ* T′ R)))))
+             (sym
+              (assoc-sub-ren T (Tliftᵣ τ* l) (subst←RE (REext ρ (T′ , R))))))
+            (subst Value (lemma1 (Tren-act τ* ρ) T T′ R)
+             (subst Value
+              (sym (cong (_[ T′ ]T) (sym (assoc-sub↑-ren↑ T τ* (subst←RE ρ)))))
+              v₁))
+        ≡⟨ subst-subst {P = Value} (lemma1 (Tren-act τ* ρ) T T′ R) {(trans
+             (cong (λ z₁ → Tsub z₁ T)
+              (sym (congωl subst←RE (symω (Tren-act-REext ρ τ* T′ R)))))
+             (sym
+              (assoc-sub-ren T (Tliftᵣ τ* l) (subst←RE (REext ρ (T′ , R))))))}  ⟩
+          subst Value
+            (trans (lemma1 (Tren-act τ* ρ) T T′ R)
+             (trans
+              (cong (λ z₁ → Tsub z₁ T)
+               (sym (congωl subst←RE (symω (Tren-act-REext ρ τ* T′ R)))))
+              (sym
+               (assoc-sub-ren T (Tliftᵣ τ* l) (subst←RE (REext ρ (T′ , R)))))))
+            (subst Value
+             (sym (cong (_[ T′ ]T) (sym (assoc-sub↑-ren↑ T τ* (subst←RE ρ)))))
+             v₁)
+        ≡⟨ subst-subst {P = Value} (sym (cong (_[ T′ ]T) (sym (assoc-sub↑-ren↑ T τ* (subst←RE ρ))))) {(trans (lemma1 (Tren-act τ* ρ) T T′ R)
+             (trans
+              (cong (λ z₁ → Tsub z₁ T)
+               (sym (congωl subst←RE (symω (Tren-act-REext ρ τ* T′ R)))))
+              (sym
+               (assoc-sub-ren T (Tliftᵣ τ* l) (subst←RE (REext ρ (T′ , R)))))))}  ⟩
+          subst Value
+            (trans
+             (sym (cong (_[ T′ ]T) (sym (assoc-sub↑-ren↑ T τ* (subst←RE ρ)))))
+             (trans (lemma1 (Tren-act τ* ρ) T T′ R)
+              (trans
+               (cong (λ z₁ → Tsub z₁ T)
+                (sym (congωl subst←RE (symω (Tren-act-REext ρ τ* T′ R)))))
+               (sym
+                (assoc-sub-ren T (Tliftᵣ τ* l) (subst←RE (REext ρ (T′ , R))))))))
+            v₁
+        ≡⟨ subst-irrelevant (trans
+             (sym (cong (_[ T′ ]T) (sym (assoc-sub↑-ren↑ T τ* (subst←RE ρ)))))
+             (trans (lemma1 (Tren-act τ* ρ) T T′ R)
+              (trans
+               (cong (λ z₁ → Tsub z₁ T)
+                (sym (congωl subst←RE (symω (Tren-act-REext ρ τ* T′ R)))))
+               (sym
+                (assoc-sub-ren T (Tliftᵣ τ* l) (subst←RE (REext ρ (T′ , R))))))))  (lemma1 ρ (Tren (Tliftᵣ τ* l) T) T′ R) v₁ ⟩
+          subst Value (lemma1 ρ (Tren (Tliftᵣ τ* l) T) T′ R) v₁
+        ∎)
+      ----------------------------------------
+        {!!}
+      ----------------------------------------
+       ⟩
         𝓥⟦ Tren (Tliftᵣ τ* l) T ⟧ (REext ρ (T′ , R))
           (subst Value (lemma1 ρ (Tren (Tliftᵣ τ* l) T) T′ R) v₁)
           (subst id (sym (Tren*-preserves-semantics (τ*∈Ren* τ* (subst←RE ρ)) (`∀α l , T)))
