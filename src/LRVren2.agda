@@ -1915,88 +1915,87 @@ LRVwk-eq T ρ v z =
   ∎) ih 
 
 
--- Cextend-Elift : ∀ {σ* : TSub Δ []} {Γ : TEnv Δ}{l}{T : Type Δ l}{l′}{T′ : Type Δ l′}
---   → (χ : CSub σ* Γ)
---   → (w : Value (Tsub σ* T))
---   → (e : Expr Δ (T ◁ Γ) T′)
---   → Csub (Cextend χ w) e ≡ (Esub σ* (Eliftₛ σ* χ) e [ exp w ]E)
--- Cextend-Elift  {σ* = σ*} {Γ = Γ} {T = T} {l′ = l′} {T′ = T′} χ w e = begin
---     Csub (Cextend χ w) e
---   ≡⟨⟩
---     Esub σ* (Cextend χ w) e
---   ≡⟨ cong (λ σ → Esub σ* σ e) (Cextend-Eext χ w) ⟩
---     Esub σ* (Eextₛ σ* χ (exp w)) e
---   ≡⟨ Eext-Elift {σ* = σ*} χ (exp w) e ⟩
---     Esub σ*
---       (subst (λ τ* → ESub τ* (T ◁ Γ) ∅) (TSub-id-right σ*)
---        (Eliftₛ σ* χ >>SS
---         sub0 (subst (Expr [] ∅) (sym (TidₛT≡T (Tsub σ* T))) (exp w))))
---       e
---   ≡⟨ dist-subst' {F = (λ τ* → ESub τ* (T ◁ Γ) ∅)} {G = Expr [] ∅} 
---      (λ σ → Tsub σ T′) (λ {τ*} σ → Esub τ* σ e)
---      (TSub-id-right σ*) (cong (λ τ* → Tsub τ* T′) (TSub-id-right σ*))
---      (Eliftₛ σ* χ >>SS
---         sub0 (subst (Expr [] ∅) (sym (TidₛT≡T (Tsub σ* T))) (exp w)))
---   ⟩
---     subst (Expr [] ∅)
---       (cong (λ τ* → Tsub τ* T′) (TSub-id-right σ*))
---       (Esub (σ* ∘ₛₛ Tidₛ)
---        (Eliftₛ σ* χ >>SS
---         Eextₛ Tidₛ Eidₛ
---         (subst (Expr [] ∅) (sym (TidₛT≡T (Tsub σ* T))) (exp w)))
---        e)
---   ≡⟨ subst-irrelevant (cong (λ τ* → Tsub τ* T′) (TSub-id-right σ*)) (trans (sym (assoc-sub-sub T′ σ* Tidₛ)) (TidₛT≡T (Tsub σ* T′))) _ ⟩
---     subst (Expr [] ∅)
---       (trans (sym (assoc-sub-sub T′ σ* Tidₛ)) (TidₛT≡T (Tsub σ* T′)))
---       (Esub (σ* ∘ₛₛ Tidₛ)
---        (Eliftₛ σ* χ >>SS
---         Eextₛ Tidₛ Eidₛ
---         (subst (Expr [] ∅) (sym (TidₛT≡T (Tsub σ* T))) (exp w)))
---        e)
---   ≡˘⟨ subst-subst (sym (assoc-sub-sub T′ σ* Tidₛ)) {y≡z = (TidₛT≡T (Tsub σ* T′))} ⟩
---     subst (Expr [] ∅) (TidₛT≡T (Tsub σ* T′))
---       (subst (Expr [] ∅) (sym (assoc-sub-sub T′ σ* Tidₛ))
---        (Esub (σ* ∘ₛₛ Tidₛ)
---         (Eliftₛ σ* χ >>SS
---          Eextₛ Tidₛ Eidₛ
---          (subst (Expr [] ∅) (sym (TidₛT≡T (Tsub σ* T))) (exp w)))
---         e))
---   ≡˘⟨ cong (subst (Expr _ _) (TidₛT≡T (Tsub σ* T′)))
---     (subst-swap _ _ _ (Eassoc-sub-sub e (Eliftₛ σ* χ) (Eextₛ Tidₛ Eidₛ (subst (Expr _ _) (sym (TidₛT≡T (Tsub σ* T))) (exp w)))))
---     ⟩
---     subst (Expr _ _) (TidₛT≡T (Tsub σ* T′))
---     (Esub Tidₛ (Eextₛ Tidₛ Eidₛ (subst (Expr _ _) (sym (TidₛT≡T (Tsub σ* T))) (exp w))) (Esub σ* (Eliftₛ σ* χ) e))
---   ≡⟨ refl ⟩
---     Esub σ* (Eliftₛ σ* χ) e [ exp w ]E
---   ∎
+Cextend-Elift : ∀ {σ* : TSub Δ []} {Γ : TEnv Δ}{l}{T : Type Δ l}{l′}{T′ : Type Δ l′}
+  → (χ : CSub σ* Γ)
+  → (w : Value (Tsub σ* T))
+  → (e : Expr Δ (T ◁ Γ) T′)
+  → Csub (Cextend χ w) e ≡ (Esub σ* (Eliftₛ σ* (ES←SC χ)) e [ exp w ]E)
+Cextend-Elift {Δ} {σ*} {Γ} {l} {T} {l′} {T′} χ w e =
+  begin
+    Csub (Cextend χ w) e
+  ≡⟨⟩
+    Esub σ* (ES←SC (Cextend χ w)) e
+  ≡⟨ cong (λ σ → Esub σ* σ e) (Cextend-Eext χ w) ⟩
+    Esub σ* (Eextₛ σ* (ES←SC χ) (exp w)) e
+  ≡⟨ Eext-Elift {σ* = σ*} (ES←SC χ) (exp w) e ⟩
+    Esub σ*
+      (subst (λ τ* → ESub τ* (T ◁ Γ) ∅) (TSub-id-right σ*)
+       (Eliftₛ σ* (ES←SC χ) >>SS
+        sub0 (subst (Expr [] ∅) (sym (TidₛT≡T (Tsub σ* T))) (exp w))))
+      e
+  ≡⟨ dist-subst' {F = (λ τ* → ESub τ* (T ◁ Γ) ∅)} {G = Expr [] ∅} 
+      (λ σ → Tsub σ T′) (λ {τ*} σ → Esub τ* σ e)
+      (TSub-id-right σ*) (cong (λ τ* → Tsub τ* T′) (TSub-id-right σ*))
+      (Eliftₛ σ* (ES←SC χ) >>SS
+         sub0 (subst (Expr [] ∅) (sym (TidₛT≡T (Tsub σ* T))) (exp w))) ⟩
+    subst (Expr [] ∅) (cong (λ τ* → Tsub τ* T′) (TSub-id-right σ*))
+      (Esub (σ* ∘ₛₛ Tidₛ)
+       (Eliftₛ σ* (ES←SC χ) >>SS
+        sub0 (subst (Expr [] ∅) (sym (TidₛT≡T (Tsub σ* T))) (exp w)))
+       e)
+  ≡⟨ subst-irrelevant (cong (λ τ* → Tsub τ* T′) (TSub-id-right σ*)) (trans (sym (assoc-sub-sub T′ σ* Tidₛ)) (TidₛT≡T (Tsub σ* T′))) _ ⟩
+    subst (λ v → Expr [] ∅ v)
+      (trans (sym (assoc-sub-sub T′ σ* Tidₛ)) (TidₛT≡T (Tsub σ* T′)))
+      (Esub (σ* ∘ₛₛ Tidₛ)
+       (Eliftₛ σ* (ES←SC χ) >>SS
+        sub0 (subst (Expr [] ∅) (sym (TidₛT≡T (Tsub σ* T))) (exp w)))
+       e)
+  ≡˘⟨ subst-subst (sym (assoc-sub-sub T′ σ* Tidₛ)) {y≡z = (TidₛT≡T (Tsub σ* T′))} ⟩
+    subst (λ v → Expr [] ∅ v) (TidₛT≡T (Tsub σ* T′))
+      (subst (λ v → Expr [] ∅ v) (sym (assoc-sub-sub T′ σ* Tidₛ))
+       (Esub (σ* ∘ₛₛ Tidₛ)
+        (Eliftₛ σ* (ES←SC χ) >>SS
+         sub0 (subst (Expr [] ∅) (sym (TidₛT≡T (Tsub σ* T))) (exp w)))
+        e))
+  ≡˘⟨ cong (subst (Expr _ _) (TidₛT≡T (Tsub σ* T′)))
+     (subst-swap _ _ _ (Eassoc-sub-sub e (Eliftₛ σ* (ES←SC χ)) (Eextₛ Tidₛ Eidₛ (subst (Expr _ _) (sym (TidₛT≡T (Tsub σ* T))) (exp w)))))
+     ⟩
+    subst (Expr [] ∅) (TidₛT≡T (Tsub σ* T′))
+      (Esub Tidₛ
+       (Eextₛ Tidₛ Eidₛ
+        (subst (Expr [] ∅) (sym (TidₛT≡T (Tsub σ* T))) (exp w)))
+       (Esub σ* (Eliftₛ σ* (ES←SC χ)) e))
+  ≡⟨ refl ⟩
+    (Esub σ* (Eliftₛ σ* (ES←SC χ)) e [ exp w ]E)
+  ∎
 
 
--- Gdropt-ext≡id : (ρ : RelEnv Δ) (γ : Env Δ Γ (subst-to-env* (subst←RE ρ) [])) (T′ : Type [] l) (R : REL T′)
---   → (Gdropt (subst←RE (REext ρ (T′ , R))) (extend-tskip γ)) ≡ω γ
--- Gdropt-ext≡id ρ γ T′ R =
---   fun-ext-llω-ω (λ x y z → subst-subst-sym (Tren*-preserves-semantics (λ x₁ → refl) y))
+Gdropt-ext≡id : (ρ : RelEnv Δ) (γ : Env Δ Γ (subst-to-env* (subst←RE ρ) [])) (T′ : Type [] l) (R : REL T′)
+  → (Gdropt (subst←RE (REext ρ (T′ , R))) (extend-tskip γ)) ≡ω γ
+Gdropt-ext≡id ρ γ T′ R =
+  fun-ext-llω-ω (λ x y z → subst-subst-sym (Tren*-preserves-semantics (λ x₁ → refl) y))
 
--- Cdropt-Cextt≡id : (Γ : TEnv Δ) (ρ : RelEnv Δ) (χ : CSub (subst←RE ρ) Γ) (l : Level) (T′ : Type [] l) (R : REL T′)
---   → (Cdropt (subst (λ σ → CSub σ (l ◁* Γ)) (sym (subst←RE-ext-ext ρ T′ R)) (Cextt χ T′))) ≡ χ
--- Cdropt-Cextt≡id Γ ρ χ l T′ R =
---   let sub₁ = subst (λ σ → CSub σ (l ◁* Γ)) (sym (subst←RE-ext-ext ρ T′ R)) in
---   let sub₂ = subst id refl in
---   begin
---     Cdropt (sub₁ (Cextt χ T′))
---   ≡⟨ dist-subst' {F = (λ σ → CSub σ (l ◁* Γ))} {G = id} (λ x → CSub (Tdropₛ x) Γ) Cdropt (sym (subst←RE-ext-ext ρ T′ R)) refl (Cextt χ T′) ⟩ 
---     sub₂ (Cdropt (Cextt χ T′))
---   ≡⟨⟩
---     Cdropt (Cextt χ T′)
---   ≡⟨ (fun-ext λ x → fun-ext λ y → fun-ext λ z → (elim-subst Value
---        (assoc-sub-ren y (λ z₁ x₁ → there x₁) (Textₛ (λ l₁ x₁ → proj₁ (ρ l₁ x₁)) T′))
---        (sym
---         (trans
---          (assoc-sub-ren y (λ z₁ x₁ → there x₁)
---           (Textₛ (λ l₁ x₁ → proj₁ (ρ l₁ x₁)) T′))
---          (trans
---           (sym (assoc-sub-sub y (λ z₁ → `_) (λ l₁ x₁ → proj₁ (ρ l₁ x₁))))
---           (trans (cong (Tsub (λ l₁ x₁ → proj₁ (ρ l₁ x₁))) (TidₛT≡T y))
---            refl)))) (χ x y z)))
---   ⟩
---     χ ∎
+Cdropt-Cextt≡id : (Γ : TEnv Δ) (ρ : RelEnv Δ) (χ : CSub (subst←RE ρ) Γ) (l : Level) (T′ : Type [] l) (R : REL T′)
+  → (Cdropt (subst (λ σ → CSub σ (l ◁* Γ)) (sym (subst←RE-ext-ext ρ T′ R)) (Cextt χ T′))) ≡ χ
+Cdropt-Cextt≡id Γ ρ χ l T′ R =
+  let sub₁ = subst (λ σ → CSub σ (l ◁* Γ)) (sym (subst←RE-ext-ext ρ T′ R)) in
+  let sub₂ = subst id refl in
+  begin
+    Cdropt (sub₁ (Cextt χ T′))
+  ≡⟨ dist-subst' {F = (λ σ → CSub σ (l ◁* Γ))} {G = id} (λ x → CSub (Tdropₛ x) Γ) Cdropt (sym (subst←RE-ext-ext ρ T′ R)) refl (Cextt χ T′) ⟩ 
+    sub₂ (Cdropt (Cextt χ T′))
+  ≡⟨⟩
+    Cdropt (Cextt χ T′)
+  ≡⟨ (fun-ext λ x → fun-ext λ y → fun-ext λ z → (elim-subst Value
+       (assoc-sub-ren y (λ z₁ x₁ → there x₁) (Textₛ (λ l₁ x₁ → proj₁ (ρ l₁ x₁)) T′))
+       (sym
+        (trans
+         (assoc-sub-ren y (λ z₁ x₁ → there x₁)
+          (Textₛ (λ l₁ x₁ → proj₁ (ρ l₁ x₁)) T′))
+         (trans
+          (sym (assoc-sub-sub y (λ z₁ → `_) (λ l₁ x₁ → proj₁ (ρ l₁ x₁))))
+          (trans (cong (Tsub (λ l₁ x₁ → proj₁ (ρ l₁ x₁))) (TidₛT≡T y))
+           refl)))) (χ x y z)))
+  ⟩
+    χ ∎
 
