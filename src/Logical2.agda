@@ -1,4 +1,3 @@
-{-# OPTIONS --allow-unsolved-metas #-}
 module Logical2 where
 
 open import Level
@@ -79,6 +78,10 @@ data _⇓_ : CExpr T → Value T → Set where
       → (e [ T ]ET) ⇓ v
       → (e₁ ∙ T) ⇓ v
 
+Value-⇓ : ∀ {l} {T : Type [] l} → (v : Value T) → exp v ⇓ v
+Value-⇓ (.(# _) ,     V-♯) = ⇓-n
+Value-⇓ (.(ƛ _) ,     V-ƛ) = ⇓-ƛ
+Value-⇓ (.(Λ _ ⇒ _) , V-Λ) = ⇓-Λ
 
 infixl 10 _∧_
 _∧_ = _×_
@@ -264,15 +267,14 @@ Cextend χ v _ _ here = v
 Cextend χ v _ _ (there x) = χ _ _ x
 
 Cextend-Eext : ∀ {l} {T : Type Δ l} → (χ : CSub σ* Γ) → (w : Value (Tsub σ* T)) → 
-  Cextend {T = T} χ w ≡ {!Eextₛ _ (ES←SC χ) (exp w)!}
-  -- Eextₛ _ χ (exp w)
-Cextend-Eext {Δ = Δ} {σ* = σ*} {Γ = Γ} {T = T} χ w = {!!}
-  -- fun-ext λ l → fun-ext λ T′ → fun-ext λ x → aux l T′ x
-  -- where
-  --   aux : (l : Level) (T′ : Type Δ l) (x : inn T′ (T ◁ Γ)) →
-  --     (Cextend′ χ w) l _ x ≡ Eextₛ σ* χ (exp w) l _ x
-  --   aux l _ here = refl
-  --   aux l _ (there x) = refl
+  ES←SC (Cextend {T = T} χ w) ≡ Eextₛ _ (ES←SC χ) (exp w)
+Cextend-Eext {Δ = Δ} {σ* = σ*} {Γ = Γ} {T = T} χ w =
+  fun-ext (λ l → fun-ext (λ T′ → fun-ext (λ x → aux l T′ x)))
+    where
+      aux :  (l : Level) (T′ : Type Δ l) (x : inn T′ (T ◁ Γ)) →
+        proj₁ ((Cextend χ w) l _ x) ≡ Eextₛ σ* (ES←SC χ) (exp w) l _ x
+      aux l T′ here = refl
+      aux l T′ (there x) = refl
 
 Cdrop-Cextend : ∀ {l} {σ* : TSub Δ []} {T : Type Δ l}
   → (χ : CSub σ* Γ) → (v : Value (Tsub σ* T))
