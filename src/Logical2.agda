@@ -293,6 +293,25 @@ Cdropt {σ* = σ*} χ l T x = subst Value (assoc-sub-ren T (Twkᵣ Tidᵣ) σ*) 
 Cextt : ∀{l} → CSub σ* Γ → (T′ : Type [] l) → CSub (Textₛ σ* T′) (l ◁* Γ)
 Cextt {σ* = σ*} χ T′ _ _ (tskip {T = T} x) = subst Value (sym (σT≡TextₛσTwkT σ* T)) (χ _ _ x)
 
+Cextt-Eextₛ-l : ∀{l} {T′ : Type [] l} → (χ : CSub σ* Γ)
+  → ES←SC (Cextt χ T′) ≡ Eextₛ-l _ (ES←SC χ)
+Cextt-Eextₛ-l {σ* = σ*}{T′ = T′} χ = fun-ext (λ l′ → fun-ext (λ T → fun-ext (λ x → aux l′ T x)))
+  where
+    aux : ∀ {T′} (l′ : Level) (T : Type _ l′) (x : inn T (l ◁* _))
+      → ES←SC (Cextt χ T′) l′ T x ≡ Eextₛ-l σ* (ES←SC χ) l′ T x
+    aux {T′ = T′} l′ .(Twk _) (tskip {T = T} x) =
+      dist-subst' {F = (λ T₁ → Σ (Expr [] ∅ T₁) isValue)} {G = CExpr} id proj₁
+        (sym
+          (trans (assoc-sub-ren T (λ z x₁ → there x₁) (Textₛ σ* T′))
+           (trans (sym (assoc-sub-sub T (λ z → `_) σ*))
+            (trans (cong (Tsub σ*) (TidₛT≡T T)) refl))))
+        (sym
+          (trans (assoc-sub-ren T (λ z x₁ → there x₁) (Textₛ σ* T′))
+           (trans (sym (assoc-sub-sub T (λ z → `_) σ*))
+            (trans (cong (Tsub σ*) (TidₛT≡T T)) refl))))
+         (χ l′ T x)
+
+
 -- extended LR on environments
 
 𝓖⟦_⟧ : (Γ : TEnv Δ) → (ρ : RelEnv Δ)
