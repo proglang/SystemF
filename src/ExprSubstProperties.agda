@@ -133,6 +133,7 @@ postulate
     → let lhs = Esub σ₂* σ₂ (Esub σ₁* σ₁ e) in
       let rhs = Esub (σ₁* ∘ₛₛ σ₂*) (σ₁ >>SS σ₂) e in
       subst (Expr Δ₃ Γ₃) (assoc-sub-sub T σ₁* σ₂*) lhs ≡ rhs
+      
   
 
 -- outline can be seen here: 
@@ -333,12 +334,32 @@ Eext-Elift {σ* = σ*}{Γ₁}{Γ₂} {T = T} σ e′ e = Esub~ (Eextₛ σ* σ e
 --     let subᵣ = subst (λ τ* → ESub τ* (T ◁ Γ₁) Γ₂) (TSub-id-right σ*) in
 --     Eextₛ {T = T} σ* σ e′ ~ subᵣ r
 -- Eext-Elift-l~ = {!   !}
--- 
--- Elift-l-[]≡Eext : {Γ₁ : TEnv Δ₁} {Γ₂ : TEnv Δ₂} (σ* : TSub Δ₁ Δ₂) (σ : ESub σ* Γ₁ Γ₂) (l′ l : Level) (T′ : Type Δ₁ l) (T : Type (l ∷ Δ₁) l′) (e : Expr (l ∷ Δ₁) (l ◁* Γ₁) T)
---   → let lhs = ((Esub (Tliftₛ σ* l) (Eliftₛ-l σ* σ) e) [ Tsub σ* T′ ]ET) in
---     let rhs = (Esub (Textₛ σ* T′) (Eextₛ-l σ* σ) e) in
---     lhs ≡ subst (Expr _ _) (σT[T′]≡σ↑T[σT'] σ* {! T !} {! T  !}) rhs
--- Elift-l-[]≡Eext {Γ₁} {Γ₂} σ* σ l′ l T′ T e = ?  
+
+Elift-l-[]≡Eext : {Γ : TEnv Δ} (l l′ : Level) (T′ : Type [] l) (T : Type (l ∷ Δ) l′) (τ* : TSub Δ []) (σ : ESub τ* Γ ∅) (e : Expr (l ∷ Δ) (l ◁* Γ) T)
+  → let lhs = ((Esub (Tliftₛ τ* l) (Eliftₛ-l τ* σ) e) [ T′ ]ET) in
+    let rhs = (Esub (Textₛ τ* T′) (Eextₛ-l τ* σ) e) in
+    lhs ≡ subst (Expr [] ∅) (sym (σ↑T[T′]≡TextₛσT′T τ* T′ T)) rhs
+Elift-l-[]≡Eext l l′ T′ T τ* σ e =
+  begin
+    (Esub (Tliftₛ τ* l) (Eliftₛ-l τ* σ) e [ T′ ]ET)
+  ≡⟨ (let eq = Eassoc-sub-sub e (Eliftₛ-l τ* σ) (Eextₛ-l Tidₛ Eidₛ)
+      in subst-swap (assoc-sub-sub T (Tliftₛ τ* l) (Textₛ Tidₛ T′))
+           (Esub (Textₛ Tidₛ T′) (Eextₛ-l Tidₛ Eidₛ)
+            (Esub (Tliftₛ τ* l) (Eliftₛ-l τ* σ) e))
+           (Esub (Tliftₛ τ* l ∘ₛₛ Textₛ Tidₛ T′)
+            (Eliftₛ-l τ* σ >>SS Eextₛ-l Tidₛ Eidₛ) e)
+           eq) ⟩
+    subst (Expr [] ∅)
+      (sym (assoc-sub-sub T (Tliftₛ τ* l) (Textₛ Tidₛ T′)))
+      (Esub (Tliftₛ τ* l ∘ₛₛ Textₛ Tidₛ T′)
+       (Eliftₛ-l τ* σ >>SS Eextₛ-l Tidₛ Eidₛ) e)
+  ≡⟨ {!!} ⟩
+    {!!}
+  ≡⟨ {!!} ⟩
+    subst (Expr [] ∅) (sym (σ↑T[T′]≡TextₛσT′T τ* T′ T))
+      (Esub (Textₛ τ* T′) (Eextₛ-l τ* σ) e)
+  ∎
+
 
 -- semantic renamings on expression
 ERen* : {ρ* : TRen Δ₁ Δ₂} (TRen* : TRen* ρ* η₁ η₂) → (ρ : ERen ρ* Γ₁ Γ₂) → (γ₁ : Env Δ₁ Γ₁ η₁) → (γ₂ : Env Δ₂ Γ₂ η₂) → Setω
