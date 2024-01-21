@@ -3,7 +3,7 @@ module StratifiedSystemF where
 open import Relation.Nullary using (Dec; yes; no)
 open import Data.Nat using (ℕ; zero; suc) renaming (_≟_ to _≟ₙ_)
 open import Data.List using (List; []; _∷_; map)
-open import Data.Fin using (Fin; zero; suc; _≟_; toℕ; lower₁)
+open import Data.Fin using (Fin; zero; suc; _≟_; toℕ; lower₁; inject₁)
 open import Data.Product using (_×_; Σ-syntax; ∃-syntax; _,_; proj₁; proj₂)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl; sym; trans; cong; cong₂; subst; subst₂; module ≡-Reasoning)
 
@@ -25,7 +25,6 @@ infix   7  `_ Maybe_ some_ ref_
 data Sort : SortTy → Set where
   𝕖     : ℕ → Sort Var
   𝕥     : ℕ → Sort Var
-  -- 𝕔     : ℕ → Sort Var
   𝕜     : Sort NoVar
 
 -- Syntax ----------------------------------------------------------------------
@@ -36,7 +35,7 @@ private variable
   S S₁ S₂ S₃ S' S₁' S₂' S₃'    : List (Sort Var)
   x y z x₁ x₂ α β γ            : S ∋ s
   n n₁ n₂ n'                   : ℕ
-  o o₁ o₂                      : Fin n
+  o o₁ o₂ o'                   : Fin n
 
 -- impls for functions, what is the function type? 
 -- -> see Maybe (α → α), what do we apply the Λα. to? 
@@ -341,25 +340,55 @@ data WeakCanonical : S ⊢ 𝕖 n → S ⊢ 𝕥 n → Set where
 ⋯wc σ WC-λ      = WC-λ
 
 Impl : (List (Sort Var)) → ℕ → Set 
-Impl S n = Σ[ t ∈ S ⊢ 𝕥 n ] Σ[ e ∈ S ⊢ 𝕖 n ] WeakCanonical e t -- × Val e (not neccessary i guess)
+Impl S n = Σ[ t ∈ S ⊢ 𝕥 n ] Σ[ e ∈ S ⊢ 𝕖 n ] WeakCanonical e t
 
-Store : List (Sort Var) → ℕ → Set
-Store S n = Fin n → List (Impl S n)
+variable
+  i i₁ i₂ i' i'' : Impl S n
 
-ext : Store S n → Store S (suc n)
-ext {n = n} Σ zero = []
-ext {n = n} Σ (suc x) = {!   !}
+-- Store : List (Sort Var) → ℕ → Set
+-- Store S n = Fin n → List (Impl S n)
 
-impl : Store S n → Fin n → Impl S n → Store S n 
-impl S x i n with x ≟ n 
-... | yes refl = i ∷ S n
-... | no _     = S n
-
-_⇑_ : Store S n → (s : Sort Var) → Store (s ∷ S) n
-(Σ ⇑ s) n = map (λ { (t , e , wc) → wk _ t , wk _ e , ⋯wc (λ _ → suc) wc }) (Σ n)
+data Store : List (Sort Var) → ℕ → Set where
+  ∅   : Store S zero
+  new : Store S n → Store S (suc n)
+  add : Store S n → Fin n → Impl S n → Store S n
 
 variable 
   Σ Σ₁ Σ₂ Σ₁' Σ₂' Σ' Σ'' : Store S n
+
+-- ext : Store S n → Store S (suc n)
+-- ext {n = n} Σ zero = []
+-- ext {n = n} Σ (suc x) = {!   !}
+
+-- impl : Store S n → Fin n → Impl S n → Store S n 
+-- impl S x i n with x ≟ n 
+-- ... | yes refl = i ∷ S n
+-- ... | no _     = S n
+
+wk-e : S ⊢ 𝕖 n → S ⊢ 𝕖 (suc n)
+wk-e e = {!   !}
+
+wk-t : S ⊢ 𝕥 n → S ⊢ 𝕥 (suc n)
+wk-t (` x) = ` {!   !}
+wk-t (∀α t) = ∀α {! wk-t t  !}
+wk-t (t ⇒ t₁) = {!   !}
+wk-t ([ x ∶ t ]⇒ t₁) = {!   !}
+wk-t Bool = {!   !}
+wk-t (Maybe t) = {!   !}
+
+wk-wc : WeakCanonical e t → WeakCanonical (wk-e e) (wk-t t)
+wk-wc wc = {!   !}
+
+wk-i : Impl S n → Impl S (suc n) 
+wk-i (t , e , wc) = wk-t t , wk-e e , wk-wc wc
+
+data _∋_⨾_ : Store S n → Fin n → Impl S n → Set where
+  here  : (add Σ o i) ∋ o ⨾ i
+  there : (Σ ∋ o ⨾ i) → (add Σ o' i') ∋ o ⨾ i 
+  new   : (Σ ∋ o ⨾ i) → (new Σ) ∋ inject₁ o ⨾ {!  !}
+
+_⇑_ : Store S n → (s : Sort Var) → Store (s ∷ S) n
+(Σ ⇑ s) = {!   !}
 
 data _Matches′_ : S ⊢ 𝕖 n → S ⊢ 𝕥 n → Set where
   λ-⇒        : λx e Matches′ t₁ ⇒ t₂
@@ -374,16 +403,17 @@ data _Matches_ : S ⊢ 𝕖 n → S ⊢ 𝕥 n → Set where
   ⇒-skip     : e Matches′ t₁ → e Matches t₁ ⇒ t₂
 
 _∋_,_ : Store S n → Fin n → S ⊢ 𝕖 n → Set
-_∋_,_ Σ o e = ∃[ t ] ∃[ e' ] ∃[ wc ] (t , e' , wc) ∈ Σ o × e Matches t  
+Σ ∋ o , e  = ∃[ t ] ∃[ e' ] ∃[ wc ] Σ ∋ o ⨾ (t , e' , wc) × e Matches t 
+-- _∋_,_ Σ o e = ∃[ t ] ∃[ e' ] ∃[ wc ] (t , e' , wc) ∈ Σ o × e Matches t  
 
 -- preserves syntax direction but might block some proofs later on 
 -- might prefer non-deterministic typing rules? 
-reduce : ∀{e : S ⊢ 𝕖 n} → Σ ∋ o , e → S ⊢ 𝕖 n
-reduce {e = e} (t , e' , wc , _ , matches) = go wc e matches
+unify : ∀{e : S ⊢ 𝕖 n} → (Σ : Store S n) → Σ ∋ o , e → S ⊢ 𝕖 n
+unify {e = e} _ (t , e' , wc , _ , matches) = go wc e matches
   where go : ∀ {t : S ⊢ 𝕥 n} {e' : S ⊢ 𝕖 n} → WeakCanonical e' t → (e : S ⊢ 𝕖 n) → e Matches t → S ⊢ 𝕖 n
         go (WC-∀ wc) e (∀α-skip matches)                    = (Λα (go wc (wk _ e) matches)) ∙ 
         go (WC-ƛ {o = o} {t' = t'} wc) e ([]⇒-skip matches) = (ƛ[ o ∶ t' ] (go wc e matches)) •
-        go {e' = e'} WC-λ e (⇒-skip matches′)               = e' · e -- matches' is already evidence that this app works
+        go {e' = e'} WC-λ e (⇒-skip matches′)               = e' · e -- matches' is evidence that this app works
 
 data _,_↪_,_ : Store S n → S ⊢ 𝕖 n → Store S n' → S ⊢ 𝕖 n' → Set where
   β-λ : ∀ {e₂ : S ⊢ 𝕖 n} →
@@ -403,11 +433,15 @@ data _,_↪_,_ : Store S n → S ⊢ 𝕖 n → Store S n' → S ⊢ 𝕖 n' →
   β-case₂ :
     Σ , case none [x→ e₁ ； e₂ ] ↪ Σ , e₂ 
   β-trait : 
-    Σ , trait[o∶ t ] e ↪ ext Σ , e
+    Σ , trait[o∶ t ] e ↪ new Σ , e
   β-impl :
     Val e₁ →
     (wc : WeakCanonical e₁ t) → -- actually this ensures this is Val
-    Σ , impl[ o ∶ t ] e₁ ； e₂ ↪ impl Σ o (t , e₁ , wc) , e₂ 
+    Σ , impl[ o ∶ t ] e₁ ； e₂ ↪ add Σ o (t , e₁ , wc) , e₂ 
+  β-ref : 
+    (impl : Σ ∋ o , e) →
+    Σ , ref o ↪ Σ , unify Σ impl
+
   
 -- Subject Reduction -----------------------------------------------------------
 
@@ -457,7 +491,7 @@ data _,_↪_,_ : Store S n → S ⊢ 𝕖 n → Store S n' → S ⊢ 𝕖 n' →
 --   ⟦ ⊢t ⟧ₜ η →
 --   Envₑ (_∷ₜ_ {s = 𝕖 n} t Γ) (extₜ-t η)
 -- extₑ Γ ⟦e⟧ = {!   !}
---   
+--    
 -- extₑ-t : ∀ {η : Envₜ Γ} → 
 --   Envₑ Γ η → 
 --   (⟦t⟧ : Set l) → 
@@ -468,9 +502,9 @@ data _,_↪_,_ : Store S n → S ⊢ 𝕖 n → Store S n' → S ⊢ 𝕖 n' →
 --   (⊢e : Γ ⊢ e ∶ t) → 
 --   (⊢t : Γ ⊢ t ∶ ★[ l ]) → 
 --   Envₑ Γ η → 
---   ⟦ ⊢t ⟧ₜ η
+--   ⟦ ⊢t ⟧ₜ η 
 -- ⟦ ⊢` {x = x} ⊢x ⟧ₑ ⊢t γ = γ _ x _ ⊢t ⊢x
 -- ⟦ ⊢λ ⊢e ⟧ₑ (⊢⇒ ⊢t₁ ⊢t₂) γ = λ ⟦e⟧ → {! ⟦ ⊢e ⟧ₑ ? (extₑ {⊢t = ⊢t₁} γ ⟦e⟧) !} 
--- ⟦ ⊢Λ ⊢e ⟧ₑ (⊢∀ ⊢t) γ = λ ⟦t⟧ → ⟦ ⊢e ⟧ₑ ⊢t (extₑ-t γ ⟦t⟧) 
+-- ⟦ ⊢Λ ⊢e ⟧ₑ (⊢∀ ⊢t) γ = λ ⟦t⟧ → ⟦ ⊢e ⟧ₑ ⊢t (extₑ-t γ ⟦t⟧)  
 -- ⟦ ⊢· ⊢t₁ ⊢e₁ ⊢e₂ ⟧ₑ ⊢t γ = (⟦ ⊢e₁ ⟧ₑ (⊢⇒ ⊢t₁ ⊢t) γ) (⟦ ⊢e₂ ⟧ₑ ⊢t₁ γ)   
--- ⟦_⟧ₑ {η = η} (⊢∙ ⊢t₁ ⊢t₂ ⊢e) ⊢t γ = {! (⟦ ⊢e ⟧ₑ (⊢∀ ⊢t₁) γ) (⟦ ⊢t₂ ⟧ₜ η) !}       
+-- ⟦_⟧ₑ {η = η} (⊢∙ ⊢t₁ ⊢t₂ ⊢e) ⊢t γ = {! (⟦ ⊢e ⟧ₑ (⊢∀ ⊢t₁) γ) (⟦ ⊢t₂ ⟧ₜ η) !}        
