@@ -613,4 +613,4 @@ adequacy (β-ƛ v₂) = {!   !}
 adequacy β-Λ = {!   !}
 adequacy (ξ-·₁ e₁↪e) = cong-app (adequacy e₁↪e) _
 adequacy (ξ-·₂ {e₁ = e₁} e₂↪e v₁) = icong {f = E⟦ e₁ ⟧ [] λ ()} (adequacy e₂↪e)
-adequacy (ξ-∙ e₁↪e₂) = {!   !}    -} 
+adequacy (ξ-∙ e₁↪e₂) = {!   !}     

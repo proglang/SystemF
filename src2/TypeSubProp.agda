@@ -65,15 +65,15 @@ _ₛ·ᵣ_ : Δ₁ ⇒ₛ Δ₂ → Δ₂ ⇒ᵣ Δ₃ → Δ₁ ⇒ₛ Δ₃
     begin
       ((ρ₁ ↑ₛ l) ₛ·ᵣ (ρ₂ ↑ᵣ l)) _ (suc x)
     ≡⟨⟩
-      (ρ₁ _ x ⋯ᵣ wkᵣ l idᵣ) ⋯ᵣ (ρ₂ ↑ᵣ l)
-    ≡⟨ ⋯ᵣᵣ-fusion (ρ₁ _ x) (wkᵣ l idᵣ) (ρ₂ ↑ᵣ l) ⟩
-      ρ₁ _ x ⋯ᵣ (wkᵣ l idᵣ ᵣ·ᵣ (ρ₂ ↑ᵣ l))
+      (ρ₁ _ x ⋯ᵣ wkᵣ l) ⋯ᵣ (ρ₂ ↑ᵣ l)
+    ≡⟨ ⋯ᵣᵣ-fusion (ρ₁ _ x) (wkᵣ l) (ρ₂ ↑ᵣ l) ⟩
+      ρ₁ _ x ⋯ᵣ (wkᵣ l ᵣ·ᵣ (ρ₂ ↑ᵣ l))
     ≡⟨ cong (ρ₁ _ x ⋯ᵣ_) refl ⟩
-      ρ₁ _ x ⋯ᵣ (ρ₂ ᵣ·ᵣ wkᵣ l idᵣ)
-    ≡⟨ sym (⋯ᵣᵣ-fusion (ρ₁ _ x) ρ₂ (wkᵣ l idᵣ)) ⟩
-      (ρ₁ _ x ⋯ᵣ ρ₂) ⋯ᵣ wkᵣ l idᵣ
+      ρ₁ _ x ⋯ᵣ (ρ₂ ᵣ·ᵣ wkᵣ l)
+    ≡⟨ sym (⋯ᵣᵣ-fusion (ρ₁ _ x) ρ₂ (wkᵣ l)) ⟩
+      (ρ₁ _ x ⋯ᵣ ρ₂) ⋯ᵣ wkᵣ l
     ≡⟨⟩
-      ((ρ₁ ₛ·ᵣ ρ₂) _ x ⋯ᵣ wkᵣ l idᵣ)
+      ((ρ₁ ₛ·ᵣ ρ₂) _ x ⋯ᵣ wkᵣ l)
     ∎
 
 ⋯ₛᵣ-fusion : ∀ (t : Δ₁ ⊢ l) (ρ₁ : Δ₁ ⇒ₛ Δ₂) (ρ₂ : Δ₂ ⇒ᵣ Δ₃) →
@@ -101,15 +101,15 @@ _ₛ·ₛ_ : Δ₁ ⇒ₛ Δ₂ → Δ₂ ⇒ₛ Δ₃ → Δ₁ ⇒ₛ Δ₃
     begin
       ((ρ₁ ↑ₛ l) ₛ·ₛ (ρ₂ ↑ₛ l)) _ (suc x)
     ≡⟨⟩
-      (ρ₁ _ x ⋯ᵣ wkᵣ l idᵣ) ⋯ₛ (ρ₂ ↑ₛ l)
-    ≡⟨ ⋯ᵣₛ-fusion (ρ₁ _ x) (wkᵣ l idᵣ) (ρ₂ ↑ₛ l) ⟩
-      ρ₁ _ x ⋯ₛ (wkᵣ l idᵣ ᵣ·ₛ (ρ₂ ↑ₛ l))
+      (ρ₁ _ x ⋯ᵣ wkᵣ l) ⋯ₛ (ρ₂ ↑ₛ l)
+    ≡⟨ ⋯ᵣₛ-fusion (ρ₁ _ x) (wkᵣ l) (ρ₂ ↑ₛ l) ⟩
+      ρ₁ _ x ⋯ₛ (wkᵣ l ᵣ·ₛ (ρ₂ ↑ₛ l))
     ≡⟨ cong (ρ₁ _ x ⋯ₛ_) refl ⟩
-      ρ₁ _ x ⋯ₛ (ρ₂ ₛ·ᵣ wkᵣ l idᵣ)
-    ≡⟨ sym (⋯ₛᵣ-fusion (ρ₁ _ x) ρ₂ (wkᵣ l idᵣ)) ⟩
-      (ρ₁ _ x ⋯ₛ ρ₂) ⋯ᵣ wkᵣ l idᵣ
+      ρ₁ _ x ⋯ₛ (ρ₂ ₛ·ᵣ wkᵣ l)
+    ≡⟨ sym (⋯ₛᵣ-fusion (ρ₁ _ x) ρ₂ (wkᵣ l)) ⟩
+      (ρ₁ _ x ⋯ₛ ρ₂) ⋯ᵣ wkᵣ l
     ≡⟨⟩
-      ((ρ₁ ₛ·ₛ ρ₂) _ x ⋯ᵣ wkᵣ l idᵣ)
+      ((ρ₁ ₛ·ₛ ρ₂) _ x ⋯ᵣ wkᵣ l)
     ∎
 
 ⋯ₛₛ-fusion : ∀ (t : Δ₁ ⊢ l) (ρ₁ : Δ₁ ⇒ₛ Δ₂) (ρ₂ : Δ₂ ⇒ₛ Δ₃) →
@@ -125,31 +125,48 @@ _ₛ·ₛ_ : Δ₁ ⇒ₛ Δ₂ → Δ₂ ⇒ₛ Δ₃ → Δ₁ ⇒ₛ Δ₃
     t ⋯ₛ ((ρ₁ ₛ·ₛ ρ₂) ↑ₛ l)
   ∎)
 
+idᵣ-↑ᵣ : idᵣ ↑ᵣ l ≡ idᵣ {Δ = l ∷ Δ}
+idᵣ-↑ᵣ = fun-ext λ _ → fun-ext λ where
+  zero    → refl
+  (suc x) → refl
+
+⋯ᵣ-id : ∀ (t : Δ ⊢ l) →
+  t ⋯ᵣ idᵣ ≡ t
+⋯ᵣ-id (` x)        = refl
+⋯ᵣ-id (∀[α∶ l ] t) = cong ∀[α∶ l ]_ (
+  begin
+     t ⋯ᵣ (idᵣ ↑ᵣ l)
+   ≡⟨ cong (t ⋯ᵣ_) idᵣ-↑ᵣ ⟩
+     t ⋯ᵣ idᵣ
+   ≡⟨ ⋯ᵣ-id t ⟩
+     t
+   ∎)
+⋯ᵣ-id (t₁ ⇒ t₂)    = cong₂ _⇒_ (⋯ᵣ-id t₁) (⋯ᵣ-id t₂)
 
 wkᵣ-↑ᵣ : ∀ (t : Δ₁ ⊢ l') (ρ : Δ₁ ⇒ᵣ Δ₂) →
-  (t ⋯ᵣ ρ) ⋯ᵣ wkᵣ l idᵣ ≡ (t ⋯ᵣ wkᵣ l idᵣ) ⋯ᵣ (ρ ↑ᵣ l)
+  (t ⋯ᵣ ρ) ⋯ᵣ wkᵣ l ≡ (t ⋯ᵣ wkᵣ l) ⋯ᵣ (ρ ↑ᵣ l)
 wkᵣ-↑ᵣ {Δ₁} {k'} {Δ₂} {l} t ρ =
   begin
-    (t ⋯ᵣ ρ) ⋯ᵣ wkᵣ l idᵣ
-  ≡⟨ ⋯ᵣᵣ-fusion t ρ (wkᵣ l idᵣ) ⟩
-    t ⋯ᵣ (ρ ᵣ·ᵣ wkᵣ l idᵣ)
+    (t ⋯ᵣ ρ) ⋯ᵣ wkᵣ l
+  ≡⟨ ⋯ᵣᵣ-fusion t ρ (wkᵣ l) ⟩
+    t ⋯ᵣ (ρ ᵣ·ᵣ wkᵣ l)
   ≡⟨⟩
-    t ⋯ᵣ (wkᵣ l idᵣ ᵣ·ᵣ (ρ ↑ᵣ l))
-  ≡⟨ sym (⋯ᵣᵣ-fusion t (wkᵣ l idᵣ) (ρ ↑ᵣ l)) ⟩
-    (t ⋯ᵣ wkᵣ l idᵣ) ⋯ᵣ (ρ ↑ᵣ l)
+    t ⋯ᵣ (wkᵣ l ᵣ·ᵣ (ρ ↑ᵣ l))
+  ≡⟨ sym (⋯ᵣᵣ-fusion t (wkᵣ l) (ρ ↑ᵣ l)) ⟩
+    (t ⋯ᵣ wkᵣ l) ⋯ᵣ (ρ ↑ᵣ l)
   ∎
 
 wkᵣ-↑ₛ : ∀ (t : Δ₁ ⊢ l') (ρ : Δ₁ ⇒ₛ Δ₂) →
-  (t ⋯ₛ ρ) ⋯ᵣ wkᵣ l idᵣ ≡ (t ⋯ᵣ wkᵣ l idᵣ) ⋯ₛ (ρ ↑ₛ l)
+  (t ⋯ₛ ρ) ⋯ᵣ wkᵣ l ≡ (t ⋯ᵣ wkᵣ l) ⋯ₛ (ρ ↑ₛ l)
 wkᵣ-↑ₛ {Δ₁} {k'} {Δ₂} {l} t ρ =
   begin
-    (t ⋯ₛ ρ) ⋯ᵣ wkᵣ l idᵣ
-  ≡⟨ ⋯ₛᵣ-fusion t ρ (wkᵣ l idᵣ) ⟩
-    t ⋯ₛ (ρ ₛ·ᵣ wkᵣ l idᵣ)
+    (t ⋯ₛ ρ) ⋯ᵣ wkᵣ l
+  ≡⟨ ⋯ₛᵣ-fusion t ρ (wkᵣ l) ⟩
+    t ⋯ₛ (ρ ₛ·ᵣ wkᵣ l)
   ≡⟨⟩
-    t ⋯ₛ (wkᵣ l idᵣ ᵣ·ₛ (ρ ↑ₛ l))
-  ≡⟨ sym (⋯ᵣₛ-fusion t (wkᵣ l idᵣ) (ρ ↑ₛ l)) ⟩
-    (t ⋯ᵣ wkᵣ l idᵣ) ⋯ₛ (ρ ↑ₛ l)
+    t ⋯ₛ (wkᵣ l ᵣ·ₛ (ρ ↑ₛ l))
+  ≡⟨ sym (⋯ᵣₛ-fusion t (wkᵣ l) (ρ ↑ₛ l)) ⟩
+    (t ⋯ᵣ wkᵣ l) ⋯ₛ (ρ ↑ₛ l)
   ∎
 
 idₛ-↑ₛ : idₛ ↑ₛ l ≡ idₛ {Δ = l ∷ Δ}
@@ -171,16 +188,29 @@ idₛ-↑ₛ = fun-ext λ _ → fun-ext λ where
 ⋯ₛ-id (t₁ ⇒ t₂)    = cong₂ _⇒_ (⋯ₛ-id t₁) (⋯ₛ-id t₂)
 
 wkᵣ-cancels-⦅⦆ₛ : ∀ (t' : Δ ⊢ l') (t : Δ ⊢ l) →
-  (t' ⋯ᵣ wkᵣ l idᵣ) ⋯ₛ ⦅ t ⦆ₛ ≡ t'
+  (t' ⋯ᵣ wkᵣ l) ⋯ₛ ⦅ t ⦆ₛ ≡ t'
 wkᵣ-cancels-⦅⦆ₛ {Δ} {k'} {l} t' t =
   begin
-    (t' ⋯ᵣ wkᵣ l idᵣ) ⋯ₛ ⦅ t ⦆ₛ
-  ≡⟨ ⋯ᵣₛ-fusion t' (wkᵣ l idᵣ) ⦅ t ⦆ₛ ⟩
-    t' ⋯ₛ (wkᵣ l idᵣ ᵣ·ₛ ⦅ t ⦆ₛ)
+    (t' ⋯ᵣ wkᵣ l) ⋯ₛ ⦅ t ⦆ₛ
+  ≡⟨ ⋯ᵣₛ-fusion t' (wkᵣ l) ⦅ t ⦆ₛ ⟩
+    t' ⋯ₛ (wkᵣ l ᵣ·ₛ ⦅ t ⦆ₛ)
   ≡⟨⟩
     t' ⋯ₛ idₛ
   ≡⟨ ⋯ₛ-id t' ⟩
     t'
+  ∎
+  
+wkᵣ-cancels-extₛ : ∀ (t' : Δ₁ ⊢ l') (t : Δ₂ ⊢ l) (ρ : Δ₁ ⇒ₛ Δ₂) →
+  ((t' ⋯ᵣ wkᵣ l) ⋯ₛ (extₛ t ρ)) ≡ t' ⋯ₛ ρ
+wkᵣ-cancels-extₛ {l = l} t' t ρ = 
+  begin
+    (t' ⋯ᵣ wkᵣ l) ⋯ₛ extₛ t ρ
+  ≡⟨ ⋯ᵣₛ-fusion t' (wkᵣ l) (extₛ t ρ) ⟩
+    t' ⋯ₛ (wkᵣ l ᵣ·ₛ extₛ t ρ)
+  ≡⟨ sym (⋯ₛₛ-fusion t' idₛ ρ) ⟩
+    (t' ⋯ₛ idₛ) ⋯ₛ ρ
+  ≡⟨ cong (_⋯ₛ ρ) (⋯ₛ-id t') ⟩
+    (t' ⋯ₛ ρ)
   ∎
 
 ⦅⦆ₛ-↑ᵣ' : ∀ (t : Δ₁ ⊢ l) (ρ : Δ₁ ⇒ᵣ Δ₂) →

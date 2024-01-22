@@ -1,6 +1,7 @@
 module Kits where
 
 open import Data.Nat using (ℕ; zero; suc)
+open import Data.Fin using (Fin; zero; suc)
 open import Data.List using (List; []; _∷_; drop; _++_)
 open import Data.List.Membership.Propositional public using (_∈_)
 open import Data.List.Relation.Unary.Any public using (here; there)
