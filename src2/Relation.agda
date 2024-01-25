@@ -24,7 +24,7 @@ REL {l} T = Value T → ⟦ T ⟧ₜ []⋆ → Set l
 RelEnv : KindCtx → Setω
 RelEnv Δ = ∀ l → Δ ∋ l → Σ (Type [] l) REL
 
-subst←RE : RelEnv Δ → Δ T.⇒ₛ []
+subst←RE : RelEnv Δ → T.Sub Δ []
 subst←RE ρ l x = proj₁ (ρ l x)
 
 

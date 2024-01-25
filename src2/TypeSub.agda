@@ -1,53 +1,58 @@
 module TypeSub where
 
 open import Data.List using (List; []; _∷_)
+open import Data.List.Relation.Unary.Any using (here; there)
+open import Relation.Binary.PropositionalEquality using (refl)
 
 open import Prelude
 open import Type
 
-_⇒ᵣ_ : KindCtx → KindCtx → Set
-Δ₁ ⇒ᵣ Δ₂ = ∀ l → Δ₁ ∋ l → Δ₂ ∋ l
+Ren : KindCtx → KindCtx → Set
+Ren Δ₁ Δ₂ = ∀ l → Δ₁ ∋ l → Δ₂ ∋ l
 
-_⇒ₛ_ : KindCtx → KindCtx → Set
-Δ₁ ⇒ₛ Δ₂ = ∀ l → Δ₁ ∋ l → Δ₂ ⊢ l
+Sub : KindCtx → KindCtx → Set
+Sub Δ₁ Δ₂ = ∀ l → Δ₁ ∋ l → Δ₂ ⊢ l
 
-_↑ᵣ_ : Δ₁ ⇒ᵣ Δ₂ → ∀ l → (l ∷ Δ₁) ⇒ᵣ (l ∷ Δ₂)
-(ρ ↑ᵣ k) _ zero    = zero
-(ρ ↑ᵣ k) _ (suc x) = suc (ρ _ x)
+_↑ᵣ_ : Ren Δ₁ Δ₂ → ∀ l → Ren (l ∷ Δ₁) (l ∷ Δ₂)
+(ρ ↑ᵣ k) _ (here x)  = here x
+(ρ ↑ᵣ k) _ (there x) = there (ρ _ x)
 
-_⋯ᵣ_ : Δ₁ ⊢ l → Δ₁ ⇒ᵣ Δ₂ → Δ₂ ⊢ l
+_⋯ᵣ_ : Δ₁ ⊢ l → Ren Δ₁ Δ₂ → Δ₂ ⊢ l
 `ℕ           ⋯ᵣ ρ = `ℕ
 (` x)        ⋯ᵣ ρ = ` ρ _ x
 (∀[α∶ l ] t) ⋯ᵣ ρ = ∀[α∶ l ] (t ⋯ᵣ (ρ ↑ᵣ l))
 (t₁ ⇒ t₂)    ⋯ᵣ ρ = (t₁ ⋯ᵣ ρ) ⇒ (t₂ ⋯ᵣ ρ)
 
-idᵣ : Δ ⇒ᵣ Δ
+idᵣ : Ren Δ Δ
 idᵣ _ x = x 
 
-wkᵣ' : ∀ l → Δ₁ ⇒ᵣ Δ₂ → Δ₁ ⇒ᵣ (l ∷ Δ₂)
-wkᵣ' l ρ _ x = suc (ρ _  x)
+wkᵣ' : ∀ l → Ren Δ₁ Δ₂ → Ren Δ₁ (l ∷ Δ₂)
+wkᵣ' l ρ _ x = there (ρ _  x)
 
-wkᵣ : ∀ l → Δ ⇒ᵣ (l ∷ Δ)
-wkᵣ l _ x = suc x
+wkᵣ : ∀ l → Ren Δ (l ∷ Δ)
+wkᵣ l _ x = there x
 
-_↑ₛ_ : Δ₁ ⇒ₛ Δ₂ → ∀ l → (l ∷ Δ₁) ⇒ₛ (l ∷ Δ₂)
-(σ ↑ₛ k) _ zero    = ` zero
-(σ ↑ₛ k) _ (suc x) = σ _ x ⋯ᵣ wkᵣ _
+_↑ₛ_ : Sub Δ₁ Δ₂ → ∀ l → Sub (l ∷ Δ₁) (l ∷ Δ₂)
+(σ ↑ₛ k) _ (here x)    = ` here x
+(σ ↑ₛ k) _ (there x) = σ _ x ⋯ᵣ wkᵣ _
 
-_⋯ₛ_ : Δ₁ ⊢ l → Δ₁ ⇒ₛ Δ₂ → Δ₂ ⊢ l
+_⋯ₛ_ : Δ₁ ⊢ l → Sub Δ₁ Δ₂ → Δ₂ ⊢ l
 `ℕ           ⋯ₛ σ = `ℕ
 (` x)        ⋯ₛ σ = σ _ x
 (∀[α∶ l ] t) ⋯ₛ σ = ∀[α∶ l ] (t ⋯ₛ (σ ↑ₛ l))
 (t₁ ⇒ t₂)    ⋯ₛ σ = (t₁ ⋯ₛ σ) ⇒ (t₂ ⋯ₛ σ)
 
-idₛ : Δ ⇒ₛ Δ
+idₛ : Sub Δ Δ
 idₛ _ x = ` x 
 
-extₛ : Δ₂ ⊢ l → Δ₁ ⇒ₛ Δ₂ → (l ∷ Δ₁) ⇒ₛ Δ₂
-extₛ t σ _ zero = t
-extₛ t σ _ (suc x) = σ _ x
+extₛ : Δ₂ ⊢ l → Sub Δ₁ Δ₂ → Sub (l ∷ Δ₁) Δ₂
+extₛ t σ _ (here refl) = t
+extₛ t σ _ (there x) = σ _ x
 
-⦅_⦆ₛ : Δ ⊢ l → (l ∷ Δ) ⇒ₛ Δ
+dropₛ :  Sub (l ∷ Δ₁) Δ₂ → Sub Δ₁ Δ₂
+dropₛ σ _ x = σ _ (there x)
+
+⦅_⦆ₛ : Δ ⊢ l → Sub (l ∷ Δ) Δ
 ⦅ t ⦆ₛ = extₛ t idₛ 
 
 _[_] : (l₁ ∷ Δ) ⊢ l → Δ ⊢ l₁ → Δ ⊢ l

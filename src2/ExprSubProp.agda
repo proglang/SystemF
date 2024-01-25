@@ -8,21 +8,21 @@ open import Type
 open import Expr
 open import ExprSub
 
-_ᵣ·ᵣ_ : Γ₁ ⇒ᵣ Γ₂ → Γ₂ ⇒ᵣ Γ₃ → Γ₁ ⇒ᵣ Γ₃
+_ᵣ·ᵣ_ : Ren Γ₁ Γ₂ → Ren Γ₂ Γ₃ → Ren Γ₁ Γ₃
 (ρ₁ ᵣ·ᵣ ρ₂) _ _ x = ρ₂ _ _ (ρ₁ _ _ x)
 
-↑ᵣ-dist-ᵣ·ᵣ : ∀ (ρ₁ : Γ₁ ⇒ᵣ Γ₂) (ρ₂ : Γ₂ ⇒ᵣ Γ₃) →
+↑ᵣ-dist-ᵣ·ᵣ : ∀ (ρ₁ : Ren Γ₁ Γ₂) (ρ₂ : Ren Γ₂ Γ₃) →
   (ρ₁ ↑ᵣ t) ᵣ·ᵣ (ρ₂ ↑ᵣ t) ≡ (ρ₁ ᵣ·ᵣ ρ₂) ↑ᵣ t
 ↑ᵣ-dist-ᵣ·ᵣ ρ₁ ρ₂ = fun-ext λ _ → fun-ext λ _ → fun-ext λ where
   here → refl 
   (there x) → refl
 
-↑ᵣₗ-dist-ᵣ·ᵣ : ∀ (ρ₁ : Γ₁ ⇒ᵣ Γ₂) (ρ₂ : Γ₂ ⇒ᵣ Γ₃) →
+↑ᵣₗ-dist-ᵣ·ᵣ : ∀ (ρ₁ : Ren Γ₁ Γ₂) (ρ₂ : Ren Γ₂ Γ₃) →
   (ρ₁ ↑ᵣₗ l) ᵣ·ᵣ (ρ₂ ↑ᵣₗ l) ≡ (ρ₁ ᵣ·ᵣ ρ₂) ↑ᵣₗ l
 ↑ᵣₗ-dist-ᵣ·ᵣ ρ₁ ρ₂ = fun-ext λ _ → fun-ext λ _ → fun-ext λ where
   (skip x) → refl
 
-⋯ᵣᵣ-fusion : ∀ (e : Δ ⍮ Γ₁ ⊢ t) (ρ₁ : Γ₁ ⇒ᵣ Γ₂) (ρ₂ : Γ₂ ⇒ᵣ Γ₃) →
+⋯ᵣᵣ-fusion : ∀ (e : Δ ⍮ Γ₁ ⊢ t) (ρ₁ : Ren Γ₁ Γ₂) (ρ₂ : Ren Γ₂ Γ₃) →
   (e ⋯ᵣ ρ₁) ⋯ᵣ ρ₂ ≡ e ⋯ᵣ (ρ₁ ᵣ·ᵣ ρ₂)
 ⋯ᵣᵣ-fusion (# n)        ρ₁ ρ₂ = refl 
 ⋯ᵣᵣ-fusion (` x)        ρ₁ ρ₂ = refl

@@ -1,6 +1,8 @@
 module TypeSubProp where
 
 open import Data.List using (List; []; _∷_)
+open import Data.List.Relation.Unary.Any using (here; there)
+open import Relation.Binary.PropositionalEquality using (refl)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl; sym; cong; cong₂; subst; module ≡-Reasoning)
 open ≡-Reasoning
 
@@ -8,16 +10,16 @@ open import Prelude
 open import Type
 open import TypeSub
 
-_ᵣ·ᵣ_ : Δ₁ ⇒ᵣ Δ₂ → Δ₂ ⇒ᵣ Δ₃ → Δ₁ ⇒ᵣ Δ₃
+_ᵣ·ᵣ_ : Ren Δ₁ Δ₂ → Ren Δ₂ Δ₃ → Ren Δ₁ Δ₃
 (ρ₁ ᵣ·ᵣ ρ₂) _ x = ρ₂ _ (ρ₁ _ x)
 
-↑ᵣ-dist-ᵣ·ᵣ : ∀ (ρ₁ : Δ₁ ⇒ᵣ Δ₂) (ρ₂ : Δ₂ ⇒ᵣ Δ₃) →
+↑ᵣ-dist-ᵣ·ᵣ : ∀ (ρ₁ : Ren Δ₁ Δ₂) (ρ₂ : Ren Δ₂ Δ₃) →
   (ρ₁ ↑ᵣ l) ᵣ·ᵣ (ρ₂ ↑ᵣ l) ≡ (ρ₁ ᵣ·ᵣ ρ₂) ↑ᵣ l
 ↑ᵣ-dist-ᵣ·ᵣ ρ₁ ρ₂ = fun-ext λ _ → fun-ext λ where
-  zero    → refl
-  (suc x) → refl
+  (here refl)    → refl
+  (there x) → refl
 
-⋯ᵣᵣ-fusion : ∀ (t : Δ₁ ⊢ l) (ρ₁ : Δ₁ ⇒ᵣ Δ₂) (ρ₂ : Δ₂ ⇒ᵣ Δ₃) →
+⋯ᵣᵣ-fusion : ∀ (t : Δ₁ ⊢ l) (ρ₁ : Ren Δ₁ Δ₂) (ρ₂ : Ren Δ₂ Δ₃) →
   (t ⋯ᵣ ρ₁) ⋯ᵣ ρ₂ ≡ t ⋯ᵣ (ρ₁ ᵣ·ᵣ ρ₂)
 ⋯ᵣᵣ-fusion `ℕ           ρ₁ ρ₂ = refl
 ⋯ᵣᵣ-fusion (` x)        ρ₁ ρ₂ = refl
@@ -32,16 +34,16 @@ _ᵣ·ᵣ_ : Δ₁ ⇒ᵣ Δ₂ → Δ₂ ⇒ᵣ Δ₃ → Δ₁ ⇒ᵣ Δ₃
   ∎)
 
 
-_ᵣ·ₛ_ : Δ₁ ⇒ᵣ Δ₂ → Δ₂ ⇒ₛ Δ₃ → Δ₁ ⇒ₛ Δ₃
+_ᵣ·ₛ_ : Ren Δ₁ Δ₂ → Sub Δ₂ Δ₃ → Sub Δ₁ Δ₃
 (ρ₁ ᵣ·ₛ σ₂) _ x = σ₂ _ (ρ₁ _ x)
 
-↑ₛ-dist-ᵣ·ₛ : ∀ (ρ₁ : Δ₁ ⇒ᵣ Δ₂) (σ₂ : Δ₂ ⇒ₛ Δ₃) →
+↑ₛ-dist-ᵣ·ₛ : ∀ (ρ₁ : Ren Δ₁ Δ₂) (σ₂ : Sub Δ₂ Δ₃) →
   (ρ₁ ↑ᵣ l) ᵣ·ₛ (σ₂ ↑ₛ l) ≡ (ρ₁ ᵣ·ₛ σ₂) ↑ₛ l
 ↑ₛ-dist-ᵣ·ₛ ρ₁ σ₂ = fun-ext λ _ → fun-ext λ where
-  zero    → refl
-  (suc x) → refl
+  (here refl)    → refl
+  (there x) → refl
 
-⋯ᵣₛ-fusion : ∀ (t : Δ₁ ⊢ l) (ρ₁ : Δ₁ ⇒ᵣ Δ₂) (σ₂ : Δ₂ ⇒ₛ Δ₃) →
+⋯ᵣₛ-fusion : ∀ (t : Δ₁ ⊢ l) (ρ₁ : Ren Δ₁ Δ₂) (σ₂ : Sub Δ₂ Δ₃) →
   (t ⋯ᵣ ρ₁) ⋯ₛ σ₂ ≡ t ⋯ₛ (ρ₁ ᵣ·ₛ σ₂)
 ⋯ᵣₛ-fusion `ℕ           ρ₁ σ₂ = refl
 ⋯ᵣₛ-fusion (` x)        ρ₁ σ₂ = refl
@@ -56,16 +58,16 @@ _ᵣ·ₛ_ : Δ₁ ⇒ᵣ Δ₂ → Δ₂ ⇒ₛ Δ₃ → Δ₁ ⇒ₛ Δ₃
   ∎)
 
 
-_ₛ·ᵣ_ : Δ₁ ⇒ₛ Δ₂ → Δ₂ ⇒ᵣ Δ₃ → Δ₁ ⇒ₛ Δ₃
+_ₛ·ᵣ_ : Sub Δ₁ Δ₂ → Ren Δ₂ Δ₃ → Sub Δ₁ Δ₃
 (σ₁ ₛ·ᵣ ρ₂) _ x = σ₁ _ x ⋯ᵣ ρ₂
 
-↑ₛ-dist-ₛ·ᵣ : ∀ (σ₁ : Δ₁ ⇒ₛ Δ₂) (ρ₂ : Δ₂ ⇒ᵣ Δ₃) →
+↑ₛ-dist-ₛ·ᵣ : ∀ (σ₁ : Sub Δ₁ Δ₂) (ρ₂ : Ren Δ₂ Δ₃) →
   (σ₁ ↑ₛ l) ₛ·ᵣ (ρ₂ ↑ᵣ l) ≡ (σ₁ ₛ·ᵣ ρ₂) ↑ₛ l
 ↑ₛ-dist-ₛ·ᵣ {l = l} σ₁ ρ₂ = fun-ext λ _ → fun-ext λ where
-  zero    → refl
-  (suc x) →
+  (here refl)    → refl
+  (there x) →
     begin
-      ((σ₁ ↑ₛ l) ₛ·ᵣ (ρ₂ ↑ᵣ l)) _ (suc x)
+      ((σ₁ ↑ₛ l) ₛ·ᵣ (ρ₂ ↑ᵣ l)) _ (there x)
     ≡⟨⟩
       (σ₁ _ x ⋯ᵣ wkᵣ l) ⋯ᵣ (ρ₂ ↑ᵣ l)
     ≡⟨ ⋯ᵣᵣ-fusion (σ₁ _ x) (wkᵣ l) (ρ₂ ↑ᵣ l) ⟩
@@ -78,7 +80,7 @@ _ₛ·ᵣ_ : Δ₁ ⇒ₛ Δ₂ → Δ₂ ⇒ᵣ Δ₃ → Δ₁ ⇒ₛ Δ₃
       ((σ₁ ₛ·ᵣ ρ₂) _ x ⋯ᵣ wkᵣ l)
     ∎
 
-⋯ₛᵣ-fusion : ∀ (t : Δ₁ ⊢ l) (σ₁ : Δ₁ ⇒ₛ Δ₂) (ρ₂ : Δ₂ ⇒ᵣ Δ₃) →
+⋯ₛᵣ-fusion : ∀ (t : Δ₁ ⊢ l) (σ₁ : Sub Δ₁ Δ₂) (ρ₂ : Ren Δ₂ Δ₃) →
   (t ⋯ₛ σ₁) ⋯ᵣ ρ₂ ≡ t ⋯ₛ (σ₁ ₛ·ᵣ ρ₂)
 ⋯ₛᵣ-fusion `ℕ           σ₁ ρ₂ = refl
 ⋯ₛᵣ-fusion (` x)        σ₁ ρ₂ = refl
@@ -93,16 +95,16 @@ _ₛ·ᵣ_ : Δ₁ ⇒ₛ Δ₂ → Δ₂ ⇒ᵣ Δ₃ → Δ₁ ⇒ₛ Δ₃
   ∎)
 
 
-_ₛ·ₛ_ : Δ₁ ⇒ₛ Δ₂ → Δ₂ ⇒ₛ Δ₃ → Δ₁ ⇒ₛ Δ₃
+_ₛ·ₛ_ : Sub Δ₁ Δ₂ → Sub Δ₂ Δ₃ → Sub Δ₁ Δ₃
 (ρ₁ ₛ·ₛ ρ₂) _ x = ρ₁ _ x ⋯ₛ ρ₂
 
-↑ₛ-dist-ₛ·ₛ : ∀ (ρ₁ : Δ₁ ⇒ₛ Δ₂) (ρ₂ : Δ₂ ⇒ₛ Δ₃) →
+↑ₛ-dist-ₛ·ₛ : ∀ (ρ₁ : Sub Δ₁ Δ₂) (ρ₂ : Sub Δ₂ Δ₃) →
   (ρ₁ ↑ₛ l) ₛ·ₛ (ρ₂ ↑ₛ l) ≡ (ρ₁ ₛ·ₛ ρ₂) ↑ₛ l
 ↑ₛ-dist-ₛ·ₛ {l = l} ρ₁ ρ₂ = fun-ext λ _ → fun-ext λ where
-  zero    → refl
-  (suc x) →
+  (here refl)    → refl
+  (there x) →
     begin
-      ((ρ₁ ↑ₛ l) ₛ·ₛ (ρ₂ ↑ₛ l)) _ (suc x)
+      ((ρ₁ ↑ₛ l) ₛ·ₛ (ρ₂ ↑ₛ l)) _ (there x)
     ≡⟨⟩
       (ρ₁ _ x ⋯ᵣ wkᵣ l) ⋯ₛ (ρ₂ ↑ₛ l)
     ≡⟨ ⋯ᵣₛ-fusion (ρ₁ _ x) (wkᵣ l) (ρ₂ ↑ₛ l) ⟩
@@ -115,7 +117,7 @@ _ₛ·ₛ_ : Δ₁ ⇒ₛ Δ₂ → Δ₂ ⇒ₛ Δ₃ → Δ₁ ⇒ₛ Δ₃
       ((ρ₁ ₛ·ₛ ρ₂) _ x ⋯ᵣ wkᵣ l)
     ∎
 
-⋯ₛₛ-fusion : ∀ (t : Δ₁ ⊢ l) (σ₁ : Δ₁ ⇒ₛ Δ₂) (σ₂ : Δ₂ ⇒ₛ Δ₃) →
+⋯ₛₛ-fusion : ∀ (t : Δ₁ ⊢ l) (σ₁ : Sub Δ₁ Δ₂) (σ₂ : Sub Δ₂ Δ₃) →
   (t ⋯ₛ σ₁) ⋯ₛ σ₂ ≡ t ⋯ₛ (σ₁ ₛ·ₛ σ₂)
 ⋯ₛₛ-fusion `ℕ           σ₁ σ₂ = refl
 ⋯ₛₛ-fusion (` x)        σ₁ σ₂ = refl
@@ -131,8 +133,8 @@ _ₛ·ₛ_ : Δ₁ ⇒ₛ Δ₂ → Δ₂ ⇒ₛ Δ₃ → Δ₁ ⇒ₛ Δ₃
 
 idᵣ-↑ᵣ : idᵣ ↑ᵣ l ≡ idᵣ {Δ = l ∷ Δ}
 idᵣ-↑ᵣ = fun-ext λ _ → fun-ext λ where
-  zero    → refl
-  (suc x) → refl
+  (here refl)    → refl
+  (there x) → refl
 
 ⋯ᵣ-id : ∀ (t : Δ ⊢ l) →
   t ⋯ᵣ idᵣ ≡ t
@@ -148,7 +150,7 @@ idᵣ-↑ᵣ = fun-ext λ _ → fun-ext λ where
    ∎)
 ⋯ᵣ-id (t₁ ⇒ t₂)    = cong₂ _⇒_ (⋯ᵣ-id t₁) (⋯ᵣ-id t₂)
 
-wkᵣ-↑ᵣ : ∀ (t : Δ₁ ⊢ l') (ρ : Δ₁ ⇒ᵣ Δ₂) →
+wkᵣ-↑ᵣ : ∀ (t : Δ₁ ⊢ l') (ρ : Ren Δ₁ Δ₂) →
   (t ⋯ᵣ ρ) ⋯ᵣ wkᵣ l ≡ (t ⋯ᵣ wkᵣ l) ⋯ᵣ (ρ ↑ᵣ l)
 wkᵣ-↑ᵣ {Δ₁} {k'} {Δ₂} {l} t ρ =
   begin
@@ -161,7 +163,7 @@ wkᵣ-↑ᵣ {Δ₁} {k'} {Δ₂} {l} t ρ =
     (t ⋯ᵣ wkᵣ l) ⋯ᵣ (ρ ↑ᵣ l)
   ∎
 
-wkᵣ-↑ₛ : ∀ (t : Δ₁ ⊢ l') (σ : Δ₁ ⇒ₛ Δ₂) →
+wkᵣ-↑ₛ : ∀ (t : Δ₁ ⊢ l') (σ : Sub Δ₁ Δ₂) →
   (t ⋯ₛ σ) ⋯ᵣ wkᵣ l ≡ (t ⋯ᵣ wkᵣ l) ⋯ₛ (σ ↑ₛ l)
 wkᵣ-↑ₛ {Δ₁} {k'} {Δ₂} {l} t ρ =
   begin
@@ -176,8 +178,8 @@ wkᵣ-↑ₛ {Δ₁} {k'} {Δ₂} {l} t ρ =
 
 idₛ-↑ₛ : idₛ ↑ₛ l ≡ idₛ {Δ = l ∷ Δ}
 idₛ-↑ₛ = fun-ext λ _ → fun-ext λ where
-  zero    → refl
-  (suc x) → refl
+  (here refl)    → refl
+  (there x) → refl
 
 ⋯ₛ-id : ∀ (t : Δ ⊢ l) →
   t ⋯ₛ idₛ ≡ t
@@ -206,7 +208,7 @@ wkᵣ-cancels-⦅⦆ₛ {Δ} {k'} {l} t' t =
     t'
   ∎
   
-wkᵣ-cancels-extₛ : ∀ (t' : Δ₁ ⊢ l') (t : Δ₂ ⊢ l) (σ : Δ₁ ⇒ₛ Δ₂) →
+wkᵣ-cancels-extₛ : ∀ (t' : Δ₁ ⊢ l') (t : Δ₂ ⊢ l) (σ : Sub Δ₁ Δ₂) →
   ((t' ⋯ᵣ wkᵣ l) ⋯ₛ (extₛ t σ)) ≡ t' ⋯ₛ σ
 wkᵣ-cancels-extₛ {l = l} t' t σ = 
   begin
@@ -219,13 +221,13 @@ wkᵣ-cancels-extₛ {l = l} t' t σ =
     (t' ⋯ₛ σ)
   ∎
 
-⦅⦆ₛ-↑ᵣ' : ∀ (t : Δ₁ ⊢ l) (ρ : Δ₁ ⇒ᵣ Δ₂) →
+⦅⦆ₛ-↑ᵣ' : ∀ (t : Δ₁ ⊢ l) (ρ : Ren Δ₁ Δ₂) →
   (ρ ↑ᵣ l) ᵣ·ₛ ⦅ t ⋯ᵣ ρ ⦆ₛ ≡ ⦅ t ⦆ₛ ₛ·ᵣ ρ
 ⦅⦆ₛ-↑ᵣ' {Δ₁} {l} {Δ₂} t ρ = fun-ext λ _ → fun-ext λ where
-  zero    → refl
-  (suc x) → refl
+  (here refl)    → refl
+  (there x) → refl
 
-⦅⦆ₛ-↑ᵣ : ∀ (t : (l ∷ Δ₁) ⊢ l') (t' : Δ₁ ⊢ l) (ρ : Δ₁ ⇒ᵣ Δ₂) →
+⦅⦆ₛ-↑ᵣ : ∀ (t : (l ∷ Δ₁) ⊢ l') (t' : Δ₁ ⊢ l) (ρ : Ren Δ₁ Δ₂) →
   (t ⋯ᵣ (ρ ↑ᵣ l)) ⋯ₛ ⦅ t' ⋯ᵣ ρ ⦆ₛ ≡ (t ⋯ₛ ⦅ t' ⦆ₛ) ⋯ᵣ ρ
 ⦅⦆ₛ-↑ᵣ {l} {Δ₁} {l'} {Δ₂} t t' ρ =
   begin
@@ -238,13 +240,13 @@ wkᵣ-cancels-extₛ {l = l} t' t σ =
     (t ⋯ₛ ⦅ t' ⦆ₛ) ⋯ᵣ ρ
   ∎
 
-⦅⦆ₛ-↑ₛ' : ∀ (t : Δ₁ ⊢ l) (σ : Δ₁ ⇒ₛ Δ₂) →
+⦅⦆ₛ-↑ₛ' : ∀ (t : Δ₁ ⊢ l) (σ : Sub Δ₁ Δ₂) →
   (σ ↑ₛ l) ₛ·ₛ ⦅ t ⋯ₛ σ ⦆ₛ ≡ ⦅ t ⦆ₛ ₛ·ₛ σ
 ⦅⦆ₛ-↑ₛ' {Δ₁} {l} {Δ₂} t σ = fun-ext λ _ → fun-ext λ where
-  zero    → refl
-  (suc x) → wkᵣ-cancels-⦅⦆ₛ ((⦅ t ⦆ₛ ₛ·ₛ σ) _ (suc x)) (t ⋯ₛ σ)
+  (here refl)    → refl
+  (there x) → wkᵣ-cancels-⦅⦆ₛ ((⦅ t ⦆ₛ ₛ·ₛ σ) _ (there x)) (t ⋯ₛ σ)
 
-⦅⦆ₛ-↑ₛ : ∀ (t : (l ∷ Δ₁) ⊢ l') (t' : Δ₁ ⊢ l) (σ : Δ₁ ⇒ₛ Δ₂) →
+⦅⦆ₛ-↑ₛ : ∀ (t : (l ∷ Δ₁) ⊢ l') (t' : Δ₁ ⊢ l) (σ : Sub Δ₁ Δ₂) →
   (t ⋯ₛ (σ ↑ₛ l)) ⋯ₛ ⦅ t' ⋯ₛ σ ⦆ₛ ≡ (t ⋯ₛ ⦅ t' ⦆ₛ) ⋯ₛ σ
 ⦅⦆ₛ-↑ₛ {l} {Δ₁} {k'} {Δ₂} t t' σ =
   begin

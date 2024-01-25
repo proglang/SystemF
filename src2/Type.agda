@@ -1,9 +1,9 @@
+module Type where
+
 open import Level using (Level; zero; suc; _⊔_)
 open import Data.List using (List; []; _∷_)
 
-open import Prelude hiding (zero; suc)
-
-module Type where
+open import Prelude
 
 KindCtx : Set
 KindCtx = List Level

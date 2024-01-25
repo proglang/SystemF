@@ -1,4 +1,4 @@
-module Smallstep where
+module SmallStep where
 
 open import Data.List using (List; []; _∷_)
 open import Data.Sum using (_⊎_; inj₁; inj₂)
