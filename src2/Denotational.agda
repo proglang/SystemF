@@ -1,6 +1,7 @@
 module Denotational where
 
 open import Level  using (Setω)
+open import Data.Nat using (ℕ)
 open import Data.List using (List; []; _∷_)
 
 open import Prelude
@@ -16,6 +17,7 @@ lookup (⟦t⟧ ∷⋆ Γ⋆) zero = ⟦t⟧
 lookup (_ ∷⋆ Γ⋆) (suc α) = lookup Γ⋆ α
 
 ⟦_⟧ₜ : Δ ⊢ l → TypeCtx⋆ Δ → Set l
+⟦ `ℕ ⟧ₜ Γ⋆ = ℕ
 ⟦ ` x ⟧ₜ Γ⋆ = lookup Γ⋆ x
 ⟦ t₁ ⇒ t₂ ⟧ₜ Γ⋆ = ⟦ t₁ ⟧ₜ Γ⋆ → ⟦ t₂ ⟧ₜ Γ⋆ 
 ⟦ ∀[α∶ l ] t ⟧ₜ Γ⋆ = (⟦α⟧ : Set l) → ⟦ t ⟧ₜ (⟦α⟧ ∷⋆ Γ⋆) 
