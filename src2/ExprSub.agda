@@ -3,7 +3,7 @@ module ExprSub where
 open import Prelude
 open import Type
 open import Expr
-open import ExprTypeSub as ET hiding (_⋯ᵣ_; _⋯ₛ_; wkᵣ; ⦅_⦆ₛ)
+open import ExprTypeSub as ET hiding (_⋯ᵣ_; _⋯ₛ_; wkᵣ; ⦅_⦆ₛ; _[_])
 
 _⇒ᵣ_ : TypeCtx Δ → TypeCtx Δ → Set
 Γ₁ ⇒ᵣ Γ₂ = ∀ l (t : _ ⊢ l) → Γ₁ ∍ t → Γ₂ ∍ t

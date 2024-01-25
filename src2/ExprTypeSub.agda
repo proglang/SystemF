@@ -5,7 +5,7 @@ open import Data.List using (List; []; _∷_)
 
 open import Prelude
 open import Type
-open import TypeSub as T hiding (_⋯ᵣ_; _⋯ₛ_; wkᵣ; ⦅_⦆ₛ)
+open import TypeSub as T hiding (_⋯ᵣ_; _⋯ₛ_; wkᵣ; ⦅_⦆ₛ; _[_])
 open import TypeSubProp
 open import Expr
 
@@ -59,3 +59,5 @@ _⋯ₛ_ (_∙_ {t = t} e t') {σ = σ} ⊢ρ = subst (_ ⍮ _ ⊢_) (⦅⦆ₛ-
 ⦅_⦆ₛ : (t : Δ ⊢ l) → Sub T.⦅ t ⦆ₛ (l ∷⋆ Γ) Γ
 ⦅ t ⦆ₛ = ext id
 
+_[_] : (l ∷ Δ) ⍮ (l ∷⋆ Γ) ⊢ t₁ → (t : Δ ⊢ l) → Δ ⍮ Γ ⊢ (t₁ T.[ t ])
+e [ t ] = e ⋯ₛ ⦅ t ⦆ₛ
