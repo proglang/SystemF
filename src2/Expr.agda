@@ -15,7 +15,8 @@ data _∍_ : TypeCtx Δ  → Δ ⊢ l → Set where
 
 variable
   x x₁ x₂ x₃ x' x₁' x₂' x₃' : Γ ∍ t
-
+  n n₁ n₂ n₃ n' n₁' n₂' n₃' : ℕ
+  
 data _⍮_⊢_ : (Δ : KindCtx) → TypeCtx Δ → Δ ⊢ l → Set where
   #_ :
     ℕ →
