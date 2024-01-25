@@ -1,7 +1,7 @@
 open import Level using (Level; zero; suc; _⊔_)
 open import Data.List using (List; []; _∷_)
 
-open import Prelude hiding (suc)
+open import Prelude hiding (zero; suc)
 
 module Type where
 
@@ -14,6 +14,7 @@ variable
   α α₁ α₂ α₃ α' α₁' α₂' α₃' : Δ ∋ l
 
 data _⊢_ : KindCtx → Level → Set where
+  `ℕ : Δ ⊢ zero
   `_      :
     Δ ∋ l →
     Δ ⊢ l

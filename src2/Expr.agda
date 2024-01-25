@@ -1,6 +1,7 @@
 module Expr where
 
 open import Level using (Level; zero; suc)
+open import Data.Nat using (ℕ)
 open import Data.List using (List; []; _∷_)
 
 open import Prelude
@@ -16,6 +17,9 @@ variable
   x x₁ x₂ x₃ x' x₁' x₂' x₃' : Γ ∍ t
 
 data _⍮_⊢_ : (Δ : KindCtx) → TypeCtx Δ → Δ ⊢ l → Set where
+  #_ :
+    ℕ →
+    Δ ⍮ Γ ⊢ `ℕ
   `_ :
     Γ ∍ t →
     Δ ⍮ Γ ⊢ t

@@ -20,6 +20,7 @@ data Ren : Δ₁ ⇒ᵣ Δ₂ → TypeCtx Δ₁ → TypeCtx Δ₂ → Set where
   wk : ∀ {ρ} → Ren ρ Γ₁ Γ₂ → Ren (wkᵣ' _ ρ) Γ₁ (l ∷⋆ Γ₂)
 
 _⋯ᵣ_ : Δ₁ ⍮ Γ₁ ⊢ t → {ρ : Δ₁ ⇒ᵣ Δ₂} → Ren ρ Γ₁ Γ₂ → Δ₂ ⍮ Γ₂ ⊢ (t T.⋯ᵣ ρ)
+(# n)     ⋯ᵣ ρ = # n
 (` x)     ⋯ᵣ ρ = ` (x ⋯ᵣ' ρ)
   where _⋯ᵣ'_ : {t : Δ₁ ⊢ l} → {ρ : Δ₁ ⇒ᵣ Δ₂} → Γ₁ ∍ t → Ren ρ Γ₁ Γ₂ → Γ₂ ∍ (t T.⋯ᵣ ρ)
         x       ⋯ᵣ' id   = subst (_ ∍_) (sym (⋯ᵣ-id _)) x
@@ -37,22 +38,23 @@ wkᵣ e = e ⋯ᵣ wk id
 
 data Sub : Δ₁ ⇒ₛ Δ₂ → TypeCtx Δ₁ → TypeCtx Δ₂ → Set where
   id  : Sub idₛ Γ Γ 
-  ↑   : ∀ {ρ} → Sub ρ Γ₁ Γ₂ → Sub ρ (t ∷ Γ₁) ((t T.⋯ₛ ρ) ∷ Γ₂)
-  ↑ₗ  : ∀ {ρ} → Sub ρ Γ₁ Γ₂ → Sub (ρ ↑ₛ _) (l ∷⋆ Γ₁) (l ∷⋆ Γ₂)
-  ext : ∀ {ρ} → Sub ρ Γ₁ Γ₂ → Sub (extₛ t ρ) (l ∷⋆ Γ₁) Γ₂
+  ↑   : ∀ {σ} → Sub σ Γ₁ Γ₂ → Sub σ (t ∷ Γ₁) ((t T.⋯ₛ σ) ∷ Γ₂)
+  ↑ₗ  : ∀ {σ} → Sub σ Γ₁ Γ₂ → Sub (σ ↑ₛ _) (l ∷⋆ Γ₁) (l ∷⋆ Γ₂)
+  ext : ∀ {σ} → Sub σ Γ₁ Γ₂ → Sub (extₛ t σ) (l ∷⋆ Γ₁) Γ₂
 
-_⋯ₛ_ : Δ₁ ⍮ Γ₁ ⊢ t → {ρ : Δ₁ ⇒ₛ Δ₂} → Sub ρ Γ₁ Γ₂ → Δ₂ ⍮ Γ₂ ⊢ (t T.⋯ₛ ρ)
-(` x)     ⋯ₛ ρ    = ` (x ⋯ₛ' ρ)
-  where _⋯ₛ'_ : {t : Δ₁ ⊢ l} → {ρ : Δ₁ ⇒ₛ Δ₂} → Γ₁ ∍ t → Sub ρ Γ₁ Γ₂ → Γ₂ ∍ (t T.⋯ₛ ρ)
+_⋯ₛ_ : Δ₁ ⍮ Γ₁ ⊢ t → {σ : Δ₁ ⇒ₛ Δ₂} → Sub σ Γ₁ Γ₂ → Δ₂ ⍮ Γ₂ ⊢ (t T.⋯ₛ σ)
+(# n)        ⋯ₛ σ = # n
+(` x)        ⋯ₛ σ    = ` (x ⋯ₛ' σ)
+  where _⋯ₛ'_ : {t : Δ₁ ⊢ l} → {σ : Δ₁ ⇒ₛ Δ₂} → Γ₁ ∍ t → Sub σ Γ₁ Γ₂ → Γ₂ ∍ (t T.⋯ₛ σ)
         x ⋯ₛ' id = subst (_ ∍_) (sym (⋯ₛ-id _)) x
-        here           ⋯ₛ' ↑ ρ   = here
-        there x        ⋯ₛ' ↑ ρ   = there (x ⋯ₛ' ρ)
-        skip {t = t} x ⋯ₛ' ↑ₗ ρ  = subst (_ ∍_) (wkᵣ-↑ₛ t _) (skip (x ⋯ₛ' ρ))
-        skip {t = t} x ⋯ₛ' ext ρ = subst (_ ∍_) (sym (wkᵣ-cancels-extₛ t _ _)) (x ⋯ₛ' ρ)
-(λx e)    ⋯ₛ ρ = λx (e ⋯ₛ ↑ ρ)
-(Λ[α∶ l ] e) ⋯ₛ ρ = Λ[α∶ l ] (e ⋯ₛ ↑ₗ ρ)
-(e₁ · e₂) ⋯ₛ ρ    = (e₁ ⋯ₛ ρ) · (e₂ ⋯ₛ ρ)
-_⋯ₛ_ (_∙_ {t = t} e t') {ρ = ρ} ⊢ρ = subst (_ ⍮ _ ⊢_) (⦅⦆ₛ-↑ₛ t t' ρ) ((e ⋯ₛ ⊢ρ) ∙ (t' T.⋯ₛ ρ))
+        here           ⋯ₛ' ↑ σ   = here
+        there x        ⋯ₛ' ↑ σ   = there (x ⋯ₛ' σ)
+        skip {t = t} x ⋯ₛ' ↑ₗ σ  = subst (_ ∍_) (wkᵣ-↑ₛ t _) (skip (x ⋯ₛ' σ))
+        skip {t = t} x ⋯ₛ' ext σ = subst (_ ∍_) (sym (wkᵣ-cancels-extₛ t _ _)) (x ⋯ₛ' σ)
+(λx e)       ⋯ₛ σ = λx (e ⋯ₛ ↑ σ)
+(Λ[α∶ l ] e) ⋯ₛ σ = Λ[α∶ l ] (e ⋯ₛ ↑ₗ σ)
+(e₁ · e₂)    ⋯ₛ σ = (e₁ ⋯ₛ σ) · (e₂ ⋯ₛ σ)
+_⋯ₛ_ (_∙_ {t = t} e t') {σ = σ} ⊢ρ = subst (_ ⍮ _ ⊢_) (⦅⦆ₛ-↑ₛ t t' σ) ((e ⋯ₛ ⊢ρ) ∙ (t' T.⋯ₛ σ))
 
 ⦅_⦆ₛ : (t : Δ ⊢ l) → Sub T.⦅ t ⦆ₛ (l ∷⋆ Γ) Γ
 ⦅ t ⦆ₛ = ext id
