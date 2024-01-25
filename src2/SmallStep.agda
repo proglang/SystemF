@@ -50,7 +50,7 @@ progress (e₁ · e₂) with progress e₁ | progress e₂
 ... | inj₁ (V-N Nx)       | inj₁ val-e₂           = inj₁ (V-N (N-· Nx val-e₂))
 ... | inj₁ val-e₁         | inj₂ (e₂' , e₂↪e₂')   = inj₂ (_ , ξ-·₂ val-e₁ e₂↪e₂')
 ... | inj₂ (e₁' , e₁↪e₁') | _                     = inj₂ (_ , ξ-·₁ e₁↪e₁')
-progress (e ∙ t) with progress e
-... | inj₁ (V-Λ {e = e})                          = inj₂ (_ , β-Λ {e = e} {t' = t})
+progress (e ∙ t') with progress e
+... | inj₁ (V-Λ {e = e})                          = inj₂ (_ , β-Λ)
 ... | inj₁ (V-N Nx)                               = inj₁ (V-N (N-∙ Nx))
 ... | inj₂ (e₁' , e₁↪e₁')                         = inj₂ (_ , ξ-∙ e₁↪e₁')

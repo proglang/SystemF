@@ -1,4 +1,6 @@
 import Prelude
+import SubstProp
+
 import Type
 import TypeSub
 import TypeSubProp
