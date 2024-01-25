@@ -10,44 +10,34 @@ open import Expr
 import ExprSub as E
 import ExprTypeSub as ET
 
-Type : KindCtx → Level → Set
-Type = _⊢_
-
--- closed types
-CType : Level → Set
-CType = Type []
-
-Expr : (Δ : KindCtx) → TypeCtx Δ → Type Δ l → Set
-Expr = _⍮_⊢_
-
--- closed expressions
-CExpr : CType l → Set
-CExpr T = Expr [] [] T
+open import Notation
 
 -- values
 
 data isValue : ∀{l} {T : CType l} → CExpr T → Set where
-  -- V-#
+  V-♯ : ∀ {n}
+    → isValue (# n)
   V-ƛ : ∀ {T₁ : CType l₁}{T₂ : CType l₂}{e : Expr [] (T₁ ∷ []) T₂}
     → isValue (λx e)
   V-Λ : ∀ {T′ : Type [ l₁ ] l₂}{e : Expr [ l₁ ] (l₁ ∷⋆ []) T′}
     → isValue (Λ[α∶ l₁ ] e)
 
-Value : CType l → Set
-Value T = Σ (CExpr T) isValue
+record Value (T : CType l) : Set where
+  constructor _,_
+  field
+    exp : CExpr T
+    isv : isValue exp
+open Value
 
 variable
   T : Type Δ l
   v v₂ : Value T
 
-exp : ∀ {T : CType l} → Value T → CExpr T
-exp = proj₁
-
 -- big step semantics
 
 infix 15 _⇓_
 data _⇓_ : CExpr T → Value T → Set where
-  -- ⇓-n : # n ⇓ (# n , V-♯)
+  ⇓-n : # n ⇓ (# n , V-♯)
   ⇓-ƛ : λx e ⇓ (λx e , V-ƛ)
   ⇓-· : e₁ ⇓ (λx e , V-ƛ)
       → e₂ ⇓ v₂
@@ -57,3 +47,13 @@ data _⇓_ : CExpr T → Value T → Set where
   ⇓-∙ : e₁ ⇓ (Λ[α∶ l ] e , V-Λ)
       → (e ET.[ T ]) ⇓ v
       → (e₁ ∙ T) ⇓ v
+
+-- values evaluate to themselves
+
+Value-⇓ : ∀ {T : CType l} → (v : Value T) → exp v ⇓ v
+Value-⇓ ((# n) , V-♯) = ⇓-n
+Value-⇓ ((` x) , ())
+Value-⇓ ((λx e) , V-ƛ) = ⇓-ƛ
+Value-⇓ ((Λ[α∶ l ] e) , V-Λ) = ⇓-Λ
+Value-⇓ ((e · e₁) , ())
+Value-⇓ ((e ∙ t') , ())

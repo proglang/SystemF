@@ -19,7 +19,7 @@ variable
   
 data _⍮_⊢_ : (Δ : KindCtx) → TypeCtx Δ → Δ ⊢ l → Set where
   #_ :
-    ℕ →
+    (n : ℕ) →
     Δ ⍮ Γ ⊢ `ℕ
   `_ :
     Γ ∍ t →
