@@ -18,14 +18,14 @@ data _⊢_ : KindCtx → Level → Set where
   `_      :
     Δ ∋ l →
     Δ ⊢ l
-  ∀[α∶_]_ :
-    (l : Level) →
-    (l ∷ Δ) ⊢ l' →
-    Δ ⊢ (suc l ⊔ l')
   _⇒_ :
     Δ ⊢ l →
     Δ ⊢ l' →
     Δ ⊢ (l ⊔ l')
+  ∀[α∶_]_ :
+    (l : Level) →
+    (l ∷ Δ) ⊢ l' →
+    Δ ⊢ (suc l ⊔ l')
     
 variable
   t t₁ t₂ t₃ t' t₁' t₂' t₃' : Δ ⊢ l
