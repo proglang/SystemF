@@ -27,7 +27,7 @@ data TEnv : LEnv → Set where
   _◁_  : Type Δ l → TEnv Δ → TEnv Δ
   _◁*_ : (l : Level) → TEnv Δ → TEnv (l ∷ Δ)
 
-variable Γ Γ₁ Γ₂ : TEnv Δ
+variable Γ Γ₁ Γ₂ Γ₂₁ Γ₂₂ : TEnv Δ
 
 data inn : Type Δ l → TEnv Δ → Set where
   here  : ∀ {T Γ} → inn {Δ}{l} T (T ◁ Γ)

@@ -228,6 +228,14 @@ TidₛT≡T `ℕ = refl
     (Tsub (Tliftₛ σ _) T) [ Tsub σ T′ ]T
   ∎
 
+Twkᵣ∘Textₛ : {T′ : Type Δ₂ l′} (σ : TSub Δ₁ Δ₂) → Twkᵣ Tidᵣ ∘ᵣₛ Textₛ σ T′ ≡ σ
+Twkᵣ∘Textₛ {T′ = T′} σ =
+  begin
+    (Twkᵣ Tidᵣ ∘ᵣₛ Textₛ σ T′)
+  ≡⟨ refl ⟩
+    σ
+  ∎
+
 σT≡TextₛσTwkT : {T′ : Type Δ₂ l′} (σ : TSub Δ₁ Δ₂) (T : Type Δ₁ l) → Tsub (Textₛ σ T′) (Twk T) ≡ Tsub σ T
 σT≡TextₛσTwkT {T′ = T′} σ T = begin 
     Tsub (Textₛ σ _) (Twk T)
@@ -238,6 +246,22 @@ TidₛT≡T `ℕ = refl
   ≡⟨ cong (λ T → Tsub σ T) (TidₛT≡T T) ⟩
     Tsub σ T
   ∎
+
+Tliftₛ∘Textₛ : ∀ l (τ* : TSub Δ []) (T′ : Type [] l) → Tliftₛ τ* l ∘ₛₛ Textₛ Tidₛ T′ ≡ (Textₛ τ* T′)
+Tliftₛ∘Textₛ l τ* T′ = fun-ext₂ λ where
+  _ here → refl
+  _ (there x) →
+    begin
+      (Tliftₛ τ* l ∘ₛₛ Textₛ Tidₛ T′) _ (there x)
+    ≡⟨ refl ⟩
+      Tsub (Textₛ (λ z → `_) T′) (Tren (λ z x₂ → there x₂) (τ* _ x))
+    ≡⟨ assoc-sub-ren (τ* _ x)  (λ z x₂ → there x₂) (Textₛ (λ z → `_) T′) ⟩
+      Tsub ((λ z x₂ → there x₂) ∘ᵣₛ Textₛ (λ z → `_) T′) (τ* _ x)
+    ≡⟨ TidₛT≡T (τ* _ x) ⟩
+      τ* _ x
+    ≡⟨ refl ⟩
+      Textₛ τ* T′ _ (there x)
+    ∎
 
 σ↑T[T′]≡TextₛσT′T : (σ* : TSub Δ []) (T′ : Type [] l) (T : Type (l ∷ Δ) l′)
   → Tsub (Tliftₛ σ* l) T [ T′ ]T ≡ Tsub (Textₛ σ* T′) T

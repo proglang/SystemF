@@ -324,24 +324,6 @@ Cextt-Eextₛ-l {σ* = σ*}{T′ = T′} χ = fun-ext (λ l′ → fun-ext (λ T
 
 ----------------------------------------
 
-subst-split-ƛ : 
-    ∀ {t₁ t₁′ : Type [] l₁}
-  → {t₂ t₂′ : Type [] l₂}
-  → (eq : t₁ ⇒ t₂ ≡ t₁′ ⇒ t₂′)
-  → (eq₁ : t₁ ≡ t₁′)
-  → (eq₂ : t₂ ≡ t₂′)
-  → (a : Expr [] (t₁ ◁ ∅) t₂)
-  → subst CExpr eq (ƛ a) ≡ ƛ subst₂ (λ T₁ T₂ → Expr [] (T₁ ◁ ∅) T₂) eq₁ eq₂ a
-subst-split-ƛ refl refl refl a = refl
-
-subst-split-Λ :
-  ∀ {tᵢ tᵢ′ : Type [ l ] l₁}
-  → (eqₒ : `∀α l , tᵢ ≡ `∀α l , tᵢ′)
-  → (eqᵢ : tᵢ ≡ tᵢ′)
-  → (a : Expr [ l ] (l ◁* ∅) tᵢ)
-  → subst CExpr eqₒ (Λ l ⇒ a) ≡ Λ l ⇒ subst (Expr [ l ] (l ◁* ∅)) eqᵢ a
-subst-split-Λ refl refl a = refl
-
 subst-split-⇓ :
   ∀ {Tₑ Tᵥ : Type [] l}
   → (e : CExpr Tₑ)

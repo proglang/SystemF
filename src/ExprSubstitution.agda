@@ -64,7 +64,8 @@ ESub : TSub Δ₁ Δ₂ → TEnv Δ₁ → TEnv Δ₂ → Set
 ESub {Δ₁ = Δ₁} {Δ₂ = Δ₂} σ* Γ₁ Γ₂ = ∀ l (T : Type Δ₁ l) → inn T Γ₁ → Expr Δ₂ Γ₂ (Tsub σ* T)
 
 Eidₛ : ESub Tidₛ Γ Γ
-Eidₛ _ T rewrite TidₛT≡T T = `_
+Eidₛ _ T x = subst (Expr _ _) (sym (TidₛT≡T T)) (` x)
+-- Eidₛ _ T rewrite TidₛT≡T T = `_
 
 Ewkₛ : (σ* : TSub Δ₁ Δ₂) → ESub σ* Γ₁ Γ₂ → ESub σ* Γ₁ (T ◁ Γ₂)
 Ewkₛ σ* σ _ T x = Ewk (σ _ T x)
@@ -99,4 +100,4 @@ _[_]E {T₁ = T₁} {T₂ = T₂} e e′ =
   subst (Expr _ _) (TidₛT≡T T₂) (Esub Tidₛ (Eextₛ Tidₛ Eidₛ (subst (Expr _ _) (sym (TidₛT≡T T₁)) e′)) e)
 
 _[_]ET : Expr (l ∷ Δ) (l ◁* Γ) T → (T′ : Type Δ l) → Expr Δ Γ (T [ T′ ]T)
-e [ T ]ET = Esub (Textₛ Tidₛ T) (Eextₛ-l Tidₛ Eidₛ) e
+e [ T′ ]ET = Esub (Textₛ Tidₛ T′) (Eextₛ-l Tidₛ Eidₛ) e
