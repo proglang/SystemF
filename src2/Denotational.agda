@@ -129,6 +129,16 @@ apply (⟦t⟧ ◁ γ⋆) (there x) = apply γ⋆ x
 apply {Γ⋆ = .(⟦α⟧ ◁ Γ⋆)} (_◁⋆_ {Γ⋆ = Γ⋆} ⟦α⟧ γ⋆) (skip {t = t} x) = 
     subst id (sym (⊢Ren⋆ (wkᵣ⋆ {Γ⋆ = Γ⋆} ⟦α⟧) t)) (apply γ⋆ x)
 
+-- Ctx⋆ : TypeCtx Δ → TypeCtx⋆ Δ → Setω
+-- Ctx⋆ {Δ = Δ} Γ Γ⋆ = ∀ l (t : Δ ⊢ l) → Γ ∍ t → ⟦ t ⟧ₜ Γ⋆
+-- 
+-- ext : Ctx⋆ Γ Γ⋆ → ⟦ t ⟧ₜ Γ⋆ → Ctx⋆ (t ∷ Γ) Γ⋆
+-- ext γ⋆ t _ _ here = t
+-- ext γ⋆ t _ _ (there x) = γ⋆ _ _ x
+-- 
+-- ext⋆ : {⟦α⟧ : Set l} → Ctx⋆ Γ Γ⋆ → Ctx⋆ (l ∷⋆ Γ) (⟦α⟧ ◁ Γ⋆)
+-- ext⋆ {Γ⋆ = .(⟦α⟧ ◁ _)} {⟦α⟧ = ⟦α⟧} γ⋆ _ _ (skip x) = {! subst id (sym (⊢Ren⋆ (wkᵣ⋆ {Γ⋆ = Γ⋆} ⟦α⟧) t)) (γ⋆ _ _ x)  !}
+
 variable
   γ⋆ γ⋆₁ γ⋆₂ γ⋆₃ γ⋆' γ⋆₁' γ⋆₂' γ⋆₃' : Ctx⋆ Γ Γ⋆
 
@@ -138,4 +148,4 @@ variable
 ⟦ λx e ⟧ₑ       γ⋆ = λ ⟦x⟧ → ⟦ e ⟧ₑ (⟦x⟧ ◁ γ⋆)
 ⟦ Λ[α∶ l ] e ⟧ₑ γ⋆ = λ ⟦α⟧ → ⟦ e ⟧ₑ (⟦α⟧ ◁⋆ γ⋆)
 ⟦ e₁ · e₂ ⟧ₑ    γ⋆ = ⟦ e₁ ⟧ₑ γ⋆ (⟦ e₂ ⟧ₑ γ⋆) 
-⟦_⟧ₑ {Γ⋆ = Γ⋆} (_∙_ {t = t} e t') γ⋆ = subst id (sym (⊢⦅⦆ₛ⋆ t' t)) (⟦ e ⟧ₑ γ⋆ (⟦ t' ⟧ₜ Γ⋆)) 
+⟦_⟧ₑ {Γ⋆ = Γ⋆} (_∙_ {t = t} e t') γ⋆ = subst id (sym (⊢⦅⦆ₛ⋆ t' t)) (⟦ e ⟧ₑ γ⋆ (⟦ t' ⟧ₜ Γ⋆))  

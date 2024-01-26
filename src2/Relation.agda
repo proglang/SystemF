@@ -19,7 +19,7 @@ open import BigStep
 -- relation between a syntactic value and a semantic value
 
 REL : ∀ {l : Level} → CType l → Set (Level.suc l)
-REL {l} T = Value T → ⟦ T ⟧ₜ []⋆ → Set l 
+REL {l} T = Value T → ⟦ T ⟧ₜ ∅ → Set l 
 
 RelEnv : KindCtx → Setω
 RelEnv Δ = ∀ l → Δ ∋ l → Σ (Type [] l) REL
