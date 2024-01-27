@@ -75,6 +75,16 @@ subst₂-subst-subst′ : ∀ {l la lb}
   → subst (λ b → F a₂ b) eq₂ (subst (λ a → F a b₁) eq₁ x) ≡ subst₂ F eq₁ eq₂ x
 subst₂-subst-subst′ F refl refl x = refl
 
+subst₂-subst-subst″ : ∀ {l la lb}
+  → {A : Set la} {B : Set lb}
+  → {a₁ a₂ : A} {b₁ b₂ : B}
+  → (F : A → B → Set l)
+  → (eq₁ : a₁ ≡ a₂)
+  → (eq₂ : b₁ ≡ b₂)
+  → (x : F a₁ b₁)
+  → (subst (λ a → F a b₂) eq₁ (subst (λ b → F a₁ b) eq₂ x)) ≡ subst₂ F eq₁ eq₂ x
+subst₂-subst-subst″ F refl refl x = refl
+
 cong-const : ∀ {a b} {A : Set a}{B : Set b} {x y : A} {K : B} (eq : x ≡ y) → cong (λ z → K) eq ≡ refl
 cong-const refl = refl
 
@@ -241,7 +251,9 @@ Eidᵣe≡e (ƛ e) =
     Eren Tidᵣ Eidᵣ (ƛ e)
   ≡⟨ refl ⟩
     (ƛ Eren Tidᵣ (Eliftᵣ Tidᵣ Eidᵣ) e)
-  ≡⟨ {!!} ⟩
+  ≡⟨ cong ƛ_ {!subst₂-subst-subst′ (λ T T′ → Expr _ (T′ ◁ _) T) (sym (TidᵣT≡T _)) (sym (TidᵣT≡T _)) e!} ⟩
+    {!!}
+  ≡⟨ cong ƛ_ {!subst₂-subst-subst′ (λ T T′ → Expr _ (T′ ◁ _) T) (sym (TidᵣT≡T _)) (sym (TidᵣT≡T _)) e!} ⟩
     (ƛ subst₂ (λ T₁ → Expr _ (T₁ ◁ _)) (sym (TidᵣT≡T _)) (sym (TidᵣT≡T _)) e)
   ≡⟨ sym (subst-split-ƛ (sym (TidᵣT≡T (_ ⇒ _))) (sym (TidᵣT≡T _)) (sym (TidᵣT≡T _)) e) ⟩
     subst (Expr _ _) (sym (TidᵣT≡T (_ ⇒ _))) (ƛ e)
@@ -256,16 +268,30 @@ Eidₛx≡x {T = T} x rewrite TidₛT≡T T = refl
 Eidₛe≡e : ∀ (e : Expr Δ Γ T) → Esub Tidₛ Eidₛ e ≡ subst (Expr _ _) (sym (TidₛT≡T _)) e
 Eidₛe≡e (# n) = refl
 Eidₛe≡e {T = T} (` x) rewrite TidₛT≡T T = refl
-Eidₛe≡e (ƛ e) =
+Eidₛe≡e {Γ = Γ} {T = T₁ ⇒ T₂} (ƛ e) =
   begin
     Esub Tidₛ Eidₛ (ƛ e)
   ≡⟨⟩
     (ƛ Esub Tidₛ (Eliftₛ Tidₛ Eidₛ) e)
   ≡⟨ cong ƛ_ (begin
                Esub Tidₛ (Eliftₛ Tidₛ Eidₛ) e
-             ≡⟨ Esub~ (Eliftₛ Tidₛ Eidₛ) {!Eidₛ!} EliftₛEidₛ≡Eidₛ e ⟩
-               {!!}
-             ≡⟨ {!!} ⟩
+             ≡⟨ Esub~ (Eliftₛ Tidₛ Eidₛ) (subst (ESub Tidₛ (T₁ ◁ Γ)) (cong (_◁ Γ) (sym (TidₛT≡T T₁))) Eidₛ) EliftₛEidₛ≡Eidₛ e ⟩
+               Esub Tidₛ (subst (ESub Tidₛ (T₁ ◁ Γ)) (cong (_◁ Γ) (sym (TidₛT≡T T₁))) Eidₛ) e
+             ≡⟨ dist-subst'
+                   {F = (ESub Tidₛ (T₁ ◁ Γ))}
+                   {G = (λ T′ → Expr _ (T′ ◁ Γ) (Tsub Tidₛ T₂))}
+                   {!Tsub Tidₛ!}
+                   (λ x → Esub Tidₛ {!x!} e)
+                   (cong (_◁ Γ) (sym (TidₛT≡T T₁)))
+                   (sym (TidₛT≡T T₁))
+                   Eidₛ ⟩
+                subst (λ T′ → Expr _ (T′ ◁ Γ) (Tsub Tidₛ T₂)) (sym (TidₛT≡T T₁)) (Esub Tidₛ Eidₛ e)
+             ≡⟨ cong
+                  (subst (λ T′ → Expr _ (T′ ◁ Γ) (Tsub Tidₛ T₂)) (sym (TidₛT≡T T₁)))
+                  (Eidₛe≡e e) ⟩
+               subst (λ T′ → Expr _ (T′ ◁ Γ) (Tsub Tidₛ T₂)) (sym (TidₛT≡T T₁))
+                 (subst (Expr _ (T₁ ◁ Γ)) (sym (TidₛT≡T T₂)) e)
+             ≡⟨ subst₂-subst-subst″ (λ T₁ → Expr _ (T₁ ◁ _)) (sym (TidₛT≡T _)) (sym (TidₛT≡T _)) e ⟩
                subst₂ (λ T₁ → Expr _ (T₁ ◁ _)) (sym (TidₛT≡T _)) (sym (TidₛT≡T _))
                  e
              ∎) ⟩
@@ -286,8 +312,23 @@ Eidₛe≡e (e₁ · e₂) =
   ≡⟨ subst-split-· (sym (TidₛT≡T (_ ⇒ _))) (sym (TidₛT≡T _)) (sym (TidₛT≡T _)) e₁ e₂ ⟩
     subst (Expr _ _) (sym (TidₛT≡T _)) (e₁ · e₂)
   ∎
-Eidₛe≡e (Λ l ⇒ e) = {!!}
-Eidₛe≡e (e ∙ T′) = {!!}
+Eidₛe≡e (Λ l ⇒ e) =
+  begin
+    Esub Tidₛ Eidₛ (Λ l ⇒ e)
+  ≡⟨ refl ⟩
+    (Λ l ⇒ Esub (Tliftₛ Tidₛ l) (Eliftₛ-l Tidₛ Eidₛ) e)
+  ≡⟨ {!!} ⟩
+    subst (Expr _ _) (sym (TidₛT≡T (`∀α l , _))) (Λ l ⇒ e)
+  ∎
+Eidₛe≡e {Γ = Γ} (_∙_ {T = T} e  T′) =
+  begin
+    Esub Tidₛ Eidₛ (e ∙ T′)
+  ≡⟨ refl ⟩
+    subst (Expr _ Γ) (sym (σT[T′]≡σ↑T[σT'] Tidₛ T T′))
+      (Esub Tidₛ Eidₛ e ∙ Tsub Tidₛ T′)
+  ≡⟨ {!!} ⟩
+    subst (Expr _ _) (sym (TidₛT≡T (T [ T′ ]T))) (e ∙ T′)
+  ∎
 
 
 -- composition of expression substitutions and renamings
