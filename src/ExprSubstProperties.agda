@@ -151,10 +151,6 @@ subst-`-lem₂ :
   sub₁ (sub₃ (sub₅' (` there x))) ≡ sub₆ (sub₅ (` there x))
 subst-`-lem₂ refl refl refl refl refl x = refl
 
-EliftₛEidₛ≡Eidₛ′ : ∀ {T : Type Δ l}{Γ : TEnv Δ}
-  → (Eliftₛ {Γ₁ = Γ}{Γ₂ = Γ} {T = T} Tidₛ Eidₛ) ~ {!Eidₛ {Γ = Tsub Tidₛ T ◁ Γ}!}  -- Eidₛ {Γ = Tsub Tidₛ T ◁ Γ}
-EliftₛEidₛ≡Eidₛ′ l T x = {!!}
-
 EliftₛEidₛ≡Eidₛ : ∀ {T : Type Δ l}{Γ : TEnv Δ}
   → Eliftₛ {Γ₁ = Γ}{Γ₂ = Γ} {T = T} Tidₛ Eidₛ ~ subst (ESub Tidₛ (T ◁ Γ)) (cong (_◁ Γ) (sym (TidₛT≡T T))) (Eidₛ {Γ  = T ◁ Γ})
 EliftₛEidₛ≡Eidₛ {Γ = Γ} l T here =
@@ -224,6 +220,9 @@ EliftₛEidₛ≡Eidₛ {Γ = Γ} l T (there {T′ = T′} x) =
 
 -- identity renaming and substituions
 
+EliftᵣEidᵣ≡Eidᵣ : Eliftᵣ {Γ₁ = Γ}{T = T} Tidᵣ Eidᵣ ≡ {!Eidᵣ{Γ = T ◁ Γ}!}
+EliftᵣEidᵣ≡Eidᵣ = {!Eliftᵣ!}
+
 Eidᵣx≡x : ∀ {T : Type Δ l} (x : inn T Γ) → let rhs = subst (λ t → inn{l = l} t Γ) (sym (TidᵣT≡T _)) in Eidᵣ l T x ≡ rhs x
 Eidᵣx≡x x = refl
 
@@ -237,7 +236,16 @@ Eidᵣe≡e {Γ = Γ} (`_ {l = l} x) =
   ≡⟨ dist-subst' {F = (λ t → inn t Γ)} {G = Expr _ _} id `_ (sym (TidᵣT≡T _)) (sym (TidᵣT≡T _)) x ⟩
     subst (Expr _ _) (sym (TidᵣT≡T _)) (` x)
   ∎
-Eidᵣe≡e (ƛ e) = {!!}
+Eidᵣe≡e (ƛ e) =
+  begin
+    Eren Tidᵣ Eidᵣ (ƛ e)
+  ≡⟨ refl ⟩
+    (ƛ Eren Tidᵣ (Eliftᵣ Tidᵣ Eidᵣ) e)
+  ≡⟨ {!!} ⟩
+    (ƛ subst₂ (λ T₁ → Expr _ (T₁ ◁ _)) (sym (TidᵣT≡T _)) (sym (TidᵣT≡T _)) e)
+  ≡⟨ sym (subst-split-ƛ (sym (TidᵣT≡T (_ ⇒ _))) (sym (TidᵣT≡T _)) (sym (TidᵣT≡T _)) e) ⟩
+    subst (Expr _ _) (sym (TidᵣT≡T (_ ⇒ _))) (ƛ e)
+  ∎
 Eidᵣe≡e (e₁ · e₂) = {!!}
 Eidᵣe≡e (Λ l ⇒ e) = {!!}
 Eidᵣe≡e (e ∙ T′) = {!!}
@@ -253,7 +261,14 @@ Eidₛe≡e (ƛ e) =
     Esub Tidₛ Eidₛ (ƛ e)
   ≡⟨⟩
     (ƛ Esub Tidₛ (Eliftₛ Tidₛ Eidₛ) e)
-  ≡⟨ cong ƛ_ {!!} ⟩
+  ≡⟨ cong ƛ_ (begin
+               Esub Tidₛ (Eliftₛ Tidₛ Eidₛ) e
+             ≡⟨ Esub~ (Eliftₛ Tidₛ Eidₛ) {!Eidₛ!} EliftₛEidₛ≡Eidₛ e ⟩
+               {!!}
+             ≡⟨ {!!} ⟩
+               subst₂ (λ T₁ → Expr _ (T₁ ◁ _)) (sym (TidₛT≡T _)) (sym (TidₛT≡T _))
+                 e
+             ∎) ⟩
     (ƛ
       subst₂ (λ T₁ → Expr _ (T₁ ◁ _)) (sym (TidₛT≡T _)) (sym (TidₛT≡T _))
       e)
@@ -273,6 +288,7 @@ Eidₛe≡e (e₁ · e₂) =
   ∎
 Eidₛe≡e (Λ l ⇒ e) = {!!}
 Eidₛe≡e (e ∙ T′) = {!!}
+
 
 -- composition of expression substitutions and renamings
 
