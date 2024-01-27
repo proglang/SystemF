@@ -131,9 +131,13 @@ Esub~~ refl σ₁ σ₂ ~~ e = Esub~ σ₁ σ₂ ~~ e
 ---
 ---     (Eextₛ σ* σ e′) ~  (Eliftₛ σ* σ) >>SS sub0 e′
 
-subst-`-lem : ∀ {Γ : TEnv Δ} {T T′ : Type Δ l} (eq : T′ ≡ T) →
-    (` here) ≡ subst (λ T → Expr _ (T ◁ Γ) T) eq (` here)
-subst-`-lem refl = refl
+-- subst-`-lem : ∀ {Γ : TEnv Δ} {T T′ : Type Δ l} (eq : T′ ≡ T) →
+--     (` here) ≡ subst (λ T → Expr _ (T ◁ Γ) T) eq (` here)
+-- subst-`-lem refl = refl
+
+subst-`-lem : ∀ {Γ : TEnv Δ} {T T′ : Type Δ l} (eq₁ : (T ◁ Γ) ≡ (T′ ◁ Γ)) (eq₂ : T ≡ T′) →
+    (` here) ≡ subst (λ Γ → Expr _ Γ T′) eq₁ (subst (λ T′′ → Expr _ (T ◁ Γ) T′′) eq₂ (` here))
+subst-`-lem refl refl = refl
 
 EliftₛEidₛ≡Eidₛ′ : ∀ {T : Type Δ l}{Γ : TEnv Δ}
   → (Eliftₛ {Γ₁ = Γ}{Γ₂ = Γ} {T = T} Tidₛ Eidₛ) ~ {!Eidₛ {Γ = Tsub Tidₛ T ◁ Γ}!}  -- Eidₛ {Γ = Tsub Tidₛ T ◁ Γ}
@@ -144,10 +148,8 @@ EliftₛEidₛ≡Eidₛ : ∀ {T : Type Δ l}{Γ : TEnv Δ}
 EliftₛEidₛ≡Eidₛ {Γ = Γ} l T here =
   begin
     (` here)
-  ≡⟨ subst-`-lem (sym (TidₛT≡T T)) ⟩
-    subst (λ T → Expr _ (T ◁ Γ) T) (sym (TidₛT≡T T)) (` here)
-  ≡⟨ {!!} ⟩
-    subst (λ Γ → Expr _ Γ (Tsub Tidₛ T)) (cong (_◁ Γ) (sym (TidₛT≡T T))) (subst (Expr _ _) (sym (TidₛT≡T T)) (` here))
+  ≡⟨ subst-`-lem (cong (_◁ Γ) (sym (TidₛT≡T T))) (sym (TidₛT≡T T)) ⟩
+    subst (λ Γ → Expr _ Γ (Tsub Tidₛ T)) (cong (_◁ Γ) (sym (TidₛT≡T T))) (subst (λ T′ → Expr _ (T ◁ Γ) T′) (sym (TidₛT≡T T)) (` here))
   ≡⟨ refl ⟩
     subst (λ Γ → Expr _ Γ (Tsub Tidₛ T)) (cong (_◁ Γ) (sym (TidₛT≡T T))) (Eidₛ l T here)
   ≡⟨ sym (dist-subst' {F = (ESub Tidₛ (T ◁ Γ))} {G = λ Γ → Expr _ Γ (Tsub Tidₛ T)} id (λ σ → σ l T here) (cong (_◁ Γ) (sym (TidₛT≡T T))) (cong (_◁ Γ) (sym (TidₛT≡T T))) Eidₛ ) ⟩
