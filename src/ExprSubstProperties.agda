@@ -139,6 +139,18 @@ subst-`-lem : ∀ {Γ : TEnv Δ} {T T′ : Type Δ l} (eq₁ : (T ◁ Γ) ≡ (T
     (` here) ≡ subst (λ Γ → Expr _ Γ T′) eq₁ (subst (λ T′′ → Expr _ (T ◁ Γ) T′′) eq₂ (` here))
 subst-`-lem refl refl = refl
 
+subst-`-lem₂ :
+  ∀ {Γ : TEnv Δ} {T U V W : Type Δ l} {T′ U′ : Type Δ l₁}
+    (eq₁ : V ≡ U) (eq₂ : W ≡ V) (eq₃ : T ≡ W) (eq₄ : T ≡ U) (eq₅ : (T′ ◁ Γ) ≡ (U′ ◁ Γ))
+    (x : inn T Γ) →
+  let sub₁ = subst (Expr _ (U′ ◁ Γ)) eq₁ in
+  let sub₃ = subst (Expr _ (U′ ◁ Γ)) eq₂ in
+  let sub₅' = subst (Expr _ (U′ ◁ Γ)) eq₃ in
+  let sub₅ = subst (Expr _ (T′ ◁ Γ)) eq₄ in
+  let sub₆ = subst (λ Γ → Expr _ Γ U) eq₅ in
+  sub₁ (sub₃ (sub₅' (` there x))) ≡ sub₆ (sub₅ (` there x))
+subst-`-lem₂ refl refl refl refl refl x = refl
+
 EliftₛEidₛ≡Eidₛ′ : ∀ {T : Type Δ l}{Γ : TEnv Δ}
   → (Eliftₛ {Γ₁ = Γ}{Γ₂ = Γ} {T = T} Tidₛ Eidₛ) ~ {!Eidₛ {Γ = Tsub Tidₛ T ◁ Γ}!}  -- Eidₛ {Γ = Tsub Tidₛ T ◁ Γ}
 EliftₛEidₛ≡Eidₛ′ l T x = {!!}
@@ -161,14 +173,14 @@ EliftₛEidₛ≡Eidₛ {Γ = Γ} l T here =
     (sub₃ Eidₛ) l T here
   ∎
 EliftₛEidₛ≡Eidₛ {Γ = Γ} l T (there {T′ = T′} x) =
-  let sub₁ = subst (Expr _ (Tsub (λ z → `_) T′ ◁ Γ)) (TidᵣT≡T (Tsub (λ z → `_) T)) in
+  let sub₁ = subst (Expr _ (Tsub Tidₛ T′ ◁ Γ)) (TidᵣT≡T (Tsub Tidₛ T)) in
   let sub₂ = subst (Expr _ Γ) (sym (TidₛT≡T T)) in
   let sub₃ = subst (Expr _ (Tsub Tidₛ T′ ◁ Γ)) (cong (Tren Tidᵣ) (sym (TidₛT≡T T))) in
   let sub₄ = subst (λ T₁ → inn T₁ Γ) (sym (TidᵣT≡T T)) in
   let sub₅ = subst (Expr _ (T′ ◁ Γ)) (sym (TidₛT≡T T)) in
-  let sub₅' = subst (Expr _ (Tsub Tidₛ T′ ◁ Γ)) (sym (TidᵣT≡T T)) in
   let sub₆ = subst (λ Γ → Expr _ Γ (Tsub Tidₛ T)) (cong (_◁ Γ) (sym (TidₛT≡T T′))) in
   let sub₇ = subst (ESub Tidₛ (T′ ◁ Γ)) (cong (_◁ Γ) (sym (TidₛT≡T T′))) in
+  let sub₈ = subst (Expr _ (Tsub Tidₛ T′ ◁ Γ)) (sym (TidᵣT≡T T)) in
   begin
     Eliftₛ {T = T′} Tidₛ Eidₛ l T (there x)
   ≡⟨⟩
@@ -184,8 +196,13 @@ EliftₛEidₛ≡Eidₛ {Γ = Γ} l T (there {T′ = T′} x) =
   ≡⟨ cong (λ ■ → sub₁ (sub₃ ■)) (dist-subst' {F = λ T₁ → inn T₁ Γ} {G = Expr _ (Tsub Tidₛ T′ ◁ Γ)}
                                              id (λ x → ` there x)
                                              (sym (TidᵣT≡T T)) (sym (TidᵣT≡T T)) x) ⟩
-    sub₁ (sub₃ (sub₅' (` there x)))
-  ≡⟨ {!!} ⟩
+    sub₁ (sub₃ (sub₈ (` there x)))
+  ≡⟨ subst-`-lem₂ (TidᵣT≡T (Tsub Tidₛ T))
+                  (cong (Tren Tidᵣ) (sym (TidₛT≡T T)))
+                  (sym (TidᵣT≡T T))
+                  (sym (TidₛT≡T T))
+                  (cong (_◁ Γ) (sym (TidₛT≡T T′)))
+                  x ⟩
     sub₆ (sub₅ (` there x))
   ≡⟨⟩
     sub₆ (Eidₛ l T (there x))
