@@ -218,6 +218,71 @@ EliftₛEidₛ≡Eidₛ {Γ = Γ} l T (there {T′ = T′} x) =
     (sub₇ Eidₛ) l T (there x)
   ∎
 
+Eliftₛ-lEidₛ≡Eidₛ : ∀ {Γ : TEnv Δ}{l} →
+  Eliftₛ-l {Γ₁ = Γ}{l = l} Tidₛ Eidₛ ~ subst (λ τ → ESub τ (l ◁* Γ) (l ◁* Γ)) (sym (TliftₛTidₛ≡Tidₛ Δ l)) (Eidₛ {Γ = l ◁* Γ})
+Eliftₛ-lEidₛ≡Eidₛ{Δ = Δ} {Γ = Γ} {l = l} l′ .(Twk _) (tskip {T = T} x) =
+  begin
+    Eliftₛ-l Tidₛ Eidₛ l′ (Twk T) (tskip x)
+  ≡⟨ refl ⟩
+    subst (Expr (l ∷ Δ) (l ◁* Γ)) (sym (σ↑-TwkT≡Twk-σT Tidₛ T))
+      (Ewk-l (Eidₛ l′ T x))
+  ≡⟨ refl ⟩
+    subst (Expr (l ∷ Δ) (l ◁* Γ)) (sym (σ↑-TwkT≡Twk-σT Tidₛ T))
+      (Ewk-l (subst (Expr _ _) (sym (TidₛT≡T T)) (` x)))
+  ≡⟨ cong (subst (Expr (l ∷ Δ) (l ◁* Γ)) (sym (σ↑-TwkT≡Twk-σT Tidₛ T)))
+     (dist-subst' {F = Expr _ _} {G = Expr _ _}
+                   Twk
+                   Ewk-l
+                   (sym (TidₛT≡T T))
+                   (cong Twk (sym (TidₛT≡T T)))
+                   (` x)) ⟩
+    subst (Expr (l ∷ Δ) (l ◁* Γ)) (sym (σ↑-TwkT≡Twk-σT Tidₛ T))
+      (subst (Expr _ _) (cong Twk (sym (TidₛT≡T T))) (Ewk-l (` x)))
+  ≡⟨ refl ⟩
+    subst (Expr (l ∷ Δ) (l ◁* Γ)) (sym (σ↑-TwkT≡Twk-σT Tidₛ T))
+      (subst (Expr _ _) (cong Twk (sym (TidₛT≡T T))) (` tskip x))
+  ≡⟨ subst-subst {P = Expr (l ∷ Δ) (l ◁* Γ)}
+                   (cong Twk (sym (TidₛT≡T T)))
+                   {(sym (σ↑-TwkT≡Twk-σT Tidₛ T))}
+                   {` tskip x} ⟩
+    subst (Expr (l ∷ Δ) (l ◁* Γ))
+      (trans (cong Twk (sym (TidₛT≡T T))) (sym (σ↑-TwkT≡Twk-σT Tidₛ T)))
+      (` tskip x)
+  ≡⟨ subst-irrelevant
+      (trans (cong Twk (sym (TidₛT≡T T))) (sym (σ↑-TwkT≡Twk-σT Tidₛ T)))
+      (trans (sym (TidₛT≡T (Twk T)))
+       (cong (λ τ → Tsub τ (Twk T)) (sym (TliftₛTidₛ≡Tidₛ Δ l))))
+      (` tskip x) ⟩
+    subst (Expr (l ∷ Δ) (l ◁* Γ))
+      (trans (sym (TidₛT≡T (Twk T)))
+       (cong (λ τ → Tsub τ (Twk T)) (sym (TliftₛTidₛ≡Tidₛ Δ l))))
+      (` tskip x)
+  ≡⟨ sym (subst-subst {P = (Expr (l ∷ Δ) (l ◁* Γ))}
+                       (sym (TidₛT≡T (Twk T)))
+                       {(cong (λ τ → Tsub τ (Twk T)) (sym (TliftₛTidₛ≡Tidₛ Δ l)))}
+                       {` tskip x}) ⟩
+    subst (Expr (l ∷ Δ) (l ◁* Γ))
+      (cong (λ τ → Tsub τ (Twk T)) (sym (TliftₛTidₛ≡Tidₛ Δ l)))
+      (subst (Expr (l ∷ Δ) (l ◁* Γ)) (sym (TidₛT≡T (Twk T))) (` tskip x))
+  ≡⟨ sym (subst-∘ {P = Expr (l ∷ Δ) (l ◁* Γ)} {f = λ τ → Tsub τ (Twk T)} (sym (TliftₛTidₛ≡Tidₛ _ l))
+                   {(subst (Expr _ _) (sym (TidₛT≡T (Twk T))) (` tskip x))}) ⟩
+    subst (λ τ → Expr (l ∷ Δ) (l ◁* Γ) (Tsub τ (Twk T))) (sym (TliftₛTidₛ≡Tidₛ _ l))
+      (subst (Expr _ _) (sym (TidₛT≡T (Twk T))) (` tskip x))
+  ≡⟨ refl ⟩
+    subst (λ τ → Expr (l ∷ Δ) (l ◁* Γ) (Tsub τ (Twk T)))
+          (sym (TliftₛTidₛ≡Tidₛ _ l))
+          (Eidₛ l′ (Twk T) (tskip x))
+  ≡⟨ sym (dist-subst' {F = (λ τ → ESub τ (l ◁* Γ) (l ◁* Γ))}
+                      {G = (λ τ → Expr (l ∷ Δ) (l ◁* Γ) (Tsub τ (Twk T)))}
+                      id
+                      (λ σ → σ l′ (Twk T) (tskip x))
+                      (sym (TliftₛTidₛ≡Tidₛ Δ l))
+                      (sym (TliftₛTidₛ≡Tidₛ Δ l))
+                      Eidₛ) ⟩
+    subst (λ τ → ESub τ (l ◁* Γ) (l ◁* Γ)) (sym (TliftₛTidₛ≡Tidₛ Δ l))
+      Eidₛ l′ (Twk T) (tskip x)
+  ∎
+
 {-
     subst (λ Γ₁ → Expr _ Γ₁ (Tsub Tidₛ T))
       (cong (_◁ _) (sym (TidₛT≡T T)))
@@ -312,11 +377,23 @@ Eidₛe≡e (e₁ · e₂) =
   ≡⟨ subst-split-· (sym (TidₛT≡T (_ ⇒ _))) (sym (TidₛT≡T _)) (sym (TidₛT≡T _)) e₁ e₂ ⟩
     subst (Expr _ _) (sym (TidₛT≡T _)) (e₁ · e₂)
   ∎
+-- TliftₛTidₛ≡Tidₛ
 Eidₛe≡e (Λ l ⇒ e) =
   begin
     Esub Tidₛ Eidₛ (Λ l ⇒ e)
   ≡⟨ refl ⟩
     (Λ l ⇒ Esub (Tliftₛ Tidₛ l) (Eliftₛ-l Tidₛ Eidₛ) e)
+  ≡⟨ cong (Λ l ⇒_)
+     (Esub~ (Eliftₛ-l Tidₛ Eidₛ)
+            (subst (λ τ → ESub τ (l ◁* _) (l ◁* _)) (sym (TliftₛTidₛ≡Tidₛ _ l)) Eidₛ)
+            Eliftₛ-lEidₛ≡Eidₛ
+            e) ⟩
+   (Λ l ⇒
+     Esub (Tliftₛ Tidₛ l)
+     (λ l₁ T₁ z →
+        subst (λ τ → ESub τ (l ◁* _) (l ◁* _)) (sym (TliftₛTidₛ≡Tidₛ _ l))
+        Eidₛ l₁ T₁ z)
+     e)
   ≡⟨ {!!} ⟩
     subst (Expr _ _) (sym (TidₛT≡T (`∀α l , _))) (Λ l ⇒ e)
   ∎
