@@ -342,8 +342,15 @@ Eidₛx≡x {T = T} x rewrite TidₛT≡T T = refl
 Eidₛe≡e : ∀ (e : Expr Δ Γ T) → Esub Tidₛ Eidₛ e ≡ subst (Expr _ _) (sym (TidₛT≡T _)) e
 Eidₛe≡e (# n) = refl
 Eidₛe≡e {T = T} (` x) rewrite TidₛT≡T T = refl
-Eidₛe≡e {Γ = Γ} {T = T₁ ⇒ T₂} (ƛ e) =
-  let context = λ {Γ₂} σ → Esub{Γ₂ = Γ₂} Tidₛ σ e in
+Eidₛe≡e {Γ = Γ} {T = _⇒_ {l = l} T₁ T₂} (ƛ e) =
+  let
+    context : {T : Type _ l} → (σ : ESub Tidₛ (T₁ ◁ Γ) (T ◁ Γ)) → Expr _ (T ◁ Γ) (Tsub Tidₛ T₂)
+    context = λ {T : Type _ l} σ → Esub{Γ₂ = T ◁ Γ} Tidₛ σ e
+    subst-Eidₛ : ESub Tidₛ (T₁ ◁ Γ) (Tsub Tidₛ T₁ ◁ Γ)
+    subst-Eidₛ = (subst (ESub Tidₛ (T₁ ◁ Γ)) (cong (_◁ Γ) (sym (TidₛT≡T T₁))) Eidₛ)
+    just-Eidₛ :  ESub Tidₛ (T₁ ◁ Γ) (T₁ ◁ Γ)
+    just-Eidₛ =  Eidₛ
+  in
   begin
     Esub Tidₛ Eidₛ (ƛ e)
   ≡⟨⟩
@@ -352,14 +359,19 @@ Eidₛe≡e {Γ = Γ} {T = T₁ ⇒ T₂} (ƛ e) =
                Esub Tidₛ (Eliftₛ Tidₛ Eidₛ) e
              ≡⟨ Esub~ (Eliftₛ Tidₛ Eidₛ) (subst (ESub Tidₛ (T₁ ◁ Γ)) (cong (_◁ Γ) (sym (TidₛT≡T T₁))) Eidₛ) EliftₛEidₛ≡Eidₛ e ⟩
                Esub Tidₛ (subst (ESub Tidₛ (T₁ ◁ Γ)) (cong (_◁ Γ) (sym (TidₛT≡T T₁))) Eidₛ) e
-             ≡⟨ dist-subst'
-                   {F = (ESub Tidₛ (T₁ ◁ Γ))}
-                   {G = (λ T′ → Expr _ (T′ ◁ Γ) (Tsub Tidₛ T₂))}
-                   (λ x → {!Tsub Tidₛ T₁!})
-                   {!dist-subst'!}
-                   (cong (_◁ Γ) (sym (TidₛT≡T T₁)))
-                   (sym (TidₛT≡T T₁))
-                   Eidₛ ⟩
+             ≡⟨ sym (cong context (subst-∘ {P = ESub Tidₛ (T₁ ◁ Γ)} {f = _◁ Γ} (sym (TidₛT≡T T₁)) {Eidₛ})) ⟩
+               Esub Tidₛ
+                  (subst (λ T → ESub Tidₛ (T₁ ◁ Γ) (T ◁ Γ)) (sym (TidₛT≡T T₁))
+                   Eidₛ)
+                  e
+             ≡⟨ dist-subst' {G = (λ T′ → Expr _ (T′ ◁ Γ) (Tsub Tidₛ T₂))}
+                             id
+                             context
+                             (sym (TidₛT≡T T₁))
+                             (sym (TidₛT≡T T₁))
+                             Eidₛ ⟩
+                subst (λ T′ → Expr _ (T′ ◁ Γ) (Tsub Tidₛ T₂)) (sym (TidₛT≡T T₁)) (context Eidₛ)
+             ≡⟨ refl ⟩
                 subst (λ T′ → Expr _ (T′ ◁ Γ) (Tsub Tidₛ T₂)) (sym (TidₛT≡T T₁)) (Esub Tidₛ Eidₛ e)
              ≡⟨ cong
                   (subst (λ T′ → Expr _ (T′ ◁ Γ) (Tsub Tidₛ T₂)) (sym (TidₛT≡T T₁)))
