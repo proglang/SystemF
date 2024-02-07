@@ -302,7 +302,7 @@ Eliftₛ-lEidₛ≡Eidₛ{Δ = Δ} {Γ = Γ} {l = l} l′ .(Twk _) (tskip {T = T
 
 -}
 
--- identity renaming and substituions
+-- identity renaming
 
 EliftᵣEidᵣ≡Eidᵣ : Eliftᵣ {Γ₁ = Γ}{T = T} Tidᵣ Eidᵣ ≡ {!Eidᵣ{Γ = T ◁ Γ}!}
 EliftᵣEidᵣ≡Eidᵣ = {!Eliftᵣ!}
@@ -335,6 +335,8 @@ Eidᵣe≡e (ƛ e) =
 Eidᵣe≡e (e₁ · e₂) = {!!}
 Eidᵣe≡e (Λ l ⇒ e) = {!!}
 Eidᵣe≡e (e ∙ T′) = {!!}
+
+-- identity substitution
 
 Eidₛx≡x : ∀ {T : Type Δ l} (x : inn T Γ) → Esub Tidₛ Eidₛ (` x) ≡ subst (Expr _ _) (sym (TidₛT≡T _)) (` x)
 Eidₛx≡x {T = T} x rewrite TidₛT≡T T = refl
@@ -456,9 +458,47 @@ Eidₛe≡e {Γ = Γ} (_∙_ {T = T} e  T′) =
   ≡⟨ refl ⟩
     subst (Expr _ Γ) (sym (σT[T′]≡σ↑T[σT'] Tidₛ T T′))
       (Esub Tidₛ Eidₛ e ∙ Tsub Tidₛ T′)
+  ≡⟨ cong (subst (Expr _ Γ) (sym (σT[T′]≡σ↑T[σT'] Tidₛ T T′)))
+     (sym (dcong (Esub Tidₛ Eidₛ e ∙_) (sym (TidₛT≡T T′)))) ⟩
+     subst (Expr _ Γ) (sym (σT[T′]≡σ↑T[σT'] Tidₛ T T′))
+       (subst (λ z → Expr _ Γ (Tsub (Tliftₛ Tidₛ _) T [ z ]T))
+        (sym (TidₛT≡T T′))
+        (Esub Tidₛ Eidₛ e ∙ T′))
+  ≡⟨ cong (subst (Expr _ Γ) (sym (σT[T′]≡σ↑T[σT'] Tidₛ T T′)))
+      (cong (subst (λ z → Expr _ Γ (Tsub (Tliftₛ Tidₛ _) T [ z ]T)) (sym (TidₛT≡T T′)))
+        (cong (_∙ T′) (Eidₛe≡e e))) ⟩
+    subst (Expr _ Γ) (sym (σT[T′]≡σ↑T[σT'] Tidₛ T T′))
+      (subst (λ z → Expr _ Γ (Tsub (Tliftₛ Tidₛ _) T [ z ]T))
+       (sym (TidₛT≡T T′))
+       (subst (Expr _ Γ) (sym (TidₛT≡T (`∀α _ , T))) e ∙ T′))
+  ≡⟨ cong (subst (Expr _ Γ) (sym (σT[T′]≡σ↑T[σT'] Tidₛ T T′)))
+     (cong (subst (λ z → Expr _ Γ (Tsub (Tliftₛ Tidₛ _) T [ z ]T)) (sym (TidₛT≡T T′)))
+       {!dist-subst' {F = Expr _ Γ}
+                    ?
+                    (_∙ T′)!}) ⟩
+    {!!}
   ≡⟨ {!!} ⟩
     subst (Expr _ _) (sym (TidₛT≡T (T [ T′ ]T))) (e ∙ T′)
   ∎
+
+
+
+-- Eidₛe≡e {Γ = Γ} (_∙_ {T = T} e  T′) =
+--   begin
+--     Esub Tidₛ Eidₛ (e ∙ T′)
+--   ≡⟨ refl ⟩
+--     subst (Expr _ Γ) (sym (σT[T′]≡σ↑T[σT'] Tidₛ T T′))
+--       (Esub Tidₛ Eidₛ e ∙ Tsub Tidₛ T′)
+--   ≡⟨ cong (subst (Expr _ Γ) (sym (σT[T′]≡σ↑T[σT'] Tidₛ T T′)))
+--      (cong (_∙ Tsub Tidₛ T′) (Eidₛe≡e e)) ⟩
+--     subst (Expr _ Γ) (sym (σT[T′]≡σ↑T[σT'] Tidₛ T T′))
+--       (subst (Expr _ Γ) (sym (TidₛT≡T (`∀α _ , T))) e ∙ Tsub Tidₛ T′)
+--   ≡⟨ cong (subst (Expr _ Γ) (sym (σT[T′]≡σ↑T[σT'] Tidₛ T T′)))
+--      (dcong (subst (Expr _ Γ) (sym (TidₛT≡T (`∀α _ , T))) e ∙_) {!sym (TidₛT≡T T′)!}) ⟩
+--      {!!}
+--   ≡⟨ {!!} ⟩
+--     subst (Expr _ _) (sym (TidₛT≡T (T [ T′ ]T))) (e ∙ T′)
+--   ∎
 
 
 -- composition of expression substitutions and renamings
