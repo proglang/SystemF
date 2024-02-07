@@ -11,7 +11,7 @@ open import Data.Empty using (⊥)
 open import Data.Nat using (ℕ)
 open import Function using (_∘_; id; _$_)
 open import Relation.Binary.PropositionalEquality
-  using (_≡_; _≢_; refl; sym; trans; cong; cong₂; dcong₂; subst; subst₂; resp₂; cong-app; icong;
+  using (_≡_; _≢_; refl; sym; trans; cong; cong₂; dcong; dcong₂; subst; subst₂; resp₂; cong-app; icong;
         subst-∘; subst-subst;
         module ≡-Reasoning)
 open import Axiom.Extensionality.Propositional using (∀-extensionality; Extensionality)
@@ -50,12 +50,21 @@ subst-split-ƛ-∅ :
 subst-split-ƛ-∅ refl refl refl a = refl
 
 subst-split-Λ :
+  ∀ {Δ}{Γ : TEnv Δ}
+  → {tᵢ tᵢ′ : Type (l ∷ Δ) l₁}
+  → (eqₒ : `∀α l , tᵢ ≡ `∀α l , tᵢ′)
+  → (eqᵢ : tᵢ ≡ tᵢ′)
+  → (a : Expr (l ∷ Δ) (l ◁* Γ) tᵢ)
+  → subst (Expr Δ Γ) eqₒ (Λ l ⇒ a) ≡ Λ l ⇒ subst (Expr (l ∷ Δ) (l ◁* Γ)) eqᵢ a
+subst-split-Λ refl refl a = refl
+
+subst-split-Λ-∅ :
   ∀ {tᵢ tᵢ′ : Type [ l ] l₁}
   → (eqₒ : `∀α l , tᵢ ≡ `∀α l , tᵢ′)
   → (eqᵢ : tᵢ ≡ tᵢ′)
   → (a : Expr [ l ] (l ◁* ∅) tᵢ)
   → subst (Expr [] ∅) eqₒ (Λ l ⇒ a) ≡ Λ l ⇒ subst (Expr [ l ] (l ◁* ∅)) eqᵢ a
-subst-split-Λ refl refl a = refl
+subst-split-Λ-∅ refl refl a = refl
 
 subst-split-· : ∀ {l₁ l₂} {T₁ T₁′ : Type Δ l₁}{T₂ T₂′ : Type Δ l₂}
   → (eq : T₁ ⇒ T₂ ≡ T₁′ ⇒ T₂′)
@@ -334,6 +343,7 @@ Eidₛe≡e : ∀ (e : Expr Δ Γ T) → Esub Tidₛ Eidₛ e ≡ subst (Expr _ 
 Eidₛe≡e (# n) = refl
 Eidₛe≡e {T = T} (` x) rewrite TidₛT≡T T = refl
 Eidₛe≡e {Γ = Γ} {T = T₁ ⇒ T₂} (ƛ e) =
+  let context = λ {Γ₂} σ → Esub{Γ₂ = Γ₂} Tidₛ σ e in
   begin
     Esub Tidₛ Eidₛ (ƛ e)
   ≡⟨⟩
@@ -345,8 +355,8 @@ Eidₛe≡e {Γ = Γ} {T = T₁ ⇒ T₂} (ƛ e) =
              ≡⟨ dist-subst'
                    {F = (ESub Tidₛ (T₁ ◁ Γ))}
                    {G = (λ T′ → Expr _ (T′ ◁ Γ) (Tsub Tidₛ T₂))}
-                   {!Tsub Tidₛ!}
-                   (λ x → Esub Tidₛ {!x!} e)
+                   (λ x → {!Tsub Tidₛ T₁!})
+                   {!dist-subst'!}
                    (cong (_◁ Γ) (sym (TidₛT≡T T₁)))
                    (sym (TidₛT≡T T₁))
                    Eidₛ ⟩
@@ -378,23 +388,54 @@ Eidₛe≡e (e₁ · e₂) =
     subst (Expr _ _) (sym (TidₛT≡T _)) (e₁ · e₂)
   ∎
 -- TliftₛTidₛ≡Tidₛ
-Eidₛe≡e (Λ l ⇒ e) =
+Eidₛe≡e {Γ = Γ} (Λ_⇒_ {l′ = l′} l {T} e) =
+  let context = λ {τ} σ → Esub {Γ₂ = l ◁* Γ} τ σ e in
   begin
     Esub Tidₛ Eidₛ (Λ l ⇒ e)
   ≡⟨ refl ⟩
     (Λ l ⇒ Esub (Tliftₛ Tidₛ l) (Eliftₛ-l Tidₛ Eidₛ) e)
   ≡⟨ cong (Λ l ⇒_)
      (Esub~ (Eliftₛ-l Tidₛ Eidₛ)
-            (subst (λ τ → ESub τ (l ◁* _) (l ◁* _)) (sym (TliftₛTidₛ≡Tidₛ _ l)) Eidₛ)
+            (subst (λ τ → ESub τ (l ◁* Γ) (l ◁* Γ)) (sym (TliftₛTidₛ≡Tidₛ _ l)) Eidₛ)
             Eliftₛ-lEidₛ≡Eidₛ
             e) ⟩
    (Λ l ⇒
      Esub (Tliftₛ Tidₛ l)
-     (λ l₁ T₁ z →
-        subst (λ τ → ESub τ (l ◁* _) (l ◁* _)) (sym (TliftₛTidₛ≡Tidₛ _ l))
-        Eidₛ l₁ T₁ z)
+     (subst (λ τ → ESub τ (l ◁* Γ) (l ◁* Γ)) (sym (TliftₛTidₛ≡Tidₛ _ l)) 
+        Eidₛ)
      e)
-  ≡⟨ {!!} ⟩
+  ≡⟨ cong (Λ l ⇒_)
+    (dist-subst' {F = (λ τ → ESub τ (l ◁* Γ) (l ◁* Γ))}
+                 {G = Expr (l ∷ _) (l ◁* _)}
+                 (λ τ → Tsub τ T)
+                 context
+                 (sym (TliftₛTidₛ≡Tidₛ _ l))
+                 (cong (λ τ → Tsub τ T) (sym (TliftₛTidₛ≡Tidₛ _ l)))
+                 Eidₛ) ⟩
+    (Λ l ⇒
+      subst (Expr (l ∷ _) (l ◁* Γ))
+      (cong (λ τ → Tsub τ T) (sym (TliftₛTidₛ≡Tidₛ _ l)))
+      (Esub Tidₛ Eidₛ e))
+  ≡⟨ cong (Λ l ⇒_) (cong
+                      (subst (Expr (l ∷ _) (l ◁* _))
+                       (cong (λ τ → Tsub τ T) (sym (TliftₛTidₛ≡Tidₛ _ l))))
+                      (Eidₛe≡e e)) ⟩
+    (Λ l ⇒
+      subst (Expr (l ∷ _) (l ◁* _))
+      (cong (λ τ → Tsub τ T) (sym (TliftₛTidₛ≡Tidₛ _ l)))
+      (subst (Expr (l ∷ _) (l ◁* _)) (sym (TidₛT≡T T)) e))
+  ≡⟨ cong (Λ l ⇒_) (subst-subst {P = (Expr (l ∷ _) (l ◁* _))}
+                                (sym (TidₛT≡T T))
+                                {(cong (λ τ → Tsub τ T) (sym (TliftₛTidₛ≡Tidₛ _ l)))}
+                                {e}) ⟩
+    (Λ l ⇒
+      subst (Expr (l ∷ _) (l ◁* _))
+      (trans (sym (TidₛT≡T T))
+       (cong (λ τ → Tsub τ T) (sym (TliftₛTidₛ≡Tidₛ _ l))))
+      e)
+  ≡⟨ sym (subst-split-Λ (sym (TidₛT≡T (`∀α l , _)))
+                         (trans (sym (TidₛT≡T T)) (cong (λ τ → Tsub τ T) (sym (TliftₛTidₛ≡Tidₛ _ l))))
+                         e) ⟩
     subst (Expr _ _) (sym (TidₛT≡T (`∀α l , _))) (Λ l ⇒ e)
   ∎
 Eidₛe≡e {Γ = Γ} (_∙_ {T = T} e  T′) =
