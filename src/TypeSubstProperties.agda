@@ -278,6 +278,20 @@ Tliftₛ∘Textₛ l τ* T′ = fun-ext₂ λ where
     aux _ here = refl
     aux {σ* = σ*}{T′ = T′} x (there y) = trans (assoc-sub-ren (σ* x y) (λ z x₁ → there x₁) (Textₛ (λ z → `_) T′)) (TidₛT≡T (σ* x y))
 
+
+T[T′]T≡Tidₛ↑T[T′]T : ∀ (T : Type (l′ ∷ Δ) l) (T′ : Type Δ l′) → (T [ T′ ]T) ≡ (Tsub (Tliftₛ Tidₛ l′) T [ T′ ]T)
+T[T′]T≡Tidₛ↑T[T′]T T T′ =
+  begin
+    (T [ T′ ]T)
+  ≡⟨ sym (TidₛT≡T (T [ T′ ]T)) ⟩
+    Tsub Tidₛ (T [ T′ ]T)
+  ≡⟨ σT[T′]≡σ↑T[σT'] Tidₛ T T′ ⟩
+    (Tsub (Tliftₛ Tidₛ _) T [ Tsub Tidₛ T′ ]T)
+  ≡⟨ cong (λ T′ → Tsub (Tliftₛ Tidₛ _) T [ T′ ]T) (TidₛT≡T T′) ⟩
+    (Tsub (Tliftₛ Tidₛ _) T [ T′ ]T)
+  ∎
+
+
 -- the action of renaming on semantic environments
 
 TRen* : (ρ* : TRen Δ₁ Δ₂) → (η₁ : Env* Δ₁) → (η₂ : Env* Δ₂) → Setω
