@@ -12,7 +12,7 @@ open import Data.Nat using (ℕ)
 open import Function using (_∘_; id; _$_)
 open import Relation.Binary.PropositionalEquality
   using (_≡_; _≢_; refl; sym; trans; cong; cong₂; dcong; dcong₂; subst; subst₂; resp₂; cong-app; icong;
-        subst-∘; subst-subst;
+        subst-∘; subst-subst; sym-cong;
         module ≡-Reasoning)
 open import Axiom.Extensionality.Propositional using (∀-extensionality; Extensionality)
 open ≡-Reasoning
@@ -338,6 +338,11 @@ Eidᵣe≡e (e ∙ T′) = {!!}
 
 -- identity substitution
 
+
+postulate
+  T[T′]T≡ : ∀ (T : Type (l′ ∷ Δ) l) (T′ : Type Δ l′) → (T [ T′ ]T) ≡ (Tsub (Tliftₛ Tidₛ l′) T [ T′ ]T)
+
+
 Eidₛx≡x : ∀ {T : Type Δ l} (x : inn T Γ) → Esub Tidₛ Eidₛ (` x) ≡ subst (Expr _ _) (sym (TidₛT≡T _)) (` x)
 Eidₛx≡x {T = T} x rewrite TidₛT≡T T = refl
 
@@ -452,7 +457,13 @@ Eidₛe≡e {Γ = Γ} (Λ_⇒_ {l′ = l′} l {T} e) =
                          e) ⟩
     subst (Expr _ _) (sym (TidₛT≡T (`∀α l , _))) (Λ l ⇒ e)
   ∎
-Eidₛe≡e {Γ = Γ} (_∙_ {T = T} e  T′) =
+Eidₛe≡e {Γ = Γ} (_∙_ {l = l′}{l′ = l}{T = T} e  T′) =
+  let
+    subst-e : Expr _ Γ (`∀α l′ , Tsub (Tliftₛ Tidₛ _) T)
+    subst-e = subst (Expr _ Γ) (sym (TidₛT≡T (`∀α l′ , T))) e
+    context : ∀ {T : Type _ l} → Expr _ Γ (`∀α l′ , T) → Expr _ Γ (T [ T′ ]T)
+    context = _∙ T′
+  in
   begin
     Esub Tidₛ Eidₛ (e ∙ T′)
   ≡⟨ refl ⟩
@@ -470,35 +481,70 @@ Eidₛe≡e {Γ = Γ} (_∙_ {T = T} e  T′) =
     subst (Expr _ Γ) (sym (σT[T′]≡σ↑T[σT'] Tidₛ T T′))
       (subst (λ z → Expr _ Γ (Tsub (Tliftₛ Tidₛ _) T [ z ]T))
        (sym (TidₛT≡T T′))
-       (subst (Expr _ Γ) (sym (TidₛT≡T (`∀α _ , T))) e ∙ T′))
+       (context (subst (Expr _ Γ) (sym (TidₛT≡T (`∀α l′ , T))) e)))
   ≡⟨ cong (subst (Expr _ Γ) (sym (σT[T′]≡σ↑T[σT'] Tidₛ T T′)))
      (cong (subst (λ z → Expr _ Γ (Tsub (Tliftₛ Tidₛ _) T [ z ]T)) (sym (TidₛT≡T T′)))
-       {!dist-subst' {F = Expr _ Γ}
-                    ?
-                    (_∙ T′)!}) ⟩
-    {!!}
-  ≡⟨ {!!} ⟩
+       (cong (λ H → (subst (Expr _ Γ) H e ∙ T′))
+         (sym-cong {f = (`∀α_,_ l′)} (trans (cong (λ σ → Tsub σ T) (TliftₛTidₛ≡Tidₛ _ l′)) (TidₛT≡T T))))) ⟩
+    subst (Expr _ Γ) (sym (σT[T′]≡σ↑T[σT'] Tidₛ T T′))
+      (subst (λ z → Expr _ Γ (Tsub (Tliftₛ Tidₛ l′) T [ z ]T))
+       (sym (TidₛT≡T T′))
+       (subst (Expr _ Γ)
+        (cong (`∀α_,_ l′)
+         (sym
+          (trans (cong (λ σ → Tsub σ T) (TliftₛTidₛ≡Tidₛ _ l′))
+           (TidₛT≡T T))))
+        e
+        ∙ T′))
+  ≡⟨ cong (subst (Expr _ Γ) (sym (σT[T′]≡σ↑T[σT'] Tidₛ T T′)))
+     (cong (subst (λ z → Expr _ Γ (Tsub (Tliftₛ Tidₛ _) T [ z ]T)) (sym (TidₛT≡T T′)))
+       (cong (_∙ T′) (sym (subst-∘ {P = Expr _ Γ} {f = `∀α_,_ l′} (sym (trans (cong (λ σ → Tsub σ T) (TliftₛTidₛ≡Tidₛ _ l′)) (TidₛT≡T T))) {e})))) ⟩
+    subst (Expr _ Γ) (sym (σT[T′]≡σ↑T[σT'] Tidₛ T T′))
+      (subst (λ z → Expr _ Γ (Tsub (Tliftₛ Tidₛ l′) T [ z ]T))
+       (sym (TidₛT≡T T′))
+       (subst (Expr _ Γ ∘ `∀α_,_ l′)
+        (sym
+         (trans (cong (λ σ → Tsub σ T) (TliftₛTidₛ≡Tidₛ _ l′)) (TidₛT≡T T)))
+        e
+        ∙ T′))
+  ≡⟨ cong (subst (Expr _ Γ) (sym (σT[T′]≡σ↑T[σT'] Tidₛ T T′)))
+     (cong (subst (λ z → Expr _ Γ (Tsub (Tliftₛ Tidₛ _) T [ z ]T)) (sym (TidₛT≡T T′)))
+       (dist-subst' {F = (λ T → Expr _ Γ (`∀α l′ , T))}
+                    {G = Expr _ Γ}
+                    (_[ T′ ]T)
+                    context
+                    (sym (trans (cong (λ σ → Tsub σ T) (TliftₛTidₛ≡Tidₛ _ l′)) (TidₛT≡T T)))
+                    (T[T′]T≡ T T′)
+                    e)) ⟩
+    subst (Expr _ Γ) (sym (σT[T′]≡σ↑T[σT'] Tidₛ T T′))
+      (subst (λ z → Expr _ Γ (Tsub (Tliftₛ Tidₛ _) T [ z ]T)) (sym (TidₛT≡T T′))
+        (subst (Expr _ Γ) (T[T′]T≡ T T′) (context e)))
+  ≡⟨ cong (subst (Expr _ Γ) (sym (σT[T′]≡σ↑T[σT'] Tidₛ T T′)))
+     (subst-∘ {P = Expr _ Γ} {f = λ T′ → (Tsub (Tliftₛ Tidₛ l′) T [ T′ ]T)} (sym (TidₛT≡T T′)) ) ⟩
+    subst (Expr _ Γ) (sym (σT[T′]≡σ↑T[σT'] Tidₛ T T′))
+      (subst (Expr _ Γ) (cong (λ T′₁ → Tsub (Tliftₛ Tidₛ l′) T [ T′₁ ]T) (sym (TidₛT≡T T′)))
+       (subst (Expr _ Γ) (T[T′]T≡ T T′) (e ∙ T′)))
+  ≡⟨ subst-subst {P = Expr _ Γ} (cong (λ T′₁ → Tsub (Tliftₛ Tidₛ l′) T [ T′₁ ]T) (sym (TidₛT≡T T′))) {sym (σT[T′]≡σ↑T[σT'] Tidₛ T T′)}  ⟩
+    subst (Expr _ Γ)
+      (trans
+       (cong (λ T′₁ → Tsub (Tliftₛ Tidₛ l′) T [ T′₁ ]T)
+        (sym (TidₛT≡T T′)))
+       (sym (σT[T′]≡σ↑T[σT'] Tidₛ T T′)))
+      (subst (Expr _ Γ) (T[T′]T≡ T T′) (e ∙ T′))
+  ≡⟨ subst-subst {P = Expr _ Γ} (T[T′]T≡ T T′) {trans
+       (cong (λ T′₁ → Tsub (Tliftₛ Tidₛ l′) T [ T′₁ ]T)
+        (sym (TidₛT≡T T′)))
+       (sym (σT[T′]≡σ↑T[σT'] Tidₛ T T′))} ⟩
+    subst (Expr _ Γ)
+      (trans (T[T′]T≡ T T′)
+       (trans
+        (cong (λ T′₁ → Tsub (Tliftₛ Tidₛ l′) T [ T′₁ ]T)
+         (sym (TidₛT≡T T′)))
+        (sym (σT[T′]≡σ↑T[σT'] Tidₛ T T′))))
+      (e ∙ T′)
+  ≡⟨ subst-irrelevant _ (sym (TidₛT≡T (T [ T′ ]T))) (e ∙ T′) ⟩
     subst (Expr _ _) (sym (TidₛT≡T (T [ T′ ]T))) (e ∙ T′)
   ∎
-
-
-
--- Eidₛe≡e {Γ = Γ} (_∙_ {T = T} e  T′) =
---   begin
---     Esub Tidₛ Eidₛ (e ∙ T′)
---   ≡⟨ refl ⟩
---     subst (Expr _ Γ) (sym (σT[T′]≡σ↑T[σT'] Tidₛ T T′))
---       (Esub Tidₛ Eidₛ e ∙ Tsub Tidₛ T′)
---   ≡⟨ cong (subst (Expr _ Γ) (sym (σT[T′]≡σ↑T[σT'] Tidₛ T T′)))
---      (cong (_∙ Tsub Tidₛ T′) (Eidₛe≡e e)) ⟩
---     subst (Expr _ Γ) (sym (σT[T′]≡σ↑T[σT'] Tidₛ T T′))
---       (subst (Expr _ Γ) (sym (TidₛT≡T (`∀α _ , T))) e ∙ Tsub Tidₛ T′)
---   ≡⟨ cong (subst (Expr _ Γ) (sym (σT[T′]≡σ↑T[σT'] Tidₛ T T′)))
---      (dcong (subst (Expr _ Γ) (sym (TidₛT≡T (`∀α _ , T))) e ∙_) {!sym (TidₛT≡T T′)!}) ⟩
---      {!!}
---   ≡⟨ {!!} ⟩
---     subst (Expr _ _) (sym (TidₛT≡T (T [ T′ ]T))) (e ∙ T′)
---   ∎
 
 
 -- composition of expression substitutions and renamings
