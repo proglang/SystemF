@@ -307,3 +307,32 @@ sym-sym : ∀ {a}{A : Set a}{x₁ x₂ : A}
   → (eq : x₁ ≡ x₂)
   → sym (sym eq) ≡ eq
 sym-sym refl = refl
+
+-- Let's try to build a general subst-irrelevant for multiple substs
+
+module SubstIrrelevantAttempt₁ where
+  data SubstArg : Set → Set → Set₁ where
+    []  : ∀ {A : Set} →
+      SubstArg A A
+    ⟨_,_⟩∷_ : ∀ {A B C : Set} {a₁ a₂ : A} →
+      (F : A → Set) →
+      (eq : a₁ ≡ a₂) →
+      SubstArg (F a₂) C →
+      SubstArg (F a₁) C 
+
+  subst* : ∀ {A B : Set} (S : SubstArg A B) → A → B
+  subst* []              x = x
+  subst* (⟨ F , eq ⟩∷ S) x = subst* S (subst F eq x)
+
+  subst*-irrelevant : ∀ {A B : Set} (S₁ S₂ : SubstArg A B) (x : A) →
+    subst* S₁ x ≡ subst* S₂ x
+  subst*-irrelevant []                 []                 x = refl
+  subst*-irrelevant []                 (⟨ F , refl ⟩∷ S₂) x = subst*-irrelevant [] S₂ x
+  subst*-irrelevant (⟨ F , refl ⟩∷ S₁) S₂                 x = subst*-irrelevant S₁ S₂ x
+
+  -- The above works but is not general enough: the argument `x` does not
+  -- need to have the same type on both sides. `x` could also be the same
+  -- function applied to different terms, which are equal according to
+  -- the equalities used in the substs...
+
+open SubstIrrelevantAttempt₁ public
