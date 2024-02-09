@@ -26,6 +26,21 @@ open import TypeSubstProperties
 open import Expressions
 open import ExprSubstitution
 
+-- equality utils
+
+sym-trans : ∀ {ℓ} {A : Set ℓ} {a b c : A} (p : a ≡ b) (q : b ≡ c) → sym (trans p q) ≡ trans (sym q) (sym p)
+sym-trans refl refl = refl
+
+trans-assoc : ∀ {ℓ} {A : Set ℓ} {a b c d : A} (p : a ≡ b) (q : b ≡ c) (r : c ≡ d) → trans p (trans q r) ≡ trans (trans p q) r
+trans-assoc refl refl refl = refl
+
+trans-idʳ : ∀ {ℓ} {A : Set ℓ} {a b : A} (p : a ≡ b) → trans p refl ≡ p
+trans-idʳ refl = refl
+
+trans-idˡ : ∀ {ℓ} {A : Set ℓ} {a b : A} (p : a ≡ b) → trans refl p ≡ p
+trans-idˡ refl = refl
+
+
 -- splitting substitutions
 
 subst-split-ƛ : 
@@ -834,8 +849,166 @@ EliftₛEextₛ~ l l′ T′ T τ* σ l₁ .(Twk _) (tskip {T = T₁} x) =
           (assoc-sub-sub (Twk T₁) (Tliftₛ τ* l) (Textₛ Tidₛ T′))
           (subst (Expr [] ∅)
                  (cong (Tsub (Textₛ Tidₛ T′)) (sym (σ↑-TwkT≡Twk-σT τ* T₁)))
-                 H)) {!(Eassoc-sub-ren (σ _ _ x) (λ _ _ → tskip) (Eextₛ-l Tidₛ Eidₛ)) !} ⟩
-    {!!}
+                 H)) ( let eq = (Eassoc-sub-ren (σ _ _ x) (λ _ _ → tskip) (Eextₛ-l Tidₛ Eidₛ)) in
+                       subst-swap {F = Expr [] ∅}
+                                    (assoc-sub-ren (Tsub τ* T₁) (Twkᵣ Tidᵣ) (Textₛ Tidₛ T′))
+                                    (Esub (Textₛ Tidₛ T′) (Eextₛ-l Tidₛ Eidₛ) (Eren (Twkᵣ Tidᵣ) (λ z z₁ → tskip) (σ l₁ T₁ x)))
+                                    (Esub (Twkᵣ Tidᵣ ∘ᵣₛ Textₛ Tidₛ T′) ((λ z z₁ → tskip) >>RS Eextₛ-l Tidₛ Eidₛ) (σ l₁ T₁ x))
+                                    eq ) ⟩
+    subst (Expr [] ∅)
+      (assoc-sub-sub (Twk T₁) (Tliftₛ τ* l) (Textₛ Tidₛ T′))
+      (subst (Expr [] ∅)
+       (cong (Tsub (Textₛ Tidₛ T′)) (sym (σ↑-TwkT≡Twk-σT τ* T₁)))
+       (subst (Expr [] ∅)
+        (sym (assoc-sub-ren (Tsub τ* T₁) (Twkᵣ Tidᵣ) (Textₛ Tidₛ T′)))
+        (Esub (Twkᵣ Tidᵣ ∘ᵣₛ Textₛ Tidₛ T′)
+         ((λ z z₁ → tskip) >>RS Eextₛ-l Tidₛ Eidₛ) (σ l₁ T₁ x))))
+  ≡⟨ refl ⟩
+    subst (Expr [] ∅) (assoc-sub-sub (Twk T₁) (Tliftₛ τ* l) (Textₛ Tidₛ T′))
+      (subst (Expr [] ∅)
+       (cong (Tsub (Textₛ Tidₛ T′))
+        (sym (σ↑-TwkT≡Twk-σT τ* T₁)))
+       (subst (Expr [] ∅)
+        (sym
+         (assoc-sub-ren (Tsub τ* T₁) (Twkᵣ Tidᵣ) (Textₛ Tidₛ T′)))
+        (Esub Tidₛ
+         (λ l₂ T₂ x₁ →
+            subst (Expr [] ∅) (assoc-sub-ren T₂ (λ z x₂ → there x₂) (Textₛ Tidₛ T′))
+            (subst (Expr [] ∅)
+             (sym
+              (trans (assoc-sub-ren T₂ (λ z x₂ → there x₂) (Textₛ Tidₛ T′))
+               (trans (sym (assoc-sub-sub T₂ Tidₛ Tidₛ))
+                (trans (cong (Tsub Tidₛ) (TidₛT≡T T₂)) refl))))
+             (subst (Expr [] ∅) (sym (TidₛT≡T T₂)) (` x₁))))
+         (σ l₁ T₁ x))))
+  ≡⟨ cong (subst (Expr [] ∅) (assoc-sub-sub (Twk T₁) (Tliftₛ τ* l) (Textₛ Tidₛ T′)))
+     (cong (subst (Expr [] ∅) (cong (Tsub (Textₛ Tidₛ T′)) (sym (σ↑-TwkT≡Twk-σT τ* T₁))))
+       (cong (subst (Expr [] ∅) (sym (assoc-sub-ren (Tsub τ* T₁) (Twkᵣ Tidᵣ) (Textₛ Tidₛ T′))))
+         (cong (λ H → Esub Tidₛ H (σ l₁ T₁ x))
+           (fun-ext λ l₂ →
+             fun-ext λ T₂ →
+               fun-ext λ x₁ →
+                 subst-subst {P = Expr [] ∅}
+                               (sym
+        (trans (assoc-sub-ren T₂ (λ z x₂ → there x₂) (Textₛ Tidₛ T′))
+         (trans (sym (assoc-sub-sub T₂ Tidₛ Tidₛ))
+          (trans (cong (Tsub Tidₛ) (TidₛT≡T T₂)) refl))))
+                             {(assoc-sub-ren T₂ (λ z x₂ → there x₂) (Textₛ Tidₛ T′))}
+                             {(subst (Expr [] ∅) (sym (TidₛT≡T T₂)) (` x₁))})))) ⟩
+    subst (Expr [] ∅)
+      (assoc-sub-sub (Twk T₁) (Tliftₛ τ* l) (Textₛ Tidₛ T′))
+      (subst (Expr [] ∅)
+       (cong (Tsub (Textₛ Tidₛ T′)) (sym (σ↑-TwkT≡Twk-σT τ* T₁)))
+       (subst (Expr [] ∅)
+        (sym (assoc-sub-ren (Tsub τ* T₁) (Twkᵣ Tidᵣ) (Textₛ Tidₛ T′)))
+        (Esub Tidₛ
+         (λ l₂ T₂ z →
+            subst (Expr [] ∅)
+            (trans
+             (sym
+              (trans (assoc-sub-ren T₂ (λ z₁ x₂ → there x₂) (Textₛ Tidₛ T′))
+               (trans (sym (assoc-sub-sub T₂ Tidₛ Tidₛ))
+                (trans (cong (Tsub Tidₛ) (TidₛT≡T T₂)) refl))))
+             (assoc-sub-ren T₂ (λ z₁ x₂ → there x₂) (Textₛ Tidₛ T′)))
+            (subst (Expr [] ∅) (sym (TidₛT≡T T₂)) (` z)))
+         (σ l₁ T₁ x))))
+  ≡⟨ cong (subst (Expr [] ∅) (assoc-sub-sub (Twk T₁) (Tliftₛ τ* l) (Textₛ Tidₛ T′)))
+     (cong (subst (Expr [] ∅) (cong (Tsub (Textₛ Tidₛ T′)) (sym (σ↑-TwkT≡Twk-σT τ* T₁))))
+       (cong (subst (Expr [] ∅) (sym (assoc-sub-ren (Tsub τ* T₁) (Twkᵣ Tidᵣ) (Textₛ Tidₛ T′))))
+         (cong (λ H → Esub Tidₛ H (σ l₁ T₁ x))
+           (fun-ext λ l₂ →
+             fun-ext λ T₂ →
+               fun-ext λ x₁ →
+                 begin
+                   subst (Expr [] ∅)
+                     (trans
+                      (sym
+                       (trans (assoc-sub-ren T₂ (λ z₁ x₂ → there x₂) (Textₛ Tidₛ T′))
+                        (trans (sym (assoc-sub-sub T₂ Tidₛ Tidₛ))
+                         (trans (cong (Tsub Tidₛ) (TidₛT≡T T₂)) refl))))
+                      (assoc-sub-ren T₂ (λ z₁ x₂ → there x₂) (Textₛ Tidₛ T′)))
+                     (subst (Expr [] ∅) (sym (TidₛT≡T T₂)) (` x₁))
+                 ≡⟨ cong (λ H → subst (Expr [] ∅) H (subst (Expr [] ∅) (sym (TidₛT≡T T₂)) (` x₁)))
+                    (cong₂ trans (sym-trans (assoc-sub-ren T₂ (λ z₁ x₂ → there x₂) (Textₛ Tidₛ T′))
+                                            (trans (sym (assoc-sub-sub T₂ Tidₛ Tidₛ)) (trans (cong (Tsub Tidₛ) (TidₛT≡T T₂)) refl))) refl) ⟩
+                   subst (Expr [] ∅)
+                     (trans
+                      (trans
+                       (sym
+                        (trans (sym (assoc-sub-sub T₂ Tidₛ Tidₛ))
+                         (trans (cong (Tsub Tidₛ) (TidₛT≡T T₂)) refl)))
+                       (sym (assoc-sub-ren T₂ (λ z₁ x₂ → there x₂) (Textₛ Tidₛ T′))))
+                      (assoc-sub-ren T₂ (λ z₁ → there) (Textₛ Tidₛ T′)))
+                     (subst (Expr [] ∅) (sym (TidₛT≡T T₂)) (` x₁))
+                 ≡⟨ cong (λ H → subst (Expr [] ∅) H (subst (Expr [] ∅) (sym (TidₛT≡T T₂)) (` x₁)))
+                    (sym (trans-assoc (sym
+                        (trans (sym (assoc-sub-sub T₂ Tidₛ Tidₛ))
+                         (trans (cong (Tsub Tidₛ) (TidₛT≡T T₂)) refl)))
+                                      (sym (assoc-sub-ren T₂ (λ z₁ x₂ → there x₂) (Textₛ Tidₛ T′)))
+                                      (assoc-sub-ren T₂ (λ z₁ → there) (Textₛ Tidₛ T′)))) ⟩
+                   subst (Expr [] ∅)
+                     (trans
+                      (sym
+                       (trans (sym (assoc-sub-sub T₂ Tidₛ Tidₛ))
+                        (trans (cong (Tsub Tidₛ) (TidₛT≡T T₂)) refl)))
+                      (trans
+                       (sym (assoc-sub-ren T₂ (λ z₁ x₂ → there x₂) (Textₛ Tidₛ T′)))
+                       (assoc-sub-ren T₂ (λ z₁ → there) (Textₛ Tidₛ T′))))
+                     (subst (Expr [] ∅) (sym (TidₛT≡T T₂)) (` x₁))
+                 ≡⟨ cong (λ H → subst (Expr [] ∅) H (subst (Expr [] ∅) (sym (TidₛT≡T T₂)) (` x₁)))
+                    (cong₂ trans refl (Relation.Binary.PropositionalEquality.trans-symˡ (assoc-sub-ren T₂ (λ z₁ → there) (Textₛ Tidₛ T′)))) ⟩
+                   subst (Expr [] ∅) (trans (sym
+                       (trans (sym (assoc-sub-sub T₂ Tidₛ Tidₛ))
+                        (trans (cong (Tsub Tidₛ) (TidₛT≡T T₂)) refl))) refl)
+                     (subst (Expr [] ∅) (sym (TidₛT≡T T₂)) (` x₁))
+                 ≡⟨ cong (λ H → subst (Expr [] ∅) H (subst (Expr [] ∅) (sym (TidₛT≡T T₂)) (` x₁)))
+                    (trans-idʳ (sym (trans (sym (assoc-sub-sub T₂ Tidₛ Tidₛ)) (trans (cong (Tsub Tidₛ) (TidₛT≡T T₂)) refl)))) ⟩
+                   subst (Expr [] ∅)
+                     (sym
+                      (trans (sym (assoc-sub-sub T₂ Tidₛ Tidₛ))
+                       (trans (cong (Tsub Tidₛ) (TidₛT≡T T₂)) refl)))
+                     (subst (Expr [] ∅) (sym (TidₛT≡T T₂)) (` x₁))
+                 ≡⟨ cong (λ H → subst (Expr [] ∅) H (subst (Expr [] ∅) (sym (TidₛT≡T T₂)) (` x₁)))
+                    (sym-trans (sym (assoc-sub-sub T₂ Tidₛ Tidₛ)) (trans (cong (Tsub Tidₛ) (TidₛT≡T T₂)) refl) ) ⟩
+                   subst (Expr [] ∅)
+                     (trans (sym (trans (cong (Tsub Tidₛ) (TidₛT≡T T₂)) refl))
+                      (sym (sym (assoc-sub-sub T₂ Tidₛ Tidₛ))))
+                     (subst (Expr [] ∅) (sym (TidₛT≡T T₂)) (` x₁))
+                 ≡⟨ cong (λ H → subst (Expr [] ∅) H (subst (Expr [] ∅) (sym (TidₛT≡T T₂)) (` x₁)))
+                    (cong₂ trans (sym-trans (cong (Tsub Tidₛ) (TidₛT≡T T₂)) refl ) refl) ⟩
+                   subst (Expr [] ∅)
+                     (trans (trans refl (sym (cong (Tsub Tidₛ) (TidₛT≡T T₂))))
+                      (sym (sym (assoc-sub-sub T₂ Tidₛ Tidₛ))))
+                     (subst (Expr [] ∅) (sym (TidₛT≡T T₂)) (` x₁))
+                 ≡⟨ cong (λ H → subst (Expr [] ∅) H (subst (Expr [] ∅) (sym (TidₛT≡T T₂)) (` x₁)))
+                    (cong₂ trans (trans-idˡ (sym (cong (Tsub Tidₛ) (TidₛT≡T T₂)))) refl) ⟩
+                   subst (Expr [] ∅)
+                     (trans (sym (cong (Tsub Tidₛ) (TidₛT≡T T₂)))
+                      (sym (sym (assoc-sub-sub T₂ Tidₛ Tidₛ))))
+                     (subst (Expr [] ∅) (sym (TidₛT≡T T₂)) (` x₁))
+                 ≡⟨ subst-subst {P = Expr [] ∅} (sym (TidₛT≡T T₂))
+                                 {(trans (sym (cong (Tsub Tidₛ) (TidₛT≡T T₂))) (sym (sym (assoc-sub-sub T₂ Tidₛ Tidₛ))))}
+                                 {` x₁} ⟩
+                   subst (Expr [] ∅)
+                     (trans (sym (TidₛT≡T T₂))
+                      (trans (sym (cong (Tsub Tidₛ) (TidₛT≡T T₂)))
+                       (sym (sym (assoc-sub-sub T₂ Tidₛ Tidₛ)))))
+                     (` x₁)
+                 ∎)))) ⟩
+    subst (Expr [] ∅)
+      (assoc-sub-sub (Twk T₁) (Tliftₛ τ* l) (Textₛ Tidₛ T′))
+      (subst (Expr [] ∅)
+       (cong (Tsub (Textₛ Tidₛ T′)) (sym (σ↑-TwkT≡Twk-σT τ* T₁)))
+       (subst (Expr [] ∅)
+        (sym (assoc-sub-ren (Tsub τ* T₁) (Twkᵣ Tidᵣ) (Textₛ Tidₛ T′)))
+        (Esub Tidₛ
+         (λ l₂ T₂ z →
+            subst (Expr [] ∅)
+            (trans (sym (TidₛT≡T T₂))
+             (trans (sym (cong (Tsub Tidₛ) (TidₛT≡T T₂)))
+              (sym (sym (assoc-sub-sub T₂ Tidₛ Tidₛ)))))
+            (` z))
+         (σ l₁ T₁ x))))
   ≡⟨ {!!} ⟩
     subst (Expr [] ∅)
       (cong (λ σ* → Tsub σ* (Twk T₁)) (sym (Tliftₛ∘Textₛ l τ* T′)))
