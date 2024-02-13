@@ -314,7 +314,7 @@ module SubstIrrelevantAttempt₁ where
   data SubstArg : Set → Set → Set₁ where
     []  : ∀ {A : Set} →
       SubstArg A A
-    ⟨_,_⟩∷_ : ∀ {A B C : Set} {a₁ a₂ : A} →
+    ⟨_,_⟩∷_ : ∀ {A C : Set} {a₁ a₂ : A} →
       (F : A → Set) →
       (eq : a₁ ≡ a₂) →
       SubstArg (F a₂) C →
