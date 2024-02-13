@@ -12,7 +12,7 @@ open import Data.Nat using (ℕ)
 open import Function using (_∘_; id; _$_)
 open import Relation.Binary.PropositionalEquality
   using (_≡_; _≢_; refl; sym; trans; cong; cong₂; dcong; dcong₂; subst; subst₂; resp₂; cong-app; icong;
-        subst-∘; subst-subst; sym-cong;
+        subst-∘; subst-subst; subst-sym-subst; sym-cong;
         module ≡-Reasoning)
 open import Axiom.Extensionality.Propositional using (∀-extensionality; Extensionality)
 open ≡-Reasoning
@@ -854,9 +854,26 @@ Elift-l-[]≡Eext l l′ T′ T τ* σ e =
       (sym (assoc-sub-sub T (Tliftₛ τ* l) (Textₛ Tidₛ T′)))
       (Esub (Tliftₛ τ* l ∘ₛₛ Textₛ Tidₛ T′)
        (Eliftₛ-l τ* σ >>SS Eextₛ-l Tidₛ Eidₛ) e)
-  ≡⟨  {! !} ⟩
-    {!!}
-  ≡⟨ cong (subst (Expr [] ∅) (sym (σ↑T[T′]≡TextₛσT′T τ* T′ T))) {!!} ⟩
+  ≡⟨ cong (subst (Expr [] ∅) (sym (assoc-sub-sub T (Tliftₛ τ* l) (Textₛ Tidₛ T′))))
+          (Esub~~ (Tliftₛ∘Textₛ l τ* T′) {!!} {!!} (EliftₛEextₛ~ _ _ T′ T τ* σ) e) ⟩
+    subst (Expr [] ∅)
+      (sym (assoc-sub-sub T (Tliftₛ τ* l) (Textₛ Tidₛ T′)))
+      (subst (Expr [] ∅)
+       (cong (λ σ* → Tsub σ* T) (sym (Tliftₛ∘Textₛ l τ* T′)))
+       (Esub (Textₛ τ* T′) (λ l₁ T₁ z → Eextₛ-l τ* σ l₁ T₁ z) e))
+  ≡⟨ subst-subst {P = Expr [] ∅}
+                   (cong (λ σ* → Tsub σ* T) (sym (Tliftₛ∘Textₛ l τ* T′)))
+                   {(sym (assoc-sub-sub T (Tliftₛ τ* l) (Textₛ Tidₛ T′)))}
+                   {Esub (Textₛ τ* T′) (λ l₁ T₁ z → Eextₛ-l τ* σ l₁ T₁ z) e} ⟩
+    subst (Expr [] ∅)
+      (trans (cong (λ σ* → Tsub σ* T) (sym (Tliftₛ∘Textₛ l τ* T′)))
+       (sym (assoc-sub-sub T (Tliftₛ τ* l) (Textₛ Tidₛ T′))))
+      (Esub (Textₛ τ* T′) (λ l₁ T₁ z → Eextₛ-l τ* σ l₁ T₁ z) e)
+  ≡⟨ subst-irrelevant {F = Expr [] ∅}
+                       (trans (cong (λ σ* → Tsub σ* T) (sym (Tliftₛ∘Textₛ l τ* T′)))
+                              (sym (assoc-sub-sub T (Tliftₛ τ* l) (Textₛ Tidₛ T′))))
+                       (sym (σ↑T[T′]≡TextₛσT′T τ* T′ T))
+                       (Esub (Textₛ τ* T′) (Eextₛ-l τ* σ) e) ⟩
     subst (Expr [] ∅) (sym (σ↑T[T′]≡TextₛσT′T τ* T′ T))
       (Esub (Textₛ τ* T′) (Eextₛ-l τ* σ) e)
   ∎
