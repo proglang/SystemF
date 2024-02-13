@@ -287,39 +287,39 @@ Eliftₛ-lEidₛ≡Eidₛ{Δ = Δ} {Γ = Γ} {l = l} l′ .(Twk _) (tskip {T = T
 
 -- identity renaming
 
-probably not needed
+-- probably not needed
 
-EliftᵣEidᵣ≡Eidᵣ : Eliftᵣ {Γ₁ = Γ}{T = T} Tidᵣ Eidᵣ ≡ {!Eidᵣ{Γ = T ◁ Γ}!}
-EliftᵣEidᵣ≡Eidᵣ = {!Eliftᵣ!}
+-- EliftᵣEidᵣ≡Eidᵣ : Eliftᵣ {Γ₁ = Γ}{T = T} Tidᵣ Eidᵣ ≡ {!Eidᵣ{Γ = T ◁ Γ}!}
+-- EliftᵣEidᵣ≡Eidᵣ = {!Eliftᵣ!}
 
-Eidᵣx≡x : ∀ {T : Type Δ l} (x : inn T Γ) → let rhs = subst (λ t → inn{l = l} t Γ) (sym (TidᵣT≡T _)) in Eidᵣ l T x ≡ rhs x
-Eidᵣx≡x x = refl
+-- Eidᵣx≡x : ∀ {T : Type Δ l} (x : inn T Γ) → let rhs = subst (λ t → inn{l = l} t Γ) (sym (TidᵣT≡T _)) in Eidᵣ l T x ≡ rhs x
+-- Eidᵣx≡x x = refl
 
-Eidᵣe≡e : ∀ (e : Expr Δ Γ T) → Eren Tidᵣ Eidᵣ e ≡ subst (Expr _ _) (sym (TidᵣT≡T _)) e
-Eidᵣe≡e (# n) = refl
-Eidᵣe≡e {Γ = Γ} (`_ {l = l} x) =
-  begin
-    Eren Tidᵣ Eidᵣ (` x)
-  ≡⟨ refl ⟩
-    (` subst (λ t → inn t Γ) (sym (TidᵣT≡T _)) x)
-  ≡⟨ dist-subst' {F = (λ t → inn t Γ)} {G = Expr _ _} id `_ (sym (TidᵣT≡T _)) (sym (TidᵣT≡T _)) x ⟩
-    subst (Expr _ _) (sym (TidᵣT≡T _)) (` x)
-  ∎
-Eidᵣe≡e (ƛ e) =
-  begin
-    Eren Tidᵣ Eidᵣ (ƛ e)
-  ≡⟨ refl ⟩
-    (ƛ Eren Tidᵣ (Eliftᵣ Tidᵣ Eidᵣ) e)
-  ≡⟨ cong ƛ_ {!subst₂-subst-subst′ (λ T T′ → Expr _ (T′ ◁ _) T) (sym (TidᵣT≡T _)) (sym (TidᵣT≡T _)) e!} ⟩
-    {!!}
-  ≡⟨ cong ƛ_ {!subst₂-subst-subst′ (λ T T′ → Expr _ (T′ ◁ _) T) (sym (TidᵣT≡T _)) (sym (TidᵣT≡T _)) e!} ⟩
-    (ƛ subst₂ (λ T₁ → Expr _ (T₁ ◁ _)) (sym (TidᵣT≡T _)) (sym (TidᵣT≡T _)) e)
-  ≡⟨ sym (subst-split-ƛ (sym (TidᵣT≡T (_ ⇒ _))) (sym (TidᵣT≡T _)) (sym (TidᵣT≡T _)) e) ⟩
-    subst (Expr _ _) (sym (TidᵣT≡T (_ ⇒ _))) (ƛ e)
-  ∎
-Eidᵣe≡e (e₁ · e₂) = {!!}
-Eidᵣe≡e (Λ l ⇒ e) = {!!}
-Eidᵣe≡e (e ∙ T′) = {!!}
+-- Eidᵣe≡e : ∀ (e : Expr Δ Γ T) → Eren Tidᵣ Eidᵣ e ≡ subst (Expr _ _) (sym (TidᵣT≡T _)) e
+-- Eidᵣe≡e (# n) = refl
+-- Eidᵣe≡e {Γ = Γ} (`_ {l = l} x) =
+--   begin
+--     Eren Tidᵣ Eidᵣ (` x)
+--   ≡⟨ refl ⟩
+--     (` subst (λ t → inn t Γ) (sym (TidᵣT≡T _)) x)
+--   ≡⟨ dist-subst' {F = (λ t → inn t Γ)} {G = Expr _ _} id `_ (sym (TidᵣT≡T _)) (sym (TidᵣT≡T _)) x ⟩
+--     subst (Expr _ _) (sym (TidᵣT≡T _)) (` x)
+--   ∎
+-- Eidᵣe≡e (ƛ e) =
+--   begin
+--     Eren Tidᵣ Eidᵣ (ƛ e)
+--   ≡⟨ refl ⟩
+--     (ƛ Eren Tidᵣ (Eliftᵣ Tidᵣ Eidᵣ) e)
+--   ≡⟨ cong ƛ_ {!subst₂-subst-subst′ (λ T T′ → Expr _ (T′ ◁ _) T) (sym (TidᵣT≡T _)) (sym (TidᵣT≡T _)) e!} ⟩
+--     {!!}
+--   ≡⟨ cong ƛ_ {!subst₂-subst-subst′ (λ T T′ → Expr _ (T′ ◁ _) T) (sym (TidᵣT≡T _)) (sym (TidᵣT≡T _)) e!} ⟩
+--     (ƛ subst₂ (λ T₁ → Expr _ (T₁ ◁ _)) (sym (TidᵣT≡T _)) (sym (TidᵣT≡T _)) e)
+--   ≡⟨ sym (subst-split-ƛ (sym (TidᵣT≡T (_ ⇒ _))) (sym (TidᵣT≡T _)) (sym (TidᵣT≡T _)) e) ⟩
+--     subst (Expr _ _) (sym (TidᵣT≡T (_ ⇒ _))) (ƛ e)
+--   ∎
+-- Eidᵣe≡e (e₁ · e₂) = {!!}
+-- Eidᵣe≡e (Λ l ⇒ e) = {!!}
+-- Eidᵣe≡e (e ∙ T′) = {!!}
 
 -- identity substitution
 
