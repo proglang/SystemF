@@ -188,123 +188,91 @@ subst-`-lem₂ refl refl refl refl refl x = refl
 EliftₛEidₛ≡Eidₛ : ∀ {T : Type Δ l}{Γ : TEnv Δ}
   → Eliftₛ {Γ₁ = Γ}{Γ₂ = Γ} {T = T} Tidₛ Eidₛ ~ subst (ESub Tidₛ (T ◁ Γ)) (cong (_◁ Γ) (sym (TidₛT≡T T))) (Eidₛ {Γ  = T ◁ Γ})
 EliftₛEidₛ≡Eidₛ {Γ = Γ} l T here =
-  let sub₁ = subst (λ Γ → Expr _ Γ (Tsub Tidₛ T)) (cong (_◁ Γ) (sym (TidₛT≡T T))) in
-  let sub₂ = subst (λ T′ → Expr _ (T ◁ Γ) T′) (sym (TidₛT≡T T)) in
-  let sub₃ = subst (ESub Tidₛ (T ◁ Γ)) (cong (_◁ Γ) (sym (TidₛT≡T T))) in
+  let
+    F₁ = (λ Γ → Expr _ Γ (Tsub Tidₛ T)); E₁ = (cong (_◁ Γ) (sym (TidₛT≡T T))); sub₁ = subst F₁ E₁
+    F₂ = (λ T′ → Expr _ (T ◁ Γ) T′);     E₂ = (sym (TidₛT≡T T));               sub₂ = subst F₂ E₂
+    F₃ = (ESub Tidₛ (T ◁ Γ));            E₃ = (cong (_◁ Γ) (sym (TidₛT≡T T))); sub₃ = subst F₃ E₃
+  in
   begin
     (` here)
   ≡⟨ subst-`-lem (cong (_◁ Γ) (sym (TidₛT≡T T))) (sym (TidₛT≡T T)) ⟩
     sub₁ (sub₂ (` here))
   ≡⟨⟩
     sub₁ (Eidₛ l T here)
-  ≡⟨ sym (dist-subst' {F = (ESub Tidₛ (T ◁ Γ))} {G = λ Γ → Expr _ Γ (Tsub Tidₛ T)}
-                      id (λ σ → σ l T here)
-                      (cong (_◁ Γ) (sym (TidₛT≡T T))) (cong (_◁ Γ) (sym (TidₛT≡T T))) Eidₛ ) ⟩
+  ≡⟨ sym (dist-subst' {F = F₃} {G = F₁} id (λ σ → σ l T here) E₃ E₁ Eidₛ ) ⟩
     (sub₃ Eidₛ) l T here
   ∎
 EliftₛEidₛ≡Eidₛ {Γ = Γ} l T (there {T′ = T′} x) =
-  let sub₁ = subst (Expr _ (Tsub Tidₛ T′ ◁ Γ)) (TidᵣT≡T (Tsub Tidₛ T)) in
-  let sub₂ = subst (Expr _ Γ) (sym (TidₛT≡T T)) in
-  let sub₃ = subst (Expr _ (Tsub Tidₛ T′ ◁ Γ)) (cong (Tren Tidᵣ) (sym (TidₛT≡T T))) in
-  let sub₄ = subst (λ T₁ → inn T₁ Γ) (sym (TidᵣT≡T T)) in
-  let sub₅ = subst (Expr _ (T′ ◁ Γ)) (sym (TidₛT≡T T)) in
-  let sub₆ = subst (λ Γ → Expr _ Γ (Tsub Tidₛ T)) (cong (_◁ Γ) (sym (TidₛT≡T T′))) in
-  let sub₇ = subst (ESub Tidₛ (T′ ◁ Γ)) (cong (_◁ Γ) (sym (TidₛT≡T T′))) in
-  let sub₈ = subst (Expr _ (Tsub Tidₛ T′ ◁ Γ)) (sym (TidᵣT≡T T)) in
+  let
+    F₁ = (Expr _ (Tsub Tidₛ T′ ◁ Γ));    E₁ = (TidᵣT≡T (Tsub Tidₛ T));              sub₁ = subst F₁ E₁
+    F₂ = (Expr _ Γ);                     E₂ = (sym (TidₛT≡T T));                    sub₂ = subst F₂ E₂
+    F₃ = (Expr _ (Tsub Tidₛ T′ ◁ Γ));    E₃ = (cong (Tren Tidᵣ) (sym (TidₛT≡T T))); sub₃ = subst F₃ E₃
+    F₄ = (λ T₁ → inn T₁ Γ);              E₄ = (sym (TidᵣT≡T T));                    sub₄ = subst F₄ E₄
+    F₅ = (Expr _ (T′ ◁ Γ));              E₅ = (sym (TidₛT≡T T));                    sub₅ = subst F₅ E₅
+    F₆ = (λ Γ → Expr _ Γ (Tsub Tidₛ T)); E₆ = (cong (_◁ Γ) (sym (TidₛT≡T T′)));     sub₆ = subst F₆ E₆
+    F₇ = (ESub Tidₛ (T′ ◁ Γ));           E₇ = (cong (_◁ Γ) (sym (TidₛT≡T T′)));     sub₇ = subst F₇ E₇
+    F₈ = (Expr _ (Tsub Tidₛ T′ ◁ Γ));    E₈ = (sym (TidᵣT≡T T));                    sub₈ = subst F₈ E₈                    
+  in
   begin
     Eliftₛ {T = T′} Tidₛ Eidₛ l T (there x)
   ≡⟨⟩
     Ewk (Eidₛ _ _ x)
   ≡⟨⟩
     sub₁ (Eren _ (Ewkᵣ Tidᵣ Eidᵣ) (sub₂ (` x)))
-  ≡⟨ cong sub₁ (dist-subst' {F = Expr _ Γ} {G = Expr _ (Tsub Tidₛ T′ ◁ Γ)}
-                            (Tren Tidᵣ) (Eren _ (Ewkᵣ Tidᵣ Eidᵣ))
-                            (sym (TidₛT≡T T)) (cong (Tren Tidᵣ) (sym (TidₛT≡T T))) (` x)) ⟩
+  ≡⟨ cong (sub₁)
+          (dist-subst' {F = F₂} {G = F₃} (Tren Tidᵣ) (Eren _ (Ewkᵣ Tidᵣ Eidᵣ)) E₂ E₃ (` x)) ⟩
     sub₁ (sub₃ (Eren _ (Ewkᵣ Tidᵣ Eidᵣ) (` x)))
   ≡⟨⟩
     sub₁ (sub₃ (` there (sub₄ x)))
-  ≡⟨ cong (λ ■ → sub₁ (sub₃ ■)) (dist-subst' {F = λ T₁ → inn T₁ Γ} {G = Expr _ (Tsub Tidₛ T′ ◁ Γ)}
-                                             id (λ x → ` there x)
-                                             (sym (TidᵣT≡T T)) (sym (TidᵣT≡T T)) x) ⟩
+  ≡⟨ cong (λ ■ → sub₁ (sub₃ ■))
+          (dist-subst' {F = F₄} {G = F₈} id (λ x → ` there x) E₄ E₈ x) ⟩
     sub₁ (sub₃ (sub₈ (` there x)))
-  ≡⟨ subst-`-lem₂ (TidᵣT≡T (Tsub Tidₛ T))
-                  (cong (Tren Tidᵣ) (sym (TidₛT≡T T)))
-                  (sym (TidᵣT≡T T))
-                  (sym (TidₛT≡T T))
-                  (cong (_◁ Γ) (sym (TidₛT≡T T′)))
-                  x ⟩
+  ≡⟨ subst-`-lem₂ E₁ E₃ E₈ E₅ E₆ x ⟩
     sub₆ (sub₅ (` there x))
   ≡⟨⟩
     sub₆ (Eidₛ l T (there x))
-  ≡⟨ sym (dist-subst' {F = ESub Tidₛ (T′ ◁ Γ)} {G = λ Γ → Expr _ Γ (Tsub Tidₛ T)}
-                      id (λ σ → σ l T (there x))
-                      (cong (_◁ Γ) (sym (TidₛT≡T T′))) (cong (_◁ Γ) (sym (TidₛT≡T T′))) Eidₛ ) ⟩
+  ≡⟨ sym (dist-subst' {F = F₇} {G = F₆} id (λ σ → σ l T (there x)) E₇ E₆ Eidₛ ) ⟩
     (sub₇ Eidₛ) l T (there x)
   ∎
 
 Eliftₛ-lEidₛ≡Eidₛ : ∀ {Γ : TEnv Δ}{l} →
   Eliftₛ-l {Γ₁ = Γ}{l = l} Tidₛ Eidₛ ~ subst (λ τ → ESub τ (l ◁* Γ) (l ◁* Γ)) (sym (TliftₛTidₛ≡Tidₛ Δ l)) (Eidₛ {Γ = l ◁* Γ})
 Eliftₛ-lEidₛ≡Eidₛ{Δ = Δ} {Γ = Γ} {l = l} l′ .(Twk _) (tskip {T = T} x) =
+  let
+    F₁ = (Expr (l ∷ Δ) (l ◁* Γ))          ; E₁ = (sym (σ↑-TwkT≡Twk-σT Tidₛ T))    ; sub₁ = subst F₁ E₁
+    F₂ = (Expr _ _)                       ; E₂ = (sym (TidₛT≡T T))                ; sub₂ = subst F₂ E₂
+    F₃ = (Expr _ _)                       ; E₃ = (cong Twk E₂)                    ; sub₃ = subst F₃ E₃
+    F₄ = (Expr (l ∷ Δ) (l ◁* Γ))          ; E₄ = (trans E₃ E₁)                    ; sub₄ = subst F₄ E₄
+
+    F₉ = (λ τ → ESub τ (l ◁* Γ) (l ◁* Γ)) ; E₉ = (sym (TliftₛTidₛ≡Tidₛ Δ l))      ; sub₉ = subst F₉ E₉
+    F₈ = (λ τ → Expr (l ∷ Δ) (l ◁* Γ)
+           (Tsub τ (Twk T)))              ; E₈ = (sym (TliftₛTidₛ≡Tidₛ Δ l))      ; sub₈ = subst F₈ E₈
+    F₇ = (Expr (l ∷ Δ) (l ◁* Γ))          ; E₇ = (sym (TidₛT≡T (Twk T)))          ; sub₇ = subst F₇ E₇
+    F₆ = (Expr (l ∷ Δ) (l ◁* Γ))          ; E₆ = (cong (λ τ → Tsub τ (Twk T)) E₈) ; sub₆ = subst F₆ E₆
+    F₅ = (Expr (l ∷ Δ) (l ◁* Γ))          ; E₅ = (trans E₇ E₆)                    ; sub₅ = subst F₅ E₅
+  in
   begin
     Eliftₛ-l Tidₛ Eidₛ l′ (Twk T) (tskip x)
   ≡⟨ refl ⟩
-    subst (Expr (l ∷ Δ) (l ◁* Γ)) (sym (σ↑-TwkT≡Twk-σT Tidₛ T))
-      (Ewk-l (Eidₛ l′ T x))
+    sub₁ (Ewk-l (Eidₛ l′ T x))
   ≡⟨ refl ⟩
-    subst (Expr (l ∷ Δ) (l ◁* Γ)) (sym (σ↑-TwkT≡Twk-σT Tidₛ T))
-      (Ewk-l (subst (Expr _ _) (sym (TidₛT≡T T)) (` x)))
-  ≡⟨ cong (subst (Expr (l ∷ Δ) (l ◁* Γ)) (sym (σ↑-TwkT≡Twk-σT Tidₛ T)))
-     (dist-subst' {F = Expr _ _} {G = Expr _ _}
-                   Twk
-                   Ewk-l
-                   (sym (TidₛT≡T T))
-                   (cong Twk (sym (TidₛT≡T T)))
-                   (` x)) ⟩
-    subst (Expr (l ∷ Δ) (l ◁* Γ)) (sym (σ↑-TwkT≡Twk-σT Tidₛ T))
-      (subst (Expr _ _) (cong Twk (sym (TidₛT≡T T))) (Ewk-l (` x)))
+    sub₁ (Ewk-l (sub₂ (` x)))
+  ≡⟨ cong sub₁ (dist-subst' {F = F₂} {G = F₃} Twk Ewk-l E₂ E₃ (` x)) ⟩
+    sub₁ (sub₃ (Ewk-l (` x)))
   ≡⟨ refl ⟩
-    subst (Expr (l ∷ Δ) (l ◁* Γ)) (sym (σ↑-TwkT≡Twk-σT Tidₛ T))
-      (subst (Expr _ _) (cong Twk (sym (TidₛT≡T T))) (` tskip x))
-  ≡⟨ subst-subst {P = Expr (l ∷ Δ) (l ◁* Γ)}
-                   (cong Twk (sym (TidₛT≡T T)))
-                   {(sym (σ↑-TwkT≡Twk-σT Tidₛ T))}
-                   {` tskip x} ⟩
-    subst (Expr (l ∷ Δ) (l ◁* Γ))
-      (trans (cong Twk (sym (TidₛT≡T T))) (sym (σ↑-TwkT≡Twk-σT Tidₛ T)))
-      (` tskip x)
-  ≡⟨ subst-irrelevant
-      (trans (cong Twk (sym (TidₛT≡T T))) (sym (σ↑-TwkT≡Twk-σT Tidₛ T)))
-      (trans (sym (TidₛT≡T (Twk T)))
-       (cong (λ τ → Tsub τ (Twk T)) (sym (TliftₛTidₛ≡Tidₛ Δ l))))
-      (` tskip x) ⟩
-    subst (Expr (l ∷ Δ) (l ◁* Γ))
-      (trans (sym (TidₛT≡T (Twk T)))
-       (cong (λ τ → Tsub τ (Twk T)) (sym (TliftₛTidₛ≡Tidₛ Δ l))))
-      (` tskip x)
-  ≡⟨ sym (subst-subst {P = (Expr (l ∷ Δ) (l ◁* Γ))}
-                       (sym (TidₛT≡T (Twk T)))
-                       {(cong (λ τ → Tsub τ (Twk T)) (sym (TliftₛTidₛ≡Tidₛ Δ l)))}
-                       {` tskip x}) ⟩
-    subst (Expr (l ∷ Δ) (l ◁* Γ))
-      (cong (λ τ → Tsub τ (Twk T)) (sym (TliftₛTidₛ≡Tidₛ Δ l)))
-      (subst (Expr (l ∷ Δ) (l ◁* Γ)) (sym (TidₛT≡T (Twk T))) (` tskip x))
-  ≡⟨ sym (subst-∘ {P = Expr (l ∷ Δ) (l ◁* Γ)} {f = λ τ → Tsub τ (Twk T)} (sym (TliftₛTidₛ≡Tidₛ _ l))
-                   {(subst (Expr _ _) (sym (TidₛT≡T (Twk T))) (` tskip x))}) ⟩
-    subst (λ τ → Expr (l ∷ Δ) (l ◁* Γ) (Tsub τ (Twk T))) (sym (TliftₛTidₛ≡Tidₛ _ l))
-      (subst (Expr _ _) (sym (TidₛT≡T (Twk T))) (` tskip x))
+    sub₁ (sub₃ (` tskip x))
+  ≡⟨ subst-subst {P = F₁} E₃ {E₁} {` tskip x} ⟩
+    sub₄ (` tskip x)
+  ≡⟨ subst-irrelevant E₄ E₅ (` tskip x) ⟩
+    sub₅ (` tskip x)
+  ≡⟨ sym (subst-subst {P = F₅} E₇ {E₆} {` tskip x}) ⟩
+    sub₆ (sub₇ (` tskip x))
+  ≡⟨ sym (subst-∘ {P = F₆} {f = λ τ → Tsub τ (Twk T)} E₈ {sub₇ (` tskip x)}) ⟩
+    sub₈ (sub₇ (` tskip x))
   ≡⟨ refl ⟩
-    subst (λ τ → Expr (l ∷ Δ) (l ◁* Γ) (Tsub τ (Twk T)))
-          (sym (TliftₛTidₛ≡Tidₛ _ l))
-          (Eidₛ l′ (Twk T) (tskip x))
-  ≡⟨ sym (dist-subst' {F = (λ τ → ESub τ (l ◁* Γ) (l ◁* Γ))}
-                      {G = (λ τ → Expr (l ∷ Δ) (l ◁* Γ) (Tsub τ (Twk T)))}
-                      id
-                      (λ σ → σ l′ (Twk T) (tskip x))
-                      (sym (TliftₛTidₛ≡Tidₛ Δ l))
-                      (sym (TliftₛTidₛ≡Tidₛ Δ l))
-                      Eidₛ) ⟩
-    subst (λ τ → ESub τ (l ◁* Γ) (l ◁* Γ)) (sym (TliftₛTidₛ≡Tidₛ Δ l))
-      Eidₛ l′ (Twk T) (tskip x)
+    sub₈ (Eidₛ l′ (Twk T) (tskip x))
+  ≡⟨ sym (dist-subst' {F = F₉} {G = F₈} id (λ σ → σ l′ (Twk T) (tskip x)) E₉ E₈ Eidₛ) ⟩
+    sub₉ Eidₛ l′ (Twk T) (tskip x)
   ∎
 
 {-
@@ -318,6 +286,8 @@ Eliftₛ-lEidₛ≡Eidₛ{Δ = Δ} {Γ = Γ} {l = l} l′ .(Twk _) (tskip {T = T
 -}
 
 -- identity renaming
+
+probably not needed
 
 EliftᵣEidᵣ≡Eidᵣ : Eliftᵣ {Γ₁ = Γ}{T = T} Tidᵣ Eidᵣ ≡ {!Eidᵣ{Γ = T ◁ Γ}!}
 EliftᵣEidᵣ≡Eidᵣ = {!Eliftᵣ!}
