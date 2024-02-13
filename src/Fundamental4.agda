@@ -13,7 +13,7 @@ open import Data.Nat using (ℕ)
 open import Function using (_∘_; id; case_of_; _|>_)
 open import Relation.Binary.PropositionalEquality
   using (_≡_; _≢_; refl; sym; trans; cong; cong₂; subst; subst₂; resp₂; cong-app; icong;
-        subst-∘; subst-application; subst-application′; subst-subst-sym; -- Properties
+        subst-subst; subst-∘; subst-application; subst-application′; subst-subst-sym; -- Properties
         module ≡-Reasoning)
 open import Axiom.Extensionality.Propositional using (∀-extensionality; Extensionality)
 open ≡-Reasoning
@@ -44,7 +44,19 @@ Elift-[]≡Cextt Γ ρ χ l′ l T e T′ R =
   begin
     subst CExpr (lemma1 ρ T T′ R)
       (Esub (Tliftₛ τ* l) (Eliftₛ-l τ* σ) e [ T′ ]ET)  -- : Expr [] ∅ (Tsub (Tliftₛ τ* l) T [ T′ ]T)
-  ≡⟨ {! !} ⟩
+  ≡⟨ cong (subst CExpr (lemma1 ρ T T′ R))
+          ( Elift-l-[]≡Eext _ _ T′ T τ* σ e) ⟩
+    subst CExpr (lemma1 ρ T T′ R)
+      (subst CExpr (sym (σ↑T[T′]≡TextₛσT′T τ* T′ T))
+       (Esub (Textₛ τ* T′) (Eextₛ-l τ* σ) e))
+  ≡⟨  subst-subst {P = CExpr} (sym (σ↑T[T′]≡TextₛσT′T τ* T′ T)) {(lemma1 ρ T T′ R)} {(Esub (Textₛ τ* T′) (Eextₛ-l τ* σ) e)}  ⟩
+    subst CExpr
+      (trans (sym (σ↑T[T′]≡TextₛσT′T τ* T′ T)) (lemma1 ρ T T′ R))
+      (Esub (Textₛ τ* T′) (Eextₛ-l τ* σ) e)
+  ≡⟨ subst-irrelevant {F = CExpr}
+                        (trans (sym (σ↑T[T′]≡TextₛσT′T τ* T′ T)) (lemma1 ρ T T′ R))
+                        (cong (λ τ* → Tsub τ* T) (sym (subst←RE-ext-ext ρ T′ R)))
+                        (Esub (Textₛ τ* T′) (Eextₛ-l τ* σ) e) ⟩
     subst CExpr (cong (λ τ* → Tsub τ* T) (sym (subst←RE-ext-ext ρ T′ R)))
       (Esub (Textₛ τ* T′) (Eextₛ-l τ* σ) e)   -- : Expr [] ∅ (Tsub (Textₛ τ* T′) T)
   ≡⟨ cong (λ σ → subst CExpr
