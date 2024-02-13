@@ -275,16 +275,6 @@ Eliftₛ-lEidₛ≡Eidₛ{Δ = Δ} {Γ = Γ} {l = l} l′ .(Twk _) (tskip {T = T
     sub₉ Eidₛ l′ (Twk T) (tskip x)
   ∎
 
-{-
-    subst (λ Γ₁ → Expr _ Γ₁ (Tsub Tidₛ T))
-      (cong (_◁ _) (sym (TidₛT≡T T)))
-      (subst (Expr _ _) (sym (TidₛT≡T T)) (` here))
-  ≡⟨⟩
-    subst (λ Γ → Expr _ Γ (Tsub Tidₛ T)) (cong (_◁ _) (sym (TidₛT≡T T))) (Eidₛ l T here)
-  ≡⟨ {!!} ⟩
-
--}
-
 -- identity renaming
 
 -- probably not needed
