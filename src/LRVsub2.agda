@@ -292,7 +292,7 @@ LRVsub `ℕ ρ τ* v z =
          (step-≡ (⟦ `ℕ ⟧ (subst-to-env* τ* (subst-to-env* (subst←RE ρ) [])))
           (⟦ `ℕ ⟧ (subst-to-env* (subst←RE (Tsub-act τ* ρ)) []) ∎)
           (congωl ⟦ `ℕ ⟧ (subst-to-env*-comp τ* (subst←RE ρ) [])))
-         (subst-preserves τ* `ℕ)))
+         (subst-preserves{η₂ = subst-to-env* (subst←RE ρ) []} τ* `ℕ)))
        z)
   ∎
 
