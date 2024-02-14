@@ -29,6 +29,7 @@ open import ExprSubstitution
 open import ExprSubstProperties
 open import Logical2
 open import LRVren2
+open import LRVsub2
 
 ----------------------------------------------------------------------
 
@@ -180,7 +181,201 @@ fundamental Γ .(T [ T′ ]T) (_∙_ {l = l}{T = T} e  T′) ρ χ γ lrg
     ≡⟨ subst-elim′′′′ (Expr [] ∅) Value _⇓_ (Esub σ* σ e ∙ Tsub σ* T′) v₂ eq₁ ⟩
       subst (Expr [] ∅) eq₁ (Esub σ* σ e ∙ Tsub σ* T′) ⇓ subst Value eq₁ v₂ 
     ∎) e•T⇓v ,
-  {!lrv₂!}
+  let lrv-sub = LRVsub T (REext ρ
+                           (Tsub σ* T′ ,
+                            subst
+                            (λ ⟦T⟧ → Value (Tsub σ* T′) → ⟦T⟧ → Set l)
+                            (sym (subst-preserves σ* T′)) (𝓥⟦ T′ ⟧ ρ)))
+                          {!Tidₛ!}
+                          ((subst Value
+                              (trans
+                               (trans
+                                (assoc-sub-sub T (Tliftₛ σ* l)
+                                 (Textₛ Tidₛ (Tsub σ* T′)))
+                                (trans
+                                 (cong (λ σ₁ → Tsub σ₁ T)
+                                  (sym
+                                   (fun-ext
+                                    (λ x →
+                                       fun-ext
+                                       ((λ { _ here → refl
+                                           ; _ (there x)
+                                               → begin
+                                                 step-≡ (proj₁ (ρ _ x))
+                                                 (step-≡ (Tsub Tidₛ (proj₁ (ρ _ x)))
+                                                  (Tsub (Textₛ Tidₛ (Tsub σ* T′))
+                                                   (Twk (proj₁ (ρ _ x)))
+                                                   ∎)
+                                                  (sym
+                                                   (assoc-sub-ren (proj₁ (ρ _ x)) (Twkᵣ Tidᵣ)
+                                                    (Textₛ Tidₛ (Tsub σ* T′)))))
+                                                 (sym (TidₛT≡T (proj₁ (ρ _ x))))
+                                           })
+                                        x)))))
+                                 refl))
+                               (trans
+                                (cong (λ G → Tsub G T)
+                                 (sym
+                                  (fun-ext
+                                   (λ x →
+                                      fun-ext
+                                      (subst←RE-ext ρ (Tsub σ* T′)
+                                       (subst
+                                        (λ ⟦T⟧ → Value (Tsub σ* T′) → ⟦T⟧ → Set l)
+                                        (sym (subst-preserves σ* T′)) (𝓥⟦ T′ ⟧ ρ))
+                                       x)))))
+                                refl))
+                              v₂))
+                          (E⟦ e ⟧ η γ (⟦ Tsub σ* T′ ⟧ []))
+  in
+  let eq-sub =
+        begin
+          𝓥⟦ T ⟧
+            (REext ρ
+             (Tsub σ* T′ ,
+              subst (λ ⟦T⟧ → Value (Tsub σ* T′) → ⟦T⟧ → Set l) (sym (subst-preserves σ* T′)) (𝓥⟦ T′ ⟧ ρ)))
+            (subst Value
+             (trans
+              (trans
+               (assoc-sub-sub T (Tliftₛ σ* l)
+                (Textₛ Tidₛ (Tsub σ* T′)))
+               (trans
+                (cong (λ σ₁ → Tsub σ₁ T)
+                 (sym
+                  (fun-ext
+                   (λ x →
+                      fun-ext
+                      ((λ { _ here → refl
+                          ; _ (there x)
+                              → begin
+                                step-≡ (proj₁ (ρ _ x))
+                                (step-≡ (Tsub Tidₛ (proj₁ (ρ _ x)))
+                                 (Tsub (Textₛ Tidₛ (Tsub σ* T′))
+                                  (Twk (proj₁ (ρ _ x)))
+                                  ∎)
+                                 (sym
+                                  (assoc-sub-ren (proj₁ (ρ _ x)) (Twkᵣ Tidᵣ)
+                                   (Textₛ Tidₛ (Tsub σ* T′)))))
+                                (sym (TidₛT≡T (proj₁ (ρ _ x))))
+                          })
+                       x)))))
+                refl))
+              (trans
+               (cong (λ G → Tsub G T)
+                (sym
+                 (fun-ext
+                  (λ x →
+                     fun-ext
+                     (subst←RE-ext ρ (Tsub σ* T′)
+                      (subst
+                       (λ ⟦T⟧ → Value (Tsub σ* T′) → ⟦T⟧ → Set l)
+                       (sym (subst-preserves σ* T′)) (𝓥⟦ T′ ⟧ ρ))
+                      x)))))
+               refl))
+             v₂)
+            (E⟦ e ⟧ η γ
+             (⟦ Tsub σ* T′ ⟧ []))
+        ≡⟨ lrv-sub ⟩
+          𝓥⟦ Tsub (λ l₂ z → ` _) T ⟧
+            (REext ρ
+             (Tsub σ* T′ ,
+              subst (λ ⟦T⟧ → Value (Tsub σ* T′) → ⟦T⟧ → Set l) (sym (subst-preserves σ* T′)) (𝓥⟦ T′ ⟧ ρ)))
+            (subst Value
+             (sym
+              (assoc-sub-sub T (λ l₂ z → ` _)
+               (subst←RE
+                (REext ρ
+                 (Tsub σ* T′ ,
+                  subst (λ ⟦T⟧ → Value (Tsub σ* T′) → ⟦T⟧ → Set l) (sym (subst-preserves σ* T′)) (𝓥⟦ T′ ⟧ ρ))))))
+             (subst Value
+              (trans
+               (trans
+                (assoc-sub-sub T (Tliftₛ σ* l) (Textₛ Tidₛ (Tsub σ* T′)))
+                (trans
+                 (cong (λ σ₁ → Tsub σ₁ T)
+                  (sym
+                   (fun-ext
+                    (λ x →
+                       fun-ext
+                       ((λ { _ here → refl
+                           ; _ (there x)
+                               → begin
+                                 step-≡ (proj₁ (ρ _ x))
+                                 (step-≡ (Tsub Tidₛ (proj₁ (ρ _ x)))
+                                  (Tsub (Textₛ Tidₛ (Tsub (λ l₂ x₁ → proj₁ (ρ l₂ x₁)) T′))
+                                   (Twk (proj₁ (ρ _ x)))
+                                   ∎)
+                                  (sym
+                                   (assoc-sub-ren (proj₁ (ρ _ x)) (Twkᵣ Tidᵣ)
+                                    (Textₛ Tidₛ (Tsub (λ l₂ x₁ → proj₁ (ρ l₂ x₁)) T′)))))
+                                 (sym (TidₛT≡T (proj₁ (ρ _ x))))
+                           })
+                        x)))))
+                 refl))
+               (trans
+                (cong (λ G → Tsub G T)
+                 (sym
+                  (fun-ext
+                   (λ x →
+                      fun-ext
+                      (subst←RE-ext ρ (Tsub σ* T′)
+                       (subst (λ ⟦T⟧ → Value (Tsub σ* T′) → ⟦T⟧ → Set l)
+                        (sym (subst-preserves σ* T′)) (𝓥⟦ T′ ⟧ ρ))
+                       x)))))
+                refl))
+              v₂))
+            (subst id
+             (sym
+              (step-≡
+               (⟦ Tsub (λ l₂ z → ` _) T ⟧
+                (subst-to-env*
+                 (subst←RE
+                  (REext ρ
+                   (Tsub σ* T′ ,
+                    subst (λ ⟦T⟧ → Value (Tsub σ* T′) → ⟦T⟧ → Set l)
+                    (sym (subst-preserves σ* T′)) (𝓥⟦ T′ ⟧ ρ))))
+                 []))
+               (step-≡
+                (⟦ T ⟧
+                 (subst-to-env* (λ l₂ z → ` _)
+                  (subst-to-env*
+                   (subst←RE
+                    (REext ρ
+                     (Tsub σ* T′ ,
+                      subst (λ ⟦T⟧ → Value (Tsub σ* T′) → ⟦T⟧ → Set l)
+                      (sym (subst-preserves σ* T′)) (𝓥⟦ T′ ⟧ ρ))))
+                   [])))
+                (⟦ T ⟧
+                 (subst-to-env*
+                  (subst←RE
+                   (Tsub-act (λ l₂ z → ` _)
+                    (REext ρ
+                     (Tsub σ* T′ ,
+                      subst (λ ⟦T⟧ → Value (Tsub σ* T′) → ⟦T⟧ → Set l)
+                      (sym (subst-preserves σ* T′)) (𝓥⟦ T′ ⟧ ρ)))))
+                  [])
+                 ∎)
+                (congωl ⟦ T ⟧
+                 (subst-to-env*-comp (λ l₂ z → ` _)
+                  (subst←RE
+                   (REext ρ
+                    (Tsub σ* T′ ,
+                     subst (λ ⟦T⟧ → Value (Tsub σ* T′) → ⟦T⟧ → Set l)
+                     (sym (subst-preserves σ* T′)) (𝓥⟦ T′ ⟧ ρ))))
+                  [])))
+               (subst-preserves (λ l₂ z → ` {!!}) T)))
+             (E⟦ e ⟧ η γ (⟦ Tsub σ* T′ ⟧ [])))
+        ≡⟨ {!  subst-preserves!} ⟩
+          𝓥⟦ Tsub (Textₛ Tidₛ T′) T ⟧ ρ (subst Value eq₁ v₂)
+            (subst id
+             (sym
+              (trans (subst-preserves (Textₛ Tidₛ T′) T)
+               (congωl
+                (λ H → ⟦ T ⟧ (⟦ T′ ⟧ η ∷ H))
+                (subst-to-env*-build (λ _ x → x) η η (λ x → refl)))))
+             (E⟦ e ⟧ (subst-to-env* σ* []) γ (⟦ T′ ⟧ (subst-to-env* σ* []))))
+        ∎ in 
+  subst id eq-sub lrv₂
 
 
 
