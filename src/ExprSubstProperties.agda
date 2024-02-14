@@ -669,11 +669,31 @@ TSub-id-left {Δ₁} σ* = fun-ext₂ λ x y → refl
 -- (Esub Tidₛ Eidₛ (Eidₛ l T x))
 
 wklift~id : {e : Expr Δ Γ (Tsub Tidₛ T′)} → (Ewkᵣ Tidᵣ Eidᵣ >>RS sub0 {T₁ = T′} e) ~ (Eidₛ >>SS Eidₛ)
-wklift~id {e = e} l T′ x = begin 
-    subst (Expr _ _) (assoc-sub-ren T′ Tidᵣ Tidₛ) 
-      (((Eidₛ l (Tren Tidᵣ T′)) (subst (λ T → inn T _) (sym (TidᵣT≡T T′)) x)))
-  ≡⟨ cong₂ (subst (Expr _ _)) refl refl ⟩
-    subst (Expr _ _) (assoc-sub-sub T′ Tidₛ Tidₛ) (Esub Tidₛ Eidₛ (Eidₛ l T′ x))
+wklift~id {Δ = Δ}{Γ = Γ}{e = e} l T′ x =
+  let
+    F = Expr Δ Γ
+    E₁ = assoc-sub-ren T′ Tidᵣ Tidₛ
+    E₂ = assoc-sub-sub T′ Tidₛ Tidₛ
+    context₁ = λ {T : Type Δ l} → Esub{Γ₁ = Γ}{Γ₂ = Γ}{T = T} Tidₛ Eidₛ
+    context₂ = λ {T : Type Δ l} → Eidₛ{Γ = Γ} l T
+  in
+  begin
+    subst F E₁ (((Eidₛ l (Tren Tidᵣ T′)) (subst (λ T → inn T _) (sym (TidᵣT≡T T′)) x)))
+  ≡⟨ cong (subst F E₁)
+    (dist-subst' {F = (λ T → inn T _)}{G = F} (Tsub Tidₛ) context₂ (sym (TidᵣT≡T T′)) (cong (Tsub Tidₛ) (sym (TidᵣT≡T T′))) x) ⟩
+    subst F E₁ (subst F (cong (Tsub Tidₛ) (sym (TidᵣT≡T T′))) (Eidₛ l T′ x))
+  ≡⟨ refl ⟩
+    subst F E₁ (subst F (cong (Tsub Tidₛ) (sym (TidᵣT≡T T′))) (subst F (sym (TidₛT≡T T′)) (` x)))
+  ≡⟨  subst*-irrelevant (⟨ F , sym (TidₛT≡T T′) ⟩∷ ⟨ F , cong (Tsub Tidₛ) (sym (TidᵣT≡T T′)) ⟩∷ ⟨ F , E₁ ⟩∷ [])
+                        (⟨ F , sym (TidₛT≡T T′) ⟩∷ ⟨ F , cong (Tsub Tidₛ) (sym (TidₛT≡T T′)) ⟩∷ ⟨ F , E₂ ⟩∷ [] ) (` x) ⟩
+    subst F E₂ (subst F (cong (Tsub Tidₛ) (sym (TidₛT≡T T′))) (subst F (sym (TidₛT≡T T′)) (` x)))
+  ≡⟨ refl ⟩
+    subst F E₂ (subst F (cong (Tsub Tidₛ) (sym (TidₛT≡T T′))) (context₁ (` x)))
+  ≡⟨ cong (subst F E₂)
+     (sym (dist-subst' {F = F}{G = F} (Tsub Tidₛ) context₁ (sym (TidₛT≡T T′)) (cong (Tsub Tidₛ) (sym (TidₛT≡T T′))) (` x))) ⟩
+    subst F E₂ (context₁ (subst F (sym (TidₛT≡T T′)) (` x)))
+  ≡⟨ refl ⟩
+    subst F E₂ (Esub Tidₛ Eidₛ (Eidₛ l T′ x))
   ∎
 
 -- σT≡TextₛσTwkT : {T′ : Type Δ₂ l′} (σ : TSub Δ₁ Δ₂) (T : Type Δ₁ l) → Tsub (Textₛ σ T′) (Twk T) ≡ Tsub σ T
@@ -855,7 +875,8 @@ Elift-l-[]≡Eext l l′ T′ T τ* σ e =
       (Esub (Tliftₛ τ* l ∘ₛₛ Textₛ Tidₛ T′)
        (Eliftₛ-l τ* σ >>SS Eextₛ-l Tidₛ Eidₛ) e)
   ≡⟨ cong (subst (Expr [] ∅) (sym (assoc-sub-sub T (Tliftₛ τ* l) (Textₛ Tidₛ T′))))
-          (Esub~~ (Tliftₛ∘Textₛ l τ* T′) {!!} {!!} (EliftₛEextₛ~ _ _ T′ T τ* σ) e) ⟩
+          (Esub~~ (Tliftₛ∘Textₛ l τ* T′) (Eliftₛ-l τ* σ >>SS Eextₛ-l Tidₛ Eidₛ) (Eextₛ-l τ* σ) (EliftₛEextₛ~ _ _ T′ T τ* σ) e)
+   ⟩
     subst (Expr [] ∅)
       (sym (assoc-sub-sub T (Tliftₛ τ* l) (Textₛ Tidₛ T′)))
       (subst (Expr [] ∅)
@@ -877,14 +898,6 @@ Elift-l-[]≡Eext l l′ T′ T τ* σ e =
     subst (Expr [] ∅) (sym (σ↑T[T′]≡TextₛσT′T τ* T′ T))
       (Esub (Textₛ τ* T′) (Eextₛ-l τ* σ) e)
   ∎
-
-  -- ≡⟨  {! !} ⟩
-  --   subst (Expr [] ∅) (sym (σ↑T[T′]≡TextₛσT′T τ* T′ T))
-  --     (Esub (Tliftₛ τ* l ∘ₛₛ Textₛ Tidₛ T′) (subst (λ ρ → ESub ρ _ ∅) (sym (Tliftₛ∘Textₛ _ τ* T′)) (Eextₛ-l τ* σ)) {!e!})
-  -- ≡⟨ cong (subst (Expr [] ∅) (sym (σ↑T[T′]≡TextₛσT′T τ* T′ T))) (cong (λ K → K e) (dcong₂ Esub (Tliftₛ∘Textₛ _ τ* T′) refl)) ⟩
-  --   subst (Expr [] ∅) (sym (σ↑T[T′]≡TextₛσT′T τ* T′ T))
-  --     (Esub (Textₛ τ* T′) (Eextₛ-l τ* σ) e)
-  -- ∎
 
 -- let eqσ : Twkᵣ Tidᵣ ∘ᵣₛ Textₛ Tidₛ T′ ≡ Tidσ
 equal-Esub-wk>>lift : ∀ {Γ : TEnv []} (T′ : Type [] l)
