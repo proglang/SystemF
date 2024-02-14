@@ -172,6 +172,31 @@ subst-swap :
   → x ≡ subst F (sym eq) y
 subst-swap refl x y refl = refl
 
+subst-swap′ :
+  ∀ {ℓ₁}{ℓ₂} {A : Set ℓ₁}
+    {F : (a : A) → Set ℓ₂}
+    {a₁ a₂ : A}
+    (eq : a₁ ≡ a₂)
+    (x : F a₁)
+    (y : F a₂)
+  → subst F (sym eq) y ≡ x
+  → y ≡ subst F eq x
+subst-swap′ refl x y refl = refl
+
+subst₂-swap′ :
+  ∀ {ℓ₁}{ℓ₂}{ℓ₃}
+    {A : Set ℓ₁}{B : Set ℓ₂}
+    {F : (a : A) (b : B) → Set ℓ₃}
+    {a₁ a₂ : A}
+    {b₁ b₂ : B}
+    (eq₁ : a₁ ≡ a₂)
+    (eq₂ : b₁ ≡ b₂)
+    (x : F a₁ b₁)
+    (y : F a₂ b₂)
+  → y ≡ subst₂ F eq₁ eq₂ x
+  → subst₂ F (sym eq₁) (sym eq₂) y ≡ x
+subst₂-swap′ refl refl x y refl = refl
+
 subst-swap-eq :
   ∀ {ℓ₁}{ℓ₂} {A : Set ℓ₁}
     {F : (a : A) → Set ℓ₂}
@@ -311,20 +336,20 @@ sym-sym refl = refl
 -- Let's try to build a general subst-irrelevant for multiple substs
 
 module SubstIrrelevantAttempt₁ where
-  data SubstArg : Set → Set → Set₁ where
-    []  : ∀ {A : Set} →
+  data SubstArg : ∀ {ℓ₁}{ℓ₂} → Set ℓ₁ → Set ℓ₂ → Setω where
+    []  : ∀ {ℓ}{A : Set ℓ} →
       SubstArg A A
-    ⟨_,_⟩∷_ : ∀ {A C : Set} {a₁ a₂ : A} →
-      (F : A → Set) →
+    ⟨_,_⟩∷_ : ∀ {ℓ₁}{ℓ₂}{ℓ₃}{A : Set ℓ₁}{C : Set ℓ₂} {a₁ a₂ : A} →
+      (F : A → Set ℓ₃) →
       (eq : a₁ ≡ a₂) →
       SubstArg (F a₂) C →
       SubstArg (F a₁) C 
 
-  subst* : ∀ {A B : Set} (S : SubstArg A B) → A → B
+  subst* : ∀ {ℓ₁}{ℓ₂} {A : Set ℓ₁}{B : Set ℓ₂} (S : SubstArg A B) → A → B
   subst* []              x = x
   subst* (⟨ F , eq ⟩∷ S) x = subst* S (subst F eq x)
 
-  subst*-irrelevant : ∀ {A B : Set} (S₁ S₂ : SubstArg A B) (x : A) →
+  subst*-irrelevant : ∀ {ℓ₁}{ℓ₂} {A : Set ℓ₁}{B : Set ℓ₂} (S₁ S₂ : SubstArg A B) (x : A) →
     subst* S₁ x ≡ subst* S₂ x
   subst*-irrelevant []                 []                 x = refl
   subst*-irrelevant []                 (⟨ F , refl ⟩∷ S₂) x = subst*-irrelevant [] S₂ x
