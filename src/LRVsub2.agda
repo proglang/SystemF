@@ -98,6 +98,16 @@ Tsub-act σ* ρ = λ l x →
   let T₂ = σ* l x in
   Tsub ρ* T₂ , subst (λ ⟦x⟧ → (Value (Tsub ρ* T₂) → ⟦x⟧ → Set l)) (sym (subst-preserves (subst←RE ρ) T₂)) (𝓥⟦ T₂ ⟧ ρ)
 
+--
+subst-Tsub-act : (ρ : RelEnv Δ₂) (τ* : TSub Δ₁ Δ₂) → subst←RE (Tsub-act τ* ρ) ≡ (τ* ∘ₛₛ subst←RE ρ)
+subst-Tsub-act ρ τ* = fun-ext₂ (helper ρ τ*)
+  where
+  helper : ∀ (ρ : RelEnv Δ₂) (τ* : TSub Δ₁ Δ₂) (l : Level) (x : l ∈ Δ₁)
+    → subst←RE (Tsub-act τ* ρ) l x ≡ (τ* ∘ₛₛ subst←RE ρ) l x
+  helper ρ τ* l here = refl
+  helper ρ τ* l (there x) = refl
+
+--
 Tsub-act-REext-ext : (ρ : RelEnv Δ₂) (τ* : TSub Δ₁ Δ₂) (T′ : Type [] l) (R : REL T′)
   → ∀ l₂ x₂ → (REext (Tsub-act τ* ρ) (T′ , R)) l₂ x₂ ≡ Tsub-act (Tliftₛ τ* l) (REext ρ (T′ , R)) l₂ x₂
 Tsub-act-REext-ext ρ τ* T′ R l₂ here = refl
@@ -616,7 +626,9 @@ LRVsub (T₁ ⇒ T₂) ρ τ* v z =
                       ⇓ v₁
                       ∧ 𝓥⟦ T₂ ⟧ (Tsub-act τ* ρ) v₁ (z z₁)))
                 (trans (subst-preserves {η₂ = η} τ* T₁)
-                       {!!}) ⟩
+                       (sym (congωl (⟦ T₁ ⟧)
+                            (transω (conglω (λ σ → subst-to-env* σ []) (subst-Tsub-act ρ τ*))
+                                    (symω (subst-to-env*-comp τ* ρ* [])))))) ⟩
              ((z₁ : ⟦ Tsub τ* T₁ ⟧ η) → 𝓥⟦ T₁ ⟧ (Tsub-act τ* ρ)
                                           (subst id
                                            (cong Value
