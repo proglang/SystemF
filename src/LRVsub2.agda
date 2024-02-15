@@ -1007,38 +1007,132 @@ LRVsub (T₁ ⇒ T₂) ρ τ* v z =
                         v₁
                     ≡˘⟨ cong (_ ⇓_) (subst-∘ {P = id} {f = Value}
                                               (sym (trans (sym (assoc-sub-sub T₂ τ* ρ*)) (Tsub ρ* (Tsub τ* T₂) ∎))) {v₁}) ⟩
-                      subst (Expr [] ∅) (TidₛT≡T (Tsub (subst←RE (Tsub-act τ* ρ)) T₂))
+                      subst CExpr (TidₛT≡T (Tsub (subst←RE (Tsub-act τ* ρ)) T₂))
                         (Esub Tidₛ
                          (Eextₛ Tidₛ Eidₛ
-                          (subst (Expr [] ∅)
+                          (subst CExpr
                            (sym (TidₛT≡T (Tsub (subst←RE (Tsub-act τ* ρ)) T₁)))
                            (exp
                             (subst id
                              (cong Value
                               (sym
-                               (step-≡ (Tsub (subst←RE (Tsub-act τ* ρ)) T₁)
-                                (step-≡˘ (Tsub (τ* ∘ₛₛ ρ*) T₁) (Tsub ρ* (Tsub τ* T₁) ∎)
-                                 (assoc-sub-sub T₁ τ* ρ*))
-                                refl)))
+                               (trans (sym (assoc-sub-sub T₁ τ* ρ*)) refl)))
                              w))))
                          (subst id
                           (sym
                            (cong₂ (λ T₃ → Expr [] (T₃ ◁ ∅))
-                            (step-≡ (Tsub (subst←RE (Tsub-act τ* ρ)) T₁)
-                             (step-≡˘ (Tsub (τ* ∘ₛₛ ρ*) T₁) (Tsub ρ* (Tsub τ* T₁) ∎)
-                              (assoc-sub-sub T₁ τ* ρ*))
-                             refl)
-                            (step-≡ (Tsub (subst←RE (Tsub-act τ* ρ)) T₂)
-                             (step-≡˘ (Tsub (τ* ∘ₛₛ ρ*) T₂) (Tsub ρ* (Tsub τ* T₂) ∎)
-                              (assoc-sub-sub T₂ τ* ρ*))
-                             refl)))
+                            (trans (sym (assoc-sub-sub T₁ τ* ρ*)) refl)
+                            (trans (sym (assoc-sub-sub T₂ τ* ρ*)) refl)))
                           e))
                         ⇓
-                        subst Value
-                        (sym (trans (sym (assoc-sub-sub T₂ τ* ρ*)) (Tsub ρ* (Tsub τ* T₂) ∎)))
-                        v₁
-                    ≡⟨ {!!} ⟩
-                      {!!}
+                        subst Value (sym (trans (sym (assoc-sub-sub T₂ τ* ρ*)) refl)) v₁
+                    ≡⟨ cong (_ ⇓_) (cong (λ ∎ → subst Value ∎ v₁) (sym-trans (sym (assoc-sub-sub T₂ τ* ρ*)) refl)) ⟩
+                      subst CExpr (TidₛT≡T (Tsub (subst←RE (Tsub-act τ* ρ)) T₂))
+                        (Esub Tidₛ
+                         (Eextₛ Tidₛ Eidₛ
+                          (subst CExpr (sym (TidₛT≡T (Tsub (subst←RE (Tsub-act τ* ρ)) T₁)))
+                           (exp
+                            (subst id
+                             (cong Value (sym (trans (sym (assoc-sub-sub T₁ τ* ρ*)) refl)))
+                             w))))
+                         (subst id
+                          (sym
+                           (cong₂ (λ T₃ → Expr [] (T₃ ◁ ∅))
+                            (trans (sym (assoc-sub-sub T₁ τ* ρ*)) refl)
+                            (trans (sym (assoc-sub-sub T₂ τ* ρ*)) refl)))
+                          e)) ⇓
+                        subst Value (sym (sym (assoc-sub-sub T₂ τ* ρ*))) v₁
+                    ≡⟨ cong (λ H → subst CExpr (TidₛT≡T (Tsub (subst←RE (Tsub-act τ* ρ)) T₂))
+                        (Esub Tidₛ
+                         (Eextₛ Tidₛ Eidₛ
+                          (subst CExpr (sym (TidₛT≡T (Tsub (subst←RE (Tsub-act τ* ρ)) T₁)))
+                           (exp H)))
+                         (subst id
+                          (sym
+                           (cong₂ (λ T₃ → Expr [] (T₃ ◁ ∅))
+                            (trans (sym (assoc-sub-sub T₁ τ* ρ*)) refl)
+                            (trans (sym (assoc-sub-sub T₂ τ* ρ*)) refl)))
+                          e)) ⇓
+                        subst Value (sym (sym (assoc-sub-sub T₂ τ* ρ*))) v₁)
+                        (sym (subst-∘ {P = id} {f = Value} (sym (trans (sym (assoc-sub-sub T₁ τ* ρ*)) refl)) {w} )) ⟩
+                      subst CExpr (TidₛT≡T (Tsub (subst←RE (Tsub-act τ* ρ)) T₂))
+                        (Esub Tidₛ
+                         (Eextₛ Tidₛ Eidₛ
+                          (subst CExpr (sym (TidₛT≡T (Tsub (subst←RE (Tsub-act τ* ρ)) T₁)))
+                           (exp
+                            (subst Value (sym (trans (sym (assoc-sub-sub T₁ τ* ρ*)) refl))
+                             w))))
+                         (subst id
+                          (sym
+                           (cong₂ (λ T₃ → Expr [] (T₃ ◁ ∅))
+                            (trans (sym (assoc-sub-sub T₁ τ* ρ*)) refl)
+                            (trans (sym (assoc-sub-sub T₂ τ* ρ*)) refl)))
+                          e))
+                        ⇓ subst Value (sym (sym (assoc-sub-sub T₂ τ* ρ*))) v₁
+                    ≡⟨ cong (λ H → subst CExpr (TidₛT≡T (Tsub (subst←RE (Tsub-act τ* ρ)) T₂))
+                        (Esub Tidₛ
+                         (Eextₛ Tidₛ Eidₛ
+                          (subst CExpr (sym (TidₛT≡T (Tsub (subst←RE (Tsub-act τ* ρ)) T₁)))
+                           H))
+                         (subst id
+                          (sym
+                           (cong₂ (λ T₃ → Expr [] (T₃ ◁ ∅))
+                            (trans (sym (assoc-sub-sub T₁ τ* ρ*)) refl)
+                            (trans (sym (assoc-sub-sub T₂ τ* ρ*)) refl)))
+                          e)) ⇓
+                        subst Value (sym (sym (assoc-sub-sub T₂ τ* ρ*))) v₁)
+                        ( dist-subst' {F = Value} {G = CExpr}
+                                       id
+                                       exp
+                                       (sym (trans (sym (assoc-sub-sub T₁ τ* ρ*)) refl))
+                                       (sym (trans (sym (assoc-sub-sub T₁ τ* ρ*)) refl))
+                                       w)
+                    ⟩
+                      subst CExpr (TidₛT≡T (Tsub (subst←RE (Tsub-act τ* ρ)) T₂))
+                        (Esub Tidₛ
+                         (Eextₛ Tidₛ Eidₛ
+                          (subst CExpr (sym (TidₛT≡T (Tsub (subst←RE (Tsub-act τ* ρ)) T₁)))
+                           (subst CExpr (sym (trans (sym (assoc-sub-sub T₁ τ* ρ*)) refl))
+                            (exp
+                             w))))
+                         (subst id
+                          (sym
+                           (cong₂ (λ T₃ → Expr [] (T₃ ◁ ∅))
+                            (trans (sym (assoc-sub-sub T₁ τ* ρ*)) refl)
+                            (trans (sym (assoc-sub-sub T₂ τ* ρ*)) refl)))
+                          e)) ⇓
+                        subst Value (sym (sym (assoc-sub-sub T₂ τ* ρ*))) v₁ 
+                    ≡⟨ cong (λ H → subst CExpr (TidₛT≡T (Tsub (subst←RE (Tsub-act τ* ρ)) T₂))
+                        (Esub Tidₛ
+                         (Eextₛ Tidₛ Eidₛ
+                          H)
+                         (subst id
+                          (sym
+                           (cong₂ (λ T₃ → Expr [] (T₃ ◁ ∅))
+                            (trans (sym (assoc-sub-sub T₁ τ* ρ*)) refl)
+                            (trans (sym (assoc-sub-sub T₂ τ* ρ*)) refl)))
+                          e)) ⇓
+                        subst Value (sym (sym (assoc-sub-sub T₂ τ* ρ*))) v₁)
+                        (subst-subst {P = CExpr}
+                                      (sym (trans (sym (assoc-sub-sub T₁ τ* ρ*)) refl))
+                                      {(sym (TidₛT≡T (Tsub (subst←RE (Tsub-act τ* ρ)) T₁)))}
+                                      {exp w}) ⟩
+                      subst CExpr (TidₛT≡T (Tsub (subst←RE (Tsub-act τ* ρ)) T₂))
+                        (Esub Tidₛ
+                         (Eextₛ Tidₛ Eidₛ
+                          (subst CExpr
+                           (trans (sym (trans (sym (assoc-sub-sub T₁ τ* ρ*)) refl))
+                            (sym (TidₛT≡T (Tsub (subst←RE (Tsub-act τ* ρ)) T₁))))
+                           (exp w)))
+                         (subst id
+                          (sym
+                           (cong₂ (λ T₃ → Expr [] (T₃ ◁ ∅))
+                            (trans (sym (assoc-sub-sub T₁ τ* ρ*)) refl)
+                            (trans (sym (assoc-sub-sub T₂ τ* ρ*)) refl)))
+                          e))
+                        ⇓ subst Value (sym (sym (assoc-sub-sub T₂ τ* ρ*))) v₁
+                    ≡⟨ {! !} ⟩
+                      {! !}
                     ≡⟨ {!!} ⟩
                       (e [ exp w ]E) ⇓ v₁
                     ∎)
@@ -1117,7 +1211,58 @@ LRVsub (T₁ ⇒ T₂) ρ τ* v z =
                         []
                         v₁)
                 --------------------------------------------------
-                      {!!}
+                      (begin
+                        subst id
+                          (sym
+                           (step-≡ (⟦ Tsub τ* T₂ ⟧ η)
+                            (step-≡ (⟦ T₂ ⟧ (subst-to-env* τ* η))
+                             (⟦ T₂ ⟧ (subst-to-env* (subst←RE (Tsub-act τ* ρ)) []) ∎)
+                             (congωl ⟦ T₂ ⟧ (subst-to-env*-comp τ* ρ* [])))
+                            (subst-preserves τ* T₂)))
+                          (z
+                           (subst id
+                            (trans (subst-preserves τ* T₁)
+                             (sym
+                              (congωl ⟦ T₁ ⟧
+                               (transω (conglω (λ σ → subst-to-env* σ []) (subst-Tsub-act ρ τ*))
+                                (symω (subst-to-env*-comp τ* ρ* []))))))
+                            z₁))
+                      ≡⟨ dist-subst z
+                           (trans (subst-preserves τ* T₁)
+                             (sym
+                              (congωl ⟦ T₁ ⟧
+                               (transω (conglω (λ σ → subst-to-env* σ []) (subst-Tsub-act ρ τ*))
+                                (symω (subst-to-env*-comp τ* ρ* []))))))
+                                (sym
+                           (step-≡ (⟦ Tsub τ* T₁ ⟧ η → ⟦ Tsub τ* T₂ ⟧ η)
+                            (step-≡ (⟦ T₁ ⟧ (subst-to-env* τ* η) → ⟦ T₂ ⟧ (subst-to-env* τ* η))
+                             ((⟦ T₁ ⟧ (subst-to-env* (subst←RE (Tsub-act τ* ρ)) []) →
+                               ⟦ T₂ ⟧ (subst-to-env* (subst←RE (Tsub-act τ* ρ)) []))
+                              ∎)
+                             (congωl (λ η₁ → ⟦ T₁ ⟧ η₁ → ⟦ T₂ ⟧ η₁)
+                              (subst-to-env*-comp τ* ρ* [])))
+                            (cong₂ (λ A B → A → B) (subst-preserves τ* T₁)
+                             (subst-preserves τ* T₂))))
+                           (sym
+                            (step-≡ (⟦ Tsub τ* T₂ ⟧ η)
+                             (step-≡ (⟦ T₂ ⟧ (subst-to-env* τ* η))
+                              (⟦ T₂ ⟧ (subst-to-env* (subst←RE (Tsub-act τ* ρ)) []) ∎)
+                              (congωl ⟦ T₂ ⟧ (subst-to-env*-comp τ* ρ* [])))
+                             (subst-preserves τ* T₂)))
+                           z₁    ⟩
+                        (subst id
+                          (sym
+                           (step-≡ (⟦ Tsub τ* T₁ ⟧ η → ⟦ Tsub τ* T₂ ⟧ η)
+                            (step-≡ (⟦ T₁ ⟧ (subst-to-env* τ* η) → ⟦ T₂ ⟧ (subst-to-env* τ* η))
+                             ((⟦ T₁ ⟧ (subst-to-env* (subst←RE (Tsub-act τ* ρ)) []) →
+                               ⟦ T₂ ⟧ (subst-to-env* (subst←RE (Tsub-act τ* ρ)) []))
+                              ∎)
+                             (congωl (λ η₁ → ⟦ T₁ ⟧ η₁ → ⟦ T₂ ⟧ η₁)
+                              (subst-to-env*-comp τ* ρ* [])))
+                            (cong₂ (λ A B → A → B) (subst-preserves τ* T₁)
+                             (subst-preserves τ* T₂))))
+                          z) z₁
+                      ∎)
                 --------------------------------------------------
                      ⟩
                       𝓥⟦ Tsub τ* T₂ ⟧ ρ v₁
