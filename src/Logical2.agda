@@ -359,6 +359,15 @@ subst-split-⇓₂ :
   → subst CExpr T≡T′ e ⇓ subst Value T≡T′ v
 subst-split-⇓₂ refl e⇓v = e⇓v
 
+subst-split-eq-⇓₂ :
+  ∀ {T T′ : Type [] l}
+  → {e : CExpr T}
+  → {v : Value T}
+  → (T≡T′ : T ≡ T′)
+  → e ⇓ v
+  ≡ subst CExpr T≡T′ e ⇓ subst Value T≡T′ v
+subst-split-eq-⇓₂ refl = refl
+
 subst-split-[]E :
   ∀ {T₁ T₁′ : Type [] l₁} {T₂ T₂′ : Type [] l₂}
   → (e : Expr [] (T₁ ◁ ∅) T₂) (e′ : CExpr T₁′)
@@ -372,6 +381,14 @@ subst-split-[]E′ :
   → (eq₁ : T₁′ ≡ T₁) (eq₂ : T₂ ≡ T₂′)
   → subst CExpr eq₂ (e [ subst CExpr eq₁ e′ ]E) ≡ (subst₂ (λ T₁ T₂ → Expr [] (T₁ ◁ ∅) T₂) (sym eq₁) eq₂ e [ e′ ]E)
 subst-split-[]E′ e e′ refl refl = refl
+
+subst-split-[]E″ :
+  ∀ {T₁ T₁′ : Type [] l₁} {T₂ T₂′ : Type [] l₂}
+  → (e : Expr [] (T₁ ◁ ∅) T₂) (e′ : CExpr T₁)
+  → (eq₁ : T₁ ≡ T₁′) (eq₂ : T₂ ≡ T₂′)
+  → (subst₂ (λ T₁ T₂ → Expr [] (T₁ ◁ ∅) T₂) eq₁ eq₂ e [ subst CExpr eq₁ e′ ]E)
+  ≡ subst CExpr eq₂ (e [ e′ ]E) 
+subst-split-[]E″ e e′ refl refl = refl
 
 Tdrop-σ≡Twk∘σ : ∀ (σ* : TSub (l ∷ Δ₁) Δ₂) → Tdropₛ σ* ≡ Twkᵣ Tidᵣ ∘ᵣₛ σ*
 Tdrop-σ≡Twk∘σ σ* = fun-ext₂ (λ x y → refl)
