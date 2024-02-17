@@ -1756,7 +1756,94 @@ LRVsub (`∀α l , T) ρ τ* v z =
               (fun-ext (λ v₁ →
               cong₂ _∧_
      --------------------------------------------------
-              {!!}
+              (begin
+                (subst id
+                   (sym
+                    (cong (Expr (l ∷ []) (l ◁* ∅))
+                     (trans (cong (λ σ → Tsub (Tliftₛ σ l) T) (subst-Tsub-act ρ τ*))
+                      (sym (assoc-sub↑-sub↑ T τ* ρ*)))))
+                   e
+                   [ T′ ]ET)
+                  ⇓
+                  subst id
+                  (sym
+                   (cong Value
+                    (cong (_[ T′ ]T)
+                     (trans (cong (λ σ → Tsub (Tliftₛ σ l) T) (subst-Tsub-act ρ τ*))
+                      (sym (assoc-sub↑-sub↑ T τ* ρ*))))))
+                  v₁
+              ≡⟨ cong (_⇓ _) (cong (λ H → subst id H e [ T′ ]ET)
+                (sym-cong {f = (Expr (l ∷ []) (l ◁* ∅))}
+                  (trans (cong (λ σ → Tsub (Tliftₛ σ l) T) (subst-Tsub-act ρ τ*)) (sym (assoc-sub↑-sub↑ T τ* ρ*))))) ⟩
+                (subst id
+                   (cong (Expr (l ∷ []) (l ◁* ∅))
+                    (sym
+                     (trans (cong (λ σ → Tsub (Tliftₛ σ l) T) (subst-Tsub-act ρ τ*))
+                      (sym (assoc-sub↑-sub↑ T τ* ρ*)))))
+                   e
+                   [ T′ ]ET)
+                  ⇓
+                  subst id
+                  (sym
+                   (cong Value
+                    (cong (_[ T′ ]T)
+                     (trans (cong (λ σ → Tsub (Tliftₛ σ l) T) (subst-Tsub-act ρ τ*))
+                      (sym (assoc-sub↑-sub↑ T τ* ρ*))))))
+                  v₁
+              ≡⟨ cong (_⇓ subst id
+                  (sym
+                   (cong Value
+                    (cong (_[ T′ ]T)
+                     (trans (cong (λ σ → Tsub (Tliftₛ σ l) T) (subst-Tsub-act ρ τ*))
+                      (sym (assoc-sub↑-sub↑ T τ* ρ*))))))
+                  v₁) (sym (cong (_[ T′ ]ET)
+                 (subst-∘ {P = id} {f = (Expr (l ∷ []) (l ◁* ∅))}
+                                             (sym (trans (cong (λ σ → Tsub (Tliftₛ σ l) T) (subst-Tsub-act ρ τ*))
+                      (sym (assoc-sub↑-sub↑ T τ* ρ*))))))) ⟩
+                (subst (Expr (l ∷ []) (l ◁* ∅))
+                   (sym
+                    (trans (cong (λ σ → Tsub (Tliftₛ σ l) T) (subst-Tsub-act ρ τ*))
+                     (sym (assoc-sub↑-sub↑ T τ* ρ*))))
+                   e
+                   [ T′ ]ET)
+                  ⇓
+                  subst id
+                  (sym
+                   (cong Value
+                    (cong (_[ T′ ]T)
+                     (trans (cong (λ σ → Tsub (Tliftₛ σ l) T) (subst-Tsub-act ρ τ*))
+                      (sym (assoc-sub↑-sub↑ T τ* ρ*))))))
+                  v₁
+              ≡⟨ cong (_⇓ _) (dist-subst' {F = Expr (l ∷ []) (l ◁* ∅)}{G = (CExpr ∘ (_[ T′ ]T))} id (_[ T′ ]ET)
+                                          (sym
+                    (trans (cong (λ σ → Tsub (Tliftₛ σ l) T) (subst-Tsub-act ρ τ*))
+                     (sym (assoc-sub↑-sub↑ T τ* ρ*))))
+                     (assoc-sub↑-sub↑ T τ* ρ*)
+                     e) ⟩
+                subst (CExpr ∘ (_[ T′ ]T)) (assoc-sub↑-sub↑ T τ* ρ*) (e [ T′ ]ET)
+                  ⇓
+                  subst id
+                  (sym
+                   (cong Value
+                    (cong (_[ T′ ]T)
+                     (trans (cong (λ σ → Tsub (Tliftₛ σ l) T) (subst-Tsub-act ρ τ*))
+                      (sym (assoc-sub↑-sub↑ T τ* ρ*))))))
+                  v₁
+              ≡⟨ cong₂ _⇓_
+                (subst-∘ {P = CExpr}{f = (_[ T′ ]T)} (assoc-sub↑-sub↑ T τ* ρ*))
+                (subst*-irrelevant (⟨ id , (sym
+                   (cong Value
+                    (cong (_[ T′ ]T)
+                     (trans (cong (λ σ → Tsub (Tliftₛ σ l) T) (subst-Tsub-act ρ τ*))
+                      (sym (assoc-sub↑-sub↑ T τ* ρ*)))))) ⟩∷ [] )
+                                    (⟨ Value , (cong (_[ T′ ]T) (assoc-sub↑-sub↑ T τ* ρ*)) ⟩∷ [] ) v₁)
+               ⟩
+                subst CExpr (cong (_[ T′ ]T) (assoc-sub↑-sub↑ T τ* ρ*))
+                  (e [ T′ ]ET)
+                  ⇓ subst Value (cong (_[ T′ ]T) (assoc-sub↑-sub↑ T τ* ρ*)) v₁
+              ≡⟨ sym (subst-split-eq-⇓₂ (cong (_[ T′ ]T) (assoc-sub↑-sub↑ T τ* ρ*))) ⟩
+                (e [ T′ ]ET) ⇓ v₁
+              ∎)
      --------------------------------------------------
               {!!}
      --------------------------------------------------
