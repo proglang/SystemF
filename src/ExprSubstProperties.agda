@@ -239,7 +239,7 @@ Eliftₛ-lEidₛ≡Eidₛ : ∀ {Γ : TEnv Δ}{l} →
   Eliftₛ-l {Γ₁ = Γ}{l = l} Tidₛ Eidₛ ~ subst (λ τ → ESub τ (l ◁* Γ) (l ◁* Γ)) (sym (TliftₛTidₛ≡Tidₛ Δ l)) (Eidₛ {Γ = l ◁* Γ})
 Eliftₛ-lEidₛ≡Eidₛ{Δ = Δ} {Γ = Γ} {l = l} l′ .(Twk _) (tskip {T = T} x) =
   let
-    F₁ = (Expr (l ∷ Δ) (l ◁* Γ))          ; E₁ = (sym (σ↑-TwkT≡Twk-σT Tidₛ T))    ; sub₁ = subst F₁ E₁
+    F₁ = (Expr (l ∷ Δ) (l ◁* Γ))          ; E₁ = (sym (swap-Tsub-Twk Tidₛ T))    ; sub₁ = subst F₁ E₁
     F₂ = (Expr _ _)                       ; E₂ = (sym (TidₛT≡T T))                ; sub₂ = subst F₂ E₂
     F₃ = (Expr _ _)                       ; E₃ = (cong Twk E₂)                    ; sub₃ = subst F₃ E₃
     F₄ = (Expr (l ∷ Δ) (l ◁* Γ))          ; E₄ = (trans E₃ E₁)                    ; sub₄ = subst F₄ E₄
@@ -540,15 +540,15 @@ _>>RR_ {Δ₃ = Δ₃}{ρ₁* = ρ₁*}{ρ₂* = ρ₂*}{Γ₃ = Γ₃} ρ₁ ρ
 -- Fusion Lemmas ---------------------------------------------------------------
 
 postulate
-  Eassoc-ren-ren : 
-      {ρ₁* : TRen Δ₁ Δ₂}{ρ₂* : TRen Δ₂ Δ₃}
-    → {Γ₁ : TEnv Δ₁}{Γ₂ : TEnv Δ₂}{Γ₃ : TEnv Δ₃}
-    → {T : Type Δ₁ l}
-    → (e : Expr Δ₁ Γ₁ T)
-    → (ρ₁ : ERen ρ₁* Γ₁ Γ₂) → (ρ₂ : ERen ρ₂* Γ₂ Γ₃)
-    → let lhs = Eren ρ₂* ρ₂ (Eren ρ₁* ρ₁ e) in
-      let rhs = Eren (ρ₁* ∘ᵣᵣ ρ₂*) (ρ₁ >>RR ρ₂) e in
-      subst (Expr Δ₃ Γ₃) (assoc-ren-ren T ρ₁* ρ₂*) lhs ≡ rhs
+  -- Eassoc-ren-ren : 
+  --     {ρ₁* : TRen Δ₁ Δ₂}{ρ₂* : TRen Δ₂ Δ₃}
+  --   → {Γ₁ : TEnv Δ₁}{Γ₂ : TEnv Δ₂}{Γ₃ : TEnv Δ₃}
+  --   → {T : Type Δ₁ l}
+  --   → (e : Expr Δ₁ Γ₁ T)
+  --   → (ρ₁ : ERen ρ₁* Γ₁ Γ₂) → (ρ₂ : ERen ρ₂* Γ₂ Γ₃)
+  --   → let lhs = Eren ρ₂* ρ₂ (Eren ρ₁* ρ₁ e) in
+  --     let rhs = Eren (ρ₁* ∘ᵣᵣ ρ₂*) (ρ₁ >>RR ρ₂) e in
+  --     subst (Expr Δ₃ Γ₃) (assoc-ren-ren T ρ₁* ρ₂*) lhs ≡ rhs
   Eassoc-ren-sub : 
       {σ* : TSub Δ₁ Δ₂} {ρ* : TRen Δ₂ Δ₃}
     → {Γ₁ : TEnv Δ₁}{Γ₂ : TEnv Δ₂}{Γ₃ : TEnv Δ₃}
@@ -682,10 +682,10 @@ Esub↑-dist-∘ᵣₛ-l {Δ₁} {Δ₂} {Δ₃} {ρ*} {σ*} {Γ₁} {Γ₂} {Γ
       let
         F₂ = (Expr (l ∷ Δ₃) (l ◁* Γ₃)) ; E₂ = (assoc-sub-ren T (Tliftᵣ ρ* l) (Tliftₛ σ* l))
                                        ; sub₂ = subst F₂ E₂
-        F₃ = (λ x → x) ; E₃ = (cong (λ T → inn T (l ◁* Γ₂)) (sym (↑ρ-TwkT≡Twk-ρT _ ρ*)))
+        F₃ = (λ x → x) ; E₃ = (cong (λ T → inn T (l ◁* Γ₂)) (sym (swap-Tren-Twk ρ* _)))
                        ; sub₃ = subst F₃ E₃
-        F₅ = (Expr (l ∷ Δ₃) (l ◁* Γ₃)) ; E₅ = sym (σ↑-TwkT≡Twk-σT (ρ* ∘ᵣₛ σ*) T′) ; sub₅ = subst F₅ E₅
-        F₇ = (Expr _ _) ; E₇ = (sym (σ↑-TwkT≡Twk-σT σ* (Tren ρ* T′))) ; sub₇ = subst F₇ E₇
+        F₅ = (Expr (l ∷ Δ₃) (l ◁* Γ₃)) ; E₅ = sym (swap-Tsub-Twk (ρ* ∘ᵣₛ σ*) T′) ; sub₅ = subst F₅ E₅
+        F₇ = (Expr _ _) ; E₇ = (sym (swap-Tsub-Twk σ* (Tren ρ* T′))) ; sub₇ = subst F₇ E₇
         F₈ = (Expr Δ₃ Γ₃) ; E₈ = (assoc-sub-ren T′ ρ* σ*) ; sub₈ = subst F₈ E₈
       in
       R.begin
@@ -696,7 +696,7 @@ Esub↑-dist-∘ᵣₛ-l {Δ₁} {Δ₂} {Δ₃} {ρ*} {σ*} {Γ₁} {Γ₂} {Γ
         sub₂ (Eliftₛ-l σ* σ _ _ (sub₃ (tskip {T = Tren ρ* T′} (ρ _ _ x))))
       R.≅⟨ H.≡-subst-removable F₂ E₂ _ ⟩
         Eliftₛ-l σ* σ l′ (Tren (Tliftᵣ ρ* l) (Twk T′)) (sub₃ (tskip {T = Tren ρ* T′} (ρ _ _ x)))
-      R.≅⟨ H.cong₂ (Eliftₛ-l σ* σ l′) (H.≡-to-≅ (↑ρ-TwkT≡Twk-ρT _ ρ*)) (H.≡-subst-removable F₃ E₃ _) ⟩
+      R.≅⟨ H.cong₂ (Eliftₛ-l σ* σ l′) (H.≡-to-≅ (swap-Tren-Twk ρ* _)) (H.≡-subst-removable F₃ E₃ _) ⟩
         Eliftₛ-l σ* σ l′ (Twk (Tren ρ* T′)) (tskip {T = Tren ρ* T′} (ρ _ _ x))
       R.≅⟨ refl ⟩
         sub₇ (Ewk-l (σ _ _ (ρ _ _ x)))
@@ -1007,8 +1007,8 @@ EliftₛEextₛ~ :  {Γ : TEnv Δ} (l l′ : Level) (T′ : Type [] l) (T : Type
 EliftₛEextₛ~ l l′ T′ T τ* σ l₁ .(Twk _) (tskip {T = T₁} x) =
   let
     F₁ = (Expr _ _)  ; E₁ = (assoc-sub-sub (Twk T₁) (Tliftₛ τ* l) (Textₛ Tidₛ T′))        ; sub₁ = subst F₁ E₁
-    F₂ = (Expr _ _)  ; E₂ = (sym (σ↑-TwkT≡Twk-σT τ* T₁))                                  ; sub₂ = subst F₂ E₂
-    F₃ = (Expr [] ∅) ; E₃ = (cong (Tsub (Textₛ Tidₛ T′)) (sym (σ↑-TwkT≡Twk-σT τ* T₁)))    ; sub₃ = subst F₃ E₃
+    F₂ = (Expr _ _)  ; E₂ = (sym (swap-Tsub-Twk τ* T₁))                                  ; sub₂ = subst F₂ E₂
+    F₃ = (Expr [] ∅) ; E₃ = (cong (Tsub (Textₛ Tidₛ T′)) (sym (swap-Tsub-Twk τ* T₁)))    ; sub₃ = subst F₃ E₃
     F₄ = (Expr [] ∅) ; E₄' = (assoc-sub-ren (Tsub τ* T₁) (Twkᵣ Tidᵣ) (Textₛ Tidₛ T′))     ; E₄ = (sym E₄') ; sub₄ = subst F₄ E₄
     F₅ = (Expr [] ∅) ; E₅ = (cong (λ σ* → Tsub σ* (Twk T₁)) (sym (Tliftₛ∘Textₛ l τ* T′))) ; sub₅ = subst F₅ E₅
     F₆ = (Expr _ _)  ; E₆ = (sym (σT≡TextₛσTwkT τ* T₁))                                   ; sub₆ = subst F₆ E₆
@@ -1131,21 +1131,21 @@ equal-ESub T′ τ* σ l .(Twk _) (tskip {T = T} x) =
       (Esub _ (Eextₛ-l Tidₛ Eidₛ) (Eliftₛ-l τ* σ _ _ (tskip x)))
   ≡⟨ refl ⟩
     subst (Expr _ _) (assoc-sub-sub (Twk T) (Tliftₛ τ* _) (Textₛ Tidₛ T′))
-    (Esub _ (Eextₛ-l Tidₛ Eidₛ) (subst (Expr _ _) (sym (σ↑-TwkT≡Twk-σT τ* T)) (Ewk-l (σ _ _ x))))
+    (Esub _ (Eextₛ-l Tidₛ Eidₛ) (subst (Expr _ _) (sym (swap-Tsub-Twk τ* T)) (Ewk-l (σ _ _ x))))
   ≡⟨ cong (subst (Expr _ _) (assoc-sub-sub (Twk T) (Tliftₛ τ* _) (Textₛ Tidₛ T′)))
           (dist-subst' {F = Expr _ _} {G = Expr [] ∅} (λ T₁ → T₁ [ T′ ]T) (Esub _ (Eextₛ-l Tidₛ Eidₛ))
-                   (sym (σ↑-TwkT≡Twk-σT τ* T))
-                   (cong (Tsub (Textₛ Tidₛ T′)) (sym (σ↑-TwkT≡Twk-σT τ* T)))
+                   (sym (swap-Tsub-Twk τ* T))
+                   (cong (Tsub (Textₛ Tidₛ T′)) (sym (swap-Tsub-Twk τ* T)))
                    (Ewk-l (σ _ _ x))) ⟩
     subst (Expr _ _) (assoc-sub-sub (Twk T) (Tliftₛ τ* _) (Textₛ Tidₛ T′))
-    (subst (Expr [] ∅) (cong (Tsub (Textₛ Tidₛ T′)) (sym (σ↑-TwkT≡Twk-σT τ* T)))
+    (subst (Expr [] ∅) (cong (Tsub (Textₛ Tidₛ T′)) (sym (swap-Tsub-Twk τ* T)))
       (Esub _ (Eextₛ-l Tidₛ Eidₛ) (Ewk-l (σ _ _ x))))
   ≡⟨ cong
        (λ E →
           subst (Expr _ _)
           (assoc-sub-sub (Twk T) (Tliftₛ τ* _) (Textₛ Tidₛ T′))
           (subst (Expr [] ∅)
-           (cong (Tsub (Textₛ Tidₛ T′)) (sym (σ↑-TwkT≡Twk-σT τ* T))) E))
+           (cong (Tsub (Textₛ Tidₛ T′)) (sym (swap-Tsub-Twk τ* T))) E))
        (subst-swap (assoc-sub-ren (Tsub τ* T) (Twkᵣ Tidᵣ) (Textₛ Tidₛ T′))
           (Esub _ (Eextₛ-l Tidₛ Eidₛ) (Ewk-l (σ _ _ x)))
           (Esub (Twkᵣ Tidᵣ ∘ᵣₛ Textₛ Tidₛ T′)
@@ -1155,7 +1155,7 @@ equal-ESub T′ τ* σ l .(Twk _) (tskip {T = T} x) =
     subst (Expr [] ∅)
       (assoc-sub-sub (Twk T) (Tliftₛ τ* _) (Textₛ Tidₛ T′))
       (subst (Expr [] ∅)
-       (cong (Tsub (Textₛ Tidₛ T′)) (sym (σ↑-TwkT≡Twk-σT τ* T)))
+       (cong (Tsub (Textₛ Tidₛ T′)) (sym (swap-Tsub-Twk τ* T)))
        (subst (Expr [] ∅)
         (sym (assoc-sub-ren (Tsub τ* T) (Twkᵣ Tidᵣ) (Textₛ Tidₛ T′)))
         (Esub (Twkᵣ Tidᵣ ∘ᵣₛ Textₛ Tidₛ T′)
@@ -1163,7 +1163,7 @@ equal-ESub T′ τ* σ l .(Twk _) (tskip {T = T} x) =
   ≡⟨ cong (λ E → subst (Expr [] ∅)
       (assoc-sub-sub (Twk T) (Tliftₛ τ* _) (Textₛ Tidₛ T′))
       (subst (Expr [] ∅)
-       (cong (Tsub (Textₛ Tidₛ T′)) (sym (σ↑-TwkT≡Twk-σT τ* T)))
+       (cong (Tsub (Textₛ Tidₛ T′)) (sym (swap-Tsub-Twk τ* T)))
        (subst (Expr [] ∅)
         (sym (assoc-sub-ren (Tsub τ* T) (Twkᵣ Tidᵣ) (Textₛ Tidₛ T′)))
         E)))
@@ -1172,14 +1172,14 @@ equal-ESub T′ τ* σ l .(Twk _) (tskip {T = T} x) =
     subst (Expr [] ∅)
       (assoc-sub-sub (Twk T) (Tliftₛ τ* _) (Textₛ Tidₛ T′))
       (subst (Expr [] ∅)
-       (cong (Tsub (Textₛ Tidₛ T′)) (sym (σ↑-TwkT≡Twk-σT τ* T)))
+       (cong (Tsub (Textₛ Tidₛ T′)) (sym (swap-Tsub-Twk τ* T)))
        (subst (Expr [] ∅)
         (sym (assoc-sub-ren (Tsub τ* T) (Twkᵣ Tidᵣ) (Textₛ Tidₛ T′)))
         (Esub (Twkᵣ Tidᵣ ∘ᵣₛ Textₛ Tidₛ T′) Eidₛ (σ l T x))))
   ≡⟨ cong (λ E → subst (Expr [] ∅)
       (assoc-sub-sub (Twk T) (Tliftₛ τ* _) (Textₛ Tidₛ T′))
       (subst (Expr [] ∅)
-       (cong (Tsub (Textₛ Tidₛ T′)) (sym (σ↑-TwkT≡Twk-σT τ* T)))
+       (cong (Tsub (Textₛ Tidₛ T′)) (sym (swap-Tsub-Twk τ* T)))
        (subst (Expr [] ∅)
         (sym (assoc-sub-ren (Tsub τ* T) (Twkᵣ Tidᵣ) (Textₛ Tidₛ T′)))
         E)))
@@ -1187,47 +1187,47 @@ equal-ESub T′ τ* σ l .(Twk _) (tskip {T = T} x) =
     subst (Expr [] ∅)
       (assoc-sub-sub (Twk T) (Tliftₛ τ* _) (Textₛ Tidₛ T′))
       (subst (Expr [] ∅)
-       (cong (Tsub (Textₛ Tidₛ T′)) (sym (σ↑-TwkT≡Twk-σT τ* T)))
+       (cong (Tsub (Textₛ Tidₛ T′)) (sym (swap-Tsub-Twk τ* T)))
        (subst (Expr [] ∅)
         (sym (assoc-sub-ren (Tsub τ* T) (Twkᵣ Tidᵣ) (Textₛ Tidₛ T′)))
         (subst (Expr [] ∅) (sym (TidₛT≡T (Tsub τ* T))) (σ l T x))))
-  ≡⟨ subst-subst (cong (Tsub (Textₛ Tidₛ T′)) (sym (σ↑-TwkT≡Twk-σT τ* T)))
+  ≡⟨ subst-subst (cong (Tsub (Textₛ Tidₛ T′)) (sym (swap-Tsub-Twk τ* T)))
      {(assoc-sub-sub (Twk T) (Tliftₛ τ* _) (Textₛ Tidₛ T′))}
      {(subst (Expr [] ∅)
         (sym (assoc-sub-ren (Tsub τ* T) (Twkᵣ Tidᵣ) (Textₛ Tidₛ T′)))
         (subst (Expr [] ∅) (sym (TidₛT≡T (Tsub τ* T))) (σ l T x)))} ⟩
     subst (Expr [] ∅)
-      (trans (cong (Tsub (Textₛ Tidₛ T′)) (sym (σ↑-TwkT≡Twk-σT τ* T))) (assoc-sub-sub (Twk T) (Tliftₛ τ* _) (Textₛ Tidₛ T′)))
+      (trans (cong (Tsub (Textₛ Tidₛ T′)) (sym (swap-Tsub-Twk τ* T))) (assoc-sub-sub (Twk T) (Tliftₛ τ* _) (Textₛ Tidₛ T′)))
       (subst (Expr [] ∅)
         (sym (assoc-sub-ren (Tsub τ* T) (Twkᵣ Tidᵣ) (Textₛ Tidₛ T′)))
         (subst (Expr [] ∅) (sym (TidₛT≡T (Tsub τ* T))) (σ l T x)))
   ≡⟨ subst-subst (sym (assoc-sub-ren (Tsub τ* T) (Twkᵣ Tidᵣ) (Textₛ Tidₛ T′)))
-         {(trans (cong (Tsub (Textₛ Tidₛ T′)) (sym (σ↑-TwkT≡Twk-σT τ* T))) (assoc-sub-sub (Twk T) (Tliftₛ τ* _) (Textₛ Tidₛ T′)))}
+         {(trans (cong (Tsub (Textₛ Tidₛ T′)) (sym (swap-Tsub-Twk τ* T))) (assoc-sub-sub (Twk T) (Tliftₛ τ* _) (Textₛ Tidₛ T′)))}
          {(subst (Expr [] ∅) (sym (TidₛT≡T (Tsub τ* T))) (σ l T x))} ⟩
     subst (Expr [] ∅)
       (trans
        (sym (assoc-sub-ren (Tsub τ* T) (Twkᵣ Tidᵣ) (Textₛ Tidₛ T′)))
-       (trans (cong (Tsub (Textₛ Tidₛ T′)) (sym (σ↑-TwkT≡Twk-σT τ* T)))
+       (trans (cong (Tsub (Textₛ Tidₛ T′)) (sym (swap-Tsub-Twk τ* T)))
         (assoc-sub-sub (Twk T) (Tliftₛ τ* _) (Textₛ Tidₛ T′))))
       (subst (Expr [] ∅) (sym (TidₛT≡T (Tsub τ* T))) (σ l T x))
   ≡⟨ subst-subst (sym (TidₛT≡T (Tsub τ* T)))
                   {(trans
        (sym (assoc-sub-ren (Tsub τ* T) (Twkᵣ Tidᵣ) (Textₛ Tidₛ T′)))
-       (trans (cong (Tsub (Textₛ Tidₛ T′)) (sym (σ↑-TwkT≡Twk-σT τ* T)))
+       (trans (cong (Tsub (Textₛ Tidₛ T′)) (sym (swap-Tsub-Twk τ* T)))
         (assoc-sub-sub (Twk T) (Tliftₛ τ* _) (Textₛ Tidₛ T′))))}
                    {(σ l T x)} ⟩
     subst (Expr [] ∅)
       (trans (sym (TidₛT≡T (Tsub τ* T)))
        (trans
         (sym (assoc-sub-ren (Tsub τ* T) (Twkᵣ Tidᵣ) (Textₛ Tidₛ T′)))
-        (trans (cong (Tsub (Textₛ Tidₛ T′)) (sym (σ↑-TwkT≡Twk-σT τ* T)))
+        (trans (cong (Tsub (Textₛ Tidₛ T′)) (sym (swap-Tsub-Twk τ* T)))
          (assoc-sub-sub (Twk T) (Tliftₛ τ* _) (Textₛ Tidₛ T′)))))
       (σ l T x)
   ≡⟨ subst-irrelevant
        (trans (sym (TidₛT≡T (Tsub τ* T)))
        (trans
         (sym (assoc-sub-ren (Tsub τ* T) (Twkᵣ Tidᵣ) (Textₛ Tidₛ T′)))
-        (trans (cong (Tsub (Textₛ Tidₛ T′)) (sym (σ↑-TwkT≡Twk-σT τ* T)))
+        (trans (cong (Tsub (Textₛ Tidₛ T′)) (sym (swap-Tsub-Twk τ* T)))
          (assoc-sub-sub (Twk T) (Tliftₛ τ* _) (Textₛ Tidₛ T′)))))
        (trans (sym (σT≡TextₛσTwkT τ* T))
        (cong (λ σ* → Tsub σ* (Twk T)) (sym (Tliftₛ∘Textₛ _ τ* T′))))
@@ -1283,8 +1283,8 @@ ERen*-lift-l {Γ₂ = Γ₂} {η₁ = η₁} {η₂ = η₂} {l = l₁} {ρ* = �
   let eq = sym (Tren*-preserves-semantics (Tren*-lift ⟦α⟧ Tren*) (Twk T)) in 
   let eq' = sym (Tren*-preserves-semantics (wkᵣ∈Ren* η₁ ⟦α⟧) T) in 
   let eq'' = sym (Tren*-preserves-semantics {ρ* = ρ*} {η₂ = η₂} Tren* T) in
-  let eq₁ = cong (λ T₁ → inn T₁ (l₁ ◁* Γ₂)) (sym (↑ρ-TwkT≡Twk-ρT T ρ*)) in
-  let eq₂ = (cong (λ T → ⟦ T ⟧ (⟦α⟧ ∷ η₂)) (sym (↑ρ-TwkT≡Twk-ρT T ρ*))) in
+  let eq₁ = cong (λ T₁ → inn T₁ (l₁ ◁* Γ₂)) (sym (swap-Tren-Twk ρ* T)) in
+  let eq₂ = (cong (λ T → ⟦ T ⟧ (⟦α⟧ ∷ η₂)) (sym (swap-Tren-Twk ρ* T))) in
   let eq′ = trans (sym eq'') (trans eq' eq) in
   begin 
     extend-tskip γ₂ _ (Tren (Tliftᵣ ρ* l₁) (Twk T)) (subst id eq₁ (tskip (ρ _ T x)))

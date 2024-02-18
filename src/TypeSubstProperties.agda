@@ -86,9 +86,9 @@ mutual
   assoc-ren-ren (`∀α l , T) ρ₁ ρ₂ = cong (`∀α l ,_) (assoc-ren↑-ren↑ T ρ₁ ρ₂)
   assoc-ren-ren `ℕ ρ₁ ρ₂ = refl
 
-↑ρ-TwkT≡Twk-ρT : ∀ (T : Type Δ₁ l′) (ρ : TRen Δ₁ Δ₂) →
+swap-Tren-Twk : ∀ (ρ : TRen Δ₁ Δ₂) (T : Type Δ₁ l′) →
   Tren (Tliftᵣ ρ l) (Twk T) ≡ Twk (Tren ρ T) 
-↑ρ-TwkT≡Twk-ρT {l = l} T ρ = 
+swap-Tren-Twk {l = l} ρ T = 
   begin 
     Tren (Tliftᵣ ρ _) (Tren (Twkᵣ Tidᵣ) T)
   ≡⟨ assoc-ren-ren T (Twkᵣ Tidᵣ) (Tliftᵣ ρ _) ⟩
@@ -101,7 +101,7 @@ ren↑-dist-∘ₛᵣ : ∀ l (σ : TSub Δ₁ Δ₂) (ρ : TRen Δ₂ Δ₃) �
   Tliftₛ (σ ∘ₛᵣ ρ) l ≡ (Tliftₛ σ l ∘ₛᵣ Tliftᵣ ρ _)
 ren↑-dist-∘ₛᵣ l σ ρ = fun-ext₂ λ where 
    _ here → refl
-   _ (there x) → sym (↑ρ-TwkT≡Twk-ρT (σ _ x) ρ)
+   _ (there x) → sym (swap-Tren-Twk ρ (σ _ x))
 
 mutual 
   assoc-ren↑-sub↑ : ∀ (T : Type (l ∷ Δ₁) l′) (σ : TSub Δ₁ Δ₂) (ρ : TRen Δ₂ Δ₃) →
@@ -121,9 +121,9 @@ mutual
   assoc-ren-sub (`∀α l , T) ρ σ = cong (`∀α l ,_) (assoc-ren↑-sub↑ T ρ σ)
   assoc-ren-sub `ℕ ρ σ = refl
 
-σ↑-TwkT≡Twk-σT : ∀ {l} (σ : TSub Δ₁ Δ₂) (T : Type Δ₁ l′) →
+swap-Tsub-Twk : ∀ {l} (σ : TSub Δ₁ Δ₂) (T : Type Δ₁ l′) →
   Tsub (Tliftₛ σ _) (Twk {l = l} T) ≡ Twk (Tsub σ T)
-σ↑-TwkT≡Twk-σT σ T = 
+swap-Tsub-Twk σ T = 
   begin 
     Tsub (Tliftₛ σ _) (Twk T) 
   ≡⟨ assoc-sub-ren T (Twkᵣ Tidᵣ) (Tliftₛ σ _) ⟩
@@ -139,7 +139,7 @@ sub↑-dist-∘ₛₛ l σ₁ σ₂ = fun-ext₂ λ where
   _ here → refl
   l′ (there x) → begin 
         (Tliftₛ (σ₁ ∘ₛₛ σ₂) l) l′ (there x) 
-      ≡⟨ sym (σ↑-TwkT≡Twk-σT {l = l} σ₂ (σ₁ l′ x)) ⟩
+      ≡⟨ sym (swap-Tsub-Twk {l = l} σ₂ (σ₁ l′ x)) ⟩
         (Tliftₛ σ₁ _ ∘ₛₛ Tliftₛ σ₂ _) l′ (there x)
       ∎
 
