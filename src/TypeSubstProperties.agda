@@ -86,9 +86,9 @@ mutual
   assoc-ren-ren (`∀α l , T) ρ₁ ρ₂ = cong (`∀α l ,_) (assoc-ren↑-ren↑ T ρ₁ ρ₂)
   assoc-ren-ren `ℕ ρ₁ ρ₂ = refl
 
-↑ρ-TwkT≡Twk-ρT : ∀ (T : Type Δ₁ l′) (ρ : TRen Δ₁ Δ₂) →
+swap-Tren-Twk : ∀ (ρ : TRen Δ₁ Δ₂) (T : Type Δ₁ l′) →
   Tren (Tliftᵣ ρ l) (Twk T) ≡ Twk (Tren ρ T) 
-↑ρ-TwkT≡Twk-ρT {l = l} T ρ = 
+swap-Tren-Twk {l = l} ρ T = 
   begin 
     Tren (Tliftᵣ ρ _) (Tren (Twkᵣ Tidᵣ) T)
   ≡⟨ assoc-ren-ren T (Twkᵣ Tidᵣ) (Tliftᵣ ρ _) ⟩
@@ -101,7 +101,7 @@ ren↑-dist-∘ₛᵣ : ∀ l (σ : TSub Δ₁ Δ₂) (ρ : TRen Δ₂ Δ₃) �
   Tliftₛ (σ ∘ₛᵣ ρ) l ≡ (Tliftₛ σ l ∘ₛᵣ Tliftᵣ ρ _)
 ren↑-dist-∘ₛᵣ l σ ρ = fun-ext₂ λ where 
    _ here → refl
-   _ (there x) → sym (↑ρ-TwkT≡Twk-ρT (σ _ x) ρ)
+   _ (there x) → sym (swap-Tren-Twk ρ (σ _ x))
 
 mutual 
   assoc-ren↑-sub↑ : ∀ (T : Type (l ∷ Δ₁) l′) (σ : TSub Δ₁ Δ₂) (ρ : TRen Δ₂ Δ₃) →
@@ -121,9 +121,9 @@ mutual
   assoc-ren-sub (`∀α l , T) ρ σ = cong (`∀α l ,_) (assoc-ren↑-sub↑ T ρ σ)
   assoc-ren-sub `ℕ ρ σ = refl
 
-σ↑-TwkT≡Twk-σT : ∀ {l} (σ : TSub Δ₁ Δ₂) (T : Type Δ₁ l′) →
+swap-Tsub-Twk : ∀ {l} (σ : TSub Δ₁ Δ₂) (T : Type Δ₁ l′) →
   Tsub (Tliftₛ σ _) (Twk {l = l} T) ≡ Twk (Tsub σ T)
-σ↑-TwkT≡Twk-σT σ T = 
+swap-Tsub-Twk σ T = 
   begin 
     Tsub (Tliftₛ σ _) (Twk T) 
   ≡⟨ assoc-sub-ren T (Twkᵣ Tidᵣ) (Tliftₛ σ _) ⟩
@@ -139,7 +139,7 @@ sub↑-dist-∘ₛₛ l σ₁ σ₂ = fun-ext₂ λ where
   _ here → refl
   l′ (there x) → begin 
         (Tliftₛ (σ₁ ∘ₛₛ σ₂) l) l′ (there x) 
-      ≡⟨ sym (σ↑-TwkT≡Twk-σT {l = l} σ₂ (σ₁ l′ x)) ⟩
+      ≡⟨ sym (swap-Tsub-Twk {l = l} σ₂ (σ₁ l′ x)) ⟩
         (Tliftₛ σ₁ _ ∘ₛₛ Tliftₛ σ₂ _) l′ (there x)
       ∎
 
@@ -179,9 +179,9 @@ TidᵣT≡T `ℕ = refl
   _ here → refl
   _ (there x) → refl
 
-ρT[T′]≡ρT[ρ↑T′] : ∀ (ρ : TRen Δ₁ Δ₂) (T : Type (l ∷ Δ₁) l′) (T′ : Type Δ₁ l) →
+swap-Tren-[] : ∀ (ρ : TRen Δ₁ Δ₂) (T : Type (l ∷ Δ₁) l′) (T′ : Type Δ₁ l) →
   Tren ρ (T [ T′ ]T) ≡ Tren (Tliftᵣ ρ _) T [ Tren ρ T′ ]T 
-ρT[T′]≡ρT[ρ↑T′] ρ T T′ = begin 
+swap-Tren-[] ρ T T′ = begin 
     Tren ρ (T [ T′ ]T)
   ≡⟨ assoc-ren-sub T (Textₛ Tidₛ T′) ρ ⟩
     Tsub (Textₛ Tidₛ T′ ∘ₛᵣ ρ) T
@@ -215,9 +215,9 @@ TidₛT≡T `ℕ = refl
         Tsub (Textₛ Tidₛ (Tsub σ T)) (Twk (σ _ x))
       ∎
 
-σT[T′]≡σ↑T[σT'] : ∀ (σ : TSub Δ₁ Δ₂) (T : Type (l ∷ Δ₁) l′) (T′ : Type Δ₁ l) →
+swap-Tsub-[] : ∀ (σ : TSub Δ₁ Δ₂) (T : Type (l ∷ Δ₁) l′) (T′ : Type Δ₁ l) →
   Tsub σ (T [ T′ ]T) ≡ (Tsub (Tliftₛ σ _) T) [ Tsub σ T′ ]T  
-σT[T′]≡σ↑T[σT'] σ T T′ = 
+swap-Tsub-[] σ T T′ = 
   begin 
     Tsub σ (T [ T′ ]T) 
   ≡⟨ assoc-sub-sub T (Textₛ Tidₛ T′) σ ⟩
@@ -285,7 +285,7 @@ T[T′]T≡Tidₛ↑T[T′]T T T′ =
     (T [ T′ ]T)
   ≡⟨ sym (TidₛT≡T (T [ T′ ]T)) ⟩
     Tsub Tidₛ (T [ T′ ]T)
-  ≡⟨ σT[T′]≡σ↑T[σT'] Tidₛ T T′ ⟩
+  ≡⟨ swap-Tsub-[] Tidₛ T T′ ⟩
     (Tsub (Tliftₛ Tidₛ _) T [ Tsub Tidₛ T′ ]T)
   ≡⟨ cong (λ T′ → Tsub (Tliftₛ Tidₛ _) T [ T′ ]T) (TidₛT≡T T′) ⟩
     (Tsub (Tliftₛ Tidₛ _) T [ T′ ]T)

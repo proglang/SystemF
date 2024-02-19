@@ -41,7 +41,7 @@ Eliftᵣ ρ* ρ _ _ here = here
 Eliftᵣ ρ* ρ _ _ (there x) = there (ρ _ _ x)
 
 Eliftᵣ-l : (ρ* : TRen Δ₁ Δ₂) → ERen ρ* Γ₁ Γ₂ → ERen (Tliftᵣ ρ* l) (l ◁* Γ₁) (l ◁* Γ₂)
-Eliftᵣ-l {Γ₂ = Γ₂} {l = l} ρ* ρ _ _ (tskip x) = subst id (cong (λ T → inn T (l ◁* Γ₂)) (sym (↑ρ-TwkT≡Twk-ρT _ ρ*))) (tskip (ρ _ _ x))
+Eliftᵣ-l {Γ₂ = Γ₂} {l = l} ρ* ρ _ _ (tskip x) = subst id (cong (λ T → inn T (l ◁* Γ₂)) (sym (swap-Tren-Twk ρ* _))) (tskip (ρ _ _ x))
 
 Eren : (ρ* : TRen Δ₁ Δ₂) → ERen ρ* Γ₁ Γ₂ → Expr Δ₁ Γ₁ T → Expr Δ₂ Γ₂ (Tren ρ* T)
 Eren ρ* ρ (# n) = # n
@@ -50,7 +50,7 @@ Eren ρ* ρ (ƛ e) = ƛ Eren ρ* (Eliftᵣ ρ* ρ) e
 Eren ρ* ρ (e₁ · e₂) = Eren ρ* ρ e₁ · Eren ρ* ρ e₂
 Eren ρ* ρ (Λ l ⇒ e) = Λ l ⇒ Eren (Tliftᵣ ρ* l) (Eliftᵣ-l ρ* ρ) e
 Eren {Δ₂ = Δ₂} {Γ₂ = Γ₂} {T = .(T [ T′ ]T)} ρ* ρ (_∙_ {T = T} e T′) = 
-  subst (Expr Δ₂ Γ₂) (sym (ρT[T′]≡ρT[ρ↑T′] ρ* T T′)) (Eren ρ* ρ e ∙ Tren ρ* T′)
+  subst (Expr Δ₂ Γ₂) (sym (swap-Tren-[] ρ* T T′)) (Eren ρ* ρ e ∙ Tren ρ* T′)
 
 Ewk : Expr Δ Γ T → Expr Δ (T₁ ◁ Γ) (T) 
 Ewk {T = T} e = subst (λ T → Expr _ _ T) (TidᵣT≡T T) (Eren _ (Ewkᵣ Tidᵣ Eidᵣ) e)
@@ -78,7 +78,7 @@ Eliftₛ _ σ _ _ here = ` here
 Eliftₛ _ σ _ _ (there x) = Ewk (σ _ _ x)
 
 Eliftₛ-l : ∀ {l} → (σ* : TSub Δ₁ Δ₂) → ESub σ* Γ₁ Γ₂ → ESub (Tliftₛ σ* _) (l ◁* Γ₁) (l ◁* Γ₂)
-Eliftₛ-l σ* σ _ _ (tskip {T = T} x) = subst (Expr _ _) (sym (σ↑-TwkT≡Twk-σT σ* T)) (Ewk-l (σ _ _ x))
+Eliftₛ-l σ* σ _ _ (tskip {T = T} x) = subst (Expr _ _) (sym (swap-Tsub-Twk σ* T)) (Ewk-l (σ _ _ x))
 
 Esub : (σ* : TSub Δ₁ Δ₂) → ESub σ* Γ₁ Γ₂ → Expr Δ₁ Γ₁ T → Expr Δ₂ Γ₂ (Tsub σ* T)
 Esub σ* σ (# n) = # n
@@ -86,7 +86,7 @@ Esub σ* σ (` x) = σ _ _ x
 Esub σ* σ (ƛ e) = ƛ Esub σ* (Eliftₛ σ* σ) e
 Esub σ* σ (e₁ · e₂) = Esub σ* σ e₁ · Esub σ* σ e₂
 Esub σ* σ (Λ l ⇒ e) = Λ l ⇒ Esub (Tliftₛ σ* _) (Eliftₛ-l σ* σ) e
-Esub σ* σ (_∙_ {T = T} e T′) = subst (Expr _ _) (sym (σT[T′]≡σ↑T[σT'] σ* T T′)) (Esub σ* σ e ∙ (Tsub σ* T′))
+Esub σ* σ (_∙_ {T = T} e T′) = subst (Expr _ _) (sym (swap-Tsub-[] σ* T T′)) (Esub σ* σ e ∙ (Tsub σ* T′))
 
 Eextₛ : (σ* : TSub Δ₁ Δ₂) → ESub σ* Γ₁ Γ₂ → Expr Δ₂ Γ₂ (Tsub σ* T) → ESub σ* (T ◁ Γ₁) Γ₂
 Eextₛ σ* σ e' _ _ here = e'
