@@ -2112,9 +2112,85 @@ LRVsub {Δ₁ = Δ₁} (`∀α_,_ {l′ = l′} l T) ρ τ* v z =
                         (congωl (λ ρ₁ → Tdropₛ (subst←RE ρ₁))
                          (Tsub-act-REext ρ τ* T′ R)))))
                      (z (⟦ T′ ⟧ [])))
-                ≡⟨ {!!} ⟩
+                ≡⟨ cong (subst id
+                    (sym
+                     (step-≡
+                      (⟦ Tsub (Tliftₛ τ* l) T ⟧
+                       (subst-to-env* (subst←RE (REext ρ (T′ , R))) []))
+                      (trans
+                       (congωl ⟦ T ⟧
+                        (subst-to-env*-comp (Tliftₛ τ* l) (subst←RE (REext ρ (T′ , R)))
+                         []))
+                       refl)
+                      (subst-preserves (Tliftₛ τ* l) T))))
+                      (substω-congω id ⟦ T ⟧
+                      (congωω (⟦ T′ ⟧ [] ∷_)
+                      (conglω (λ σ → subst-to-env* σ [])
+                       (trans (subst←RE-drop-ext (REext (Tsub-act τ* ρ) (T′ , R)))
+                        (congωl (λ ρ₁ → Tdropₛ (subst←RE ρ₁))
+                         (Tsub-act-REext ρ τ* T′ R)))))
+                      (z (⟦ T′ ⟧ []))) ⟩
+                  subst id
+                    (sym
+                     (step-≡
+                      (⟦ Tsub (Tliftₛ τ* l) T ⟧
+                       (subst-to-env* (subst←RE (REext ρ (T′ , R))) []))
+                      (trans
+                       (congωl ⟦ T ⟧
+                        (subst-to-env*-comp (Tliftₛ τ* l) (subst←RE (REext ρ (T′ , R)))
+                         []))
+                       refl)
+                      (subst-preserves (Tliftₛ τ* l) T)))
+                    (subst id
+                     (congωl ⟦ T ⟧
+                      (congωω (⟦ T′ ⟧ [] ∷_)
+                       (conglω (λ σ → subst-to-env* σ [])
+                        (trans (subst←RE-drop-ext (REext (Tsub-act τ* ρ) (T′ , R)))
+                         (congωl (λ ρ₁ → Tdropₛ (subst←RE ρ₁))
+                          (Tsub-act-REext ρ τ* T′ R))))))
+                     (z (⟦ T′ ⟧ [])))
+                ≡⟨ subst-subst {P = id}
+                                (congωl ⟦ T ⟧
+                                  (congωω (⟦ T′ ⟧ [] ∷_)
+                                   (conglω (λ σ → subst-to-env* σ [])
+                                    (trans (subst←RE-drop-ext (REext (Tsub-act τ* ρ) (T′ , R)))
+                                     (congωl (λ ρ₁ → Tdropₛ (subst←RE ρ₁))
+                                      (Tsub-act-REext ρ τ* T′ R))))))
+                                {(sym
+                                   (step-≡
+                                    (⟦ Tsub (Tliftₛ τ* l) T ⟧
+                                     (subst-to-env* (subst←RE (REext ρ (T′ , R))) []))
+                                    (trans
+                                     (congωl ⟦ T ⟧
+                                      (subst-to-env*-comp (Tliftₛ τ* l) (subst←RE (REext ρ (T′ , R)))
+                                       []))
+                                     refl)
+                                    (subst-preserves (Tliftₛ τ* l) T)))}
+                                {z (⟦ T′ ⟧ [])} ⟩
+                  subst id
+                    (trans
+                     (congωl ⟦ T ⟧
+                      (congωω (⟦ T′ ⟧ [] ∷_)
+                       (conglω (λ σ → subst-to-env* σ [])
+                        (trans (subst←RE-drop-ext (REext (Tsub-act τ* ρ) (T′ , R)))
+                         (congωl (λ ρ₁ → Tdropₛ (subst←RE ρ₁))
+                          (Tsub-act-REext ρ τ* T′ R))))))
+                     (sym
+                      (step-≡
+                       (⟦ Tsub (Tliftₛ τ* l) T ⟧
+                        (subst-to-env* (subst←RE (REext ρ (T′ , R))) []))
+                       (trans
+                        (congωl ⟦ T ⟧
+                         (subst-to-env*-comp (Tliftₛ τ* l) (subst←RE (REext ρ (T′ , R)))
+                          []))
+                        refl)
+                       (subst-preserves (Tliftₛ τ* l) T))))
+                    (z (⟦ T′ ⟧ []))
+                ≡⟨ sym {!!} ⟩
                   subst id eq-2↑ z (⟦ T′ ⟧ [])
                 ∎)
+              -- z                : (α : Set l) → ⟦ T ⟧ (α ∷ subst-to-env* (subst←RE (Tsub-act τ* ρ)) [])
+              -- subst id eq-2↑ z : ((α : Set l) → ⟦ Tsub (Tliftₛ τ* l) T ⟧ (α ∷ subst-to-env* ρ* []))
               --------------------------------------------------
                 ⟩
                 𝓥⟦ Tsub (Tliftₛ τ* l) T ⟧ (REext ρ (T′ , R))
