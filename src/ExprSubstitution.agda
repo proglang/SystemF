@@ -55,8 +55,11 @@ Eren {Δ₂ = Δ₂} {Γ₂ = Γ₂} {T = .(T [ T′ ]T)} ρ* ρ (_∙_ {T = T} 
 Ewk : Expr Δ Γ T → Expr Δ (T₁ ◁ Γ) (T) 
 Ewk {T = T} e = subst (λ T → Expr _ _ T) (TidᵣT≡T T) (Eren _ (Ewkᵣ Tidᵣ Eidᵣ) e)
 
+Ewkᵣ-l : ∀ (l : Level) → ERen (Twkᵣ Tidᵣ) Γ (l ◁* Γ)
+Ewkᵣ-l l _ _ = tskip
+
 Ewk-l : Expr Δ Γ T → Expr (l ∷ Δ) (l ◁* Γ) (Twk T)  
-Ewk-l e = Eren _ (λ _ _ → tskip) e
+Ewk-l e = Eren _ (Ewkᵣ-l _) e
 
 -- expression substitutions
 
