@@ -100,6 +100,17 @@ dcongωl : ∀ {b} {A : Setω} {B : A → Set b}
   → f x ≡ substω B (symω x≡ωy) (f y)
 dcongωl f refl = refl
 
+dcongωlll : ∀ {b}{c}{d} {A : Setω} {B : A → Set b}{C : A → Set c}{D : Set d}
+  → (f : (a : A) → B a → C a → D)
+  → {a₁ a₂ : A}
+  → {b₁ : B a₁}{b₂ : B a₂}
+  → {c₁ : C a₁}{c₂ : C a₂}
+  → (a₁≡ωa₂ : a₁ ≡ω a₂)
+  → (b₁≡b₂ : b₁ ≡ substω B (symω a₁≡ωa₂) b₂)
+  → (c₁≡c₂ : c₁ ≡ substω C (symω a₁≡ωa₂) c₂)
+  → f a₁ b₁ c₁ ≡ f a₂ b₂ c₂
+dcongωlll f refl refl refl = refl
+
 substω-congω : ∀ {ℓ}{ℓ₁}
     {A₁ : Set ℓ₁}
     {A₂ : Setω}
