@@ -172,8 +172,7 @@ fundamental Γ .(T [ T′ ]T) (_∙_ {l = l}{T = T} e  T′) ρ χ γ lrg
   let σ* = subst←RE ρ in
   let σ = ES←SC χ in
   let η = subst-to-env* σ* [] in
-  let eq₁ = sym (σT[T′]≡σ↑T[σT'] (subst←RE ρ) T T′) in
-  -- let eq₂ = (sym (subst-preserves σ* T′)) in
+  let eq₁ = sym (swap-Tsub-[] (subst←RE ρ) T T′)  in
   let e•T⇓v = ⇓-∙ e⇓v vT′⇓v₂ in
   subst Value eq₁ v₂ ,
   subst id (begin 
