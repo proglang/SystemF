@@ -82,3 +82,16 @@ Textₛ σ* T' _ (there x) = σ* _ x
 _[_]T : Type (l ∷ Δ) l′ → Type Δ l → Type Δ l′
 _[_]T T T' = Tsub (Textₛ Tidₛ T') T
 
+-- composition of renamings and substitutions
+
+_∘ₛᵣ_ : TSub Δ₁ Δ₂ → TRen Δ₂ Δ₃ → TSub Δ₁ Δ₃
+(σ ∘ₛᵣ ρ) _ x = Tren ρ (σ _ x)
+
+_∘ᵣₛ_ : TRen Δ₁ Δ₂ → TSub Δ₂ Δ₃ → TSub Δ₁ Δ₃
+(ρ ∘ᵣₛ σ) _ x = σ _ (ρ _ x)
+
+_∘ₛₛ_ : TSub Δ₁ Δ₂ → TSub Δ₂ Δ₃ → TSub Δ₁ Δ₃
+(σ₁ ∘ₛₛ σ₂) _ x = Tsub σ₂ (σ₁ _ x)
+
+_∘ᵣᵣ_ : TRen Δ₁ Δ₂ → TRen Δ₂ Δ₃ → TRen Δ₁ Δ₃
+(ρ₁ ∘ᵣᵣ ρ₂) _ x = ρ₂ _ (ρ₁ _ x)
