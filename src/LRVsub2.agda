@@ -1,4 +1,3 @@
-{-# OPTIONS --allow-unsolved-metas #-}
 module LRVsub2 where
 
 open import Level
@@ -96,13 +95,12 @@ Tren-act-wk-ext ρ T′ R =
 subst-fun-special : ∀
     {ℓa} {A : Set ℓa}
     {ℓr} {R₁ R₂ : A → Set ℓr}
-    {F₁ : (a : A) → R₁ a} {F₂ : (a : A) → R₂ a}
-  → (x : A)
-  → (F₁≡F₂ : F₁ ≡ subst id {!!} F₂)
-  → (f : (a : A) → R₁ a)
+  → (R₁≡R₂ : R₁ ≡ R₂)
   → (eq1 : ((a : A) → R₁ a) ≡ ((a : A) → R₂ a))
-  → subst id eq1 f x ≡ subst id {!!} (f x)
-subst-fun-special = {!!}
+  → (f : (a : A) → R₁ a)
+  → (x : A)
+  → subst id eq1 f x ≡ subst id (cong (λ r → r x) R₁≡R₂) (f x)
+subst-fun-special refl refl f x = refl
 
 -- generalizing to general type substitution
 
@@ -2081,6 +2079,7 @@ LRVsub {Δ₁ = Δ₁} (`∀α_,_ {l′ = l′} l T) ρ τ* v z =
                                  []))
                                refl)
                               (subst-preserves (Tliftₛ τ* l) T))))
+{-
                   het = H.≅-to-≡
                        (R.begin
                          subst id eq-2↑ z (⟦ T′ ⟧ [])
@@ -2095,6 +2094,7 @@ LRVsub {Δ₁ = Δ₁} (`∀α_,_ {l′ = l′} l T) ρ τ* v z =
                        R.≅⟨ H.sym (H.≡-subst-removable id eq-3 _) ⟩
                          subst id eq-3 (z (⟦ T′ ⟧ []))
                        R.∎)
+-}
                 in
                 begin
                   subst
@@ -2233,7 +2233,20 @@ LRVsub {Δ₁ = Δ₁} (`∀α_,_ {l′ = l′} l T) ρ τ* v z =
                         refl)
                        (subst-preserves (Tliftₛ τ* l) T))))
                     (z (⟦ T′ ⟧ []))
-                ≡⟨ sym het ⟩
+                -- alternative: het
+                ≡⟨ subst-irrelevant eq-3 _ (z (⟦ T′ ⟧ [])) ⟩
+                  subst id (cong (λ r → r (⟦ T′ ⟧ [])) (sym (fun-ext (λ x → trans
+                                                               (trans (subst-preserves (Tliftₛ τ* l) T)
+                                                                (congωl (λ H → ⟦ T ⟧ (x ∷ H))
+                                                                 (subst-to-env*-wk τ* x (subst-to-env* ρ* []))))
+                                                               (congωl (λ ■ → ⟦ T ⟧ (x ∷ ■)) (subst-to-env*-comp τ* ρ* [])))))) (z (⟦ T′ ⟧ []))
+                ≡⟨ sym (subst-fun-special (sym (fun-ext (λ x → trans
+                                                               (trans (subst-preserves (Tliftₛ τ* l) T)
+                                                                (congωl (λ H → ⟦ T ⟧ (x ∷ H))
+                                                                 (subst-to-env*-wk τ* x (subst-to-env* ρ* []))))
+                                                               (congωl (λ ■ → ⟦ T ⟧ (x ∷ ■)) (subst-to-env*-comp τ* ρ* [])))))
+                                          eq-2↑
+                                          z (⟦ T′ ⟧ [])) ⟩
                   subst id eq-2↑ z (⟦ T′ ⟧ [])
                 ∎)
               -- z                : (α : Set l) → ⟦ T ⟧ (α ∷ subst-to-env* (subst←RE (Tsub-act τ* ρ)) [])
@@ -2366,232 +2379,3 @@ LRVsub `ℕ ρ τ* v z =
        z)
   ∎
 
--- LRVsubst′ :  ∀ {Δ₁}{Δ₂}{l}
---   → (T : Type Δ₁ l)
---   → (ρ : RelEnv Δ₂)
---   → (τ* : TSub Δ₁ Δ₂)
---   → let ρ* = subst←RE ρ
---   in (v : Value (Tsub (subst←RE (Tsub-act τ* ρ)) T))
---   → (z : ⟦ T ⟧ (subst-to-env* (subst←RE (Tsub-act τ* ρ)) []))
---   → 𝓥⟦ Tsub τ* T ⟧ ρ (subst Value (sym (assoc-sub-sub T τ* (subst←RE ρ))) v)
---                      (subst id (sym (begin
---                         ⟦ Tsub τ* T ⟧ (subst-to-env* (subst←RE ρ) [])
---                       ≡⟨ subst-preserves τ* T ⟩
---                         ⟦ T ⟧ (subst-to-env* τ* (subst-to-env* (subst←RE ρ) []))
---                       ≡⟨ congωl ⟦ T ⟧ (subst-to-env*-comp τ* (subst←RE ρ) []) ⟩
---                         ⟦ T ⟧ (subst-to-env* (τ* ∘ₛₛ subst←RE ρ) [])
---                       ≡⟨⟩
---                         ⟦ T ⟧ (subst-to-env* (subst←RE (Tsub-act τ* ρ)) [])
---                       ∎)) z)
---   → 𝓥⟦ T ⟧ (Tsub-act τ* ρ) v z
-
--- LRVsubst {l = l} (` x) ρ τ* v z lrv-t =
---   let F₁ = (λ ⟦x⟧ → Expr [] ∅ (Tsub (subst←RE ρ) (τ* l x)) → ⟦x⟧ → Set l) in
---   let eq₁ = (sym (subst-preserves (subst←RE ρ) (τ* l x))) in
---   let sub₁ = subst F₁ eq₁ in
---   let eq₂ = (sym
---         (subst-var-preserves x
---          (subst←RE
---           (λ l₁ x₁ →
---              Tsub (subst←RE ρ) (τ* l₁ x₁) ,
---              subst
---              (λ ⟦x⟧ → Expr [] ∅ (Tsub (subst←RE ρ) (τ* l₁ x₁)) → ⟦x⟧ → Set l₁)
---              (sym (subst-preserves (subst←RE ρ) (τ* l₁ x₁))) (𝓥⟦ τ* l₁ x₁ ⟧ ρ)))
---          [])) in
---   let eq₃ = (sym
---         (begin
---          step-≡ (⟦ τ* l x ⟧ (subst-to-env* (subst←RE ρ) []))
---          (step-≡
---           (apply-env (subst-to-env* τ* (subst-to-env* (subst←RE ρ) [])) x)
---           (_ ≡⟨⟩ apply-env (subst-to-env* (subst←RE (Tsub-act τ* ρ)) []) x ∎)
---           (congωl (λ η → apply-env η x)
---            (subst-to-env*-comp τ* (subst←RE ρ) [])))
---          (subst-var-preserves x τ* (subst-to-env* (subst←RE ρ) [])))) in
---   subst id (begin 
---              sub₁ (𝓥⟦ τ* l x ⟧ ρ) v (subst id eq₂ z)
---            ≡⟨ dist-subst-special (𝓥⟦ τ* l x ⟧ ρ) eq₁ eq₂ eq₃ v z ⟩
---              𝓥⟦ τ* l x ⟧ ρ v (subst id eq₃ z)
---            ∎) lrv-t
-
--- LRVsubst (T₁ ⇒ T₂) ρ τ* v z (e , refl , F) =
---   let eq-T₁ = (assoc-sub-sub T₁ τ* (subst←RE ρ)) in
---   let eq-T₂ = (assoc-sub-sub T₂ τ* (subst←RE ρ)) in
---   subst₂ (λ T₁ T₂ → Expr [] (T₁ ◁ ∅) T₂) (sym eq-T₁) (sym eq-T₂) e ,
---   subst-split-ƛ (sym (assoc-sub-sub (T₁ ⇒ T₂) τ* (subst←RE ρ))) (sym eq-T₁) (sym eq-T₂) e ,
---   λ w₁ z₁ lrv-sub-t1 →
---   let σ* = subst←RE ρ in
---   let w₁′ = (subst Value eq-T₁ w₁) in
---   let eq-z = (begin
---                        ⟦ Tsub τ* T₁ ⟧ (subst-to-env* (subst←RE ρ) [])
---                      ≡⟨ subst-preserves τ* T₁ ⟩
---                        ⟦ T₁ ⟧ (subst-to-env* τ* (subst-to-env* (subst←RE ρ) []))
---                      ≡⟨ congωl ⟦ T₁ ⟧ (subst-to-env*-comp τ* (subst←RE ρ) []) ⟩
---                        ⟦ T₁ ⟧ (subst-to-env* (subst←RE (Tsub-act τ* ρ)) [])
---                      ∎) in
---   let eq-z2 = (begin
---                        ⟦ Tsub τ* T₂ ⟧ (subst-to-env* (subst←RE ρ) [])
---                      ≡⟨ subst-preserves τ* T₂ ⟩
---                        ⟦ T₂ ⟧ (subst-to-env* τ* (subst-to-env* (subst←RE ρ) []))
---                      ≡⟨ congωl ⟦ T₂ ⟧ (subst-to-env*-comp τ* (subst←RE ρ) []) ⟩
---                        ⟦ T₂ ⟧ (subst-to-env* (subst←RE (Tsub-act τ* ρ)) [])
---                      ∎) in
---   let z₁′ = subst id eq-z z₁ in
---   let lrv-sub-t1′ = LRVsubst′ T₁ ρ τ* w₁′ z₁′ (subst₂ (𝓥⟦ Tsub τ* T₁ ⟧ ρ) (sym (subst-sym-subst {P = Value} eq-T₁)) (sym (subst-sym-subst {P = id} eq-z)) lrv-sub-t1) in
---     F w₁′ z₁′ lrv-sub-t1′ |> λ where
---       (v₂ , e[w₁]⇓v₂ , lrv-t2-v) →
---         subst Value (sym eq-T₂) v₂ ,
---         let eq-⇓ = begin (subst₂ (λ T₃ T₄ → Expr [] (T₃ ◁ ∅) T₄) (sym eq-T₁) (sym eq-T₂) e [ exp w₁ ]E)
---                        ⇓ subst Value (sym eq-T₂) v₂
---                   ≡˘⟨ cong (_⇓ subst Value (sym eq-T₂) v₂)
---                            (subst-split-[]E e (exp w₁) (sym eq-T₁) (sym eq-T₂) ) ⟩
---                      subst Value (sym eq-T₂) (e [ subst Value (sym (sym eq-T₁)) (exp w₁) ]E)
---                            ⇓ subst Value (sym eq-T₂) v₂
---                   ≡˘⟨ cong
---                        (λ e′ →
---                           subst Value (sym eq-T₂) (e [ e′ ]E) ⇓
---                           subst Value (sym eq-T₂) v₂)
---                        (dist-subst' {F = Value} {G = Value} id exp eq-T₁ (sym (sym eq-T₁)) w₁) ⟩
---                      subst Value (sym eq-T₂) (e [ exp (subst Value eq-T₁ w₁) ]E) ⇓ subst Value (sym eq-T₂) v₂
---                   ∎ in
---         let e[w₁]⇓v₂′ = subst-split-⇓₂ (sym eq-T₂) e[w₁]⇓v₂ in
---         subst id (sym eq-⇓) e[w₁]⇓v₂′ , 
---         let lrv-t2-v′ = LRVsubst T₂ ρ τ* v₂ (z z₁′) lrv-t2-v in
---         let eq-1 = (sym
---                       (trans
---                        (cong₂ (λ A B → A → B) (subst-preserves τ* T₁)
---                         (subst-preserves τ* T₂))
---                        (congωl (λ η → ⟦ T₁ ⟧ η → ⟦ T₂ ⟧ η)
---                         (subst-to-env*-comp τ* (subst←RE ρ) [])))) in
---         let eq-2 = (sym
---                       (begin
---                        step-≡
---                        (⟦ Tsub τ* T₁ ⟧ (subst-to-env* (subst←RE ρ) []) →
---                         ⟦ Tsub τ* T₂ ⟧ (subst-to-env* (subst←RE ρ) []))
---                        (step-≡
---                         (⟦ T₁ ⟧ (subst-to-env* τ* (subst-to-env* (subst←RE ρ) [])) →
---                          ⟦ T₂ ⟧ (subst-to-env* τ* (subst-to-env* (subst←RE ρ) [])))
---                         (_ ≡⟨⟩
---                          (⟦ T₁ ⟧ (subst-to-env* (subst←RE (Tsub-act τ* ρ)) []) →
---                           ⟦ T₂ ⟧ (subst-to-env* (subst←RE (Tsub-act τ* ρ)) []))
---                          ∎)
---                         (congωl (λ η → ⟦ T₁ ⟧ η → ⟦ T₂ ⟧ η)
---                          (subst-to-env*-comp τ* (subst←RE ρ) [])))
---                        (cong₂ (λ A B → A → B) (subst-preserves τ* T₁)
---                         (subst-preserves τ* T₂)))) in
---         subst (𝓥⟦ Tsub τ* T₂ ⟧ ρ (subst Value (sym eq-T₂) v₂))
---               (begin
---                 subst id (sym eq-z2) (z (subst id eq-z z₁))
---               ≡⟨ dist-subst z eq-z (sym (trans (subst-preserves τ* (T₁ ⇒ T₂)) (congωl (λ η → ⟦ T₁ ⟧ η → ⟦ T₂ ⟧ η) (subst-to-env*-comp τ* (subst←RE ρ) [])))) (sym eq-z2) z₁ ⟩
---                 cong (λ f → f z₁) (subst-irrelevant {F = id} eq-1 eq-2 z)
---               )
---               lrv-t2-v′
-
--- LRVsubst (`∀α l , T) ρ τ* v z (e , v≡Λe , F) =
---   let eqᵢ = begin
---              Tsub (Tliftₛ (subst←RE (Tsub-act τ* ρ)) l) T
---             ≡⟨ refl ⟩
---              Tsub (Tliftₛ (τ* ∘ₛₛ subst←RE ρ) l) T
---             ≡˘⟨ assoc-sub↑-sub↑ T τ*  (subst←RE ρ) ⟩
---               Tsub (Tliftₛ (subst←RE ρ) l) (Tsub (Tliftₛ τ* l) T)
---             ∎ in
---   let eqₒ = sym (cong (`∀α_,_ l) (assoc-sub↑-sub↑ T τ* (subst←RE ρ))) in
---   let sub₁ = subst Value eqₒ in
---   subst (Expr (l ∷ []) (l ◁* ∅)) eqᵢ e ,
---   (begin
---     sub₁ v
---   ≡⟨ cong sub₁ v≡Λe ⟩
---     sub₁ (Λ l ⇒ e)
---   ≡⟨ subst-split-Λ eqₒ eqᵢ e ⟩
---     Λ l ⇒ subst (Expr (l ∷ []) (l ◁* ∅)) eqᵢ e
---   ∎) , 
---   λ T′ R → F T′ R |> λ where
---     (vT[T′] , e[T′]⇓vT[T′] , lrv-t-ρ′) →
---       let eqᵥ = (cong (Tsub (Textₛ Tidₛ T′)) (sym (assoc-sub↑-sub↑ T τ* (subst←RE ρ)))) in
---       let subᵥ = subst Value eqᵥ in
---       subᵥ vT[T′] ,
---       let r = subst-split-⇓₂ eqᵥ e[T′]⇓vT[T′] in
---       subst id
---             (cong (_⇓ subᵥ vT[T′])
---               (sym (dist-subst' {F = Expr _ _} {G = Value} (_[ T′ ]T) (λ e′ → e′ [ T′ ]ET) eqᵢ eqᵥ e )))
---             r
---       ,
---       let eq-vtt = (begin
---                      (Tsub (Tliftₛ (subst←RE (Tsub-act τ* ρ)) l) T [ T′ ]T)
---                    ≡⟨ σ↑T[T′]≡TextₛσT′T (subst←RE (Tsub-act τ* ρ)) T′ T ⟩
---                      Tsub (Textₛ (subst←RE (Tsub-act τ* ρ)) T′) T
---                    ≡˘⟨ cong (λ σ → Tsub σ T) (subst←RE-ext-ext (Tsub-act τ* ρ) T′ R) ⟩
---                      Tsub (subst←RE (REext (Tsub-act τ* ρ) (T′ , R))) T
---                    ≡⟨ congωl (λ ρ → Tsub (subst←RE ρ) T) (Tsub-act-REext ρ τ* T′ R) ⟩
---                      Tsub (subst←RE (Tsub-act (Tliftₛ τ* l) (REext ρ (T′ , R)))) T
---                    ∎) in
---       let lrv = LRVsubst T
---                          (REext ρ (T′ , R))
---                          (Tliftₛ τ* l)
---                          (subst Value eq-vtt vT[T′])
---                          (substω ⟦ T ⟧ (congωω (⟦ T′ ⟧ [] ∷_)
---                                          (conglω (λ σ → subst-to-env* σ [])
---                                            (trans
---                                              (subst←RE-drop-ext (REext (Tsub-act τ* ρ) (T′ , R)))
---                                              (congωl (λ ρ → Tdropₛ (subst←RE ρ)) (Tsub-act-REext ρ τ* T′ R)))))
---                                        (z (⟦ T′ ⟧ [])))
---                          (dep-substωll (𝓥⟦ T ⟧)
---                                        (Tsub-act-REext ρ τ* T′ R)
---                                        (trans
---                                          (substω-∘ Value (λ ρ → Tsub (subst←RE ρ) T) (Tsub-act-REext ρ τ* T′ R))
---                                          (trans
---                                            (subst-subst {P = Value} (lemma1 (Tsub-act τ* ρ) T T′ R) {y≡z = (congωl (λ ρ₁ → Tsub (subst←RE ρ₁) T) (Tsub-act-REext ρ τ* T′ R))})
---                                            (subst-irrelevant (trans (lemma1 (Tsub-act τ* ρ) T T′ R)
---                                                                     (congωl (λ ρ₁ → Tsub (subst←RE ρ₁) T) (Tsub-act-REext ρ τ* T′ R)))
---                                                              (begin
---                                                                step-≡ (Tsub (Tliftₛ (subst←RE (Tsub-act τ* ρ)) l) T [ T′ ]T)
---                                                                (step-≡˘ (Tsub (Textₛ (subst←RE (Tsub-act τ* ρ)) T′) T)
---                                                                (step-≡ (Tsub (subst←RE (REext (Tsub-act τ* ρ) (T′ , R))) T)
---                                                                (Tsub (subst←RE (Tsub-act (Tliftₛ τ* l) (REext ρ (T′ , R)))) T ∎)
---                                                                (congωl (λ ρ₁ → Tsub (subst←RE ρ₁) T) (Tsub-act-REext ρ τ* T′ R)))
---                                                                (cong (λ σ → Tsub σ T) (subst←RE-ext-ext (Tsub-act τ* ρ) T′ R)))
---                                                                (σ↑T[T′]≡TextₛσT′T (subst←RE (Tsub-act τ* ρ)) T′ T))
---                                                              vT[T′])))
---                                        (trans
---                                          (substω-∘ (λ{ (σ₀ , σ) → ⟦ T ⟧ (⟦ σ₀ ⟧ [] ∷ subst-to-env* σ [])}) (λ ρ → let σ = subst←RE ρ in (σ l here , Tdropₛ σ)) (Tsub-act-REext ρ τ* T′ R))
---                                          (trans
---                                            (subst-∘ {P = id}{f = (λ { (σ₀ , σ) → ⟦ T ⟧ (⟦ σ₀ ⟧ [] ∷ subst-to-env* σ []) })}
---                                                     (congωl (λ ρ₁ → subst←RE ρ₁ l here , Tdropₛ (subst←RE ρ₁)) (Tsub-act-REext ρ τ* T′ R)))
---                                            (trans
---                                              (subst-irrelevant (cong (λ { (σ₀ , σ) → ⟦ T ⟧ (⟦ σ₀ ⟧ [] ∷ subst-to-env* σ []) })
---                                                                (congωl (λ ρ₁ → subst←RE ρ₁ l here , Tdropₛ (subst←RE ρ₁))
---                                                                (Tsub-act-REext ρ τ* T′ R)))
---                                                                (congωl ⟦ T ⟧
---                                                                  (congωω (⟦ T′ ⟧ [] ∷_)
---                                                                    (conglω (λ σ → subst-to-env* σ [])
---                                                                      (trans (subst←RE-drop-ext (REext (Tsub-act τ* ρ) (T′ , R)))
---                                                                        (congωl (λ ρ₁ → Tdropₛ (subst←RE ρ₁)) (Tsub-act-REext ρ τ* T′ R))))))
---                                                                (z (⟦ T′ ⟧ [])))
---                                              (sym (substω-∘ id ⟦ T ⟧ (congωω (⟦ T′ ⟧ [] ∷_)
---                                                                      (conglω (λ σ → subst-to-env* σ [])
---                                                                        (trans (subst←RE-drop-ext (REext (Tsub-act τ* ρ) (T′ , R)))
---                                                                               (congωl (λ ρ₁ → Tdropₛ (subst←RE ρ₁))
---                                                                                       (Tsub-act-REext ρ τ* T′ R))))))))))
---                                        lrv-t-ρ′) in
---       subst₂ (𝓥⟦ Tsub (Tliftₛ τ* l) T ⟧ (REext ρ (T′ , R)))
---              (trans (subst-subst {P = Value} (begin
---                                                 step-≡ (Tsub (Tliftₛ (subst←RE (Tsub-act τ* ρ)) l) T [ T′ ]T)
---                                                 (step-≡˘ (Tsub (Textₛ (subst←RE (Tsub-act τ* ρ)) T′) T)
---                                                  (step-≡ (Tsub (subst←RE (REext (Tsub-act τ* ρ) (T′ , R))) T)
---                                                   (Tsub (subst←RE (Tsub-act (Tliftₛ τ* l) (REext ρ (T′ , R)))) T ∎)
---                                                   (congωl (λ ρ₁ → Tsub (subst←RE ρ₁) T) (Tsub-act-REext ρ τ* T′ R)))
---                                                  (cong (λ σ → Tsub σ T) (subst←RE-ext-ext (Tsub-act τ* ρ) T′ R)))
---                                                 (σ↑T[T′]≡TextₛσT′T (subst←RE (Tsub-act τ* ρ)) T′ T))
---                                               {y≡z = (sym (assoc-sub-sub T (Tliftₛ τ* l) (subst←RE (REext ρ (T′ , R)))))})
---                      (trans
---                        (subst-irrelevant {F = Value} _ _ vT[T′])
---                        (sym (subst-subst {P = Value} (cong (Tsub (Textₛ Tidₛ T′)) (sym (assoc-sub↑-sub↑ T τ* (subst←RE ρ))))
---                                                      {y≡z = (lemma1 ρ (Tsub (Tliftₛ τ* l) T) T′ R)}))))
---              {!!}
---              lrv 
-
--- LRVsubst `ℕ ρ τ* v z (n , v≡#n , n≡z) =
---   n ,
---   v≡#n ,
---   trans n≡z (sym (subst-id id _))
-
--- LRVsubst′ T ρ τ* v z x = {!!}
