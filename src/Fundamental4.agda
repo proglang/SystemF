@@ -522,13 +522,33 @@ fundamental Γ .(T [ T′ ]T) (_∙_ {l = l}{T = T} e  T′) ρ χ γ lrg
     in
     subst id eq-sub lrv₂
 
+--------------------------------------------------------------------------------
 
--- -- adequacy : (e : Expr [] ∅ `ℕ) → (n : ℕ)
--- --   → E⟦ e ⟧ [] (λ l T → λ()) ≡ n
--- --   → e ⇓ V-ℕ n
--- -- adequacy e n ⟦e⟧≡n
--- --   with fundamental ∅ (λ l → λ()) (λ l T → λ()) (λ l T → λ()) `ℕ e tt
--- -- ... | #m , e⇓#m , lrv-ℕ-m-E⟦e⟧
--- --   with #m in eq
--- -- ... | # m , v-n
--- --   rewrite trans lrv-ℕ-m-E⟦e⟧ ⟦e⟧≡n = subst (_⇓ V-ℕ n) (Csub-closed (λ l T → λ()) e) e⇓#m
+Tliftₛ-empty : ∀ {l₀} l x → Tliftₛ (λ _ ()) l₀ l x ≡ Tidₛ{Δ = l₀ ∷ []} l x
+Tliftₛ-empty l here = refl
+
+Tsub-closed : {T : Type [] l} → T ≡ Tsub (λ l ()) T
+Tsub-closed {T = T₁ ⇒ T₂} = cong₂ _⇒_ Tsub-closed  Tsub-closed
+Tsub-closed {T = `∀α l₀ , T} = cong (`∀α l₀ ,_)
+                                    (sym (trans (cong (λ τ → Tsub τ T) (fun-ext₂ (λ l x → Tliftₛ-empty l x)))
+                                                (TidₛT≡T T)))
+Tsub-closed {T = `ℕ} = refl
+
+Csub-closed : {T : Type [] l} (χ : CSub {[]} (λ l ()) ∅) → (e : CExpr T) →
+  Csub χ e ≡ subst CExpr Tsub-closed e
+Csub-closed χ (# n) = refl
+Csub-closed χ (ƛ e) = {!!}
+Csub-closed χ (e₁ · e₂)
+  with Csub-closed χ e₁ | Csub-closed χ e₂
+... | ih1 | ih2 = {! !}
+Csub-closed χ (Λ l ⇒ e) = {!!}
+Csub-closed χ (e ∙ T′) = {!!}
+
+adequacy : (e : CExpr `ℕ) → (n : ℕ)
+  → E⟦ e ⟧ [] (λ l T → λ()) ≡ n
+  → e ⇓ (# n , V-♯)
+adequacy e n ⟦e⟧≡n
+  with fundamental ∅ `ℕ e (λ l ()) (λ l T ()) (λ l T ()) tt
+... | ((# .(E⟦ e ⟧ [] (λ l T ()))) , V-♯) , e⇓v , .(E⟦ e ⟧ [] (λ l T ())) , refl , refl =
+  subst₂ _⇓_ (Csub-closed (λ l T ()) e) (cong (λ n → (# n) , V-♯) ⟦e⟧≡n) e⇓v
+
