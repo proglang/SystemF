@@ -18,6 +18,8 @@ open import Relation.Binary.PropositionalEquality
 open import Axiom.Extensionality.Propositional using (∀-extensionality; Extensionality)
 open ≡-Reasoning
 
+open import Relation.Binary.HeterogeneousEquality as H using (_≅_; refl)
+
 open import Ext
 open import SetOmega
 open import SubstProperties
@@ -30,6 +32,7 @@ open import ExprSubstProperties
 open import Logical2
 open import LRVren2
 open import LRVsub2
+open import HeterogeneousEqualityLemmas hiding (module R)
 
 ----------------------------------------------------------------------
 
@@ -534,15 +537,40 @@ Tsub-closed {T = `∀α l₀ , T} = cong (`∀α l₀ ,_)
                                                 (TidₛT≡T T)))
 Tsub-closed {T = `ℕ} = refl
 
+Tsub-[]-is-Tid : ∀ (σ* : TSub [] Δ) → (λ l ()) ≡ σ*
+Tsub-[]-is-Tid σ* = fun-ext λ l → fun-ext λ ()
+
+Csub-[]-is-Eid : ∀ (χ : CSub {[]} (λ l ()) ∅) → ES←SC χ ≅ Eidₛ {Γ = ∅}
+Csub-[]-is-Eid χ = fun-ext-h-ESub (Tsub-[]-is-Tid Tidₛ) refl λ l T ()
+
+Csub-closed' : {T : Type [] l} (χ : CSub {[]} (λ l ()) ∅) → (e : CExpr T) →
+  Csub χ e ≅ e
+Csub-closed' {T = T} χ e =
+  R.begin
+    Csub χ e
+  R.≅⟨ refl ⟩
+    Esub (λ l ()) (ES←SC χ) e
+  R.≅⟨ H.cong₂ {B = λ ■ → ESub ■ ∅ ∅} (λ ■₁ ■₂ → Esub ■₁ ■₂ e)
+               (H.≡-to-≅ (Tsub-[]-is-Tid Tidₛ)) (Csub-[]-is-Eid χ) ⟩
+    Esub Tidₛ Eidₛ e
+  R.≅⟨ H.≡-to-≅ (Eidₛe≡e e) ⟩
+    subst (Expr [] ∅) (sym (TidₛT≡T T)) e
+  R.≅⟨ H.≡-subst-removable _ _ _ ⟩
+    e
+  R.∎
+
 Csub-closed : {T : Type [] l} (χ : CSub {[]} (λ l ()) ∅) → (e : CExpr T) →
   Csub χ e ≡ subst CExpr Tsub-closed e
-Csub-closed χ (# n) = refl
-Csub-closed χ (ƛ e) = {!!}
-Csub-closed χ (e₁ · e₂)
-  with Csub-closed χ e₁ | Csub-closed χ e₂
-... | ih1 | ih2 = {! !}
-Csub-closed χ (Λ l ⇒ e) = {!!}
-Csub-closed χ (e ∙ T′) = {!!}
+Csub-closed χ e = 
+  H.≅-to-≡ (
+    R.begin
+      Csub χ e
+    R.≅⟨ Csub-closed' χ e ⟩
+      e
+    R.≅⟨ H.sym (H.≡-subst-removable _ _ _) ⟩
+      subst CExpr Tsub-closed e
+    R.∎
+  )
 
 adequacy : (e : CExpr `ℕ) → (n : ℕ)
   → E⟦ e ⟧ [] (λ l T → λ()) ≡ n
