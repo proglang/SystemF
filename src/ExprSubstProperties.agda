@@ -539,17 +539,6 @@ _>>RR_ {Δ₃ = Δ₃}{ρ₁* = ρ₁*}{ρ₂* = ρ₂*}{Γ₃ = Γ₃} ρ₁ ρ
 
 -- Fusion Lemmas ---------------------------------------------------------------
 
-postulate
-  Eassoc-sub-sub : 
-      {σ₁* : TSub Δ₁ Δ₂}{σ₂* : TSub Δ₂ Δ₃}
-    → {Γ₁ : TEnv Δ₁}{Γ₂ : TEnv Δ₂}{Γ₃ : TEnv Δ₃}
-    → {T : Type Δ₁ l}
-    → (e : Expr Δ₁ Γ₁ T)
-    → (σ₁ : ESub σ₁* Γ₁ Γ₂) → (σ₂ : ESub σ₂* Γ₂ Γ₃)
-    → let lhs = Esub σ₂* σ₂ (Esub σ₁* σ₁ e) in
-      let rhs = Esub (σ₁* ∘ₛₛ σ₂*) (σ₁ >>SS σ₂) e in
-      subst (Expr Δ₃ Γ₃) (assoc-sub-sub T σ₁* σ₂*) lhs ≡ rhs
-
 fun-ext-h-ERen :
   ∀ {σ* σ*′ : TRen Δ₁ Δ₂} {Γ₁ : TEnv Δ₁}{Γ₂ Γ₂′ : TEnv Δ₂}
     {σ : ERen σ* Γ₁ Γ₂} {σ′ : ERen σ*′ Γ₁ Γ₂′} →
@@ -1318,6 +1307,307 @@ mutual
       Esub (σ* ∘ₛᵣ ρ*) (σ >>SR ρ) (e ∙ T′)
     R.∎ 
 
+-- Swap-Lemmas for Substitutions
+
+swap-sub-Ewk :
+  ∀ {ρ* : TSub Δ₁ Δ₂} {Γ₁ : TEnv Δ₁} {Γ₂ : TEnv Δ₂}
+    (ρ : ESub ρ* Γ₁ Γ₂) (T : Type Δ₁ l) →
+  Ewkᵣ {T = T} Tidᵣ Eidᵣ >>RS Eliftₛ ρ* ρ ≅
+  ρ >>SR Ewkᵣ {T = Tsub ρ* T} Tidᵣ Eidᵣ
+swap-sub-Ewk {Δ₁} {Δ₂} {l} {ρ*} {Γ₁} {Γ₂} ρ T =
+  fun-ext-h-ESub (sym (∘ₛᵣ-neutralˡ ρ*)) refl λ l₁ T₁ x →
+    let
+      F₁ = (Expr Δ₂ (Tsub ρ* T ◁ Γ₂)) ; E₁ = (assoc-sub-ren T₁ Tidᵣ ρ*)                  ; sub₁ = subst F₁ E₁
+      F₂ = (Expr Δ₂ (Tsub ρ* T ◁ Γ₂)) ; E₂ = (TidᵣT≡T (Tsub ρ* (Tren (λ _ x₁ → x₁) T₁))) ; sub₂ = subst F₂ E₂
+      F₃ = (λ T₂ → inn T₂ Γ₁)         ; E₃ = (sym (TidᵣT≡T T₁))                          ; sub₃ = subst F₃ E₃
+      F₄ = (Expr Δ₂ (Tsub ρ* T ◁ Γ₂)) ; E₄ = (assoc-ren-sub T₁ ρ* (λ _ x₁ → x₁))         ; sub₄ = subst F₄ E₄
+    in
+    R.begin
+      (Ewkᵣ {T = T} Tidᵣ Eidᵣ >>RS Eliftₛ ρ* ρ) l₁ T₁ x
+    R.≅⟨ refl ⟩
+      sub₁ (sub₂ (Eren Tidᵣ (Ewkᵣ {T = Tsub ρ* T} Tidᵣ Eidᵣ) (ρ l₁ (Tren Tidᵣ T₁) (sub₃ x))))
+    R.≅⟨ H.≡-subst-removable F₁ E₁ _ ⟩
+      sub₂ (Eren Tidᵣ (Ewkᵣ {T = Tsub ρ* T} Tidᵣ Eidᵣ) (ρ l₁ (Tren Tidᵣ T₁) (sub₃ x)))
+    R.≅⟨ H.≡-subst-removable F₂ E₂ _ ⟩
+      Eren Tidᵣ (Ewkᵣ {T = Tsub ρ* T} Tidᵣ Eidᵣ) (ρ l₁ (Tren Tidᵣ T₁) (sub₃ x))
+    R.≅⟨ H.cong₂ {B = λ ■ → inn ■ Γ₁} (λ ■₁ ■₂ → Eren Tidᵣ (Ewkᵣ {T = Tsub ρ* T} Tidᵣ Eidᵣ) (ρ l₁ ■₁ ■₂))
+                 (H.≡-to-≅ (TidᵣT≡T T₁)) (H.≡-subst-removable F₃ E₃ _) ⟩
+      Eren Tidᵣ (Ewkᵣ {T = Tsub ρ* T} Tidᵣ Eidᵣ) (ρ l₁ T₁ x)
+    R.≅⟨ H.sym (H.≡-subst-removable F₄ E₄ _) ⟩
+      sub₄ (Eren Tidᵣ (Ewkᵣ {T = Tsub ρ* T} Tidᵣ Eidᵣ) (ρ l₁ T₁ x))
+    R.≅⟨ refl ⟩
+      (ρ >>SR Ewkᵣ Tidᵣ Eidᵣ) l₁ T₁ x
+    R.∎
+
+swap-Esub-Ewk :
+  ∀ {ρ* : TSub Δ₁ Δ₂} {Γ₁ : TEnv Δ₁} {Γ₂ : TEnv Δ₂} {T : Type Δ₁ l}
+    (ρ : ESub ρ* Γ₁ Γ₂) (T′ : Type Δ₁ l′) (e : Expr Δ₁ Γ₁ T) →
+  Esub ρ* (Eliftₛ {T = T′} ρ* ρ) (Eren Tidᵣ (Ewkᵣ Tidᵣ Eidᵣ) e) ≅
+  Eren Tidᵣ (Ewkᵣ {T = Tsub ρ* T′} Tidᵣ Eidᵣ) (Esub ρ* ρ e)
+swap-Esub-Ewk {Δ₁} {Δ₂} {l} {l′} {ρ*} {Γ₁} {Γ₂} {T} ρ T′ e =
+  R.begin
+    Esub ρ* (Eliftₛ ρ* ρ) (Eren Tidᵣ (Ewkᵣ Tidᵣ Eidᵣ) e)
+  R.≅⟨ Eassoc-sub-ren' e (Ewkᵣ Tidᵣ Eidᵣ) (Eliftₛ ρ* ρ) ⟩
+    Esub ρ* (Ewkᵣ {T = T′} Tidᵣ Eidᵣ >>RS Eliftₛ ρ* ρ) e
+  R.≅⟨ H.cong₂ {B = λ ■ → ESub ■ Γ₁ (Tsub ρ* T′ ◁ Γ₂)} (λ ■₁ ■₂ → Esub ■₁ ■₂ e)
+               (H.≡-to-≅ (sym (∘ₛᵣ-neutralˡ ρ*))) (swap-sub-Ewk ρ T′) ⟩
+    Esub (ρ* ∘ₛᵣ Tidᵣ) (ρ >>SR Ewkᵣ {T = Tsub ρ* T′} Tidᵣ Eidᵣ) e
+  R.≅⟨ H.sym (Eassoc-ren-sub' e ρ (Ewkᵣ Tidᵣ Eidᵣ)) ⟩
+    Eren Tidᵣ (Ewkᵣ Tidᵣ Eidᵣ) (Esub ρ* ρ e)
+  R.∎
+
+swap-sub-Ewk-l :
+  ∀ {ρ* : TSub Δ₁ Δ₂} {Γ₁ : TEnv Δ₁} {Γ₂ : TEnv Δ₂}
+    (ρ : ESub ρ* Γ₁ Γ₂) (l : Level) →
+  Ewkᵣ-l l >>RS Eliftₛ-l ρ* ρ ≅ ρ >>SR Ewkᵣ-l l
+swap-sub-Ewk-l {Δ₁} {Δ₂} {ρ*} {Γ₁} {Γ₂} ρ l =
+  fun-ext-h-ESub refl refl λ l₁ T₁ x →
+    let
+      F₁ = (Expr (l ∷ Δ₂) (l ◁* Γ₂)) ; E₁ = (assoc-sub-ren T₁ (Twkᵣ Tidᵣ) (Tliftₛ ρ* l))              ; sub₁ = subst F₁ E₁
+      F₂ = (Expr (l ∷ Δ₂) (l ◁* Γ₂)) ; E₂ = (sym (swap-Tsub-Twk ρ* T₁)) ; sub₂ = subst F₂ E₂
+      F₃ = (Expr (l ∷ Δ₂) (l ◁* Γ₂)) ; E₃ = (assoc-ren-sub T₁ ρ* (Twkᵣ Tidᵣ))                         ; sub₃ = subst F₃ E₃
+    in
+    R.begin
+      (Ewkᵣ-l l >>RS Eliftₛ-l ρ* ρ) l₁ T₁ x
+    R.≅⟨ refl ⟩
+      sub₁ (sub₂ (Eren (Twkᵣ Tidᵣ) (Ewkᵣ-l l) (ρ l₁ T₁ x)))
+    R.≅⟨ H.≡-subst-removable F₁ E₁ _ ⟩
+      sub₂ (Eren (Twkᵣ Tidᵣ) (Ewkᵣ-l l) (ρ l₁ T₁ x))
+    R.≅⟨ H.≡-subst-removable F₂ E₂ _ ⟩
+      Eren (Twkᵣ Tidᵣ) (Ewkᵣ-l l) (ρ l₁ T₁ x)
+    R.≅⟨ H.sym (H.≡-subst-removable F₃ E₃ _) ⟩
+      sub₃ (Eren (Twkᵣ Tidᵣ) (Ewkᵣ-l l) (ρ l₁ T₁ x))
+    R.≅⟨ refl ⟩
+      (ρ >>SR Ewkᵣ-l l) l₁ T₁ x
+    R.∎
+
+swap-Esub-Ewk-l :
+  ∀ {ρ* : TSub Δ₁ Δ₂} {Γ₁ : TEnv Δ₁} {Γ₂ : TEnv Δ₂} {T : Type Δ₁ l}
+    (ρ : ESub ρ* Γ₁ Γ₂) (l′ : Level) (e : Expr Δ₁ Γ₁ T) →
+  Esub (Tliftₛ ρ* l′) (Eliftₛ-l ρ* ρ) (Eren (Twkᵣ Tidᵣ) (Ewkᵣ-l l′) e) ≅
+  Eren (Twkᵣ Tidᵣ) (Ewkᵣ-l l′) (Esub ρ* ρ e)
+swap-Esub-Ewk-l {Δ₁} {Δ₂} {l} {ρ*} {Γ₁} {Γ₂} {T} ρ l′ e =
+  R.begin
+    Esub (Tliftₛ ρ* l′) (Eliftₛ-l ρ* ρ) (Eren (Twkᵣ Tidᵣ) (Ewkᵣ-l l′) e)
+  R.≅⟨ Eassoc-sub-ren' e (Ewkᵣ-l l′) (Eliftₛ-l ρ* ρ) ⟩
+    Esub (Twkᵣ Tidᵣ ∘ᵣₛ Tliftₛ ρ* l′) (Ewkᵣ-l l′ >>RS Eliftₛ-l ρ* ρ) e
+  R.≅⟨ H.cong (λ ■ → Esub (Twkᵣ Tidᵣ ∘ᵣₛ Tliftₛ ρ* l′) ■ e) (swap-sub-Ewk-l ρ l′) ⟩
+    Esub (ρ* ∘ₛᵣ Twkᵣ Tidᵣ) (ρ >>SR Ewkᵣ-l l′) e
+  R.≅⟨ H.sym (Eassoc-ren-sub' e ρ (Ewkᵣ-l l′)) ⟩
+    Eren (Twkᵣ Tidᵣ) (Ewkᵣ-l l′) (Esub ρ* ρ e)
+  R.∎
+
+-- ∘ₛₛ Fusion
+
+Esub↑-dist-∘ₛₛ :
+  ∀ {σ* : TSub Δ₁ Δ₂} {ρ* : TSub Δ₂ Δ₃} {Γ₁ : TEnv Δ₁} {Γ₂ : TEnv Δ₂} {Γ₃ : TEnv Δ₃} 
+    (T : Type Δ₁ l)
+    (σ : ESub σ* Γ₁ Γ₂) (ρ : ESub ρ* Γ₂ Γ₃) →
+  Eliftₛ {T = T} σ* σ >>SS Eliftₛ ρ* ρ ≅ Eliftₛ {T = T} (σ* ∘ₛₛ ρ*) (σ >>SS ρ)
+Esub↑-dist-∘ₛₛ {Δ₂ = Δ₂} {Δ₃ = Δ₃} {l = l'} {σ* = σ*} {ρ* = ρ*} {Γ₁ = Γ₁} {Γ₂ = Γ₂} {Γ₃ = Γ₃} T σ ρ =
+  fun-ext-h-ESub refl (cong (_◁ Γ₃) (assoc-sub-sub T σ* ρ*)) λ l T′ → λ where
+  here →
+    let
+      F₁ = (Expr _ (Tsub ρ* (Tsub σ* T) ◁ Γ₃)) ; E₁ = (assoc-sub-sub T σ* ρ*) ; sub₁ = subst F₁ E₁
+    in
+    R.begin
+      sub₁ (` here)
+    R.≅⟨ H.≡-subst-removable F₁ E₁ _ ⟩ 
+      ` here
+    R.≅⟨ H.cong {B = λ ■ → Expr _ (■ ◁ Γ₃) ■} (λ ■ → `_ {Γ = ■ ◁ Γ₃} {T = ■} here) (H.≡-to-≅ (assoc-sub-sub T σ* ρ*)) ⟩ 
+      ` here
+    R.≅⟨ refl ⟩
+      Eliftₛ (σ* ∘ₛₛ ρ*) (σ >>SS ρ) l' T here
+    R.∎
+  (there x) →
+    let
+      F₁ = (Expr _ (Tsub ρ* (Tsub σ* T) ◁ Γ₃))                  ; E₁ = (assoc-sub-sub T′ σ* ρ*)                         ; sub₁ = subst F₁ E₁
+      F₂ = (Expr _ (Tsub σ* T ◁ _))                             ; E₂ = (TidᵣT≡T (Tsub σ* T′))                           ; sub₂ = subst F₂ E₂
+      F₃ = (Expr Δ₃ (Tsub (λ z x₁ → Tsub ρ* (σ* z x₁)) T ◁ Γ₃)) ; E₃ = (TidᵣT≡T (Tsub (λ z x₁ → Tsub ρ* (σ* z x₁)) T′)) ; sub₃ = subst F₃ E₃
+      F₄ = (Expr Δ₃ Γ₃)                                         ; E₄ = E₁                                               ; sub₄ = subst F₄ E₄
+    in
+    R.begin
+      (Eliftₛ {T = T} σ* σ >>SS Eliftₛ ρ* ρ) l T′ (there x)
+    R.≅⟨ refl ⟩
+      sub₁ (Esub ρ* (Eliftₛ ρ* ρ) (sub₂ (Eren Tidᵣ (Ewkᵣ Tidᵣ Eidᵣ) (σ l T′ x))))
+    R.≅⟨ H.≡-subst-removable F₁ E₁ _ ⟩
+      Esub ρ* (Eliftₛ ρ* ρ) (sub₂ (Eren Tidᵣ (Ewkᵣ Tidᵣ Eidᵣ) (σ l T′ x)))
+    R.≅⟨ H.cong₂ {B = Expr Δ₂ (Tsub σ* T ◁ Γ₂)} (λ _ → Esub ρ* (Eliftₛ ρ* ρ))
+                 (H.≡-to-≅ (sym (TidᵣT≡T (Tsub σ* T′)))) (H.≡-subst-removable F₂ E₂ _) ⟩
+      Esub ρ* (Eliftₛ ρ* ρ) (Eren Tidᵣ (Ewkᵣ Tidᵣ Eidᵣ) (σ l T′ x))
+    R.≅⟨ swap-Esub-Ewk ρ (Tsub σ* T) (σ l T′ x) ⟩
+      Eren Tidᵣ (Ewkᵣ {T = Tsub ρ* (Tsub σ* T)} Tidᵣ Eidᵣ) (Esub ρ* ρ (σ l T′ x))
+    R.≅⟨ H.cong (λ ■ → Eren Tidᵣ (Ewkᵣ {T = ■} Tidᵣ Eidᵣ) (Esub ρ* ρ (σ l T′ x)))
+                (H.≡-to-≅ (assoc-sub-sub T σ* ρ*)) ⟩
+      Eren Tidᵣ (Ewkᵣ {T = Tsub (σ* ∘ₛₛ ρ*) T} Tidᵣ Eidᵣ) (Esub ρ* ρ (σ l T′ x))
+    R.≅⟨ H.cong₂ {B = Expr Δ₃ Γ₃} (λ _ → Eren Tidᵣ (Ewkᵣ Tidᵣ Eidᵣ))
+                 (H.≡-to-≅ (assoc-sub-sub T′ σ* ρ*)) (H.sym (H.≡-subst-removable F₄ E₄ _)) ⟩
+      Eren Tidᵣ (Ewkᵣ Tidᵣ Eidᵣ) (sub₄ (Esub ρ* ρ (σ l T′ x)))
+    R.≅⟨ H.sym (H.≡-subst-removable F₃ E₃ _) ⟩
+      sub₃ (Eren Tidᵣ (Ewkᵣ Tidᵣ Eidᵣ) (sub₄ (Esub ρ* ρ (σ l T′ x))))
+    R.≅⟨ refl ⟩
+      sub₃ (Eren Tidᵣ (Ewkᵣ Tidᵣ Eidᵣ) ((σ >>SS ρ) _ _ x))
+    R.≅⟨ refl ⟩
+      Ewk ((σ >>SS ρ) _ _ x)
+    R.≅⟨ refl ⟩
+      Eliftₛ {T = T} (σ* ∘ₛₛ ρ*) (σ >>SS ρ) l T′ (there x)
+    R.∎
+
+Esub↑-dist-∘ₛₛ-l :
+  ∀ {σ* : TSub Δ₁ Δ₂} {ρ* : TSub Δ₂ Δ₃}
+    {Γ₁ : TEnv Δ₁} {Γ₂ : TEnv Δ₂} {Γ₃ : TEnv Δ₃}
+    {l : Level} (σ : ESub σ* Γ₁ Γ₂) (ρ : ESub ρ* Γ₂ Γ₃) →
+  Eliftₛ-l {l = l} σ* σ >>SS Eliftₛ-l ρ* ρ ≅ Eliftₛ-l {l = l} (σ* ∘ₛₛ ρ*) (σ >>SS ρ)
+Esub↑-dist-∘ₛₛ-l {Δ₁} {Δ₂} {Δ₃} {σ*} {ρ*} {Γ₁} {Γ₂} {Γ₃} {l} σ ρ =
+  fun-ext-h-ESub (sym (sub↑-dist-∘ₛₛ l σ* ρ*)) refl λ l′ T → λ where
+    (tskip {T = T′} x) →
+      let
+        F₁ = (Expr (l ∷ Δ₃) (l ◁* Γ₃)) ; E₁ = (assoc-sub-sub (Tren (Twkᵣ Tidᵣ) T′) (Tliftₛ σ* l) (Tliftₛ ρ* l)) ; sub₁ = subst F₁ E₁
+        F₂ = (Expr (l ∷ Δ₂) (l ◁* Γ₂)) ; E₂ = (sym (swap-Tsub-Twk σ* T′))                                       ; sub₂ = subst F₂ E₂
+        F₃ = (Expr (l ∷ Δ₃) (l ◁* Γ₃)) ; E₃ = (sym (swap-Tsub-Twk (σ* ∘ₛₛ ρ*) T′))                              ; sub₃ = subst F₃ E₃
+        F₄ = (Expr Δ₃ Γ₃)              ; E₄ = (assoc-sub-sub T′ σ* ρ*)                                          ; sub₄ = subst F₄ E₄
+      in
+      R.begin
+        (Eliftₛ-l σ* σ >>SS Eliftₛ-l ρ* ρ) l′ (Twk T′) (tskip x)
+      R.≅⟨ refl ⟩
+        sub₁ (Esub (Tliftₛ ρ* l) (Eliftₛ-l ρ* ρ) (sub₂ (Eren (Twkᵣ Tidᵣ) (Ewkᵣ-l l) (σ l′ T′ x))))
+      R.≅⟨ H.≡-subst-removable F₁ E₁ _ ⟩
+        Esub (Tliftₛ ρ* l) (Eliftₛ-l ρ* ρ) (sub₂ (Eren (Twkᵣ Tidᵣ) (Ewkᵣ-l l) (σ l′ T′ x)))
+      R.≅⟨ H.cong₂ {B = Expr (l ∷ Δ₂) (l ◁* Γ₂)} (λ _ → Esub (Tliftₛ ρ* l) (Eliftₛ-l ρ* ρ))
+                   (H.≡-to-≅ (swap-Tsub-Twk σ* T′)) (H.≡-subst-removable F₂ E₂ _) ⟩
+        Esub (Tliftₛ ρ* l) (Eliftₛ-l ρ* ρ) (Eren (Twkᵣ Tidᵣ) (Ewkᵣ-l l) (σ l′ T′ x))
+      R.≅⟨ swap-Esub-Ewk-l ρ l (σ l′ T′ x) ⟩
+        Eren (Twkᵣ Tidᵣ) (Ewkᵣ-l l) (Esub ρ* ρ (σ l′ T′ x))
+      R.≅⟨ H.cong₂ {B = Expr Δ₃ Γ₃} (λ _ → Eren (Twkᵣ Tidᵣ) (Ewkᵣ-l l))
+                   (H.≡-to-≅ (assoc-sub-sub T′ σ* ρ*)) (H.sym (H.≡-subst-removable F₄ E₄ _)) ⟩
+        Eren (Twkᵣ Tidᵣ) (Ewkᵣ-l l) (sub₄ (Esub ρ* ρ (σ l′ T′ x)))
+      R.≅⟨ H.sym (H.≡-subst-removable F₃ E₃ _) ⟩
+        sub₃ (Eren (Twkᵣ Tidᵣ) (Ewkᵣ-l l) (sub₄ (Esub ρ* ρ (σ l′ T′ x))))
+      R.≅⟨ refl ⟩
+        Eliftₛ-l (σ* ∘ₛₛ ρ*) (σ >>SS ρ) l′ (Twk T′) (tskip x)
+      R.∎
+
+mutual
+  Eassoc-sub↑-sub↑-l :
+    ∀ {σ* : TSub Δ₁ Δ₂} {ρ* : TSub Δ₂ Δ₃}
+      {Γ₁ : TEnv Δ₁} {Γ₂ : TEnv Δ₂} {Γ₃ : TEnv Δ₃}
+      {l′ : Level}
+      {T : Type (l′ ∷ Δ₁) l}
+      (e : Expr (l′ ∷ Δ₁) (l′ ◁* Γ₁) T)
+      (σ : ESub σ* Γ₁ Γ₂) (ρ : ESub ρ* Γ₂ Γ₃) →
+    Esub (Tliftₛ σ* l′ ∘ₛₛ Tliftₛ ρ* l′) (Eliftₛ-l σ* σ >>SS Eliftₛ-l ρ* ρ) e ≅
+    Esub (Tliftₛ (σ* ∘ₛₛ ρ*) l′) (Eliftₛ-l (σ* ∘ₛₛ ρ*) (σ >>SS ρ)) e
+  Eassoc-sub↑-sub↑-l {Δ₁} {Δ₂} {Δ₃} {l} {σ*} {ρ*} {Γ₁} {Γ₂} {Γ₃} {l′} {T} e σ ρ =
+    R.begin
+      Esub (Tliftₛ σ* l′ ∘ₛₛ Tliftₛ ρ* l′) (Eliftₛ-l σ* σ >>SS Eliftₛ-l ρ* ρ) e
+    R.≅⟨ H.cong₂ (λ ■₁ ■₂ → Esub {Γ₂ = l′ ◁* Γ₃} ■₁ ■₂ e) (H.≡-to-≅ (sym (sub↑-dist-∘ₛₛ l′ σ* ρ*))) (Esub↑-dist-∘ₛₛ-l σ ρ) ⟩
+      Esub (Tliftₛ (σ* ∘ₛₛ ρ*) l′) (Eliftₛ-l (σ* ∘ₛₛ ρ*) (σ >>SS ρ)) e
+    R.∎
+
+  Eassoc-sub↑-sub↑ :
+    ∀ {σ* : TSub Δ₁ Δ₂} {ρ* : TSub Δ₂ Δ₃}
+      {Γ₁ : TEnv Δ₁}{Γ₂ : TEnv Δ₂}{Γ₃ : TEnv Δ₃}
+      {T : Type Δ₁ l}
+      {T′ : Type Δ₁ l′}
+      (e : Expr Δ₁ (T′ ◁  Γ₁) T)
+      (σ : ESub σ* Γ₁ Γ₂) (ρ : ESub ρ* Γ₂ Γ₃) →
+    Esub ρ* (Eliftₛ {T = Tsub σ* T′} ρ* ρ) (Esub σ* (Eliftₛ σ* σ) e) ≅
+    Esub (σ* ∘ₛₛ ρ*) (Eliftₛ {T = T′} (σ* ∘ₛₛ ρ*) (σ >>SS ρ)) e
+  Eassoc-sub↑-sub↑ {Δ₃ = Δ₃} {σ* = σ*} {ρ* = ρ*} {Γ₁ = Γ₁} {Γ₃ = Γ₃} {T = T} {T′ = T′} e σ ρ =
+    R.begin
+      Esub ρ* (Eliftₛ ρ* ρ) (Esub σ* (Eliftₛ σ* σ) e)
+    R.≅⟨ Eassoc-sub-sub' e (Eliftₛ σ* σ) (Eliftₛ ρ* ρ) ⟩
+      Esub (σ* ∘ₛₛ ρ*) ((Eliftₛ σ* σ) >>SS (Eliftₛ ρ* ρ)) e
+    R.≅⟨ H.cong₂ {B = λ ■ → ESub (σ* ∘ₛₛ ρ*) (_ ◁ Γ₁) (■ ◁ Γ₃)}
+                 (λ _ ■ → Esub (σ* ∘ₛₛ ρ*) ■ e)
+                 (H.≡-to-≅ (assoc-sub-sub T′ σ* ρ*)) (Esub↑-dist-∘ₛₛ _ σ ρ) ⟩
+      Esub (σ* ∘ₛₛ ρ*) (Eliftₛ (σ* ∘ₛₛ ρ*) (σ >>SS ρ)) e
+    R.∎
+
+  Eassoc-sub-sub' : 
+      {σ* : TSub Δ₁ Δ₂} {ρ* : TSub Δ₂ Δ₃}
+    → {Γ₁ : TEnv Δ₁}{Γ₂ : TEnv Δ₂}{Γ₃ : TEnv Δ₃}
+    → {T : Type Δ₁ l}
+    → (e : Expr Δ₁ Γ₁ T)
+    → (σ : ESub σ* Γ₁ Γ₂) (ρ : ESub ρ* Γ₂ Γ₃)
+    → Esub ρ* ρ (Esub σ* σ e) ≅ Esub (σ* ∘ₛₛ ρ*) (σ >>SS ρ) e
+  Eassoc-sub-sub' {Δ₁} {Δ₂} {Δ₃} {.zero} {σ*} {ρ*} {Γ₁} {Γ₂} {Γ₃} {.`ℕ} (# n) σ ρ =
+    refl
+  Eassoc-sub-sub' {Δ₁} {Δ₂} {Δ₃} {l} {σ*} {ρ*} {Γ₁} {Γ₂} {Γ₃} {T} (` x) σ ρ =
+    let F₁ = (Expr Δ₃ Γ₃) ; E₁ = (assoc-sub-sub T σ* ρ*) ; sub₁ = subst F₁ E₁ in
+    R.begin
+      Esub ρ* ρ (Esub σ* σ (` x))
+    R.≅⟨ refl ⟩
+      Esub ρ* ρ (σ l T x)
+    R.≅⟨ H.sym (H.≡-subst-removable F₁ E₁ _) ⟩
+      sub₁ (Esub ρ* ρ (σ l T x))
+    R.≅⟨ refl ⟩
+      Esub (σ* ∘ₛₛ ρ*) (σ >>SS ρ) (` x)
+    R.∎
+  Eassoc-sub-sub' {Δ₁} {Δ₂} {Δ₃} {_} {σ*} {ρ*} {Γ₁} {Γ₂} {Γ₃} {T₁ ⇒ T₂} (ƛ e) σ ρ =
+    R.begin
+      ƛ Esub ρ* (Eliftₛ ρ* ρ) (Esub σ* (Eliftₛ σ* σ) e)
+    R.≅⟨ Hcong₃ {C = λ ■₁ ■₂ → Expr Δ₃ (■₁ ◁ Γ₃) ■₂} (λ _ _ ■ → ƛ ■)
+                (H.≡-to-≅ (assoc-sub-sub T₁ σ* ρ*))
+                (H.≡-to-≅ (assoc-sub-sub T₂ σ* ρ*))
+                (Eassoc-sub↑-sub↑ e σ ρ)  ⟩
+      ƛ (Esub (σ* ∘ₛₛ ρ*) (Eliftₛ (σ* ∘ₛₛ ρ*) (σ >>SS ρ)) e)
+    R.≅⟨ refl ⟩
+      Esub (σ* ∘ₛₛ ρ*) (σ >>SS ρ) (ƛ e)
+    R.∎
+  Eassoc-sub-sub' {Δ₁} {Δ₂} {Δ₃} {l} {σ*} {ρ*} {Γ₁} {Γ₂} {Γ₃} {T} (_·_ {T = T₁} {T′ = T₂} e₁ e₂) σ ρ =
+    R.begin
+      Esub ρ* ρ (Esub σ* σ (e₁ · e₂))
+    R.≅⟨ refl ⟩
+      Esub ρ* ρ (Esub σ* σ e₁) · Esub ρ* ρ (Esub σ* σ e₂)
+    R.≅⟨ Hcong₄ {C = λ ■₁ ■₂ → Expr Δ₃ Γ₃ (■₂ ⇒ ■₁)} {D = λ _ ■₂ _ → Expr Δ₃ Γ₃ ■₂} (λ _ _ → _·_)
+                (H.≡-to-≅ (assoc-sub-sub T σ* ρ*)) (H.≡-to-≅ (assoc-sub-sub T₁ σ* ρ*))
+                (Eassoc-sub-sub' e₁ σ ρ) (Eassoc-sub-sub' e₂ σ ρ) ⟩
+      Esub (σ* ∘ₛₛ ρ*) (σ >>SS ρ) e₁ · Esub (σ* ∘ₛₛ ρ*) (σ >>SS ρ) e₂
+    R.≅⟨ refl ⟩
+      Esub (σ* ∘ₛₛ ρ*) (σ >>SS ρ) (e₁ · e₂)
+    R.∎
+  Eassoc-sub-sub' {Δ₁} {Δ₂} {Δ₃} {_} {σ*} {ρ*} {Γ₁} {Γ₂} {Γ₃} {`∀α l , T} (Λ l ⇒ e) σ ρ =
+    R.begin
+      Esub ρ* ρ (Esub σ* σ (Λ l ⇒ e))
+    R.≅⟨ refl ⟩
+      Λ l ⇒ Esub (Tliftₛ ρ* l) (Eliftₛ-l ρ* ρ) (Esub (Tliftₛ σ* l) (Eliftₛ-l σ* σ) e)
+    R.≅⟨ H.cong₂ {B = Expr (l ∷ Δ₃) (l ◁* Γ₃)} (λ _ → Λ l ⇒_)
+                 (H.≡-to-≅ (assoc-sub-sub T (Tliftₛ σ* _) (Tliftₛ ρ* _)))
+                 (Eassoc-sub-sub' e (Eliftₛ-l σ* σ) (Eliftₛ-l ρ* ρ)) ⟩
+      Λ l ⇒ Esub (Tliftₛ σ* l ∘ₛₛ Tliftₛ ρ* l) (Eliftₛ-l σ* σ >>SS Eliftₛ-l ρ* ρ) e
+    R.≅⟨ H.cong₂ {B = Expr (l ∷ Δ₃) (l ◁* Γ₃)} (λ _ → Λ l ⇒_)
+                 (H.≡-to-≅ (cong (λ σ → Tsub σ T) (sym (sub↑-dist-∘ₛₛ _ σ* ρ*))))
+                 (Eassoc-sub↑-sub↑-l e σ ρ) ⟩
+      Λ l ⇒ Esub (Tliftₛ (σ* ∘ₛₛ ρ*) l) (Eliftₛ-l (σ* ∘ₛₛ ρ*) (σ >>SS ρ)) e
+    R.≅⟨ refl ⟩
+      Esub (σ* ∘ₛₛ ρ*) (σ >>SS ρ) (Λ l ⇒ e)
+    R.∎
+  Eassoc-sub-sub' {Δ₁} {Δ₂} {Δ₃} {l} {σ*} {ρ*} {Γ₁} {Γ₂} {Γ₃} {_} (_∙_ {T = T} e T′) σ ρ =
+    let
+      F₂ = Expr Δ₂ Γ₂ ; E₂ = sym (swap-Tsub-[] σ* T T′)                                ; sub₂ = subst F₂ E₂
+      F₃ = Expr Δ₃ Γ₃ ; E₃ = sym (swap-Tsub-[] (σ* ∘ₛₛ ρ*) T T′)                       ; sub₃ = subst F₃ E₃
+      F₅ = Expr Δ₃ Γ₃ ; E₅ = sym (swap-Tsub-[] ρ* (Tsub (Tliftₛ σ* _) T) (Tsub σ* T′)) ; sub₅ = subst F₅ E₅
+    in
+    R.begin
+      Esub ρ* ρ (Esub σ* σ (e ∙ T′))
+    R.≅⟨ refl ⟩
+      Esub ρ* ρ (sub₂ (Esub σ* σ e ∙ Tsub σ* T′))
+    R.≅⟨ H.cong₂ {B = Expr Δ₂ Γ₂} (λ _ ■ → Esub ρ* ρ ■) (H.≡-to-≅ (sym E₂)) (H.≡-subst-removable F₂ E₂ _) ⟩
+      Esub ρ* ρ (Esub σ* σ e ∙ Tsub σ* T′)
+    R.≅⟨ refl ⟩
+      sub₅ (Esub ρ* ρ (Esub σ* σ e) ∙ Tsub ρ* (Tsub σ* T′))
+    R.≅⟨ H.≡-subst-removable F₅ E₅ _ ⟩
+      Esub ρ* ρ (Esub σ* σ e) ∙ Tsub ρ* (Tsub σ* T′)
+    R.≅⟨ Hcong₃ {B = λ ■ → Expr Δ₃ Γ₃ (`∀α _ , ■)} {C = λ _ _ → Type Δ₃ _ } (λ _ ■₁ ■₂ → ■₁ ∙ ■₂)
+         (H.≡-to-≅ (assoc-sub↑-sub↑ T σ* ρ*)) (Eassoc-sub-sub' e σ ρ) (H.≡-to-≅ (assoc-sub-sub T′ σ* ρ*)) ⟩
+      Esub (σ* ∘ₛₛ ρ*) (σ >>SS ρ) e ∙ Tsub (σ* ∘ₛₛ ρ*) T′
+    R.≅⟨ H.sym (H.≡-subst-removable F₃ E₃ _) ⟩
+      sub₃ (Esub (σ* ∘ₛₛ ρ*) (σ >>SS ρ) e ∙ (Tsub (σ* ∘ₛₛ ρ*) T′))
+    R.≅⟨ refl ⟩
+      Esub (σ* ∘ₛₛ ρ*) (σ >>SS ρ) (e ∙ T′)
+    R.∎ 
+
 -- TODO: The following lemmas are only for backwards-compatibility with HEq
 
 Eassoc-ren-ren : 
@@ -1377,6 +1667,26 @@ Eassoc-ren-sub {Δ₁} {Δ₂} {Δ₃} {l} {σ*} {ρ*} {Γ₁} {Γ₂} {Γ₃} {
       Eren ρ* ρ (Esub σ* σ e)
     R.≅⟨ Eassoc-ren-sub' e σ ρ ⟩
       Esub (σ* ∘ₛᵣ ρ*) (σ >>SR ρ) e
+    R.∎
+  )
+
+Eassoc-sub-sub : 
+    {σ₁* : TSub Δ₁ Δ₂}{σ₂* : TSub Δ₂ Δ₃}
+  → {Γ₁ : TEnv Δ₁}{Γ₂ : TEnv Δ₂}{Γ₃ : TEnv Δ₃}
+  → {T : Type Δ₁ l}
+  → (e : Expr Δ₁ Γ₁ T)
+  → (σ₁ : ESub σ₁* Γ₁ Γ₂) → (σ₂ : ESub σ₂* Γ₂ Γ₃)
+  → let sub = subst (Expr Δ₃ Γ₃) (assoc-sub-sub T σ₁* σ₂*) in
+    sub (Esub σ₂* σ₂ (Esub σ₁* σ₁ e)) ≡ Esub (σ₁* ∘ₛₛ σ₂*) (σ₁ >>SS σ₂) e
+Eassoc-sub-sub {Δ₁} {Δ₂} {Δ₃} {l} {σ*} {ρ*} {Γ₁} {Γ₂} {Γ₃} {T} e σ ρ =
+  let F₁ = (Expr Δ₃ Γ₃) ; E₁ = (assoc-sub-sub T σ* ρ*) ; sub₁ = subst F₁ E₁ in
+  H.≅-to-≡ (
+    R.begin
+      sub₁ (Esub ρ* ρ (Esub σ* σ e))
+    R.≅⟨ H.≡-subst-removable F₁ E₁ _ ⟩
+      Esub ρ* ρ (Esub σ* σ e)
+    R.≅⟨ Eassoc-sub-sub' e σ ρ ⟩
+      Esub (σ* ∘ₛₛ ρ*) (σ >>SS ρ) e
     R.∎
   )
 
