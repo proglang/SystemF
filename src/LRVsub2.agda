@@ -17,6 +17,9 @@ open import Relation.Binary.PropositionalEquality
 open import Axiom.Extensionality.Propositional using (∀-extensionality; Extensionality)
 open ≡-Reasoning
 
+open import Relation.Binary.HeterogeneousEquality as H using (_≅_; refl)
+-- module R = H.≅-Reasoning
+
 open import Ext
 open import SetOmega
 open import SubstProperties
@@ -89,6 +92,17 @@ Tren-act-wk-ext ρ T′ R =
     → Tren-act (Twkᵣ Tidᵣ) (REext ρ (T′ , R)) l₁ x ≡ ρ l₁ x
   helper ρ T′ R l₁ here = refl
   helper ρ T′ R l₁ (there x) = refl
+
+subst-fun-special : ∀
+    {ℓa} {A : Set ℓa}
+    {ℓr} {R₁ R₂ : A → Set ℓr}
+    {F₁ : (a : A) → R₁ a} {F₂ : (a : A) → R₂ a}
+  → (x : A)
+  → (F₁≡F₂ : F₁ ≡ subst id {!!} F₂)
+  → (f : (a : A) → R₁ a)
+  → (eq1 : ((a : A) → R₁ a) ≡ ((a : A) → R₂ a))
+  → subst id eq1 f x ≡ subst id {!!} (f x)
+subst-fun-special = {!!}
 
 -- generalizing to general type substitution
 
@@ -2049,7 +2063,36 @@ LRVsub {Δ₁ = Δ₁} (`∀α_,_ {l′ = l′} l T) ρ τ* v z =
                                      ⟨ Value , (sym (assoc-sub-sub T (Tliftₛ τ* l) (subst←RE (REext ρ (T′ , R))))) ⟩∷ [])
                                     (⟨ Value , eq-1↑ ⟩∷ []) v₁)
               --------------------------------------------------
-                (begin
+                (let
+                  eq-3 =  (trans
+                            (congωl ⟦ T ⟧
+                             (congωω (⟦ T′ ⟧ [] ∷_)
+                              (conglω (λ σ → subst-to-env* σ [])
+                               (trans (subst←RE-drop-ext (REext (Tsub-act τ* ρ) (T′ , R)))
+                                (congωl (λ ρ₁ → Tdropₛ (subst←RE ρ₁))
+                                 (Tsub-act-REext ρ τ* T′ R))))))
+                            (sym
+                             (step-≡
+                              (⟦ Tsub (Tliftₛ τ* l) T ⟧
+                               (subst-to-env* (subst←RE (REext ρ (T′ , R))) []))
+                              (trans
+                               (congωl ⟦ T ⟧
+                                (subst-to-env*-comp (Tliftₛ τ* l) (subst←RE (REext ρ (T′ , R)))
+                                 []))
+                               refl)
+                              (subst-preserves (Tliftₛ τ* l) T))))
+                  het = H.≅-to-≡
+                       (R.begin
+                         subst id eq-2↑ z (⟦ T′ ⟧ [])
+                       R.≅⟨ H.cong₂ {B = λ q → (a : Set l) → q} (λ _ z → z (⟦ T′ ⟧ []))
+                                    {!z!}
+                                    {! H.≡-subst-removable id eq-2↑ _!} ⟩
+                         z (⟦ T′ ⟧ [])
+                       R.≅⟨ H.sym (H.≡-subst-removable id eq-3 _) ⟩
+                         subst id eq-3 (z (⟦ T′ ⟧ []))
+                       R.∎)
+                in
+                begin
                   subst
                     (λ _ →
                        ⟦ Tsub (Tliftₛ τ* l) T ⟧
@@ -2186,7 +2229,7 @@ LRVsub {Δ₁ = Δ₁} (`∀α_,_ {l′ = l′} l T) ρ τ* v z =
                         refl)
                        (subst-preserves (Tliftₛ τ* l) T))))
                     (z (⟦ T′ ⟧ []))
-                ≡⟨ sym {!!} ⟩
+                ≡⟨ sym het ⟩
                   subst id eq-2↑ z (⟦ T′ ⟧ [])
                 ∎)
               -- z                : (α : Set l) → ⟦ T ⟧ (α ∷ subst-to-env* (subst←RE (Tsub-act τ* ρ)) [])
