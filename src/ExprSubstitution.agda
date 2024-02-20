@@ -104,3 +104,31 @@ _[_]E {T₁ = T₁} {T₂ = T₂} e e′ =
 
 _[_]ET : Expr (l ∷ Δ) (l ◁* Γ) T → (T′ : Type Δ l) → Expr Δ Γ (T [ T′ ]T)
 e [ T′ ]ET = Esub (Textₛ Tidₛ T′) (Eextₛ-l Tidₛ Eidₛ) e
+
+sub0 : Expr Δ Γ (Tsub Tidₛ T₁) → ESub Tidₛ (T₁ ◁ Γ) Γ
+sub0 e′ = Eextₛ Tidₛ Eidₛ e′
+
+sub0′ : Expr Δ Γ T₁ → ESub Tidₛ (T₁ ◁ Γ) Γ
+sub0′ e′ = Eextₛ Tidₛ Eidₛ (subst (Expr _ _) (sym (TidₛT≡T _)) e′)
+
+-- composition of expression substitutions and renamings
+
+_>>SR_ : ∀ {Δ₁}{Δ₂}{Δ₃}{σ* : TSub Δ₁ Δ₂} {ρ* : TRen Δ₂ Δ₃} {Γ₁ : TEnv Δ₁}{Γ₂ : TEnv Δ₂}{Γ₃ : TEnv Δ₃}
+  → ESub σ* Γ₁ Γ₂ → ERen ρ* Γ₂ Γ₃ → ESub (σ* ∘ₛᵣ ρ*) Γ₁ Γ₃
+_>>SR_ {Δ₃ = Δ₃}{σ* = σ*}{ρ* = ρ*}{Γ₃ = Γ₃} σ ρ l T x
+  = subst (Expr Δ₃ Γ₃) (assoc-ren-sub T σ* ρ*) (Eren ρ* ρ (σ _ _ x))
+
+_>>RS_ : ∀ {Δ₁}{Δ₂}{Δ₃}{ρ* : TRen Δ₁ Δ₂} {σ* : TSub Δ₂ Δ₃} {Γ₁ : TEnv Δ₁}{Γ₂ : TEnv Δ₂}{Γ₃ : TEnv Δ₃}
+  → ERen ρ* Γ₁ Γ₂ → ESub σ* Γ₂ Γ₃ → ESub (ρ* ∘ᵣₛ σ*) Γ₁ Γ₃
+_>>RS_ {Δ₃ = Δ₃}{ρ* = ρ*}{σ* = σ*}{Γ₃ = Γ₃} ρ σ l T x
+  = subst (Expr Δ₃ Γ₃) (assoc-sub-ren T ρ* σ*) (σ _ _ (ρ _ _ x))
+
+_>>SS_ : ∀ {Δ₁}{Δ₂}{Δ₃}{σ₁* : TSub Δ₁ Δ₂} {σ₂* : TSub Δ₂ Δ₃} {Γ₁ : TEnv Δ₁}{Γ₂ : TEnv Δ₂}{Γ₃ : TEnv Δ₃}
+  → ESub σ₁* Γ₁ Γ₂ → ESub σ₂* Γ₂ Γ₃ → ESub (σ₁* ∘ₛₛ σ₂*) Γ₁ Γ₃
+_>>SS_ {Δ₃ = Δ₃}{σ₁* = σ₁*}{σ₂* = σ₂*}{Γ₃ = Γ₃} σ₁ σ₂ l T x
+  = subst (Expr Δ₃ Γ₃) (assoc-sub-sub T  σ₁* σ₂*) (Esub _ σ₂ (σ₁ _ _ x))
+
+_>>RR_ : ∀ {Δ₁}{Δ₂}{Δ₃}{ρ₁* : TRen Δ₁ Δ₂} {ρ₂* : TRen Δ₂ Δ₃} {Γ₁ : TEnv Δ₁}{Γ₂ : TEnv Δ₂}{Γ₃ : TEnv Δ₃}
+  → ERen ρ₁* Γ₁ Γ₂ → ERen ρ₂* Γ₂ Γ₃ → ERen (ρ₁* ∘ᵣᵣ ρ₂*) Γ₁ Γ₃
+_>>RR_ {Δ₃ = Δ₃}{ρ₁* = ρ₁*}{ρ₂* = ρ₂*}{Γ₃ = Γ₃} ρ₁ ρ₂ l T x
+  = subst (λ T → inn T Γ₃) (assoc-ren-ren T ρ₁* ρ₂*) (ρ₂ _ _ (ρ₁ _ _ x))

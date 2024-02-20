@@ -7,10 +7,10 @@ open import ExprSubstProperties
 
 open import SmallStep
 
--- open import Logical 
-open import Logical1
-open import LRVsubst
-open import Fundamental
+open import Logical2
+open import LRVren2
+open import LRVsub2
+open import Fundamental4
 
 open import Ext
 open import SetOmega
