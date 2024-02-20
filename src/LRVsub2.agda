@@ -2084,9 +2084,13 @@ LRVsub {Δ₁ = Δ₁} (`∀α_,_ {l′ = l′} l T) ρ τ* v z =
                   het = H.≅-to-≡
                        (R.begin
                          subst id eq-2↑ z (⟦ T′ ⟧ [])
-                       R.≅⟨ H.cong₂ {B = λ q → (a : Set l) → q} (λ _ z → z (⟦ T′ ⟧ []))
-                                    {!z!}
-                                    {! H.≡-subst-removable id eq-2↑ _!} ⟩
+                       R.≅⟨ H.cong₂ {A = Set l → Set l′} {B = λ q → (a : Set l) → q a} (λ _ z → z (⟦ T′ ⟧ []))
+                                    (H.≡-to-≅ (fun-ext (λ x → trans
+                                                               (trans (subst-preserves (Tliftₛ τ* l) T)
+                                                                (congωl (λ H → ⟦ T ⟧ (x ∷ H))
+                                                                 (subst-to-env*-wk τ* x (subst-to-env* ρ* []))))
+                                                               (congωl (λ ■ → ⟦ T ⟧ (x ∷ ■)) (subst-to-env*-comp τ* ρ* [])))))
+                                    (H.≡-subst-removable id eq-2↑ _) ⟩
                          z (⟦ T′ ⟧ [])
                        R.≅⟨ H.sym (H.≡-subst-removable id eq-3 _) ⟩
                          subst id eq-3 (z (⟦ T′ ⟧ []))
