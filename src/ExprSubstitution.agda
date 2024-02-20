@@ -104,3 +104,9 @@ _[_]E {T₁ = T₁} {T₂ = T₂} e e′ =
 
 _[_]ET : Expr (l ∷ Δ) (l ◁* Γ) T → (T′ : Type Δ l) → Expr Δ Γ (T [ T′ ]T)
 e [ T′ ]ET = Esub (Textₛ Tidₛ T′) (Eextₛ-l Tidₛ Eidₛ) e
+
+sub0 : Expr Δ Γ (Tsub Tidₛ T₁) → ESub Tidₛ (T₁ ◁ Γ) Γ
+sub0 e′ = Eextₛ Tidₛ Eidₛ e′
+
+sub0′ : Expr Δ Γ T₁ → ESub Tidₛ (T₁ ◁ Γ) Γ
+sub0′ e′ = Eextₛ Tidₛ Eidₛ (subst (Expr _ _) (sym (TidₛT≡T _)) e′)

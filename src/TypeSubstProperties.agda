@@ -172,12 +172,6 @@ TidᵣT≡T (T₁ ⇒ T₂) = cong₂ _⇒_ (TidᵣT≡T T₁) (TidᵣT≡T T₂
 TidᵣT≡T {Δ = Δ} (`∀α l , T) = cong (`∀α l ,_) (trans (cong (λ ρ → Tren ρ T) (TliftᵣTidᵣ≡Tidᵣ Δ l)) (TidᵣT≡T T))
 TidᵣT≡T `ℕ = refl
 
-∘ᵣₛ-neutralˡ : ∀ (σ : TSub Δ₁ Δ₂) → Tidᵣ ∘ᵣₛ σ ≡ σ
-∘ᵣₛ-neutralˡ σ = refl
-
-∘ₛᵣ-neutralˡ : ∀ (σ : TSub Δ₁ Δ₂) → σ ∘ₛᵣ Tidᵣ ≡ σ
-∘ₛᵣ-neutralˡ σ = fun-ext λ l → fun-ext λ x → TidᵣT≡T (σ l x)
-
 ρ[T]≡[ρT]ρ↑ : ∀ (T : Type Δ₁ l) (ρ : TRen Δ₁ Δ₂) →
   Textₛ Tidₛ T ∘ₛᵣ ρ ≡ (Tliftᵣ ρ _) ∘ᵣₛ Textₛ Tidₛ (Tren ρ T)
 ρ[T]≡[ρT]ρ↑ T ρ = fun-ext₂ λ where 
@@ -219,6 +213,18 @@ TidₛT≡T `ℕ = refl
       ≡⟨ sym (assoc-sub-ren (σ _ x) (Twkᵣ Tidᵣ) (Textₛ Tidₛ (Tsub σ T))) ⟩
         Tsub (Textₛ Tidₛ (Tsub σ T)) (Twk (σ _ x))
       ∎
+
+∘ᵣₛ-neutralˡ : ∀ (σ : TSub Δ₁ Δ₂) → Tidᵣ ∘ᵣₛ σ ≡ σ
+∘ᵣₛ-neutralˡ σ = refl
+
+∘ₛᵣ-neutralˡ : ∀ (σ : TSub Δ₁ Δ₂) → σ ∘ₛᵣ Tidᵣ ≡ σ
+∘ₛᵣ-neutralˡ σ = fun-ext λ l → fun-ext λ x → TidᵣT≡T (σ l x)
+
+TSub-id-left :  ∀ (σ* : TSub Δ₁ Δ₂) → (Tidₛ ∘ₛₛ σ*) ≡ σ*
+TSub-id-left {Δ₁} σ* = refl
+
+TSub-id-right : ∀ (σ* : TSub Δ₁ Δ₂) → (σ* ∘ₛₛ Tidₛ) ≡ σ*
+TSub-id-right {Δ₁ = Δ₁} σ* = fun-ext₂ λ l x → TidₛT≡T (σ* l x)
 
 swap-Tsub-[] : ∀ (σ : TSub Δ₁ Δ₂) (T : Type (l ∷ Δ₁) l′) (T′ : Type Δ₁ l) →
   Tsub σ (T [ T′ ]T) ≡ (Tsub (Tliftₛ σ _) T) [ Tsub σ T′ ]T  
