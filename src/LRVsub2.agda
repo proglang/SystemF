@@ -462,10 +462,7 @@ LRVsub (T₁ ⇒ T₂) ρ τ* v z =
             (subst id
              (cong Value
               (sym
-               (step-≡ (Tsub (subst←RE (Tsub-act τ* ρ)) T₁)
-                (step-≡˘ (Tsub (τ* ∘ₛₛ ρ*) T₁) (Tsub ρ* (Tsub τ* T₁) ∎)
-                 (assoc-sub-sub T₁ τ* ρ*))
-                refl)))
+               (trans (sym (assoc-sub-sub T₁ τ* ρ*)) refl)))
              w)
             z₁ →
             ∃-syntax
