@@ -180,12 +180,20 @@ fundamental Γ .(T [ T′ ]T) (_∙_ {l = l}{T = T} e  T′) ρ χ γ lrg
     ≡⟨ subst-elim′′′′ (Expr [] ∅) Value _⇓_ (Esub σ* σ e ∙ Tsub σ* T′) v₂ eq₁ ⟩
       subst (Expr [] ∅) eq₁ (Esub σ* σ e ∙ Tsub σ* T′) ⇓ subst Value eq₁ v₂ 
     ∎) e•T⇓v ,
+  let lrv-sub₀ = LRVsub T (REext ρ
+                           (Tsub σ* T′ ,
+                            subst
+                            (λ ⟦T⟧ → Value (Tsub σ* T′) → ⟦T⟧ → Set l)
+                            (sym (subst-preserves σ* T′)) (𝓥⟦ T′ ⟧ ρ)))
+                          Tidₛ
+                          (subst Value {!!} v₂) 
+  in
   let lrv-sub = LRVsub T (REext ρ
                            (Tsub σ* T′ ,
                             subst
                             (λ ⟦T⟧ → Value (Tsub σ* T′) → ⟦T⟧ → Set l)
                             (sym (subst-preserves σ* T′)) (𝓥⟦ T′ ⟧ ρ)))
-                          {!Tidₛ!}
+                          (λ l₂ z → ` {!z!})
                           ((subst Value
                               (trans
                                (trans

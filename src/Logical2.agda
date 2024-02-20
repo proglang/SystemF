@@ -101,14 +101,8 @@ RelEnv Δ = ∀ l → l ∈ Δ → Σ (Type [] l) REL
 Tren-act : TRen Δ₁ Δ₂ → RelEnv Δ₂ → RelEnv Δ₁
 Tren-act τ* ρ = λ l x → ρ l (τ* l x)
 
-REdrop′ : RelEnv (l ∷ Δ) → RelEnv Δ
-REdrop′ ρ l x = ρ l (there x)
-
 REdrop : RelEnv (l ∷ Δ) → RelEnv Δ
 REdrop = Tren-act (Twkᵣ Tidᵣ)
-
-REdrop-≡ : ∀ ρ l x → REdrop{l = l′}{Δ = Δ} ρ l x ≡ REdrop′ ρ l x
-REdrop-≡ ρ l x = refl
 
 REext : RelEnv Δ → (Σ (Type [] l) REL) → RelEnv (l ∷ Δ)
 REext ρ R _ here = R
@@ -186,6 +180,18 @@ Tren-act-REext-ext ρ τ* T′ R l₂ (there x₂) = refl
 
 Tren-act-REext : (ρ : RelEnv Δ₂) (τ* : TRen Δ₁ Δ₂) (T′ : Type [] l) (R : REL T′) → (REext (Tren-act τ* ρ) (T′ , R)) ≡ω Tren-act (Tliftᵣ τ* l) (REext ρ (T′ , R))
 Tren-act-REext ρ τ* T′ R = relenv-ext (Tren-act-REext-ext ρ τ* T′ R)
+
+-- Tren-act-wk-ext : ∀ (ρ : RelEnv Δ) (T′ : Type [] l) (R : REL T′)
+--   → (Tren-act (Twkᵣ Tidᵣ) (REext ρ (T′ , R))) ≡ω ρ
+-- Tren-act-wk-ext ρ T′ R =
+--   relenv-ext (helper ρ T′ R)
+--   where
+--   helper :  ∀ (ρ : RelEnv Δ) (T′ : Type [] l) (R : REL T′) l₁ (x : l₁ ∈ Δ)
+--     → Tren-act (Twkᵣ Tidᵣ) (REext ρ (T′ , R)) l₁ x ≡ ρ l₁ x
+--   helper ρ T′ R l₁ here = refl
+--   helper ρ T′ R l₁ (there x) = refl
+
+
 
 -- auxiliary
 

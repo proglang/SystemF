@@ -322,6 +322,18 @@ subst-fun : ∀ {ℓ}{ℓa ℓb ℓz}{Z : Set ℓz}{A : Z → Set ℓa}{B : Z �
   → subst (λ (z : Z) → A z → B z → Set ℓ) z₁≡z₂ f ≡ λ a b → f (subst A (sym z₁≡z₂) a) (subst B (sym z₁≡z₂) b)
 subst-fun refl f = refl
 
+--
+subst-fun-special : ∀
+    {ℓa} {A : Set ℓa}
+    {ℓr} {R₁ R₂ : A → Set ℓr}
+  → (R₁≡R₂ : R₁ ≡ R₂)
+  → (eq1 : ((a : A) → R₁ a) ≡ ((a : A) → R₂ a))
+  → (f : (a : A) → R₁ a)
+  → (x : A)
+  → subst id eq1 f x ≡ subst id (cong (λ r → r x) R₁≡R₂) (f x)
+subst-fun-special refl refl f x = refl
+
+
 subst-const : ∀ {a b}{A : Set a}{B : Set b}{x y : A}
   → (x≡y : x ≡ y)
   → {z : B}

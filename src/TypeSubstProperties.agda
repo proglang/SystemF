@@ -296,6 +296,16 @@ T[T′]T≡Tidₛ↑T[T′]T T T′ =
     (Tsub (Tliftₛ Tidₛ _) T [ T′ ]T)
   ∎
 
+Text-sub-sub : ∀ {l′}{Δ₁}{Δ₂}
+  → (σ* : TSub Δ₁ Δ₂)
+  → (T′ : Type Δ₁ l′)
+  → (x : Level)
+  → (y : x ∈ (l′ ∷ Δ₁))
+  → Textₛ σ* (Tsub σ* T′) x y ≡
+      (Textₛ Tidₛ T′ ∘ₛₛ σ*) x y
+Text-sub-sub σ* T′ x here = refl
+Text-sub-sub σ* T′ x (there y) = refl
+
 
 -- the action of renaming on semantic environments
 

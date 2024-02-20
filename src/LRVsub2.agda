@@ -32,77 +32,24 @@ open import SmallStep
 open import Logical2
 open import LRVren2
 
-Text-sub-sub : ∀ {l′}{Δ₁}{Δ₂}
-  → (σ* : TSub Δ₁ Δ₂)
-  → (T′ : Type Δ₁ l′)
-  → (x : Level)
-  → (y : x ∈ (l′ ∷ Δ₁))
-  → Textₛ σ* (Tsub σ* T′) x y ≡
-      (Textₛ Tidₛ T′ ∘ₛₛ σ*) x y
-Text-sub-sub σ* T′ x here = refl
-Text-sub-sub σ* T′ x (there y) = refl
+-- ext-σ-T′≡σ[T′] :
+--   (T′        : Type Δ l′)
+--   (T         : Type (l′ ∷ Δ) l)
+--   (ρ         : RelEnv Δ)
+--   (R′        : REL (Tsub (subst←RE ρ) T′))
+--   → Tsub (subst←RE (REext ρ (Tsub (subst←RE ρ) T′ , R′))) T ≡ Tsub (subst←RE ρ) (T [ T′ ]T)
+-- ext-σ-T′≡σ[T′] T′ T ρ R′ =
+--   begin
+--     Tsub (subst←RE (REext ρ (Tsub (subst←RE ρ) T′ , R′))) T
+--   ≡⟨ cong (λ τ → Tsub τ T) (subst←RE-ext-ext ρ (Tsub (subst←RE ρ) T′) R′) ⟩
+--     Tsub (Textₛ (subst←RE ρ) (Tsub (subst←RE ρ) T′)) T
+--   ≡⟨ cong (λ τ → Tsub τ T) (fun-ext₂ (Text-sub-sub (subst←RE ρ) T′)) ⟩
+--     Tsub (Textₛ Tidₛ T′ ∘ₛₛ subst←RE ρ) T
+--   ≡⟨ sym (assoc-sub-sub T (Textₛ Tidₛ T′) (subst←RE ρ)) ⟩
+--     Tsub (subst←RE ρ) (T [ T′ ]T)
+--   ∎ 
 
-ext-σ-T′≡σ[T′] :
-  (T′        : Type Δ l′)
-  (T         : Type (l′ ∷ Δ) l)
-  (ρ         : RelEnv Δ)
-  (R′        : REL (Tsub (subst←RE ρ) T′))
-  → Tsub (subst←RE (REext ρ (Tsub (subst←RE ρ) T′ , R′))) T ≡ Tsub (subst←RE ρ) (T [ T′ ]T)
-ext-σ-T′≡σ[T′] T′ T ρ R′ =
-  begin
-    Tsub (subst←RE (REext ρ (Tsub (subst←RE ρ) T′ , R′))) T
-  ≡⟨ cong (λ τ → Tsub τ T) (subst←RE-ext-ext ρ (Tsub (subst←RE ρ) T′) R′) ⟩
-    Tsub (Textₛ (subst←RE ρ) (Tsub (subst←RE ρ) T′)) T
-  ≡⟨ cong (λ τ → Tsub τ T) (fun-ext₂ (Text-sub-sub (subst←RE ρ) T′)) ⟩
-    Tsub (Textₛ Tidₛ T′ ∘ₛₛ subst←RE ρ) T
-  ≡⟨ sym (assoc-sub-sub T (Textₛ Tidₛ T′) (subst←RE ρ)) ⟩
-    Tsub (subst←RE ρ) (T [ T′ ]T)
-  ∎ 
-
-dist-substω :
-  ∀ {ℓ ℓ' ℓ₁} {A : Set ℓ} {B : Set ℓ'} {a₁ a₂ : A}
-    {F : A → Set ℓ₁} {G : B → Setω}
-  → (a→b : A → B)
-  → (f : ∀ {a} → F a → G (a→b a))
-  → (a₁≡a₂ : a₁ ≡ a₂)
-  → (b₁≡b₂ : a→b a₁ ≡ a→b a₂)
-  → (x : F a₁) 
-  → f {a₂} (subst F a₁≡a₂ x) ≡ω substωl G b₁≡b₂ (f {a₁} x)
-dist-substω _ _ refl refl _ = refl
-
-dist-subst-special : ∀ {la}{lv}{lr}
-  → {R : Set lr} {A A′ A″ : Set la} {V : Set lv}
-  → (f : V → A′ → R)
-  → (eq₁ : A′ ≡ A″)
-  → (eq₂ : A ≡ A″)
-  → (eq₃ : A ≡ A′)
-  → (v : V)
-  → (z : A)
-  → subst (λ A → (V → A → R)) eq₁ f v (subst id eq₂ z)  ≡ f v (subst id eq₃ z)
-dist-subst-special f refl refl refl v z = refl
-
---
-Tren-act-wk-ext : ∀ (ρ : RelEnv Δ) (T′ : Type [] l) (R : REL T′)
-  → (Tren-act (Twkᵣ Tidᵣ) (REext ρ (T′ , R))) ≡ω ρ
-Tren-act-wk-ext ρ T′ R =
-  relenv-ext (helper ρ T′ R)
-  where
-  helper :  ∀ (ρ : RelEnv Δ) (T′ : Type [] l) (R : REL T′) l₁ (x : l₁ ∈ Δ)
-    → Tren-act (Twkᵣ Tidᵣ) (REext ρ (T′ , R)) l₁ x ≡ ρ l₁ x
-  helper ρ T′ R l₁ here = refl
-  helper ρ T′ R l₁ (there x) = refl
-
-subst-fun-special : ∀
-    {ℓa} {A : Set ℓa}
-    {ℓr} {R₁ R₂ : A → Set ℓr}
-  → (R₁≡R₂ : R₁ ≡ R₂)
-  → (eq1 : ((a : A) → R₁ a) ≡ ((a : A) → R₂ a))
-  → (f : (a : A) → R₁ a)
-  → (x : A)
-  → subst id eq1 f x ≡ subst id (cong (λ r → r x) R₁≡R₂) (f x)
-subst-fun-special refl refl f x = refl
-
--- generalizing to general type substitution
+-- substitution action on RelEnv by composition
 
 Tsub-act : TSub Δ₁ Δ₂ → RelEnv Δ₂ → RelEnv Δ₁
 Tsub-act σ* ρ = λ l x →
@@ -201,6 +148,8 @@ Tsub-act-REext ρ τ* T′ R = relenv-ext (Tsub-act-REext-ext ρ τ* T′ R)
 subst←RE-sub : ∀ (ρ : RelEnv Δ₂) (τ* : TSub Δ₁ Δ₂)
   → (l′ : Level) (x : l′ ∈ Δ₁) → subst←RE (Tsub-act τ* ρ) l′ x ≡ (τ* ∘ₛₛ subst←RE ρ) l′ x
 subst←RE-sub ρ τ* l′ x = refl
+
+-- logical relation is compatible with type substitution
 
 LRVsub : ∀ {Δ₁}{Δ₂}{l}
   → (T : Type Δ₁ l)
@@ -485,14 +434,8 @@ LRVsub (T₁ ⇒ T₂) ρ τ* v z =
                (subst id
                 (sym
                  (cong₂ (λ T₃ → Expr [] (T₃ ◁ ∅))
-                  (step-≡ (Tsub (subst←RE (Tsub-act τ* ρ)) T₁)
-                   (step-≡˘ (Tsub (τ* ∘ₛₛ ρ*) T₁) (Tsub ρ* (Tsub τ* T₁) ∎)
-                    (assoc-sub-sub T₁ τ* ρ*))
-                   refl)
-                  (step-≡ (Tsub (subst←RE (Tsub-act τ* ρ)) T₂)
-                   (step-≡˘ (Tsub (τ* ∘ₛₛ ρ*) T₂) (Tsub ρ* (Tsub τ* T₂) ∎)
-                    (assoc-sub-sub T₂ τ* ρ*))
-                   refl)))
+                  (trans (sym (assoc-sub-sub T₁ τ* ρ*)) refl)
+                  (trans (sym (assoc-sub-sub T₂ τ* ρ*)) refl)))
                 e
                 [ exp w ]E)
                ⇓ v₁
@@ -506,14 +449,8 @@ LRVsub (T₁ ⇒ T₂) ρ τ* v z =
                    (subst id
                     (sym
                      (cong₂ (λ T₃ → Expr [] (T₃ ◁ ∅))
-                      (step-≡ (Tsub (subst←RE (Tsub-act τ* ρ)) T₁)
-                       (step-≡˘ (Tsub (τ* ∘ₛₛ ρ*) T₁) (Tsub ρ* (Tsub τ* T₁) ∎)
-                        (assoc-sub-sub T₁ τ* ρ*))
-                       refl)
-                      (step-≡ (Tsub (subst←RE (Tsub-act τ* ρ)) T₂)
-                       (step-≡˘ (Tsub (τ* ∘ₛₛ ρ*) T₂) (Tsub ρ* (Tsub τ* T₂) ∎)
-                        (assoc-sub-sub T₂ τ* ρ*))
-                       refl)))
+                       (trans (sym (assoc-sub-sub T₁ τ* ρ*)) refl)
+                       (trans (sym (assoc-sub-sub T₂ τ* ρ*)) refl)))
                     e
                     [ exp w ]E)
                    ⇓ v₁
