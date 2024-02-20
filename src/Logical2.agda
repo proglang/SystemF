@@ -138,16 +138,14 @@ subst←RE-ren ρ τ* l′ x = refl
 
 -- special case of composition sub o ren
 
+sublemma-ext : (σ : TSub Δ []) → ∀ l x → (Textₛ σ T) l x ≡ (Tliftₛ σ _ ∘ₛₛ Textₛ Tidₛ T) l x
+sublemma-ext σ l here = refl
+sublemma-ext{T = T} σ l (there x) =
+  trans (sym (TidₛT≡T (σ l x)))
+        (sym (assoc-sub-ren (σ _ x) (Twkᵣ Tidᵣ) (Textₛ Tidₛ T)))
+
 sublemma : (σ : TSub Δ []) → (Textₛ σ T) ≡ Tliftₛ σ _ ∘ₛₛ Textₛ Tidₛ T
-sublemma {T = T} σ = fun-ext₂ λ where 
-  _ here → refl
-  _ (there x) → begin 
-        σ _ x
-      ≡⟨ sym (TidₛT≡T (σ _ x)) ⟩
-        Tsub Tidₛ (σ _ x)
-      ≡⟨ sym (assoc-sub-ren (σ _ x) (Twkᵣ Tidᵣ) (Textₛ Tidₛ T)) ⟩
-        Tsub (Textₛ Tidₛ T) (Twk (σ _ x)) 
-      ∎
+sublemma {T = T} σ = fun-ext₂ (sublemma-ext σ)
 
 lemma2 : (σ : TSub Δ []) → (T  : Type (l ∷ Δ) l′) → (T′ : Type [] l)
   → Tsub (Tliftₛ σ l) T [ T′ ]T ≡ Tsub (Textₛ σ T′) T
