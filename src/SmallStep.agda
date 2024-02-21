@@ -1,13 +1,13 @@
 module SmallStep where
 
-open import Level
+open import Level renaming (suc to lsuc)
 open import Data.Product using (_×_; Σ; Σ-syntax; ∃-syntax; _,_; proj₁; proj₂)
 open import Data.Sum using (_⊎_)
 open import Data.Fin using (Fin) renaming (zero to fzero; suc to fsuc)
 open import Data.List using (List; []; _∷_; _++_; length; lookup; tabulate)
 open import Data.Unit.Polymorphic.Base using (⊤; tt)
 open import Data.Empty using (⊥)
-open import Data.Nat using (ℕ)
+open import Data.Nat using (ℕ; zero; suc)
 open import Function using (_∘_; id)
 open import Relation.Binary.PropositionalEquality
   using (_≡_; _≢_; refl; sym; trans; cong; cong₂; subst; subst₂; resp₂; cong-app; icong; module ≡-Reasoning)
@@ -32,10 +32,12 @@ data Val : Expr Δ Γ T → Set where
 
 data _↪_ : Expr Δ Γ T → Expr Δ Γ T → Set where
   β-ƛ : 
-     Val e₂ →
-     ((ƛ e₁) · e₂) ↪ (e₁ [ e₂ ]E)
+    Val e₂ →
+    ((ƛ e₁) · e₂) ↪ (e₁ [ e₂ ]E)
   β-Λ : ∀  {l l′ : Level} {T : Type Δ l} {T′ : Type (l ∷ Δ) l′} {e : Expr (l ∷ Δ) (l ◁* Γ) T′} →
-     ((Λ l ⇒ e) ∙ T) ↪ (e [ T ]ET)
+    ((Λ l ⇒ e) ∙ T) ↪ (e [ T ]ET)
+  β-suc :
+    `suc {Γ = Γ} (# n) ↪ (# (suc n))
   ξ-·₁ :
     e₁ ↪ e →
     (e₁ · e₂) ↪ (e · e₂)
@@ -46,3 +48,6 @@ data _↪_ : Expr Δ Γ T → Expr Δ Γ T → Set where
   ξ-∙ : ∀ {l l′ : Level} {T′ : Type Δ l′} {T : Type (l′ ∷ Δ) l} {e₁ e₂ : Expr Δ Γ (`∀α l′ , T)} →
     e₁ ↪ e₂ →
     (e₁ ∙ T′) ↪ (e₂ ∙ T′)
+  ξ-suc :
+    e₁ ↪ e →
+    `suc e₁ ↪ `suc e

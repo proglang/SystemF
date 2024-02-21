@@ -45,6 +45,7 @@ Eliftᵣ-l {Γ₂ = Γ₂} {l = l} ρ* ρ _ _ (tskip x) = subst id (cong (λ T �
 
 Eren : (ρ* : TRen Δ₁ Δ₂) → ERen ρ* Γ₁ Γ₂ → Expr Δ₁ Γ₁ T → Expr Δ₂ Γ₂ (Tren ρ* T)
 Eren ρ* ρ (# n) = # n
+Eren ρ* ρ (`suc e) = `suc (Eren ρ* ρ e)
 Eren ρ* ρ (` x) = ` ρ _ _ x
 Eren ρ* ρ (ƛ e) = ƛ Eren ρ* (Eliftᵣ ρ* ρ) e
 Eren ρ* ρ (e₁ · e₂) = Eren ρ* ρ e₁ · Eren ρ* ρ e₂
@@ -85,6 +86,7 @@ Eliftₛ-l σ* σ _ _ (tskip {T = T} x) = subst (Expr _ _) (sym (swap-Tsub-Twk �
 
 Esub : (σ* : TSub Δ₁ Δ₂) → ESub σ* Γ₁ Γ₂ → Expr Δ₁ Γ₁ T → Expr Δ₂ Γ₂ (Tsub σ* T)
 Esub σ* σ (# n) = # n
+Esub σ* σ (`suc e) = `suc (Esub σ* σ e)
 Esub σ* σ (` x) = σ _ _ x
 Esub σ* σ (ƛ e) = ƛ Esub σ* (Eliftₛ σ* σ) e
 Esub σ* σ (e₁ · e₂) = Esub σ* σ e₁ · Esub σ* σ e₂

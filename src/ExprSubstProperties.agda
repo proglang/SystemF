@@ -149,6 +149,7 @@ _~_ {Δ₁ = Δ₁} {Γ₁ = Γ₁} σ₁ σ₂ = ∀ l (T : Type Δ₁ l) → (
 
 Esub~ : {σ* : TSub Δ₁ Δ₂} → (σ₁ σ₂ : ESub σ* Γ₁ Γ₂) → σ₁ ~ σ₂ → (e : Expr Δ₁ Γ₁ T) → Esub σ* σ₁ e ≡ Esub σ* σ₂ e
 Esub~ σ₁ σ₂ σ₁~σ₂ (# n) = refl
+Esub~ σ₁ σ₂ σ₁~σ₂ (`suc e) = cong `suc (Esub~ σ₁ σ₂ σ₁~σ₂ e)
 Esub~ σ₁ σ₂ σ₁~σ₂ (` x) = σ₁~σ₂ _ _ x
 Esub~ σ₁ σ₂ σ₁~σ₂ (ƛ e) = cong ƛ_ (Esub~ _ _ (~-lift σ₁ σ₂ σ₁~σ₂) e)
 Esub~ σ₁ σ₂ σ₁~σ₂ (e · e₁) = cong₂ _·_ (Esub~ σ₁ σ₂ σ₁~σ₂ e) (Esub~ σ₁ σ₂ σ₁~σ₂ e₁)
@@ -263,6 +264,20 @@ Eidₛx≡x {T = T} x rewrite TidₛT≡T T = refl
 
 Eidₛe≡e : ∀ (e : Expr Δ Γ T) → Esub Tidₛ Eidₛ e ≡ subst (Expr _ _) (sym (TidₛT≡T _)) e
 Eidₛe≡e (# n) = refl
+Eidₛe≡e (`suc e) =
+  H.≅-to-≡ (
+    R.begin
+      Esub Tidₛ Eidₛ (`suc e)
+    R.≅⟨ refl ⟩
+      `suc (Esub Tidₛ Eidₛ e)
+    R.≅⟨ H.cong `suc (H.≡-to-≅ (Eidₛe≡e e)) ⟩
+      `suc (subst (Expr _ _) (sym (TidₛT≡T `ℕ)) e)
+    R.≅⟨ H.cong `suc (H.≡-subst-removable (Expr _ _) _ _) ⟩
+      `suc e
+    R.≅⟨ H.sym (H.≡-subst-removable (Expr _ _) _ _) ⟩
+      subst (Expr _ _) (sym (TidₛT≡T `ℕ)) (`suc e)
+    R.∎
+  )
 Eidₛe≡e {T = T} (` x) rewrite TidₛT≡T T = refl
 Eidₛe≡e {Γ = Γ} {T = _⇒_ {l = l} T₁ T₂} (ƛ e) =
   let

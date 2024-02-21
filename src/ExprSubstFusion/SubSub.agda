@@ -158,6 +158,16 @@ mutual
     → Esub ρ* ρ (Esub σ* σ e) ≅ Esub (σ* ∘ₛₛ ρ*) (σ >>SS ρ) e
   Eassoc-sub-sub' {Δ₁} {Δ₂} {Δ₃} {.zero} {σ*} {ρ*} {Γ₁} {Γ₂} {Γ₃} {.`ℕ} (# n) σ ρ =
     refl
+  Eassoc-sub-sub' {Δ₁} {Δ₂} {Δ₃} {.zero} {ρ*} {σ*} {Γ₁} {Γ₂} {Γ₃} {.`ℕ} (`suc e) ρ σ =
+    R.begin
+      Esub σ* σ (Esub ρ* ρ (`suc e))
+    R.≅⟨ refl ⟩
+      `suc (Esub σ* σ (Esub ρ* ρ e))
+    R.≅⟨ H.cong `suc (Eassoc-sub-sub' e ρ σ) ⟩
+      `suc (Esub (ρ* ∘ₛₛ σ*) (ρ >>SS σ) e)
+    R.≅⟨ refl ⟩
+      Esub (ρ* ∘ₛₛ σ*) (ρ >>SS σ) (`suc e)
+    R.∎
   Eassoc-sub-sub' {Δ₁} {Δ₂} {Δ₃} {l} {σ*} {ρ*} {Γ₁} {Γ₂} {Γ₃} {T} (` x) σ ρ =
     let F₁ = (Expr Δ₃ Γ₃) ; E₁ = (assoc-sub-sub T σ* ρ*) ; sub₁ = subst F₁ E₁ in
     R.begin

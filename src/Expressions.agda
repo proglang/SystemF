@@ -1,13 +1,13 @@
 module Expressions where
 
-open import Level
+open import Level renaming (suc to lsuc)
 open import Data.Product using (_×_; Σ; Σ-syntax; ∃-syntax; _,_; proj₁; proj₂)
 open import Data.Sum using (_⊎_)
 open import Data.Fin using (Fin) renaming (zero to fzero; suc to fsuc)
 open import Data.List using (List; []; _∷_; _++_; length; lookup; tabulate)
 open import Data.Unit.Polymorphic.Base using (⊤; tt)
 open import Data.Empty using (⊥)
-open import Data.Nat using (ℕ)
+open import Data.Nat using (ℕ; zero; suc)
 open import Function using (_∘_; id)
 open import Relation.Binary.PropositionalEquality
   using (_≡_; _≢_; refl; sym; trans; cong; cong₂; subst; subst₂; resp₂; cong-app; icong; module ≡-Reasoning)
@@ -41,6 +41,7 @@ data inn : Type Δ l → TEnv Δ → Set where
 --! Expr
 data Expr (Δ : LEnv) (Γ : TEnv Δ) : Type Δ l → Set where
   #_   : (n : ℕ) → Expr Δ Γ `ℕ
+  `suc : Expr Δ Γ `ℕ → Expr Δ Γ `ℕ
   `_   : ∀ {T : Type Δ l} → inn T Γ → Expr Δ Γ T
   ƛ_   : ∀ {T : Type Δ l}{T′ : Type Δ l′} → Expr Δ (T ◁ Γ) T′ → Expr Δ Γ (T ⇒ T′)
   _·_  : ∀ {T : Type Δ l}{T′ : Type Δ l′} → Expr Δ Γ (T ⇒ T′) → Expr Δ Γ T → Expr Δ Γ T′
@@ -72,6 +73,7 @@ extend-tskip {η = η} {⟦α⟧ = ⟦α⟧} γ _ _ (tskip {T = T} x)
 --! ExprSem
 E⟦_⟧ : ∀ {T : Type Δ l}{Γ : TEnv Δ} → Expr Δ Γ T → (η : Env* Δ) → Env Δ Γ η → ⟦ T ⟧ η
 E⟦ # n ⟧ η γ = n
+E⟦ `suc e ⟧ η γ = suc (E⟦ e ⟧ η γ)
 E⟦ ` x ⟧ η γ = γ _ _ x
 E⟦ ƛ_ e ⟧ η γ = λ v → E⟦ e ⟧ η (extend γ v)
 E⟦ e₁ · e₂ ⟧ η γ = E⟦ e₁ ⟧ η γ (E⟦ e₂ ⟧ η γ)
