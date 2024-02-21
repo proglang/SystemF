@@ -330,6 +330,32 @@ Tren*-preserves-semantics {ρ* = ρ*} {η₁} {η₂} Tren* (`∀α l , T) = dep
   α → Tren*-preserves-semantics{ρ* = Tliftᵣ ρ* _}{α ∷ η₁}{α ∷ η₂} (Tren*-lift {ρ* = ρ*} α Tren*) T
 Tren*-preserves-semantics Tren* `ℕ = refl
 
+-- special case of composition sub o ren
+
+sublemma-ext : (σ : TSub Δ []) → ∀ l x → (Textₛ σ T) l x ≡ (Tliftₛ σ _ ∘ₛₛ Textₛ Tidₛ T) l x
+sublemma-ext σ l here = refl
+sublemma-ext{T = T} σ l (there x) =
+  trans (sym (TidₛT≡T (σ l x)))
+        (sym (assoc-sub-ren (σ _ x) (Twkᵣ Tidᵣ) (Textₛ Tidₛ T)))
+
+sublemma : (σ : TSub Δ []) → (Textₛ σ T) ≡ Tliftₛ σ _ ∘ₛₛ Textₛ Tidₛ T
+sublemma {T = T} σ = fun-ext₂ (sublemma-ext σ)
+
+lemma2 : (σ : TSub Δ []) → (T  : Type (l ∷ Δ) l′) → (T′ : Type [] l)
+  → Tsub (Tliftₛ σ l) T [ T′ ]T ≡ Tsub (Textₛ σ T′) T
+lemma2 σ T T′ = begin 
+    Tsub (Textₛ Tidₛ T′) (Tsub (Tliftₛ σ _) T)
+  ≡⟨ assoc-sub-sub T (Tliftₛ σ _) (Textₛ Tidₛ T′) ⟩
+    Tsub (Tliftₛ σ _ ∘ₛₛ Textₛ Tidₛ T′) T
+  ≡⟨ cong (λ σ → Tsub σ T) (sym (sublemma σ)) ⟩
+    Tsub (Textₛ σ T′) T
+  ∎
+   
+
+Tdrop-σ≡Twk∘σ : ∀ (σ* : TSub (l ∷ Δ₁) Δ₂) → Tdropₛ σ* ≡ Twkᵣ Tidᵣ ∘ᵣₛ σ*
+Tdrop-σ≡Twk∘σ σ* = fun-ext₂ (λ x y → refl)
+
+
 
 -- the action of substitution on semantic environments
 
@@ -385,4 +411,12 @@ Tsingle-subst-preserves {Δ = Δ} {l = l}{l′ = l′} η T′ T =
 subst-to-env*-comp : (σ* : TSub Δ₁ Δ₂) → (τ* : TSub Δ₂ Δ₃) → (η : Env* Δ₃) → subst-to-env* σ* (subst-to-env* τ* η) ≡ω subst-to-env* (σ* ∘ₛₛ τ*) η
 subst-to-env*-comp {Δ₁ = []} σ* τ* η = refl
 subst-to-env*-comp {Δ₁ = l ∷ Δ₁} σ* τ* η = conglωω _∷_ (sym (subst-preserves τ* (σ* l here))) (subst-to-env*-comp (Tdropₛ σ*) τ* η)
+
+apply-env-var : (σ* : TSub Δ []) (x : l ∈ Δ) → apply-env (subst-to-env* σ* []) x ≡ ⟦ σ* l x ⟧ []
+apply-env-var σ* here = refl
+apply-env-var σ* (there x) = apply-env-var (Tdropₛ σ*) x
+
+τ*∈Ren* : (τ* : TRen Δ₁ Δ₂) (σ* : TSub Δ₂ []) → TRen* τ* (subst-to-env* (τ* ∘ᵣₛ σ*) []) (subst-to-env* σ* [])
+τ*∈Ren* τ* σ* here = apply-env-var σ* (τ* _ here)
+τ*∈Ren* τ* σ* (there x) = τ*∈Ren* (Tdropᵣ τ*) σ* x
 

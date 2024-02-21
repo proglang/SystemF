@@ -28,6 +28,10 @@ open import ExprSubstProperties
 open import BigStep
 open import Logical2
 
+----------------------------------------------------------------------
+--! LRVren >
+
+--! LRVrenEqType
 LRVren-eq′ :  ∀ {Δ₁}{Δ₂}{l}
   → (T : Type Δ₁ l)
   → (ρ : RelEnv Δ₂)
@@ -1835,10 +1839,12 @@ LRVwk-eq T ρ v z =
        z)
   ∎
 
+--! MCGLookupType
 𝓖-lookup : (Γ : TEnv Δ) (ρ : RelEnv Δ) (χ : CSub (subst←RE ρ) Γ) (γ : Env Δ Γ (subst-to-env* (subst←RE ρ) [])) (T : Type Δ l)
   → 𝓖⟦_⟧ Γ ρ χ γ
   → (x : inn T Γ)
   → 𝓥⟦ T ⟧ ρ (χ l _ x) (γ l T x)
+
 𝓖-lookup .(T ◁ _) ρ χ γ T (𝓥 , 𝓖) here = 𝓥
 𝓖-lookup (_ ◁ Γ) ρ χ γ T (𝓥 , 𝓖) (there x) = 𝓖-lookup Γ ρ (Cdrop χ) (ENVdrop Γ _ γ) T 𝓖 x
 𝓖-lookup (_ ◁* Γ) ρ χ γ .(Twk _) 𝓖 (tskip {T = T} x) =

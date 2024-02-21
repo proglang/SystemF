@@ -32,6 +32,9 @@ open import BigStep
 open import Logical2
 open import LRVren2
 
+----------------------------------------------------------------------
+--! LRVsub >
+
 -- ext-σ-T′≡σ[T′] :
 --   (T′        : Type Δ l′)
 --   (T         : Type (l′ ∷ Δ) l)
@@ -51,6 +54,7 @@ open import LRVren2
 
 -- substitution action on RelEnv by composition
 
+--! TsubAct
 Tsub-act : TSub Δ₁ Δ₂ → RelEnv Δ₂ → RelEnv Δ₁
 Tsub-act σ* ρ = λ l x →
   let ρ* = subst←RE ρ in
@@ -151,6 +155,7 @@ subst←RE-sub ρ τ* l′ x = refl
 
 -- logical relation is compatible with type substitution
 
+--! LRVsubType
 LRVsub : ∀ {Δ₁}{Δ₂}{l}
   → (T : Type Δ₁ l)
   → (ρ : RelEnv Δ₂)

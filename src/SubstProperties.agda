@@ -345,6 +345,35 @@ sym-sym : ∀ {a}{A : Set a}{x₁ x₂ : A}
   → sym (sym eq) ≡ eq
 sym-sym refl = refl
 
+
+dist-subst* :
+  ∀ {ℓ ℓ' ℓ'' ℓ₁ ℓ₂} {Z : Set ℓ''} {B : Set ℓ'} {a₁ a₂ : Z → Set ℓ}
+    {F : Set (ℓ ⊔ ℓ'') → Set ℓ₁} {G : B → Set ℓ₂}
+  → (a→b : (Z → Set ℓ) → B)
+  → (f : ∀ {h} → F ((z : Z) → h z) → G (a→b h))
+  → (a₁≡a₂ : ∀ z → a₁ z ≡ a₂ z)
+  → (b₁≡b₂ : a→b a₁ ≡ a→b a₂)
+  → (x : F ((z : Z) → a₁ z)) 
+  → f {a₂} (subst F (dep-ext a₁≡a₂) x) ≡ subst G b₁≡b₂ (f {a₁} x)
+dist-subst* a→b f a₁≡a₂ b₁≡b₂ x
+  with fun-ext a₁≡a₂
+dist-subst* a→b f a₁≡a₂ refl x | refl = refl
+
+
+dist-subst*-sym :
+  ∀ {ℓ ℓ' ℓ'' ℓ₁ ℓ₂} {Z : Set ℓ''} {B : Set ℓ'} {a₁ a₂ : Z → Set ℓ}
+    {F : Set (ℓ ⊔ ℓ'') → Set ℓ₁} {G : B → Set ℓ₂}
+  → (a→b : (Z → Set ℓ) → B)
+  → (f : ∀ {h} → F ((z : Z) → h z) → G (a→b h))
+  → (a₁≡a₂ : ∀ z → a₂ z ≡ a₁ z)
+  → (b₁≡b₂ : a→b a₁ ≡ a→b a₂)
+  → (x : F ((z : Z) → a₁ z)) 
+  → f {a₂} (subst F (sym (dep-ext a₁≡a₂)) x) ≡ subst G b₁≡b₂ (f {a₁} x)
+dist-subst*-sym a→b f a₁≡a₂ b₁≡b₂ x
+  with fun-ext a₁≡a₂
+dist-subst*-sym a→b f a₁≡a₂ refl x | refl = refl
+
+
 -- Let's try to build a general subst-irrelevant for multiple substs
 
 module SubstIrrelevantAttempt₁ where

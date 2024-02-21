@@ -28,6 +28,7 @@ open import ExprSubstProperties
 open import BigStep
 
 ----------------------------------------------------------------------
+--! Logical >
 
 infixl 10 _∧_
 _∧_ = _×_
@@ -35,25 +36,30 @@ _∧_ = _×_
 -- logical relation
 
 -- relation between a syntactic value and a semantic value
-
+--! REL
 REL : ∀ {l} → Type [] l → Set (suc l)
 REL {l} T = Value T → ⟦ T ⟧ [] → Set l 
 
+--! RelEnv
 RelEnv : (Δ : LEnv) → Setω
 RelEnv Δ = ∀ l → l ∈ Δ → Σ (Type [] l) REL
 
 -- type renaming acting on RelEnv by composition
 
+--! Tren-act
 Tren-act : TRen Δ₁ Δ₂ → RelEnv Δ₂ → RelEnv Δ₁
 Tren-act τ* ρ = λ l x → ρ l (τ* l x)
 
+--! REdrop
 REdrop : RelEnv (l ∷ Δ) → RelEnv Δ
 REdrop = Tren-act (Twkᵣ Tidᵣ)
 
+--! REext
 REext : RelEnv Δ → (Σ (Type [] l) REL) → RelEnv (l ∷ Δ)
 REext ρ R _ here = R
 REext ρ R _ (there x) = ρ _ x
 
+--! substRE
 subst←RE : RelEnv Δ → TSub Δ []
 subst←RE ρ l x = proj₁ (ρ l x)
 
@@ -63,7 +69,6 @@ subst←RE-ext ρ T R l (there x) = refl
 
 subst←RE-ext-ext : ∀ (ρ : RelEnv Δ) (T : Type [] l) (R : REL T) → subst←RE (REext ρ (T , R)) ≡ Textₛ (subst←RE ρ) T
 subst←RE-ext-ext ρ T R = fun-ext₂ (subst←RE-ext ρ T R)
-
 
 subst←RE-drop : ∀ (ρ : RelEnv (l ∷ Δ)) →
   (l′ : Level) (x : l′ ∈ Δ) → (subst←RE (REdrop ρ)) l′ x ≡ (Tdropₛ (subst←RE ρ)) l′ x
@@ -82,27 +87,6 @@ subst←RE-ren : ∀ (ρ : RelEnv Δ₂) (τ* : TRen Δ₁ Δ₂)
   → (l′ : Level) (x : l′ ∈ Δ₁) → subst←RE (Tren-act τ* ρ) l′ x ≡ (τ* ∘ᵣₛ subst←RE ρ) l′ x
 subst←RE-ren ρ τ* l′ x = refl
 
--- special case of composition sub o ren
-
-sublemma-ext : (σ : TSub Δ []) → ∀ l x → (Textₛ σ T) l x ≡ (Tliftₛ σ _ ∘ₛₛ Textₛ Tidₛ T) l x
-sublemma-ext σ l here = refl
-sublemma-ext{T = T} σ l (there x) =
-  trans (sym (TidₛT≡T (σ l x)))
-        (sym (assoc-sub-ren (σ _ x) (Twkᵣ Tidᵣ) (Textₛ Tidₛ T)))
-
-sublemma : (σ : TSub Δ []) → (Textₛ σ T) ≡ Tliftₛ σ _ ∘ₛₛ Textₛ Tidₛ T
-sublemma {T = T} σ = fun-ext₂ (sublemma-ext σ)
-
-lemma2 : (σ : TSub Δ []) → (T  : Type (l ∷ Δ) l′) → (T′ : Type [] l)
-  → Tsub (Tliftₛ σ l) T [ T′ ]T ≡ Tsub (Textₛ σ T′) T
-lemma2 σ T T′ = begin 
-    Tsub (Textₛ Tidₛ T′) (Tsub (Tliftₛ σ _) T)
-  ≡⟨ assoc-sub-sub T (Tliftₛ σ _) (Textₛ Tidₛ T′) ⟩
-    Tsub (Tliftₛ σ _ ∘ₛₛ Textₛ Tidₛ T′) T
-  ≡⟨ cong (λ σ → Tsub σ T) (sym (sublemma σ)) ⟩
-    Tsub (Textₛ σ T′) T
-  ∎
-   
 
 lemma1 : (ρ  : RelEnv Δ) → (T  : Type (l ∷ Δ) l′) → (T′ : Type [] l) → (R  : REL T′)
   → Tsub (Tliftₛ (subst←RE ρ) l) T [ T′ ]T ≡ Tsub (subst←RE (REext ρ (T′ , R))) T
@@ -118,11 +102,13 @@ lemma1 {l = l} ρ T T′ R =
 postulate
   relenv-ext : ∀ {Δ}{f g : RelEnv Δ} → (∀ l x → f l x ≡ g l x) → f ≡ω g
 
-Tren-act-REext-ext : (ρ : RelEnv Δ₂) (τ* : TRen Δ₁ Δ₂) (T′ : Type [] l) (R : REL T′) → ∀ l₂ x₂ → (REext (Tren-act τ* ρ) (T′ , R)) l₂ x₂ ≡ Tren-act (Tliftᵣ τ* l) (REext ρ (T′ , R)) l₂ x₂
+Tren-act-REext-ext : (ρ : RelEnv Δ₂) (τ* : TRen Δ₁ Δ₂) (T′ : Type [] l) (R : REL T′)
+  → ∀ l₂ x₂ → (REext (Tren-act τ* ρ) (T′ , R)) l₂ x₂ ≡ Tren-act (Tliftᵣ τ* l) (REext ρ (T′ , R)) l₂ x₂
 Tren-act-REext-ext ρ τ* T′ R l₂ here = refl
 Tren-act-REext-ext ρ τ* T′ R l₂ (there x₂) = refl
 
-Tren-act-REext : (ρ : RelEnv Δ₂) (τ* : TRen Δ₁ Δ₂) (T′ : Type [] l) (R : REL T′) → (REext (Tren-act τ* ρ) (T′ , R)) ≡ω Tren-act (Tliftᵣ τ* l) (REext ρ (T′ , R))
+Tren-act-REext : (ρ : RelEnv Δ₂) (τ* : TRen Δ₁ Δ₂) (T′ : Type [] l) (R : REL T′)
+  → (REext (Tren-act τ* ρ) (T′ , R)) ≡ω Tren-act (Tliftᵣ τ* l) (REext ρ (T′ , R))
 Tren-act-REext ρ τ* T′ R = relenv-ext (Tren-act-REext-ext ρ τ* T′ R)
 
 -- Tren-act-wk-ext : ∀ (ρ : RelEnv Δ) (T′ : Type [] l) (R : REL T′)
@@ -134,7 +120,6 @@ Tren-act-REext ρ τ* T′ R = relenv-ext (Tren-act-REext-ext ρ τ* T′ R)
 --     → Tren-act (Twkᵣ Tidᵣ) (REext ρ (T′ , R)) l₁ x ≡ ρ l₁ x
 --   helper ρ T′ R l₁ here = refl
 --   helper ρ T′ R l₁ (there x) = refl
-
 
 
 -- auxiliary
@@ -162,6 +147,7 @@ ENVdrop-extend {l = l} {Δ = Δ} {Γ = Γ}{T = T}{η = η} γ z = fun-extω (λ 
 
 -- stratified logical relation
 
+--! MCV
 𝓥⟦_⟧ : (T : Type Δ l) → (ρ : RelEnv Δ)
   → Value (Tsub (subst←RE ρ) T) → ⟦ T ⟧ (subst-to-env* (subst←RE ρ) []) → Set l
 𝓥⟦ ` α ⟧ ρ v z =
@@ -178,40 +164,30 @@ ENVdrop-extend {l = l} {Δ = Δ} {Γ = Γ}{T = T}{η = η} γ z = fun-extω (λ 
 𝓥⟦ `ℕ ⟧ ρ u z =
   ∃[ n ] (exp u ≡ (# n)) ∧ (n ≡ z)
 
-
+--! MCE
 𝓔⟦_⟧ : (T : Type Δ l) → (ρ : RelEnv Δ)
   → CExpr (Tsub (subst←RE ρ) T) → ⟦ T ⟧ (subst-to-env* (subst←RE ρ) []) → Set l
 𝓔⟦ T ⟧ ρ e z = ∃[ v ] (e ⇓ v) ∧ 𝓥⟦ T ⟧ ρ v z
 
 -- closing value substitution
 
-module different-attempt where
-  CSub : TSub Δ [] → TEnv Δ → Set
-  CSub σ* Γ = Σ (ESub σ* Γ ∅) λ σ → ∀ l T x → isValue (σ l T x)
-
-  ES←SC : {σ* : TSub Δ []} → CSub σ* Γ → ESub σ* Γ ∅
-  ES←SC = proj₁
-
-  Csub : {Γ : TEnv Δ} {σ* : TSub Δ []} → CSub σ* Γ → Expr Δ Γ T → CExpr (Tsub σ* T)
-  Csub {σ* = σ*} χ e = Esub σ* (proj₁ χ) e
-
-  Cdrop : ∀ {l} {T : Type Δ l} → CSub σ* (T ◁ Γ) → CSub σ* Γ
-  proj₁ (Cdrop (σ , σ-val)) = λ l₁ T₁ x → σ l₁ T₁ (there x)
-  proj₂ (Cdrop (σ , σ-val)) = λ l₁ T₁ x → σ-val l₁ T₁ (there x)
-
-
+--! CSub
 CSub : TSub Δ [] → TEnv Δ → Set
 CSub {Δ} σ* Γ = ∀ l (T : Type Δ l) → inn T Γ → Value (Tsub σ* T)
 
+--! ESSC
 ES←SC : {σ* : TSub Δ []} → CSub σ* Γ → ESub σ* Γ ∅
 ES←SC χ = λ l T x → proj₁ (χ l T x)
 
+--! Csub
 Csub : {Γ : TEnv Δ} {σ* : TSub Δ []} → CSub σ* Γ → Expr Δ Γ T → CExpr (Tsub σ* T)
 Csub {σ* = σ*} χ e = Esub σ* (ES←SC χ) e
 
+--! Cdrop
 Cdrop : ∀ {l} {T : Type Δ l} → CSub σ* (T ◁ Γ) → CSub σ* Γ
 Cdrop χ l T x = χ l T (there x)
 
+--! Cextend
 Cextend : ∀ {l} {T : Type Δ l} → CSub σ* Γ → Value (Tsub σ* T) → CSub σ* (T ◁ Γ)
 Cextend χ v _ _ here = v
 Cextend χ v _ _ (there x) = χ _ _ x
@@ -240,6 +216,7 @@ Cdrop-Cextend {Δ = Δ} {Γ = Γ} {l = l} {T = T} χ v =
 Cdropt : {Γ : TEnv Δ} → CSub σ* (l ◁* Γ) → CSub (Tdropₛ σ*) Γ
 Cdropt {σ* = σ*} χ l T x = subst Value (assoc-sub-ren T (Twkᵣ Tidᵣ) σ*) (χ _ _ (tskip x))
 
+--! Cextt
 Cextt : ∀{l} → CSub σ* Γ → (T′ : Type [] l) → CSub (Textₛ σ* T′) (l ◁* Γ)
 Cextt {σ* = σ*} χ T′ _ _ (tskip {T = T} x) = subst Value (sym (σT≡TextₛσTwkT σ* T)) (χ _ _ x)
 
@@ -264,6 +241,7 @@ Cextt-Eextₛ-l {σ* = σ*}{T′ = T′} χ = fun-ext (λ l′ → fun-ext (λ T
 
 -- extended LR on environments
 
+--! MCG
 𝓖⟦_⟧ : (Γ : TEnv Δ) → (ρ : RelEnv Δ)
   → CSub (subst←RE ρ) Γ
   → let η = subst-to-env* (subst←RE ρ) [] in Env Δ Γ η → Set (levelEnv Γ)
@@ -274,15 +252,16 @@ Cextt-Eextₛ-l {σ* = σ*}{T′ = T′} χ = fun-ext (λ l′ → fun-ext (λ T
 
 ----------------------------------------
 
-subst-split-⇓ :
-  ∀ {Tₑ Tᵥ : Type [] l}
-  → (e : CExpr Tₑ)
-  → (v : Value Tᵥ)
-  → (Tₑ≡Tᵥ : Tₑ ≡ Tᵥ)
-  → subst CExpr Tₑ≡Tᵥ e ⇓ v
-  → e ⇓ subst Value (sym Tₑ≡Tᵥ) v
-subst-split-⇓ e v refl x = x
+-- subst-split-⇓ :
+--   ∀ {Tₑ Tᵥ : Type [] l}
+--   → (e : CExpr Tₑ)
+--   → (v : Value Tᵥ)
+--   → (Tₑ≡Tᵥ : Tₑ ≡ Tᵥ)
+--   → subst CExpr Tₑ≡Tᵥ e ⇓ v
+--   → e ⇓ subst Value (sym Tₑ≡Tᵥ) v
+-- subst-split-⇓ e v refl x = x
 
+--! substSplitEqEval
 subst-split-eq-⇓ :
   ∀ {Tₑ Tᵥ : Type [] l}
   → (e : CExpr Tₑ)
@@ -291,23 +270,23 @@ subst-split-eq-⇓ :
   → subst CExpr Tₑ≡Tᵥ e ⇓ v ≡ e ⇓ subst Value (sym Tₑ≡Tᵥ) v
 subst-split-eq-⇓ e v refl = refl
 
-subst-split-⇓′ :
-  ∀ {Tₑ Tᵥ : Type [] l}
-  → (e : CExpr Tₑ)
-  → (v : Value Tᵥ)
-  → (Tₑ≡Tᵥ : Tₑ ≡ Tᵥ)
-  → e ⇓ subst Value (sym Tₑ≡Tᵥ) v
-  → subst CExpr Tₑ≡Tᵥ e ⇓ v
-subst-split-⇓′ e v refl x = x
+-- subst-split-⇓′ :
+--   ∀ {Tₑ Tᵥ : Type [] l}
+--   → (e : CExpr Tₑ)
+--   → (v : Value Tᵥ)
+--   → (Tₑ≡Tᵥ : Tₑ ≡ Tᵥ)
+--   → e ⇓ subst Value (sym Tₑ≡Tᵥ) v
+--   → subst CExpr Tₑ≡Tᵥ e ⇓ v
+-- subst-split-⇓′ e v refl x = x
 
-subst-split-⇓₂ :
-  ∀ {T T′ : Type [] l}
-  → {e : CExpr T}
-  → {v : Value T}
-  → (T≡T′ : T ≡ T′)
-  → e ⇓ v
-  → subst CExpr T≡T′ e ⇓ subst Value T≡T′ v
-subst-split-⇓₂ refl e⇓v = e⇓v
+-- subst-split-⇓₂ :
+--   ∀ {T T′ : Type [] l}
+--   → {e : CExpr T}
+--   → {v : Value T}
+--   → (T≡T′ : T ≡ T′)
+--   → e ⇓ v
+--   → subst CExpr T≡T′ e ⇓ subst Value T≡T′ v
+-- subst-split-⇓₂ refl e⇓v = e⇓v
 
 subst-split-eq-⇓₂ :
   ∀ {T T′ : Type [] l}
@@ -340,67 +319,12 @@ subst-split-[]E″ :
   ≡ subst CExpr eq₂ (e [ e′ ]E) 
 subst-split-[]E″ e e′ refl refl = refl
 
-Tdrop-σ≡Twk∘σ : ∀ (σ* : TSub (l ∷ Δ₁) Δ₂) → Tdropₛ σ* ≡ Twkᵣ Tidᵣ ∘ᵣₛ σ*
-Tdrop-σ≡Twk∘σ σ* = fun-ext₂ (λ x y → refl)
-
-
-dist-subst'' :
-  ∀ {ℓ ℓ' ℓ''} {a₁ a₂ : Set ℓ}
-  → (arg : Set ℓ → Set ℓ')
-  → (res : Set ℓ → Set ℓ'')
-  → (f : ∀ {a} → arg a → res a)
-  → (a₁≡a₂ : a₁ ≡ a₂)
-  → (b₁≡b₂ : res a₁ ≡ res a₂)
-  → (x : arg a₁) 
-  → f {a₂} (subst id (cong arg a₁≡a₂) x) ≡ subst id b₁≡b₂ (f {a₁} x)
-dist-subst'' _ _ _ refl refl _ = refl
-
-
-
-dist-subst* :
-  ∀ {ℓ ℓ' ℓ'' ℓ₁ ℓ₂} {Z : Set ℓ''} {B : Set ℓ'} {a₁ a₂ : Z → Set ℓ}
-    {F : Set (ℓ ⊔ ℓ'') → Set ℓ₁} {G : B → Set ℓ₂}
-  → (a→b : (Z → Set ℓ) → B)
-  → (f : ∀ {h} → F ((z : Z) → h z) → G (a→b h))
-  → (a₁≡a₂ : ∀ z → a₁ z ≡ a₂ z)
-  → (b₁≡b₂ : a→b a₁ ≡ a→b a₂)
-  → (x : F ((z : Z) → a₁ z)) 
-  → f {a₂} (subst F (dep-ext a₁≡a₂) x) ≡ subst G b₁≡b₂ (f {a₁} x)
-dist-subst* a→b f a₁≡a₂ b₁≡b₂ x
-  with fun-ext a₁≡a₂
-dist-subst* a→b f a₁≡a₂ refl x | refl = refl
-
-
-dist-subst*-sym :
-  ∀ {ℓ ℓ' ℓ'' ℓ₁ ℓ₂} {Z : Set ℓ''} {B : Set ℓ'} {a₁ a₂ : Z → Set ℓ}
-    {F : Set (ℓ ⊔ ℓ'') → Set ℓ₁} {G : B → Set ℓ₂}
-  → (a→b : (Z → Set ℓ) → B)
-  → (f : ∀ {h} → F ((z : Z) → h z) → G (a→b h))
-  → (a₁≡a₂ : ∀ z → a₂ z ≡ a₁ z)
-  → (b₁≡b₂ : a→b a₁ ≡ a→b a₂)
-  → (x : F ((z : Z) → a₁ z)) 
-  → f {a₂} (subst F (sym (dep-ext a₁≡a₂)) x) ≡ subst G b₁≡b₂ (f {a₁} x)
-dist-subst*-sym a→b f a₁≡a₂ b₁≡b₂ x
-  with fun-ext a₁≡a₂
-dist-subst*-sym a→b f a₁≡a₂ refl x | refl = refl
-
-
 {- <-- TypeSubstProperties -}
-apply-env-var : (σ* : TSub Δ []) (x : l ∈ Δ) → apply-env (subst-to-env* σ* []) x ≡ ⟦ σ* l x ⟧ []
-apply-env-var σ* here = refl
-apply-env-var σ* (there x) = apply-env-var (Tdropₛ σ*) x
-
-τ*∈Ren* : (τ* : TRen Δ₁ Δ₂) (σ* : TSub Δ₂ []) → TRen* τ* (subst-to-env* (τ* ∘ᵣₛ σ*) []) (subst-to-env* σ* [])
-τ*∈Ren* τ* σ* here = apply-env-var σ* (τ* _ here)
-τ*∈Ren* τ* σ* (there x) = τ*∈Ren* (Tdropᵣ τ*) σ* x
-
 σ[T′]≡↑τ*∘ext-ext : (ρ : RelEnv Δ₂) (τ* : TRen Δ₁ Δ₂) (T′ : Type [] l) → ∀ l′ x →  Textₛ (τ* ∘ᵣₛ subst←RE ρ) T′ l′ x ≡ (Tliftᵣ τ* l ∘ᵣₛ Textₛ (subst←RE ρ) T′) l′ x
 σ[T′]≡↑τ*∘ext-ext ρ τ* T′ l′ here = refl
 σ[T′]≡↑τ*∘ext-ext ρ τ* T′ l′ (there x) = refl
 
 σ[T′]≡↑τ*∘ext : (ρ : RelEnv Δ₂) (τ* : TRen Δ₁ Δ₂) (T′ : Type [] l) →  Textₛ (τ* ∘ᵣₛ subst←RE ρ) T′ ≡ (Tliftᵣ τ* l ∘ᵣₛ Textₛ (subst←RE ρ) T′)
 σ[T′]≡↑τ*∘ext ρ τ* T′ = fun-ext₂ (σ[T′]≡↑τ*∘ext-ext ρ τ* T′)
-
-
 {- --> TypeSubstProperties -}
 
