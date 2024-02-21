@@ -344,6 +344,11 @@ quantified type. Substitution is defined as in PLFA
 \section{Semantics}
 \label{sec:semantics}
 
+\subsection{Denotational}
+\label{sec:denotational}
+
+
+
 It remains to define a compositional function from the expression
 syntax to the semantic domain that we already prepared in
 Section~\ref{sec:types}. We start with value environments.
@@ -394,6 +399,103 @@ $\ASet~l$, for any $l$, but not for $\ASeto$. While it is easy to
 define these equalities, it is somewhat tedious to re-establish
 standard lemmas for transforming equality proofs
 like cong, subst, and trans to deal with $\ASeto$.
+
+\subsection{Big Step Operational}
+\label{sec:big-step-operational}
+
+A standard big-step operational semantics serves as the second
+reference point for the logical relation. We discuss it here because
+it contains a design choice that is crucial for proving the
+fundamental theorem in Section~\ref{sec:fundamental}.
+
+We start by defining the
+standard notions of closed expressions {\ACExpr} and values {\AValue}, the latter being
+pairs of a closed expression and evidence {\AisValue} that it is a syntactic value.
+\BigStepCExpr
+\BigStepisValue
+\BigStepValue
+The evaluation judgment relates closed expressions to closed values.
+Its inference rules define a standard call-by-value evaluation.
+We treat the ``big lambda'' as a syntactic value for
+simplicity.\footnote{This choice works out for the
+  side-effect-free language that we consider here. If the language had
+  effects, we would enforce the well-known value restriction by
+  requiring the body of the big lambda to be a syntactic value.}
+\BigStepSemantics
+
+The reader may wonder why the relation does not simply relate two closed
+expressions. While this alternative works almost all the way, we
+failed to prove the (expression) variable case of the fundamental theorem with
+it. The problem is that the variable case does not constrain the type
+of the variable's value. In particular, the type of a variable can be
+a type variable, so that the type is unknown at compile time.
+
+However, with our present setup we can use the following lemma to show
+that a syntac value evaluates to itself.
+\BigStepValueReduceSelf
+
+\section{Logical Relation}
+\label{sec:logical-relation}
+
+The definition of the logical relation largely follows the development
+of Ahmed's thesis/lecture notes \cite{AhmedLR}. 
+
+We define a binary logical relation for stratified System F. It
+relates syntactic values of type $T$ to semantic value of the same
+type. This relation {\AREL} is indexed by the stratification level.
+\LogicalREL
+A relation environment {\ARelEnv} abstracts over the current instantiation of the
+type variables. It maps a type variable to a
+type paired with its relational interpretation. 
+\LogicalRelEnv
+Clearly, the first ``half'' of a relation environment is a type
+substitution and we use the function SUBSTFROMRE to obtain this
+substitution.
+
+With these definitions in place, we can state the type of the logical relation.
+\LogicalMCVType
+The relation is defined by induction on the type $T$ and the parameter
+$\rho$ contains the relation environment. The intention is to define a
+relation on objects of type $T$ after closing $T$ with the relation
+environment. Hence, we apply $\rho$'s type substitution to the type of
+the syntactic value and interpret $T$ in the environment created from
+the relation environment.
+\LogicalMCVBody
+The definition itself is fairly straigthforward from the literature.
+We interpret a type variable by looking it up in the relation
+environment.
+At function type $T_1 \Rightarrow T_2$ we relate a lambda expression
+to a semantic function $f$ in
+the usual way: given arguments $w$ and $z$ related at type $T_1$, we ask that the
+application of the lambda to $w$ evaluates to a syntactic value $v$ that is
+relates to $(f z)$ at type $T_2$.
+At universal type $\forall l, T$ we relate a big lambda to a semantic
+function $F$ as follows: given any type argument $T'$ and relation $R :
+\AREL\ T'$, evaluating the type application to a syntactic value $v$,
+we find that this $v$ is related at type $T$, but in an extended
+relation environment that binds the type variable to $(T', R)$, to the
+function $F$ applied to the semantics of $T'$.
+At the number type, values are constants equal to their semantic
+interpretation. 
+
+The expression relation extends the value relation by interposing
+evaluation on the syntactic side. The denotation $z$ remains the
+same. 
+\LogicalMCE
+
+In the definition of {\AV} it is crucial that we only pattern match
+against the type and enforce the structure of values by equations on
+the right hand side of the definitions. This choice ensures that {\AV}
+reduces as soon as the type is sufficiently known.
+
+The occurrence of {\Asubst} in two places indicates that the expected types do not quite
+match the demanded types. The reader may wonder if this mismatch is an
+artifact of our definition. For example, we might have chosen a
+different type for {\AV}:
+\LogicalVariationMCVType
+Alas, this choice gets rid of the {\Asubst} in the case for type
+variables, but a new {\Asubst} is needed in the case for type
+application.
 
 \section{Related Work}
 \label{sec:related-work}
