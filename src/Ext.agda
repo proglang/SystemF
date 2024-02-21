@@ -11,7 +11,9 @@ open import SetOmega
 
 postulate
   fun-ext : ∀{a b} → Extensionality a b
-  fun-ext-h : ∀{a b} → HEq.Extensionality a b
+
+fun-ext-h : ∀{a b} → HEq.Extensionality a b
+fun-ext-h = HEq.≡-ext⇒≅-ext fun-ext
 
 fun-ext₂ : ∀ {l₁}{l₂}{l₃} {A₁ : Set l₁} {A₂ : A₁ → Set l₂} {B : (x : A₁) → A₂ x → Set l₃}
              {f g : (x : A₁) → (y : A₂ x) → B x y} →
