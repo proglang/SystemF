@@ -28,7 +28,7 @@ open import TypeSubstProperties
 open import Expressions
 open import ExprSubstitution
 open import ExprSubstProperties
-open import SmallStep
+open import BigStep
 open import Logical2
 open import LRVren2
 

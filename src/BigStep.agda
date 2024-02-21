@@ -1,0 +1,60 @@
+module BigStep where
+
+open import Data.List using (List; []; _∷_; [_])
+open import Data.Nat using (ℕ; suc)
+open import Data.Product using (_×_; Σ; Σ-syntax; ∃-syntax; _,_; proj₁; proj₂)
+
+open import Types
+open import Expressions
+open import ExprSubstitution
+
+----------------------------------------------------------------------
+--! BigStep >
+
+-- big step call by value semantics (analogous to Benton et al)
+
+--! CExpr
+CExpr : Type [] l → Set
+CExpr T = Expr [] ∅ T
+
+--! isValue
+data isValue : ∀ {l}{T : Type [] l} → CExpr T → Set where
+  V-♯ : ∀ {n}
+    → isValue (# n)
+  V-ƛ : ∀ {l₁ l₂}{T₁ : Type [] l₁}{T₂ : Type [] l₂}{e : Expr [] (T₁ ◁ ∅) T₂}
+    → isValue (ƛ e)
+  V-Λ : ∀ {l₁ l₂}{T′ : Type (l₁ ∷ []) l₂}{e : Expr (l₁ ∷ []) (l₁ ◁* ∅) T′}
+    → isValue (Λ l₁ ⇒ e)
+
+--! Value
+Value : Type [] l → Set
+Value T = Σ (CExpr T) isValue
+
+--! exp
+exp : Value T → CExpr T
+exp = proj₁
+
+-- big step semantics
+
+variable v v₂ : Value T
+infix 15 _⇓_
+--! Semantics
+data _⇓_ : CExpr T → Value T → Set where
+  ⇓-n : # n ⇓ (# n , V-♯)
+  ⇓-s : e ⇓ (# n , V-♯)
+      → `suc e ⇓ (# (suc n) , V-♯)
+  ⇓-ƛ : ƛ e ⇓ (ƛ e , V-ƛ)
+  ⇓-· : e₁ ⇓ (ƛ e , V-ƛ)
+      → e₂ ⇓ v₂
+      → (e [ exp v₂ ]E) ⇓ v
+      → (e₁ · e₂) ⇓ v
+  ⇓-Λ : Λ l ⇒ e ⇓ (Λ l ⇒ e , V-Λ)
+  ⇓-∙ : e₁ ⇓ (Λ l ⇒ e , V-Λ)
+      → (e [ T ]ET) ⇓ v
+      → (e₁ ∙ T) ⇓ v
+
+--! ValueReduceSelf
+Value-⇓ : ∀ {l} {T : Type [] l} → (v : Value T) → exp v ⇓ v
+Value-⇓ (.(# _) ,     V-♯) = ⇓-n
+Value-⇓ (.(ƛ _) ,     V-ƛ) = ⇓-ƛ
+Value-⇓ (.(Λ _ ⇒ _) , V-Λ) = ⇓-Λ

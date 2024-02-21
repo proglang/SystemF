@@ -1,6 +1,6 @@
 module Expressions where
 
-open import Level renaming (suc to lsuc)
+open import Level renaming (suc to lsuc; zero to lzero)
 open import Data.Product using (_×_; Σ; Σ-syntax; ∃-syntax; _,_; proj₁; proj₂)
 open import Data.Sum using (_⊎_)
 open import Data.Fin using (Fin) renaming (zero to fzero; suc to fsuc)
@@ -80,3 +80,15 @@ E⟦ e₁ · e₂ ⟧ η γ = E⟦ e₁ ⟧ η γ (E⟦ e₂ ⟧ η γ)
 E⟦ Λ l ⇒ e ⟧ η γ = λ ⟦α⟧ → E⟦ e ⟧ (⟦α⟧ ∷ η) (extend-tskip γ)
 E⟦ _∙_ {T = T} e T′ ⟧ η γ  = 
   subst id (sym (Tsingle-subst-preserves η T′ T)) (E⟦ e ⟧ η γ (⟦ T′ ⟧ η))
+
+----------------------------------------------------------------------
+-- auxiliary
+
+levelTy : Type Δ l → Level
+levelTy {l = l} T = l
+
+levelEnv : TEnv Δ → Level
+levelEnv ∅ = lzero
+levelEnv (T ◁ Γ) = levelTy T ⊔ levelEnv Γ
+levelEnv (l ◁* Γ) = levelEnv Γ
+

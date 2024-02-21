@@ -28,12 +28,14 @@ open import TypeSubstProperties
 open import Expressions
 open import ExprSubstitution
 open import ExprSubstProperties
+open import BigStep
 open import Logical2
 open import LRVren2
 open import LRVsub2
 open import HeterogeneousEqualityLemmas hiding (module R)
 
 ----------------------------------------------------------------------
+--! Fundamental
 
 Tsub-act-Text :
   ∀ (ρ : RelEnv Δ)
@@ -150,6 +152,7 @@ Elift-[]≡Cextt Γ ρ χ l′ l T e T′ R =
 
 -- fundamental theorem
 
+--! FundamentalType
 fundamental : ∀ (Γ : TEnv Δ)
   → ∀ {l} (T : Type Δ l)
   → (e : Expr Δ Γ T)
@@ -161,6 +164,11 @@ fundamental : ∀ (Γ : TEnv Δ)
 
 fundamental Γ .`ℕ (# n) ρ χ γ 𝓖⟦Γ⟧ =
   (# n , V-♯) , ⇓-n , (n , (refl , refl))
+
+fundamental Γ .`ℕ (`suc e) ρ χ γ 𝓖⟦Γ⟧
+  with fundamental Γ `ℕ e ρ χ γ 𝓖⟦Γ⟧
+... | v@(# n , V-♯) , e⇓v , . n , refl , lrv =
+  ((# (ℕ.suc n)) , V-♯) , ⇓-s e⇓v , ℕ.suc n  , refl , cong ℕ.suc lrv
 
 fundamental Γ T (` x) ρ χ γ 𝓖⟦Γ⟧ =
   let w = χ _ _ x in
@@ -571,9 +579,12 @@ Csub-closed χ e =
     R.∎
   )
 
+--! AdequacyType
 adequacy : (e : CExpr `ℕ) → (n : ℕ)
   → E⟦ e ⟧ [] (λ l T → λ()) ≡ n
   → e ⇓ (# n , V-♯)
+
+--! AdequacyBody
 adequacy e n ⟦e⟧≡n
   with fundamental ∅ `ℕ e (λ l ()) (λ l T ()) (λ l T ()) tt
 ... | ((# .(E⟦ e ⟧ [] (λ l T ()))) , V-♯) , e⇓v , .(E⟦ e ⟧ [] (λ l T ())) , refl , refl =
