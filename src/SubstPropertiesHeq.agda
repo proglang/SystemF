@@ -45,6 +45,21 @@ Hcong₄ :
     f x u i p ≅ f y v j q
 Hcong₄ f refl refl refl refl = refl
 
+Hcong₅ :
+  ∀ {a b c d e e'}
+    {A : Set a} {B : A → Set b} {C : ∀ x → B x → Set c} {D : ∀ x → (y : B x) → C x y → Set d}
+    {E : ∀ x → (y : B x) → (z : C x y) → D x y z → Set e}
+    {F : ∀ x → (y : B x) → (z : C x y) → (w : D x y z) → E x y z w → Set e'}
+    {x y u v i j p q r s}
+    (f : (x : A) (y : B x) (z : C x y) (w : D x y z) (u : E x y z w) → F x y z w u) →
+    x ≅ y →
+    u ≅ v →
+    i ≅ j →
+    p ≅ q →
+    r ≅ s →
+    f x u i p r ≅ f y v j q s
+Hcong₅ f refl refl refl refl refl = refl
+
 ≡-subst₂-removable :
   ∀ {ℓ₁} {ℓ₂} {ℓ₃} {A : Set ℓ₁} {B : Set ℓ₂}
     (F : A → B → Set ℓ₃) {x y a b} (eq₁ : x ≡ y) (eq₂ : a ≡ b) (z : F x a) →
@@ -675,31 +690,128 @@ sym-sym : ∀ {a}{A : Set a}{x₁ x₂ : A}
   → sym (sym eq) ≡ eq
 sym-sym refl = refl
 
--- Let's try to build a general subst-irrelevant for multiple substs
+-- Lemmas from Logical2.agda ---------------------------------------------------
 
-module SubstIrrelevantAttempt₁ where
-  data SubstArg : ∀ {ℓ₁}{ℓ₂} → Set ℓ₁ → Set ℓ₂ → Setω where
-    []  : ∀ {ℓ}{A : Set ℓ} →
-      SubstArg A A
-    ⟨_,_⟩∷_ : ∀ {ℓ₁}{ℓ₂}{ℓ₃}{A : Set ℓ₁}{C : Set ℓ₂} {a₁ a₂ : A} →
-      (F : A → Set ℓ₃) →
-      (eq : a₁ ≡ a₂) →
-      SubstArg (F a₂) C →
-      SubstArg (F a₁) C 
+open import Level
+open import Data.Product using (_×_; Σ; Σ-syntax; ∃-syntax; _,_; proj₁; proj₂)
+open import Data.Sum using (_⊎_)
+open import Data.Fin using (Fin) renaming (zero to fzero; suc to fsuc)
+open import Data.List using (List; []; _∷_; [_]; _++_; length; lookup; tabulate)
+open import Data.Unit.Polymorphic.Base using (⊤; tt)
+open import Data.Empty using (⊥)
+open import Data.Nat using (ℕ)
+open import Function using (_∘_; id; case_of_; _|>_)
+open import Relation.Binary.PropositionalEquality
+  using (_≡_; _≢_; refl; sym; trans; cong; cong₂; subst; subst₂; resp₂; cong-app; icong;
+        subst-∘; subst-application; subst-application′; subst-subst-sym; subst-sym-subst; subst-subst; -- Properties
+        module ≡-Reasoning)
+open import Axiom.Extensionality.Propositional using (∀-extensionality; Extensionality)
 
-  subst* : ∀ {ℓ₁}{ℓ₂} {A : Set ℓ₁}{B : Set ℓ₂} (S : SubstArg A B) → A → B
-  subst* []              x = x
-  subst* (⟨ F , eq ⟩∷ S) x = subst* S (subst F eq x)
+open import SetOmega
+open import Types
+open import TypeSubstitution
+open import TypeSubstProperties
+open import Expressions
+open import ExprSubstitution
+open import ExprSubstProperties hiding (module R)
+open import BigStep
+open import Logical2 hiding (
+  subst-split-eq-⇓; subst-split-eq-⇓₂; subst-split-[]E;
+  subst-split-[]E′; subst-split-[]E″
+  )
 
-  subst*-irrelevant : ∀ {ℓ₁}{ℓ₂} {A : Set ℓ₁}{B : Set ℓ₂} (S₁ S₂ : SubstArg A B) (x : A) →
-    subst* S₁ x ≡ subst* S₂ x
-  subst*-irrelevant []                 []                 x = refl
-  subst*-irrelevant []                 (⟨ F , refl ⟩∷ S₂) x = subst*-irrelevant [] S₂ x
-  subst*-irrelevant (⟨ F , refl ⟩∷ S₁) S₂                 x = subst*-irrelevant S₁ S₂ x
+subst-split-eq-⇓ :
+  ∀ {Tₑ Tᵥ : Type [] l}
+  → (e : CExpr Tₑ)
+  → (v : Value Tᵥ)
+  → (Tₑ≡Tᵥ : Tₑ ≡ Tᵥ)
+  → subst CExpr Tₑ≡Tᵥ e ⇓ v ≡ e ⇓ subst Value (sym Tₑ≡Tᵥ) v
+subst-split-eq-⇓ {l} {Tₑ} {Tᵥ} e v Tₑ≡Tᵥ =
+  H.≅-to-≡ $
+  R.begin
+    subst CExpr Tₑ≡Tᵥ e ⇓ v
+  R.≅⟨ Hcong₃ {A = Type [] l} {B = λ ■ → CExpr ■} {C = λ ■ _ → Value ■} (λ _ ■₁ ■₂ → ■₁ ⇓ ■₂)
+              (H.≡-to-≅ (sym Tₑ≡Tᵥ))
+              (H.≡-subst-removable CExpr Tₑ≡Tᵥ e)
+              (H.sym (H.≡-subst-removable Value (sym Tₑ≡Tᵥ) v)) ⟩
+    e ⇓ subst Value (sym Tₑ≡Tᵥ) v
+  R.∎
 
-  -- The above works but is not general enough: the argument `x` does not
-  -- need to have the same type on both sides. `x` could also be the same
-  -- function applied to different terms, which are equal according to
-  -- the equalities used in the substs...
+subst-split-eq-⇓₂ :
+  ∀ {T T′ : Type [] l}
+  → {e : CExpr T}
+  → {v : Value T}
+  → (T≡T′ : T ≡ T′)
+  → e ⇓ v
+  ≡ subst CExpr T≡T′ e ⇓ subst Value T≡T′ v
+subst-split-eq-⇓₂ {l} {T} {T′} {e} {v} T≡T′ =
+  H.≅-to-≡ $
+  R.begin
+    e ⇓ v
+  R.≅⟨ Hcong₃ {A = Type [] l} {B = λ ■ → CExpr ■} {C = λ ■ _ → Value ■} (λ _ ■₁ ■₂ → ■₁ ⇓ ■₂)
+              (H.≡-to-≅ T≡T′)
+              (H.sym (H.≡-subst-removable CExpr T≡T′ e))
+              (H.sym (H.≡-subst-removable Value T≡T′ v)) ⟩
+    subst CExpr T≡T′ e ⇓ subst Value T≡T′ v
+  R.∎
 
-open SubstIrrelevantAttempt₁ public
+subst-split-[]E :
+  ∀ {T₁ T₁′ : Type [] l₁} {T₂ T₂′ : Type [] l₂}
+  → (e : Expr [] (T₁ ◁ ∅) T₂) (e′ : CExpr T₁′)
+  → (eq₁ : T₁ ≡ T₁′) (eq₂ : T₂ ≡ T₂′)
+  → subst CExpr eq₂ (e [ subst CExpr (sym eq₁) e′ ]E) ≡ (subst₂ (λ T₁ T₂ → Expr [] (T₁ ◁ ∅) T₂) eq₁ eq₂ e [ e′ ]E)
+subst-split-[]E {l₁} {l₂} {T₁} {T₁′} {T₂} {T₂′} e e′ eq₁ eq₂ =
+  H.≅-to-≡ $
+  R.begin
+    subst CExpr eq₂ (e [ subst CExpr (sym eq₁) e′ ]E)
+  R.≅⟨ H.≡-subst-removable CExpr eq₂ _ ⟩
+    e [ subst CExpr (sym eq₁) e′ ]E
+  R.≅⟨ Hcong₄ {A = Type [] l₁} {B = λ _ → Type [] l₂}
+              {C = λ ■₁ ■₂ → Expr [] (■₁ ◁ ∅) ■₂ } {D = λ ■₁ ■₂ _ → CExpr ■₁}
+              (λ _ _ ■₁ ■₂ → ■₁ [ ■₂ ]E)
+              (H.≡-to-≅ eq₁) (H.≡-to-≅ eq₂)
+              (H.sym (≡-subst₂-removable (λ T₃ → Expr [] (T₃ ◁ ∅)) eq₁ eq₂ e))
+              (H.≡-subst-removable CExpr (sym eq₁) e′) ⟩
+    (subst₂ (λ T₃ → Expr [] (T₃ ◁ ∅)) eq₁ eq₂ e) [ e′ ]E
+  R.∎
+
+subst-split-[]E′ :
+  ∀ {T₁ T₁′ : Type [] l₁} {T₂ T₂′ : Type [] l₂}
+  → (e : Expr [] (T₁ ◁ ∅) T₂) (e′ : CExpr T₁′)
+  → (eq₁ : T₁′ ≡ T₁) (eq₂ : T₂ ≡ T₂′)
+  → subst CExpr eq₂ (e [ subst CExpr eq₁ e′ ]E) ≡ (subst₂ (λ T₁ T₂ → Expr [] (T₁ ◁ ∅) T₂) (sym eq₁) eq₂ e [ e′ ]E)
+subst-split-[]E′ {l₁} {l₂} {T₁} {T₁′} {T₂} {T₂′} e e′ eq₁ eq₂ =
+  H.≅-to-≡ $
+  R.begin
+    subst CExpr eq₂ (e [ subst CExpr eq₁ e′ ]E)
+  R.≅⟨ H.≡-subst-removable CExpr eq₂ _ ⟩
+    e [ subst CExpr eq₁ e′ ]E
+  R.≅⟨ Hcong₄ {A = Type [] l₁} {B = λ _ → Type [] l₂}
+              {C = λ ■₁ ■₂ → Expr [] (■₁ ◁ ∅) ■₂} {D = λ ■₁ ■₂ _ → CExpr ■₁}
+              (λ _ _ ■₁ ■₂ → ■₁ [ ■₂ ]E)
+              (H.≡-to-≅ (sym eq₁)) (H.≡-to-≅ eq₂)
+              (H.sym (≡-subst₂-removable (λ T₃ → Expr [] (T₃ ◁ ∅)) (sym eq₁) eq₂ e))
+              (H.≡-subst-removable CExpr eq₁ e′ ) ⟩
+    subst₂ (λ T₃ → Expr [] (T₃ ◁ ∅)) (sym eq₁) eq₂ e [ e′ ]E
+  R.∎
+
+subst-split-[]E″ :
+  ∀ {T₁ T₁′ : Type [] l₁} {T₂ T₂′ : Type [] l₂}
+  → (e : Expr [] (T₁ ◁ ∅) T₂) (e′ : CExpr T₁)
+  → (eq₁ : T₁ ≡ T₁′) (eq₂ : T₂ ≡ T₂′)
+  → (subst₂ (λ T₁ T₂ → Expr [] (T₁ ◁ ∅) T₂) eq₁ eq₂ e [ subst CExpr eq₁ e′ ]E)
+  ≡ subst CExpr eq₂ (e [ e′ ]E) 
+subst-split-[]E″ {l₁} {l₂} {T₁} {T₁′} {T₂} {T₂′} e e′ eq₁ eq₂ =
+  H.≅-to-≡ $
+  R.begin
+    (subst₂ (λ T₃ → Expr [] (T₃ ◁ ∅)) eq₁ eq₂ e [ subst CExpr eq₁ e′ ]E)
+  R.≅⟨ Hcong₄ {A = Type [] l₁} {B = λ _ → Type [] l₂}
+              {C = λ ■₁ ■₂ → Expr [] (■₁ ◁ ∅) ■₂} {D = λ ■₁ ■₂ _ → CExpr ■₁}
+              (λ _ _ ■₁ ■₂ → ■₁ [ ■₂ ]E)
+              (H.≡-to-≅ (sym eq₁)) (H.≡-to-≅ (sym eq₂))
+              (≡-subst₂-removable (λ T₃ → Expr [] (T₃ ◁ ∅)) eq₁ eq₂ e)
+              (H.≡-subst-removable CExpr eq₁ e′) ⟩
+    e [ e′ ]E
+  R.≅⟨ H.sym (H.≡-subst-removable CExpr eq₂ _) ⟩
+    subst CExpr eq₂ (e [ e′ ]E)
+  R.∎
