@@ -27,12 +27,13 @@ data isValue : ∀ {l}{T : Type [] l} → CExpr T → Set where
     → isValue (Λ l₁ ⇒ e)
 
 --! Value
-Value : Type [] l → Set
-Value T = Σ (CExpr T) isValue
+record Value (T : Type [] l) : Set where
+  constructor _,_
+  field
+    exp : CExpr T
+    prf : isValue exp
 
---! exp
-exp : Value T → CExpr T
-exp = proj₁
+open Value public
 
 -- big step semantics
 
@@ -42,7 +43,7 @@ infix 15 _⇓_
 data _⇓_ : CExpr T → Value T → Set where
   ⇓-n : # n ⇓ (# n , V-♯)
   ⇓-s : e ⇓ (# n , V-♯)
-      → `suc e ⇓ (# (suc n) , V-♯)
+      → `suc e ⇓ (# suc n , V-♯)
   ⇓-ƛ : ƛ e ⇓ (ƛ e , V-ƛ)
   ⇓-· : e₁ ⇓ (ƛ e , V-ƛ)
       → e₂ ⇓ v₂

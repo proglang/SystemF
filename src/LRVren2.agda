@@ -26,6 +26,7 @@ open import Expressions
 open import ExprSubstitution
 open import ExprSubstProperties
 open import BigStep
+open import LogicalPrelim
 open import Logical2
 
 ----------------------------------------------------------------------

@@ -29,6 +29,7 @@ open import Expressions
 open import ExprSubstitution
 open import ExprSubstProperties
 open import BigStep
+open import LogicalPrelim
 open import Logical2
 open import LRVren2
 
@@ -2298,13 +2299,13 @@ LRVsub `ℕ ρ τ* v z =
   begin
     𝓥⟦ `ℕ ⟧ (Tsub-act τ* ρ) v z
   ≡⟨ refl ⟩
-    Σ ℕ (λ n → (proj₁ v ≡ # n) × (n ≡ z))
+    Σ ℕ (λ n → (exp v ≡ # n) × (n ≡ z))
   ≡⟨ cong (Σ ℕ)
-     (fun-ext (λ n → cong (Σ (proj₁ v ≡ (# n)))
+     (fun-ext (λ n → cong (Σ (exp v ≡ (# n)))
        (fun-ext (λ x → cong (n ≡_)
          (subst-irrelevant {F = id} refl (sym (trans (congωl (λ η → ℕ) (subst-to-env*-comp τ* (λ l x₁ → proj₁ (ρ l x₁)) [])) refl)) z))))) ⟩
     Σ ℕ (λ n →
-         (proj₁ v ≡ (# n)) × (n ≡ subst id (sym (trans (congωl (λ η → ℕ) (subst-to-env*-comp τ* (λ l x₁ → proj₁ (ρ l x₁)) [])) refl)) z))
+         (exp v ≡ (# n)) × (n ≡ subst id (sym (trans (congωl (λ η → ℕ) (subst-to-env*-comp τ* (λ l x₁ → proj₁ (ρ l x₁)) [])) refl)) z))
   ≡⟨ refl ⟩
     𝓥⟦ Tsub τ* `ℕ ⟧ ρ
       (subst Value (sym (assoc-sub-sub `ℕ τ* (subst←RE ρ))) v)
