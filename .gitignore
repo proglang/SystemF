@@ -13,3 +13,4 @@ auto
 *.snm
 *.toc
 _region_.tex
+.DS_Store
