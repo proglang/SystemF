@@ -19,6 +19,8 @@ open import Ext
 open import SetOmega
 open import TypeSubstitution
 
+--! TF >
+
 -- interaction of renamings and substituions
 
 sub↑-dist-∘ᵣₛ : ∀ l (ρ : TRen Δ₁ Δ₂) (σ : TSub Δ₂ Δ₃) →
@@ -318,8 +320,10 @@ Tren*-lift : ∀ {ρ* : TRen Δ₁ Δ₂}{η₁ : Env* Δ₁}{η₂ : Env* Δ₂
 Tren*-lift α Tren* here = refl
 Tren*-lift α Tren* (there x) = Tren* x
 
+--! RenPreservesSemanticsType
 Tren*-preserves-semantics : ∀ {ρ* : TRen Δ₁ Δ₂}{η₁ : Env* Δ₁}{η₂ : Env* Δ₂}
   → (Tren* : TRen* ρ* η₁ η₂) → (T : Type Δ₁ l) →  ⟦ Tren ρ* T ⟧ η₂ ≡ ⟦ T ⟧ η₁
+
 Tren*-preserves-semantics {ρ* = ρ*} {η₁} {η₂} Tren* (` x) = Tren* x
 Tren*-preserves-semantics {ρ* = ρ*} {η₁} {η₂} Tren* (T₁ ⇒ T₂) = cong₂ (λ A₁ A₂ → A₁ → A₂) (Tren*-preserves-semantics {ρ* = ρ*} {η₁} {η₂} Tren* T₁) (Tren*-preserves-semantics {ρ* = ρ*} {η₁} {η₂} Tren* T₂)
 Tren*-preserves-semantics {ρ* = ρ*} {η₁} {η₂} Tren* (`∀α l , T) = dep-ext λ where 
@@ -370,8 +374,10 @@ subst-preserves {η₂ = η₂} σ* (`∀α l , T) =
           (congωl (λ H → ⟦ T ⟧ (⟦α⟧ ∷ H)) (subst-to-env*-wk σ* ⟦α⟧ η₂)))
 subst-preserves σ* `ℕ = refl
  
+--! SingleSubstPreserves
 Tsingle-subst-preserves : ∀ (η : Env* Δ) (T′ : Type Δ l) (T : Type (l ∷ Δ) l′) → 
   ⟦ T [ T′ ]T ⟧ η ≡ ⟦ T ⟧ (⟦ T′ ⟧ η ∷ η)
+
 Tsingle-subst-preserves {Δ = Δ} {l = l}{l′ = l′} η T′ T =
   trans (subst-preserves (Textₛ Tidₛ T′) T)
         (congωl (λ H → ⟦ T ⟧ (⟦ T′ ⟧ η ∷ H)) (subst-to-env*-id η))

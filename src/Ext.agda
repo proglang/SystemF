@@ -7,6 +7,7 @@ import Axiom.Extensionality.Heterogeneous as HEq
 open import SetOmega
 
 ----------------------------------------------------------------------
+--! TF >
 
 postulate
   fun-ext : ∀{a b} → Extensionality a b
@@ -18,7 +19,7 @@ fun-ext₂ : ∀ {l₁}{l₂}{l₃} {A₁ : Set l₁} {A₂ : A₁ → Set l₂}
     f ≡ g
 fun-ext₂ h = fun-ext λ x → fun-ext λ y → h x y
 
-
+--! DependentExt
 dep-ext : ∀ {a b}{A : Set a}{F G : (α : A) → Set b}
     → (∀ (α : A) → F α ≡ G α)
     → ((α : A) → F α) ≡ ((α : A) → G α) 

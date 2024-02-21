@@ -20,8 +20,11 @@ open import Types
 open import TypeSubstitution
 open import TypeSubstProperties
 
+--! TF >
+
 -- type environments
 
+--! TVEnv 
 data TEnv : LEnv → Set where
   ∅    : TEnv []
   _◁_  : Type Δ l → TEnv Δ → TEnv Δ
@@ -29,11 +32,13 @@ data TEnv : LEnv → Set where
 
 variable Γ Γ₁ Γ₂ Γ₂₁ Γ₂₂ : TEnv Δ
 
+--! inn
 data inn : Type Δ l → TEnv Δ → Set where
   here  : ∀ {T Γ} → inn {Δ}{l} T (T ◁ Γ)
   there : ∀ {T : Type Δ l}{T′ : Type Δ l′}{Γ} → inn {Δ}{l} T Γ → inn {Δ} T (T′ ◁ Γ)
   tskip : ∀ {T l Γ} → inn {Δ}{l′} T Γ → inn (Twk T) (l ◁* Γ)
 
+--! Expr
 data Expr (Δ : LEnv) (Γ : TEnv Δ) : Type Δ l → Set where
   #_   : (n : ℕ) → Expr Δ Γ `ℕ
   `_   : ∀ {T : Type Δ l} → inn T Γ → Expr Δ Γ T
@@ -46,7 +51,7 @@ variable e e₁ e₂ e₃ : Expr Δ Γ T
 variable n : ℕ
 
 -- value environments
-
+--! VEnv
 Env : (Δ : LEnv) → TEnv Δ → Env* Δ → Setω
 Env Δ Γ η = ∀ l (T : Type Δ l) → (x : inn T Γ) → ⟦ T ⟧ η
 
@@ -58,11 +63,13 @@ extend : ∀ {T : Type Δ l}{Γ : TEnv Δ}{η : Env* Δ}
 extend γ v _ _ here = v
 extend γ v _ _ (there x) = γ _ _ x
 
+--! ExtendTskip
 extend-tskip : ∀ {Δ : LEnv}{Γ : TEnv Δ}{η : Env* Δ}{⟦α⟧ : Set l}
   → Env Δ Γ η → Env (l ∷ Δ) (l ◁* Γ) (⟦α⟧ ∷ η)
 extend-tskip {η = η} {⟦α⟧ = ⟦α⟧} γ _ _ (tskip {T = T} x)
   = subst id (sym (Tren*-preserves-semantics {ρ* = Twkᵣ Tidᵣ} {η} {⟦α⟧ ∷ η} (wkᵣ∈Ren* η ⟦α⟧) T)) (γ _ _ x)
 
+--! ExprSem
 E⟦_⟧ : ∀ {T : Type Δ l}{Γ : TEnv Δ} → Expr Δ Γ T → (η : Env* Δ) → Env Δ Γ η → ⟦ T ⟧ η
 E⟦ # n ⟧ η γ = n
 E⟦ ` x ⟧ η γ = γ _ _ x

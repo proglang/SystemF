@@ -19,10 +19,13 @@ variable l l′ l₁ l₂ l₃ : Level
 open import Ext
 
 ----------------------------------------------------------------------
+--! TF >
 
 -- level environments
 
+--! LEnv
 LEnv = List Level
+
 variable Δ Δ₁ Δ₂ Δ₃ : LEnv
 
 -- type variables
@@ -33,6 +36,7 @@ data _∈_ : Level → LEnv → Set where
 
 -- types
 
+--! Type
 data Type Δ : Level → Set where
   `_     : l ∈ Δ → Type Δ l
   _⇒_    : Type Δ l → Type Δ l′ → Type Δ (l ⊔ l′)
@@ -48,14 +52,7 @@ level {l = l} T = l
 
 -- semantic environments (mapping level l to an element of Set l)
 
-{- 
--- Set l instead of Setω?
-data Env*′ (l : Level) : LEnv′ l → Set l where
-  []  : Env*′ l []
-  _∷_[_] : ∀{Δ : LEnv′ l} → Set l′ → Env*′ l Δ → (eq : l ⊔ l′ ≡ l) → 
-    Env*′ l (l′ ∷ Δ [ eq ]) 
--}
-
+--! TEnv
 data Env* : LEnv → Setω where
   []  : Env* []
   _∷_ : Set l → Env* Δ → Env* (l ∷ Δ)
@@ -70,6 +67,7 @@ apply-env (_ ∷ η) (there x) = apply-env η x
 
 -- the meaning of a stratified type in terms of Agda universes
 
+--! TSem
 ⟦_⟧ : (T : Type Δ l) → Env* Δ → Set l
 ⟦ ` α ⟧ η = apply-env η α  
 ⟦ T₁ ⇒ T₂ ⟧ η = ⟦ T₁ ⟧ η → ⟦ T₂ ⟧ η
