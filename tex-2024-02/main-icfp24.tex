@@ -480,7 +480,7 @@ interpretation.
 
 The expression relation extends the value relation by interposing
 evaluation on the syntactic side. The denotation $z$ remains the
-same. 
+same, which is the essence of denotational semantics. 
 \LogicalMCE
 
 In the definition of {\AV} it is crucial that we only pattern match
@@ -523,11 +523,11 @@ Consider for example the definition of the identity expression-substitution:
 \SubstExamplesEidDef
 
 One would expect \texttt{Eid} to simply map each variable \texttt{x}
-to it's corresponding variable term \texttt{\AgdaConstructor{`} x}.
+to it's corresponding variable term \texttt{\AgdaInductiveConstructor{`} x}.
 However, because the type of expression substitutions \texttt{ESub} is
 indexed by a type-substitution -- in this case \texttt{Tid} -- we need
 to produce a value of type \texttt{Expr Δ Γ (Tsub Tid T)}, while
-the variable term \texttt{\AgdaConstructor{`} x} has type \texttt{Expr Δ Γ T}.
+the variable term \texttt{\AgdaInductiveConstructor{`} x} has type \texttt{Expr Δ Γ T}.
 The two types are obviously equivalent, but only propositionally due
 to the lemma \texttt{TidT≡T : ∀ T → Tsub Tidₛ T ≡ T}, so a
 {\Asubst} is needed to adjust the type.\footnote{
