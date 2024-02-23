@@ -437,65 +437,228 @@ that a syntac value evaluates to itself.
 \section{Logical Relation}
 \label{sec:logical-relation}
 
-The definition of the logical relation largely follows the development
-of Ahmed's thesis/lecture notes \cite{AhmedLR}. 
 
-We define a binary logical relation for stratified System F. It
-relates syntactic values of type $T$ to semantic values of the same
+We define a binary logical relation for finitely stratified System F.
+Its definition largely follows the development of the logical relation
+for System F in Ahmed's thesis/lecture notes \cite{AhmedLR}.
+We first define the relation for closed values and expressions and
+then lift it open expressions.
+
+We are going slowly and detailed to highlight the places where
+nontrivial steps are needed to mechanize the results.
+
+\subsection{Relating closed values}
+\label{sec:relat-clos-valu}
+
+Generally, we talk about type-indexed relations between syntactic values of type $T$ to semantic values of the same
 type. This relation {\AREL} is indexed by the stratification level.
 \LogicalREL
 A relation environment {\ARelEnv} abstracts over the current instantiation of the
 type variables. It maps a type variable to a
-type paired with its relational interpretation. 
+type paired with its relational interpretation.  It is needed to
+define the cases for type abstraction and type application in a
+compositional, terminating way.
 \LogicalRelEnv
 Clearly, the first ``half'' of a relation environment is a type
-substitution and we use the function SUBSTFROMRE to obtain this
-substitution.
+substitution and we use lifted projection functions $\pi_1$ and $\pi_2$ to obtain this
+substitution and the actual relation.
+
+We define extension of a relation environment analogous to extension
+of substitutions. This extension is needed in the case for universal
+quantification.
+\LogicalREext
 
 With these definitions in place, we can state the type of the logical relation.
 \LogicalMCVType
-The relation is defined by induction on the type $T$ and the parameter
+The relation {\AVSem} on values is defined by induction on the type $T$ and the parameter
 $\rho$ contains the relation environment. The intention is to define a
 relation on objects of type $T$ after closing $T$ with the relation
 environment. Hence, we apply $\rho$'s type substitution to the type of
 the syntactic value and interpret $T$ in the environment created from
 the relation environment.
+The value relation is mutually recursive with the expression relation
+{\AESem}, which interposes evaluation.
 \LogicalMCVBody
-The definition itself is fairly straigthforward from the literature.
-We interpret a type variable by looking it up in the relation
-environment.
-At function type $T_1 \Rightarrow T_2$ we relate a lambda expression
+The definition itself is fairly straightforward from the literature,
+except for the type adjustments using the {\Asubst} function. We
+discuss those type adjustments after explaining the relations.
+
+At the number type, values are constants equal to their semantic
+interpretation. 
+ At function type $T_1 \Rightarrow T_2$ we relate a lambda expression
 to a semantic function $f$ in
 the usual way: given arguments $w$ and $z$ related at type $T_1$, we ask that the
 application of the lambda to $w$ evaluates to a syntactic value $v$ that is
 relates to $(f z)$ at type $T_2$.
+We interpret a type variable by looking it up in the relation
+environment.
 At universal type $\forall l, T$ we relate a big lambda to a semantic
 function $F$ as follows: given any type argument $T'$ and relation $R :
 \AREL\ T'$, evaluating the type application to a syntactic value $v$,
 we find that this $v$ is related at type $T$, but in an extended
 relation environment that binds the type variable to $(T', R)$, to the
 function $F$ applied to the semantics of $T'$.
-At the number type, values are constants equal to their semantic
-interpretation. 
 
 The expression relation extends the value relation by interposing
 evaluation on the syntactic side. The denotation $z$ remains the
 same, which is the essence of denotational semantics. 
 \LogicalMCE
 
-In the definition of {\AV} it is crucial that we only pattern match
-against the type and enforce the structure of values by equations on
-the right hand side of the definitions. This choice ensures that {\AV}
-reduces as soon as the type is sufficiently known.
+The definitions of {\AVSem} and {\AESem} are terminating because their
+recursive invocations strictly refer to subterms of the argument type.
 
 The occurrence of {\Asubst} in two places indicates that the expected types do not quite
-match the demanded types. The reader may wonder if this mismatch is an
+match the demanded types.
+The case for type variables has to cater for the action of the
+substitution $\pi_1\rho$ on the semantics. The semantics of type $T$
+is parameterized over the interpretation of its free type
+variables. Hence, we have to show that the semantics of the type is
+preserved by this substituion.
+\TFsubstVarPreservesType
+The case for type application has to cater for an equality between
+type substitutions that boils down to a standard lemma on composing
+substitutions.
+\LogicallemmaOne
+
+The reader may wonder if these two type mismatches are an
 artifact of our definition. For example, we might have chosen a
-different type for {\AV}:
+different type for the value relation:
 \LogicalVariationMCVType
 Alas, this choice gets rid of the {\Asubst} in the case for type
-variables, but a new {\Asubst} is needed in the case for type
+variables, but an additional {\Asubst} is needed in the case for type
 application.
+
+We close with a usability aspect.
+In the definition of {\AVSem} it is crucial that we only pattern match
+against the type and enforce the structure of values by equations on
+the right hand side of the definitions. This choice ensures that {\AVSem}
+reduces as soon as the type is sufficiently known.
+
+\subsection{Semantic soundness}
+\label{sec:relat-open-expr}
+
+To lift the expression relation {\AESem} to open expressions we start
+with an expression of type \texttt{e : Expr Δ Γ T} and want to relate it
+to its denotational interpretation \texttt{E⟦ e ⟧}. As the type $T$
+may also contain type variables, we first need a relational
+environment $\rho$ and its semantic counterpart $\eta$ to interpret
+the type variables as suitable sets.
+Next, we need a closing substitution $\chi$ that maps the free
+variables of $e$ to closed values while taking into account the
+instantiation of the type variables. On the denotational side, we need
+a corresponding semantic environment \texttt{γ : Env Δ Γ η} that maps
+free variables of $e$ to their denotations. Finally, the closing
+substitution and the semantic environment need to send variables to
+items related by {\AVSem}. To this end, we extend {\AVSem} to
+environments.
+
+Taken together, these assumptions enable the definition of semantic soundness.
+\FundamentalSemanticSoundness
+
+Let's dissect the parts. First, the closing value substitution:
+\LogicalCSub
+This type is pretty much the same as the type for an expression
+substitution with two differences. First, it is indexed by a closing
+type substitution and, second, it returns a closed value instead of an
+expression. The latter is needed to prove the variable case of the
+fundamental lemma.
+
+The following definition of {\AGSem} is the extension of {\AVSem} to
+environments. The {\AlevelEnv} function calculates the universe level
+of the resulting conjunction from the levels of the {\AVSem}'s of the
+context entries.
+\LogicalMCG
+The empty environments are related in the empty context.
+If the context starts with a variable binding, then the head entries of
+the environments are related by {\AVSem} and their tails are
+related by {\AGSem}.
+The various \texttt{drop} functions pop the head entry from the
+respective environments.
+If the context starts with a type variable bindings, then this binding
+does not contribute to the relation, but we still have to skip over it
+by popping the heap entry of the relation environment and adjusting the
+substitution and the semantic environment.
+The respective \texttt{drop} and \texttt{drop-t} functions may be
+found in the supplemental material.
+
+\subsection{Fundamental theorem}
+\label{sec:fundamental}
+
+The fundamental theorem of the logical relation tells us that we can
+prove semantic soundness for a well-typed expression.
+\FundamentalFundamentalType
+
+This proof is very easy for constants and for the successor.
+\FundamentalFundamentalConstant
+The three components of the resulting value of type {\AESem} contain
+\begin{enumerate}
+\item the result is syntactic value for the number $n$,
+\item this value reduces to itself,
+\item the value relation: the denotational semantics yields the same
+  number $n$ with the two {\Arefl}s fixing the equality between the
+  syntactic value and the semantics. 
+\end{enumerate}
+\FundamentalFundamentalSuccessor
+Here we just lift the relation that we obtain as an induction
+hypothesis for $e$ to the successor.
+\FundamentalFundamentalVariable
+The case for variables relies on the machinery we built up so
+far. We obtain the syntactic value of the variable from the
+substitution $\chi$. Then we obtain the value relation for this value
+from {\AGSem} and construct the result from $w$, the proof that $w$
+evaluates to itself, and the value relation. We have to rely on
+{\AValueDown} for the proof because there is no way to infer the shape
+of $w$ from $T$ (which might be a type variable, for instance).
+
+We defer the remaining cases to the supplemental material because we
+want to have a closer look at {\AGLookup} in Section~\ref{sec:technical-lemmas}. The case
+for function application is by simple application of the inductive
+hypotheses.
+The cases for lambda abstraction and type abstraction are slightly more involved because of
+type mismatches that need to be handled with {\Asubst}, apart from the
+appeal to the inductive hypothesis.
+The case for type application constitutes an outright annoying
+excursion to ``subst hell'', where an overwhelming number of type
+mismatches needs to be addressed in the proof. Section~\ref{sec:subst-hell} explains
+ways of handling these problems.
+
+\subsection{Adequacy}
+\label{sec:adequacy}
+
+The holy grail is the proof of the adequacy theorem.
+Suppose we have a closed expression $e$ of number type.
+If the denotational semantics of $e$ is the number $n$, then big-step
+semantics applied to $e$ terminates and yields the syntactic value for
+$n$.
+The statement looks a bit odd because we have to construct an empty
+environment, but there is no issue in doing so.
+\FundamentalAdequacyType
+This theorem follows immediately from the semantic soundness that we proved with the
+fundamental theorem.
+\FundamentalAdequacyBody
+We just invoke the fundamental theorem with empty context and empty
+environments and analyze the result. The auxiliary lemma
+{\ACsubClosed} proves that applying the empty substitution acts like
+the identity substitution on a closed expression.
+\FundamentalCsubClosed
+
+
+\subsection{Technical lemmas}
+\label{sec:technical-lemmas}
+
+\LRVrenMCGLookupType
+\LRVrenMCGLookupBody
+
+To fix the discrepancy between the type of the inductive hypothesis
+\texttt{ih} and the expected type, we need the following lemma.
+\LRVrenLRVwk
+To add insult to the injury, this lemma cannot be proved directly, but
+it rather has to be generalized to arbitrary renamings acting on the
+type.
+We can finally prove this renaming lemma with another excursion to
+``subst hell''.
+\LRVrenEqType
+
 
 \section{A Journey to Subst-Hell}
 \label{sec:subst-hell}
