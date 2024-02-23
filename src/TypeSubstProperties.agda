@@ -363,7 +363,10 @@ subst-to-env* : TSub Δ₁ Δ₂ → Env* Δ₂ → Env* Δ₁
 subst-to-env* {[]} σ* η₂ = []
 subst-to-env* {x ∷ Δ₁} σ* η₂ = ⟦ σ* _ here ⟧ η₂ ∷ subst-to-env* (Tdropₛ σ*) η₂
 
-subst-var-preserves : (x  : l ∈ Δ₁) (σ*  : TSub Δ₁ Δ₂) (η₂ : Env* Δ₂) → ⟦ σ* _ x ⟧ η₂ ≡ apply-env (subst-to-env* σ* η₂) x
+--! substVarPreservesType
+subst-var-preserves : (α : l ∈ Δ₁) (τ* : TSub Δ₁ Δ₂) (η₂ : Env* Δ₂)
+  → apply-env (subst-to-env* τ* η₂) α ≡ ⟦ τ* l α ⟧ η₂
+
 subst-var-preserves here σ* η₂ = refl
 subst-var-preserves (there x) σ* η₂ = subst-var-preserves x (Tdropₛ σ*) η₂
 
@@ -391,7 +394,7 @@ subst-preserves-type =
 
 subst-preserves : subst-preserves-type
 subst-preserves {η₂ = η₂} σ* (` x) =
-  subst-var-preserves x σ* η₂
+  sym (subst-var-preserves x σ* η₂)
 subst-preserves {η₂ = η₂} σ* (T₁ ⇒ T₂) =
   cong₂ (λ A B → A → B) (subst-preserves{η₂ = η₂} σ* T₁) (subst-preserves{η₂ = η₂} σ* T₂)
 subst-preserves {η₂ = η₂} σ* (`∀α l , T) =

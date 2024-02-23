@@ -38,12 +38,21 @@ _∧_ = _×_
 
 -- relation between a syntactic value and a semantic value
 --! REL
-REL : ∀ {l} → Type [] l → Set (suc l)
+REL : Type [] l → Set (suc l)
 REL {l} T = Value T → ⟦ T ⟧ [] → Set l 
 
 --! RelEnv
 RelEnv : (Δ : LEnv) → Setω
 RelEnv Δ = ∀ l → l ∈ Δ → Σ (Type [] l) REL
+
+--! substRE
+π₁ : RelEnv Δ → TSub Δ []
+π₁ ρ l x = proj₁ (ρ l x)
+
+π₂ : (ρ : RelEnv Δ) → ∀ l → (x : l ∈ Δ) → REL (π₁ ρ l x)
+π₂ ρ l x = proj₂ (ρ l x)
+
+subst←RE = π₁
 
 -- type renaming acting on RelEnv by composition
 
@@ -57,17 +66,8 @@ REdrop = Tren-act (Twkᵣ Tidᵣ)
 
 --! REext
 REext : RelEnv Δ → (Σ (Type [] l) REL) → RelEnv (l ∷ Δ)
-REext ρ R _ here = R
-REext ρ R _ (there x) = ρ _ x
-
---! substRE
-subst←RE : RelEnv Δ → TSub Δ []
-subst←RE ρ l x = proj₁ (ρ l x)
-
-π₁ = subst←RE
-
-π₂ : (ρ : RelEnv Δ) → ∀ l → (x : l ∈ Δ) → REL (π₁ ρ l x)
-π₂ ρ l x = proj₂ (ρ l x)
+REext ρ ΣTR _ here = ΣTR
+REext ρ ΣTR _ (there x) = ρ _ x
 
 subst←RE-ext : ∀ (ρ : RelEnv Δ) (T : Type [] l) (R : REL T) (l′ : Level) (x : l′ ∈ (l ∷ Δ)) → subst←RE (REext ρ (T , R)) l′ x ≡ Textₛ (subst←RE ρ) T l′ x
 subst←RE-ext ρ T R l here = refl

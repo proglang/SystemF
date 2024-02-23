@@ -40,18 +40,18 @@ open import LogicalPrelim
   → CExpr (Tsub (π₁ ρ) T) → ⟦ T ⟧ (subst-to-env* (π₁ ρ) []) → Set l
 
 --! MCVBody
-𝓥⟦ ` α ⟧ ρ v z =
-  π₂ ρ _ α v (subst id (sym (subst-var-preserves α (π₁ ρ) [])) z)
+𝓥⟦ `ℕ ⟧ ρ u z =
+  ∃[ n ] (exp u ≡ # n) ∧ (n ≡ z)
 𝓥⟦ T₁ ⇒ T₂ ⟧ ρ u f =
   ∃[ e ] (exp u ≡ ƛ e) ∧
   ∀ w z → 𝓥⟦ T₁ ⟧ ρ w z → 𝓔⟦ T₂ ⟧ ρ (e [ exp w ]E) (f z)
+𝓥⟦ ` α ⟧ ρ v z =
+  π₂ ρ _ α v (subst id (subst-var-preserves α (π₁ ρ) []) z)
 𝓥⟦ `∀α l , T ⟧ ρ u F =
   ∃[ e ] (exp u ≡ Λ l ⇒ e) ∧
-  ∀ T′ R → let ρ′ = REext ρ (T′ , R) in
+  ∀ T′ R →
   ∃[ v ] (e [ T′ ]ET ⇓ v)
-       ∧ 𝓥⟦ T ⟧ ρ′ (subst Value (lemma1 ρ T T′ R) v) (F (⟦ T′ ⟧ []))
-𝓥⟦ `ℕ ⟧ ρ u z =
-  ∃[ n ] (exp u ≡ (# n)) ∧ (n ≡ z)
+       ∧ 𝓥⟦ T ⟧ (REext ρ (T′ , R)) (subst Value (lemma1 ρ T T′ R) v) (F (⟦ T′ ⟧ []))
 
 --! MCE
 𝓔⟦ T ⟧ ρ e z = ∃[ v ] (e ⇓ v) ∧ 𝓥⟦ T ⟧ ρ v z

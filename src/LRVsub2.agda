@@ -183,37 +183,37 @@ LRVsub (` α) ρ τ* v z =
   begin
     𝓥⟦ ` α ⟧ (Tsub-act τ* ρ) v z
   ≡⟨ refl ⟩
-    proj₂ (Tsub-act τ* ρ _ α) v (subst id (sym (subst-var-preserves α (subst←RE (Tsub-act τ* ρ)) [])) z)
+    proj₂ (Tsub-act τ* ρ _ α) v (subst id (subst-var-preserves α (subst←RE (Tsub-act τ* ρ)) []) z)
   ≡⟨ refl ⟩
     subst (λ ⟦x⟧ → Value (Tsub ρ* T₂) → ⟦x⟧ → Set _)
       (sym (subst-preserves (subst←RE ρ) T₂))
       (𝓥⟦ T₂ ⟧ ρ)
       v
-      (subst id (sym (subst-var-preserves α (subst←RE (Tsub-act τ* ρ)) [])) z)
-  ≡⟨ cong (λ ∎ → ∎ v (subst id (sym (subst-var-preserves α (subst←RE (Tsub-act τ* ρ)) [])) z))
+      (subst id (subst-var-preserves α (subst←RE (Tsub-act τ* ρ)) []) z)
+  ≡⟨ cong (λ ∎ → ∎ v (subst id (subst-var-preserves α (subst←RE (Tsub-act τ* ρ)) []) z))
     (eta-subst (λ v z → 𝓥⟦ T₂ ⟧ ρ v z) (sym (subst-preserves (subst←RE ρ) T₂)) ) ⟩
     subst (λ Z → Z → Set _) (sym (subst-preserves ρ* T₂))
       (λ z₁ → 𝓥⟦ T₂ ⟧ ρ v z₁)
       (subst id
-       (sym (subst-var-preserves α (subst←RE (Tsub-act τ* ρ)) [])) z)
-  ≡⟨ cong (λ ∎ → ∎ (subst id (sym (subst-var-preserves α (subst←RE (Tsub-act τ* ρ)) [])) z))
+       (subst-var-preserves α (subst←RE (Tsub-act τ* ρ)) []) z)
+  ≡⟨ cong (λ ∎ → ∎ (subst id (subst-var-preserves α (subst←RE (Tsub-act τ* ρ)) []) z))
     (sym (app-subst (λ z₁ → 𝓥⟦ T₂ ⟧ ρ v z₁) (sym (subst-preserves ρ* T₂)))) ⟩
     𝓥⟦ T₂ ⟧ ρ v
       (subst id (sym (sym (subst-preserves ρ* T₂)))
        (subst id
-        (sym (subst-var-preserves α (subst←RE (Tsub-act τ* ρ)) [])) z))
+        (subst-var-preserves α (subst←RE (Tsub-act τ* ρ)) []) z))
   ≡⟨ cong (𝓥⟦ T₂ ⟧ ρ v)
-    (subst-subst {P = id} (sym (subst-var-preserves α (subst←RE (Tsub-act τ* ρ)) []))
+    (subst-subst {P = id} (subst-var-preserves α (subst←RE (Tsub-act τ* ρ)) [])
                            {(sym (sym (subst-preserves ρ* T₂)))}
                            {z}) ⟩
     𝓥⟦ T₂ ⟧ ρ v
       (subst id
-       (trans (sym (subst-var-preserves α (subst←RE (Tsub-act τ* ρ)) []))
+       (trans (subst-var-preserves α (subst←RE (Tsub-act τ* ρ)) [])
         (sym (sym (subst-preserves ρ* T₂))))
        z)
   ≡⟨ cong (𝓥⟦ T₂ ⟧ ρ v)
     (subst-irrelevant {F = id}
-                      (trans (sym (subst-var-preserves α (subst←RE (Tsub-act τ* ρ)) [])) (sym (sym (subst-preserves ρ* T₂))))
+                      (trans (subst-var-preserves α (subst←RE (Tsub-act τ* ρ)) []) (sym (sym (subst-preserves ρ* T₂))))
                       (sym
         (step-≡ (⟦ T₂ ⟧ (subst-to-env* (subst←RE ρ) []))
          (step-≡
@@ -221,7 +221,7 @@ LRVsub (` α) ρ τ* v z =
           (apply-env (subst-to-env* (subst←RE (Tsub-act τ* ρ)) []) α ∎)
           (congωl (λ η → apply-env η α)
            (subst-to-env*-comp τ* (subst←RE ρ) [])))
-         (subst-var-preserves α τ* (subst-to-env* (subst←RE ρ) []))))
+         (sym (subst-var-preserves α τ* (subst-to-env* (subst←RE ρ) [])))))
          z) ⟩
     𝓥⟦ T₂ ⟧ ρ v
       (subst id
@@ -232,7 +232,7 @@ LRVsub (` α) ρ τ* v z =
           (apply-env (subst-to-env* (subst←RE (Tsub-act τ* ρ)) []) α ∎)
           (congωl (λ η → apply-env η α)
            (subst-to-env*-comp τ* (subst←RE ρ) [])))
-         (subst-var-preserves α τ* (subst-to-env* (subst←RE ρ) []))))
+         (sym (subst-var-preserves α τ* (subst-to-env* (subst←RE ρ) [])))))
        z)
   ≡⟨ refl ⟩
     𝓥⟦ Tsub τ* (` α) ⟧ ρ

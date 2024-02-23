@@ -66,30 +66,32 @@ Tsub-act-Text ρ T′ l₂ (there x) =
   ≡⟨ cong (proj₁ (ρ l₂ x) ,_)
     (fun-ext₂ (λ z z₁ →
       cong (proj₂ (ρ l₂ x) z)
-        (sym (subst-subst-sym {P = id} (sym (subst-var-preserves x ρ* [])))))) ⟩
+        (sym (subst-subst-sym {P = id} (subst-var-preserves x ρ* []))))) ⟩
     proj₁ (ρ l₂ x) ,
       (λ z z₁ →
          proj₂ (ρ l₂ x) z
-         (subst id (sym (subst-var-preserves x ρ* []))
-          (subst id (sym (sym (subst-var-preserves x ρ* []))) z₁)))
+         (subst id (subst-var-preserves x ρ* [])
+          (subst id (sym (subst-var-preserves x ρ* [])) z₁)))
   ≡⟨ cong (proj₁ (ρ l₂ x) ,_)
     (fun-ext (λ v →
       app-subst (λ z →
-            proj₂ (ρ l₂ x) v (subst id (sym (subst-var-preserves x ρ* [])) z))
-            (sym (subst-var-preserves x ρ* [])))) ⟩
+            proj₂ (ρ l₂ x) v (subst id (subst-var-preserves x ρ* []) z))
+            (subst-var-preserves x ρ* []))) ⟩
     proj₁ (ρ l₂ x) ,
       (λ v →
-         subst (λ Z → Z → Set l₂) (sym (subst-var-preserves x ρ* []))
+         subst (λ Z → Z → Set l₂) (subst-var-preserves x ρ* [])
          (λ z →
-            proj₂ (ρ l₂ x) v (subst id (sym (subst-var-preserves x ρ* [])) z)))
+            proj₂ (ρ l₂ x) v (subst id (subst-var-preserves x ρ* []) z)))
   ≡⟨ sym (cong (proj₁(ρ l₂ x) ,_)
-         (eta-subst (λ v z → proj₂ (ρ _ x) v (subst id (sym (subst-var-preserves x ρ* [])) z))
-                    (sym (subst-var-preserves x ρ* [])) )) ⟩
+         (eta-subst (λ v z → proj₂ (ρ _ x) v (subst id (subst-var-preserves x ρ* []) z))
+                    (subst-var-preserves x ρ* []) )) ⟩
     proj₁(ρ l₂ x) ,
     subst (λ ⟦x⟧ → (Value (ρ* l₂ x) → ⟦x⟧ → Set _))
-          (sym (subst-var-preserves x ρ* []))
-          (λ v z → proj₂ (ρ _ x) v (subst id (sym (subst-var-preserves x ρ* [])) z))
-  ≡⟨ refl ⟩
+          (subst-var-preserves x ρ* [])
+          (λ v z → proj₂ (ρ _ x) v (subst id (subst-var-preserves x ρ* []) z))
+  ≡⟨ cong (π₁ ρ l₂ x ,_)
+    (cong₂ (subst (λ ⟦x⟧ → Value (ρ* l₂ x) → ⟦x⟧ → Set _))
+      (sym (sym-sym (subst-var-preserves x ρ* [])) ) refl) ⟩
     ρ* l₂ x ,
     subst (λ ⟦x⟧ → (Value (Tsub ρ* (` x)) → ⟦x⟧ → Set _))
           (sym (subst-preserves ρ* (` x)))

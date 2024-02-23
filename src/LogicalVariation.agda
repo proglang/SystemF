@@ -42,27 +42,27 @@ postulate
     in Tsub (π₁ ρ′) T ≡ Tsub (Tliftₛ (π₁ ρ) l) T [ T′ ]T
 
 --! MCVType
-𝓥⟦_⟧ : (T : Type Δ l) → (ρ : RelEnv Δ) → REL (Tsub (π₁ ρ) T)
+𝓥′⟦_⟧ : (T : Type Δ l) → (ρ : RelEnv Δ) → REL (Tsub (π₁ ρ) T)
 
 --! MCEType
-𝓔⟦_⟧ : (T : Type Δ l) → (ρ : RelEnv Δ)
+𝓔′⟦_⟧ : (T : Type Δ l) → (ρ : RelEnv Δ)
   → CExpr (Tsub (π₁ ρ) T) → ⟦ Tsub (π₁ ρ) T ⟧ [] → Set l
 
 --! MCVBody
-𝓥⟦ ` α ⟧ ρ v z =
+𝓥′⟦ ` α ⟧ ρ v z =
   π₂ ρ _ α v z
-𝓥⟦ T₁ ⇒ T₂ ⟧ ρ u f =
+𝓥′⟦ T₁ ⇒ T₂ ⟧ ρ u f =
   ∃[ e ] (exp u ≡ ƛ e) ∧
-  ∀ w z → 𝓥⟦ T₁ ⟧ ρ w z → 𝓔⟦ T₂ ⟧ ρ (e [ exp w ]E) (f z)
-𝓥⟦ `∀α l , T ⟧ ρ u F =
+  ∀ w z → 𝓥′⟦ T₁ ⟧ ρ w z → 𝓔′⟦ T₂ ⟧ ρ (e [ exp w ]E) (f z)
+𝓥′⟦ `∀α l , T ⟧ ρ u F =
   ∃[ e ] (exp u ≡ Λ l ⇒ e) ∧
   ∀ T′ R → let ρ′ = REext ρ (T′ , R) in 
   ∃[ v ] (subst CExpr (sym (useful-eq T ρ T′ R)) (e [ T′ ]ET) ⇓ v)
-       ∧ 𝓥⟦ T ⟧ ρ′ v (subst id (sym (trans (cong (λ t → ⟦ t ⟧ []) (useful-eq T ρ T′ R))
+       ∧ 𝓥′⟦ T ⟧ ρ′ v (subst id (sym (trans (cong (λ t → ⟦ t ⟧ []) (useful-eq T ρ T′ R))
                                            {!!})) -- Tsingle-subst-preserves [] T′ T
                                (F (⟦ T′ ⟧ [])))
-𝓥⟦ `ℕ ⟧ ρ u z =
+𝓥′⟦ `ℕ ⟧ ρ u z =
   ∃[ n ] (exp u ≡ (# n)) ∧ (n ≡ z)
 
 --! MCE
-𝓔⟦ T ⟧ ρ e z = ∃[ v ] (e ⇓ v) ∧ 𝓥⟦ T ⟧ ρ v z
+𝓔′⟦ T ⟧ ρ e z = ∃[ v ] (e ⇓ v) ∧ 𝓥′⟦ T ⟧ ρ v z
