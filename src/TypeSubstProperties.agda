@@ -19,6 +19,10 @@ open import Ext
 open import SetOmega
 open import TypeSubstitution
 
+private variable
+  ρ ρ₁ ρ₂ ρ′ : TSub Δ₁ Δ₂
+  σ σ₁ σ₂ σ′ : TSub Δ₁ Δ₂
+
 --! TF >
 
 -- interaction of renamings and substituions
@@ -40,8 +44,10 @@ mutual
       Tsub (Tliftₛ (ρ ∘ᵣₛ σ) _) T
     ∎
 
+  --! FusionSubRen
   assoc-sub-ren : ∀ (T : Type Δ₁ l) (ρ : TRen Δ₁ Δ₂) (σ : TSub Δ₂ Δ₃) →
     Tsub σ (Tren ρ T) ≡ Tsub (ρ ∘ᵣₛ σ) T
+
   assoc-sub-ren (` x) ρ σ = refl
   assoc-sub-ren (T₁ ⇒ T₂) ρ σ = cong₂ _⇒_ (assoc-sub-ren T₁ ρ σ) (assoc-sub-ren T₂ ρ σ)
   assoc-sub-ren (`∀α l , T) ρ σ = cong (`∀α l ,_) (assoc-sub↑-ren↑ T ρ σ)
@@ -64,8 +70,10 @@ mutual
       Tren (Tliftᵣ (ρ₁ ∘ᵣᵣ ρ₂) _) T
     ∎
 
+  --! FusionRenRen
   assoc-ren-ren : ∀ (T : Type Δ₁ l) (ρ₁ : TRen Δ₁ Δ₂) (ρ₂ : TRen Δ₂ Δ₃) →
     Tren ρ₂ (Tren ρ₁ T) ≡ Tren (ρ₁ ∘ᵣᵣ ρ₂) T
+
   assoc-ren-ren (` x) ρ₁ ρ₂ = refl
   assoc-ren-ren (T₁ ⇒ T₂) ρ₁ ρ₂ = cong₂ _⇒_ (assoc-ren-ren T₁ ρ₁ ρ₂) (assoc-ren-ren T₂ ρ₁ ρ₂)
   assoc-ren-ren (`∀α l , T) ρ₁ ρ₂ = cong (`∀α l ,_) (assoc-ren↑-ren↑ T ρ₁ ρ₂)
@@ -99,8 +107,10 @@ mutual
       Tsub (Tliftₛ (σ ∘ₛᵣ ρ) _) T
     ∎ 
 
+  --! FusionRenSub
   assoc-ren-sub : ∀ (T : Type Δ₁ l) (σ : TSub Δ₁ Δ₂) (ρ : TRen Δ₂ Δ₃) →
     Tren ρ (Tsub σ T) ≡ Tsub (σ ∘ₛᵣ ρ) T
+
   assoc-ren-sub (` x) ρ σ = refl
   assoc-ren-sub (T₁ ⇒ T₂) ρ σ = cong₂ _⇒_ (assoc-ren-sub T₁ ρ σ) (assoc-ren-sub T₂ ρ σ)
   assoc-ren-sub (`∀α l , T) ρ σ = cong (`∀α l ,_) (assoc-ren↑-sub↑ T ρ σ)
@@ -139,8 +149,10 @@ mutual
       Tsub (Tliftₛ (σ₁ ∘ₛₛ σ₂) _) T
     ∎ 
 
+  --! FusionSubSub
   assoc-sub-sub : ∀ (T : Type Δ₁ l) (σ₁ : TSub Δ₁ Δ₂) (σ₂ : TSub Δ₂ Δ₃) →
     Tsub σ₂ (Tsub σ₁ T) ≡ Tsub (σ₁ ∘ₛₛ σ₂) T
+
   assoc-sub-sub (` x) σ₁ σ₂ = refl
   assoc-sub-sub (T₁ ⇒ T₂) σ₁ σ₂ = cong₂ _⇒_ (assoc-sub-sub T₁ σ₁ σ₂) (assoc-sub-sub T₂ σ₁ σ₂)
   assoc-sub-sub (`∀α l , T) σ₁ σ₂ = cong (`∀α l ,_) (assoc-sub↑-sub↑ T σ₁ σ₂)
@@ -152,7 +164,9 @@ TliftᵣTidᵣ≡Tidᵣ _ _ = fun-ext₂ λ where
   _ here → refl
   _ (there x) → refl
 
+--! TidRNeutral
 TidᵣT≡T : ∀ (T : Type Δ l) → Tren Tidᵣ T ≡ T
+
 TidᵣT≡T (` x) = refl
 TidᵣT≡T (T₁ ⇒ T₂) = cong₂ _⇒_ (TidᵣT≡T T₁) (TidᵣT≡T T₂)
 TidᵣT≡T {Δ = Δ} (`∀α l , T) = cong (`∀α l ,_) (trans (cong (λ ρ → Tren ρ T) (TliftᵣTidᵣ≡Tidᵣ Δ l)) (TidᵣT≡T T))
@@ -182,7 +196,9 @@ TliftₛTidₛ≡Tidₛ _ _ = fun-ext₂ λ where
   _ here → refl
   _ (there x) → refl             
 
+--! TidSNeutral
 TidₛT≡T : ∀ (T : Type Δ l) → Tsub Tidₛ T ≡ T       
+
 TidₛT≡T (` x) = refl
 TidₛT≡T (T₁ ⇒ T₂) = cong₂ _⇒_ (TidₛT≡T T₁) (TidₛT≡T T₂)
 TidₛT≡T {Δ = Δ} (`∀α l , T) = cong (`∀α l ,_) (trans (cong (λ σ → Tsub σ T) (TliftₛTidₛ≡Tidₛ Δ l)) (TidₛT≡T T))

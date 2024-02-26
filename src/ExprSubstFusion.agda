@@ -27,6 +27,9 @@ open import Expressions
 open import ExprSubstitution
 open import HeterogeneousEqualityLemmas
 
+--! EF >
+
+--! FusionRenRen
 Eassoc-ren-ren : 
     {ρ* : TRen Δ₁ Δ₂} {σ* : TRen Δ₂ Δ₃}
   → {Γ₁ : TEnv Δ₁}{Γ₂ : TEnv Δ₂}{Γ₃ : TEnv Δ₃}
@@ -35,6 +38,7 @@ Eassoc-ren-ren :
   → (ρ : ERen ρ* Γ₁ Γ₂) (σ : ERen σ* Γ₂ Γ₃)
   → let sub = subst (Expr Δ₃ Γ₃) (assoc-ren-ren T ρ* σ*) in
     sub (Eren σ* σ (Eren ρ* ρ e)) ≡ Eren (ρ* ∘ᵣᵣ σ*) (ρ >>RR σ) e
+
 Eassoc-ren-ren {Δ₁} {Δ₂} {Δ₃} {l} {ρ*} {σ*} {Γ₁} {Γ₂} {Γ₃} {T} e ρ σ =
   let F₁ = (Expr Δ₃ Γ₃) ; E₁ = (assoc-ren-ren T ρ* σ*) ; sub₁ = subst F₁ E₁ in
   H.≅-to-≡ (
@@ -47,6 +51,7 @@ Eassoc-ren-ren {Δ₁} {Δ₂} {Δ₃} {l} {ρ*} {σ*} {Γ₁} {Γ₂} {Γ₃} {
     R.∎
   )
 
+--! FusionSubRen
 Eassoc-sub-ren : 
     {ρ* : TRen Δ₁ Δ₂} {σ* : TSub Δ₂ Δ₃}
   → {Γ₁ : TEnv Δ₁}{Γ₂ : TEnv Δ₂}{Γ₃ : TEnv Δ₃}
@@ -55,6 +60,7 @@ Eassoc-sub-ren :
   → (ρ : ERen ρ* Γ₁ Γ₂) (σ : ESub σ* Γ₂ Γ₃)
   → let sub = subst (Expr Δ₃ Γ₃) (assoc-sub-ren T ρ* σ*) in
     sub (Esub σ* σ (Eren ρ* ρ e)) ≡ Esub (ρ* ∘ᵣₛ σ*) (ρ >>RS σ) e
+
 Eassoc-sub-ren {Δ₁} {Δ₂} {Δ₃} {l} {ρ*} {σ*} {Γ₁} {Γ₂} {Γ₃} {T} e ρ σ =
   let F₁ = (Expr Δ₃ Γ₃) ; E₁ = (assoc-sub-ren T ρ* σ*) ; sub₁ = subst F₁ E₁ in
   H.≅-to-≡ (
@@ -67,6 +73,7 @@ Eassoc-sub-ren {Δ₁} {Δ₂} {Δ₃} {l} {ρ*} {σ*} {Γ₁} {Γ₂} {Γ₃} {
     R.∎
   )
 
+--! FusionRenSub
 Eassoc-ren-sub : 
   ∀ {σ* : TSub Δ₁ Δ₂} {ρ* : TRen Δ₂ Δ₃}
     {Γ₁ : TEnv Δ₁}{Γ₂ : TEnv Δ₂}{Γ₃ : TEnv Δ₃}
@@ -75,6 +82,7 @@ Eassoc-ren-sub :
     (σ : ESub σ* Γ₁ Γ₂) (ρ : ERen ρ* Γ₂ Γ₃) →
   let sub = subst (Expr Δ₃ Γ₃) (assoc-ren-sub T σ* ρ*) in
   sub (Eren ρ* ρ (Esub σ* σ e)) ≡ Esub (σ* ∘ₛᵣ ρ*) (σ >>SR ρ) e
+
 Eassoc-ren-sub {Δ₁} {Δ₂} {Δ₃} {l} {σ*} {ρ*} {Γ₁} {Γ₂} {Γ₃} {T} e σ ρ =
   let F₁ = (Expr Δ₃ Γ₃) ; E₁ = (assoc-ren-sub T σ* ρ*) ; sub₁ = subst F₁ E₁ in
   H.≅-to-≡ (
@@ -87,6 +95,7 @@ Eassoc-ren-sub {Δ₁} {Δ₂} {Δ₃} {l} {σ*} {ρ*} {Γ₁} {Γ₂} {Γ₃} {
     R.∎
   )
 
+--! FusionSubSub
 Eassoc-sub-sub : 
     {σ₁* : TSub Δ₁ Δ₂}{σ₂* : TSub Δ₂ Δ₃}
   → {Γ₁ : TEnv Δ₁}{Γ₂ : TEnv Δ₂}{Γ₃ : TEnv Δ₃}
@@ -95,6 +104,7 @@ Eassoc-sub-sub :
   → (σ₁ : ESub σ₁* Γ₁ Γ₂) → (σ₂ : ESub σ₂* Γ₂ Γ₃)
   → let sub = subst (Expr Δ₃ Γ₃) (assoc-sub-sub T σ₁* σ₂*) in
     sub (Esub σ₂* σ₂ (Esub σ₁* σ₁ e)) ≡ Esub (σ₁* ∘ₛₛ σ₂*) (σ₁ >>SS σ₂) e
+
 Eassoc-sub-sub {Δ₁} {Δ₂} {Δ₃} {l} {σ*} {ρ*} {Γ₁} {Γ₂} {Γ₃} {T} e σ ρ =
   let F₁ = (Expr Δ₃ Γ₃) ; E₁ = (assoc-sub-sub T σ* ρ*) ; sub₁ = subst F₁ E₁ in
   H.≅-to-≡ (

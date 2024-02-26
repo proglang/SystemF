@@ -17,16 +17,20 @@ open ≡-Reasoning
 open import Types
 open import Ext
 
+--! Sub >
 
 -- renaming on types
 
+--! DefTRen
 TRen : LEnv → LEnv → Set
 TRen Δ₁ Δ₂ = ∀ l → l ∈ Δ₁ → l ∈ Δ₂
 
 variable 
   ρ* ρ*₁ ρ*₂ : TRen Δ₁ Δ₂
 
+--! DefTidR
 Tidᵣ : TRen Δ Δ
+
 Tidᵣ _ = id
 
 Tdropᵣ : TRen (l ∷ Δ₁) Δ₂ → TRen Δ₁ Δ₂
@@ -35,11 +39,15 @@ Tdropᵣ ρ* _ x = ρ* _ (there x)
 Twkᵣ : TRen Δ₁ Δ₂ → TRen Δ₁ (l ∷ Δ₂)
 Twkᵣ ρ* _ x = there (ρ* _ x)
 
-Tliftᵣ : TRen Δ₁ Δ₂ → (l : Level) → TRen (l ∷ Δ₁) (l ∷ Δ₂)
+--! DefTliftR
+Tliftᵣ : TRen Δ₁ Δ₂ → ∀ l → TRen (l ∷ Δ₁) (l ∷ Δ₂)
+
 Tliftᵣ ρ* _ _ here = here
 Tliftᵣ ρ* _ _ (there x) = there (ρ* _ x)
 
+--! DefTren
 Tren : TRen Δ₁ Δ₂ → (Type Δ₁ l → Type Δ₂ l)
+
 Tren ρ* (` x) = ` ρ* _ x
 Tren ρ* (T₁ ⇒ T₂) = Tren ρ* T₁ ⇒ Tren ρ* T₂
 Tren ρ* (`∀α l , T) = `∀α l , Tren (Tliftᵣ ρ* l) T
@@ -50,13 +58,16 @@ Twk = Tren (Twkᵣ Tidᵣ)
 
 -- substitution on types
 
+--! DefTSub
 TSub : LEnv → LEnv → Set
 TSub Δ₁ Δ₂ = ∀ l → l ∈ Δ₁ → Type Δ₂ l
 
 variable 
   σ* σ*₁ σ*₂ : TSub Δ₁ Δ₂
  
+--! DefTidS
 Tidₛ : TSub Δ Δ
+
 Tidₛ _ = `_
 
 Tdropₛ : TSub (l ∷ Δ₁) Δ₂ → TSub Δ₁ Δ₂
@@ -65,11 +76,15 @@ Tdropₛ σ* _ x = σ* _ (there x)
 Twkₛ : TSub Δ₁ Δ₂ → TSub Δ₁ (l ∷ Δ₂)
 Twkₛ σ* _ x = Twk (σ* _ x)
 
-Tliftₛ : TSub Δ₁ Δ₂ → (l : Level) → TSub (l ∷ Δ₁) (l ∷ Δ₂)  
+--! DefTliftS
+Tliftₛ : TSub Δ₁ Δ₂ → ∀ l → TSub (l ∷ Δ₁) (l ∷ Δ₂)  
+
 Tliftₛ σ* _ _ here = ` here
 Tliftₛ σ* _ _ (there x) = Twk (σ* _ x)
 
+--! DefTsub
 Tsub : TSub Δ₁ Δ₂ → Type Δ₁ l → Type Δ₂ l
+
 Tsub σ* (` x) = σ* _ x
 Tsub σ* (T₁ ⇒ T₂) = Tsub σ* T₁ ⇒ Tsub σ* T₂
 Tsub σ* (`∀α l , T) = `∀α l , Tsub (Tliftₛ σ* _) T
@@ -84,14 +99,18 @@ _[_]T T T' = Tsub (Textₛ Tidₛ T') T
 
 -- composition of renamings and substitutions
 
-_∘ₛᵣ_ : TSub Δ₁ Δ₂ → TRen Δ₂ Δ₃ → TSub Δ₁ Δ₃
-(σ ∘ₛᵣ ρ) _ x = Tren ρ (σ _ x)
+--! DefTCompositionRR
+_∘ᵣᵣ_ : TRen Δ₁ Δ₂ → TRen Δ₂ Δ₃ → TRen Δ₁ Δ₃
+(ρ₁ ∘ᵣᵣ ρ₂) _ x = ρ₂ _ (ρ₁ _ x)
 
+--! DefTCompositionRS
 _∘ᵣₛ_ : TRen Δ₁ Δ₂ → TSub Δ₂ Δ₃ → TSub Δ₁ Δ₃
 (ρ ∘ᵣₛ σ) _ x = σ _ (ρ _ x)
 
+--! DefTCompositionSR
+_∘ₛᵣ_ : TSub Δ₁ Δ₂ → TRen Δ₂ Δ₃ → TSub Δ₁ Δ₃
+(σ ∘ₛᵣ ρ) _ x = Tren ρ (σ _ x)
+
+--! DefTCompositionSS
 _∘ₛₛ_ : TSub Δ₁ Δ₂ → TSub Δ₂ Δ₃ → TSub Δ₁ Δ₃
 (σ₁ ∘ₛₛ σ₂) _ x = Tsub σ₂ (σ₁ _ x)
-
-_∘ᵣᵣ_ : TRen Δ₁ Δ₂ → TRen Δ₂ Δ₃ → TRen Δ₁ Δ₃
-(ρ₁ ∘ᵣᵣ ρ₂) _ x = ρ₂ _ (ρ₁ _ x)

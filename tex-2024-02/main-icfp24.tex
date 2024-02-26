@@ -345,6 +345,131 @@ where type $T'$ has been substituted in the body $T$ of the
 quantified type. Substitution is defined as in PLFA
 \cite{DBLP:journals/jar/BentonHKM12,DBLP:journals/scp/KokkeSW20}. 
 
+\section{Substitutions}
+\label{sec:substitutions}
+
+\subsection{Type Substitutions}
+\label{sec:substitutions:type}
+
+The infrastructure for type-substitutions is standard for
+intrinsically-typed terms in de Bruijn
+style, and defines substitutions in terms of renamings as in
+\cite{DBLP:journals/jar/BentonHKM12, DBLP:journals/scp/KokkeSW20}.
+
+% \begin{figure}[tp]
+%   \caption{Simply typed lambda calculus, denotationally}
+%   \label{fig:stlc}
+% \end{figure}
+
+% \noindent\hspace{-\fboxsep}
+% \begin{minipage}{0.5\linewidth}
+%   \SubDefTRen
+%   \SubDefTren
+%   \SubDefTliftR
+%   \SubDefTidR
+% \end{minipage}
+% \begin{minipage}{0.5\linewidth}
+%   \SubDefTSub
+%   \SubDefTsub
+%   \SubDefTliftS
+%   \SubDefTidS
+% \end{minipage}
+
+Renamings {\ATRen} and Substitutions {\ATSub} are defined as
+functions mapping variables to variables and terms, respectively.
+
+\noindent\hspace{-\fboxsep}
+\begin{minipage}{0.5\linewidth}
+  \SubDefTRen
+\end{minipage}
+\begin{minipage}{0.5\linewidth}
+  \SubDefTSub
+\end{minipage}
+
+The operations for applying renamings and substitutions, {\ATren}
+and {\ATsub}, are defined by induction over the type, lifting the
+renaming or substitution when going under a binder using
+{\ATliftR} and {\ATliftS}, respectively.
+
+\noindent\hspace{-\fboxsep}
+\begin{minipage}{0.5\linewidth}
+  \SubDefTren
+  \SubDefTliftR
+\end{minipage}
+\begin{minipage}{0.5\linewidth}
+  \SubDefTsub
+  \SubDefTliftS
+\end{minipage}
+
+The identity renaming {\ATidR} and substitution
+{\ATidS} behave like the identity function and the variable
+type constructor, respectively, and act as neutral elements when applied to a type:
+
+\noindent\hspace{-\fboxsep}
+\begin{minipage}{0.5\linewidth}
+  \SubDefTidR
+  \TFTidRNeutral
+\end{minipage}
+\begin{minipage}{0.5\linewidth}
+  \SubDefTidS
+  \TFTidSNeutral
+\end{minipage}
+
+
+To prove lemmas about the interaction of multiple renamings and substitutions,
+compositions and fusion lemmas are defined for all four combinations
+of renamings and substiutions.
+For example, the composition between two substitutions is
+\SubDefTCompositionSS
+and the corresponding fusion lemmas is
+\TFFusionSubSub
+
+% \SubDefTCompositionRR
+% \SubDefTCompositionRS
+% \SubDefTCompositionSR
+% \TFFusionRenRen
+% \TFFusionRenSub
+% \TFFusionSubRen
+
+\subsection{Expression Substitutions}
+\label{sec:substitutions:expr}
+
+The infrastructure for expression substitution is conceptionally very similar to
+that of type substitution.
+The main difference is that we index expression substitutions with
+type substitutions as in \cite{DBLP:conf/mpc/ChapmanKNW19}.
+This allows for combining type-in-expression and
+expression-in-expression substitutions into a single substitution
+operation. We only present the definitions for substitutions, because
+the definitions for renamings are completely analogous.
+
+An expression substitution of type {\AESub} is indexed by a type
+substitution {\AsigmaStar} and maps variables of type \texttt{T}
+to expressions of type \AgdaCode{\ATsub~\AsigmaStar~T}
+\SubDefESub
+
+The operation of applying an expression substitution {\Asigma}, which
+is indexed by a type substitution {\AsigmaStar}, performs a
+type-in-expression substitution according to {\AsigmaStar} and an
+expression-in-expression substitution according to {\Asigma}.
+The operation is defined by induction on the expression, and lifts {\Asigma} when
+going under an expression- or type-binder using {\AEliftS} and
+{\AEliftSL}, respectively.
+\SubDefEsub
+
+\SubDefECompositionSS
+
+\EFFusionSubSub
+
+% \SubDefERen
+% \SubDefEren
+% \SubDefECompositionRR
+% \SubDefECompositionRS
+% \SubDefECompositionSR
+% \EFFusionRenRen
+% \EFFusionRenSub
+% \EFFusionSubRen
+
 \section{Semantics}
 \label{sec:semantics}
 
