@@ -790,7 +790,15 @@ semantics applied to $e$ terminates and yields the syntactic value for
 $n$.
 To state adequacy we first have to construct an empty
 environment of type \texttt{Env [] {\Anull} []}.
-\FundamentalEmptyEnv
+\begin{minipage}{0.3\linewidth}
+  \FundamentalEmptyEnv
+\end{minipage}
+\begin{minipage}{0.3\linewidth}
+  \FundamentalEmptyRelEnv
+\end{minipage}
+\begin{minipage}{0.3\linewidth}
+  FundamentalEmptyCSub
+\end{minipage}
 \FundamentalAdequacyType
 This theorem follows immediately from the semantic soundness that we proved with the
 fundamental theorem.
@@ -805,11 +813,22 @@ the identity substitution on a closed expression.
 \subsection{Technical lemmas}
 \label{sec:technical-lemmas}
 
+The variable case of the fundamental theorem relies on the function
+{\AGLookup} to obtain the value relation for the variable from the
+value relation for the context. 
 \LRVrenMCGLookupType
+
+Its definition starts innocently:
 \LRVrenMCGLookupBody
 
-To fix the discrepancy between the type of the inductive hypothesis
-\texttt{ih} and the expected type, we need the following lemma.
+{\dots} but the type of the inductive hypothesis \textit{ih} is
+significantly different from the expected type.
+The following lemma describes this discrepancy: The value relation for
+the weakened type $T$ in the relation environment $\rho$ is the same
+as the value relation for $T$ in the relation environment $\rho$ after
+dropping the head entry. We will not delve into the technical
+explanation of the required equalities on type substitutions and
+semantics functions.
 \LRVrenLRVwk
 To add insult to the injury, this lemma cannot be proved directly, but
 it rather has to be generalized to arbitrary renamings acting on the
