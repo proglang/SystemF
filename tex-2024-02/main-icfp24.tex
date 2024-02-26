@@ -342,8 +342,7 @@ variable is bound to $l$.
 Type application \texttt{$e$ ∙ $T'$} takes an expression with universal quantification at
 level $l$ and a type $T'$ of level $l$. It constructs an expression
 where type $T'$ has been substituted in the body $T$ of the
-quantified type. Substitution is defined as in PLFA
-\cite{DBLP:journals/jar/BentonHKM12,DBLP:journals/scp/KokkeSW20}. 
+quantified type.
 
 \section{Substitutions}
 \label{sec:substitutions}
@@ -394,11 +393,9 @@ renaming or substitution when going under a binder using
 \noindent\hspace{-\fboxsep}
 \begin{minipage}{0.5\linewidth}
   \SubDefTren
-  \SubDefTliftR
 \end{minipage}
 \begin{minipage}{0.5\linewidth}
   \SubDefTsub
-  \SubDefTliftS
 \end{minipage}
 
 The identity renaming {\ATidR} and substitution
@@ -419,9 +416,9 @@ type constructor, respectively, and act as neutral elements when applied to a ty
 To prove lemmas about the interaction of multiple renamings and substitutions,
 compositions and fusion lemmas are defined for all four combinations
 of renamings and substiutions.
-For example, the composition between two substitutions is
+For example, the composition of two substitutions is defined by
 \SubDefTCompositionSS
-and the corresponding fusion lemmas is
+with the corresponding fusion lemma:
 \TFFusionSubSub
 
 TODO: Show some of the interaction lemmas, e.g. that weakening cancels singleton-substitution?
@@ -439,11 +436,11 @@ TODO: Show some of the interaction lemmas, e.g. that weakening cancels singleton
 The infrastructure for expression substitution is conceptionally very similar to
 that of type substitution.
 The main difference is that we index expression substitutions with
-type substitutions as in \cite{DBLP:conf/mpc/ChapmanKNW19}.
+type substitutions (cf.~\cite{DBLP:conf/mpc/ChapmanKNW19}).
 This allows for combining type-in-expression and
 expression-in-expression substitutions into a single substitution
 operation. We only present the definitions for substitutions, because
-the definitions for renamings are completely analogous.
+the definitions for renamings are analogous.
 
 An expression substitution of type {\AESub} is indexed by a type
 substitution {\AsigmaStar} and maps variables of type \texttt{T}
@@ -750,7 +747,26 @@ We will have a closer look at some technicalities involving
 {\AGLookup} in Section~\ref{sec:technical-lemmas}  
 
 \FundamentalFundamentalLambda
+The intuition of the case for lambda abstraction is
+well-known. Roughly, we
+have to show that for all values $w$ and $z$, which are related at
+type $T_1$, the result of function application is related at type
+$T_2$. To this end, we invoke the fundamental theorem at type $T_2$
+with suitably extended context, closing substitution, semantic
+environment, and relational environment. The latter requires some
+lemmas as shown in $eq_1$ and $eq\omega_1$: if we extend an
+environment by one entry and then drop that entry, the resulting
+environment is extensionally equal to the initial one. The lemma
+$eq\omega_1$ requires equality at $\ASeto$, so a custom version
+{\Asubstlo} of the {\Asubst} function is needed. The fundamental
+theorem gives the correct result, only its type needs to be adjusted
+using a standard equation $eq_2$ about substitutions.
+
 \FundamentalFundamentalApplication
+The case for function application is proved by invoking the respective
+inductive hypotheses and exploiting the definition of the value
+relation for functions.
+
 
 We defer the remaining cases to the supplemental material. The case
 for function application is by simple application of the inductive
