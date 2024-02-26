@@ -27,20 +27,20 @@ data isValue : ∀ {l}{T : Type [] l} → CExpr T → Set where
     → isValue (Λ l₁ ⇒ e)
 
 --! Value
-record Value (T : Type [] l) : Set where
+record CValue (T : Type [] l) : Set where
   constructor _,_
   field
     exp : CExpr T
     prf : isValue exp
 
-open Value public
+open CValue public
 
 -- big step semantics
 
-variable v v₂ : Value T
+variable v v₂ : CValue T
 infix 15 _⇓_
 --! Semantics
-data _⇓_ : CExpr T → Value T → Set where
+data _⇓_ : CExpr T → CValue T → Set where
   ⇓-n : # n ⇓ (# n , V-♯)
   ⇓-s : e ⇓ (# n , V-♯)
       → `suc e ⇓ (# suc n , V-♯)
@@ -55,7 +55,12 @@ data _⇓_ : CExpr T → Value T → Set where
       → (e₁ ∙ T) ⇓ v
 
 --! ValueReduceSelf
-Value-⇓ : ∀ {l} {T : Type [] l} → (v : Value T) → exp v ⇓ v
+Value-⇓ : ∀ {l} {T : Type [] l} → (v : CValue T) → exp v ⇓ v
 Value-⇓ (.(# _) ,     V-♯) = ⇓-n
 Value-⇓ (.(ƛ _) ,     V-ƛ) = ⇓-ƛ
 Value-⇓ (.(Λ _ ⇒ _) , V-Λ) = ⇓-Λ
+
+----------------------------------------------------------------------
+-- compatibility
+
+Value = CValue

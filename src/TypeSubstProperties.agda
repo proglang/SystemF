@@ -4,7 +4,7 @@ open import Level
 open import Data.Product using (_×_; Σ; Σ-syntax; ∃-syntax; _,_; proj₁; proj₂)
 open import Data.Sum using (_⊎_)
 open import Data.Fin using (Fin) renaming (zero to fzero; suc to fsuc)
-open import Data.List using (List; []; _∷_; _++_; length; lookup; tabulate)
+open import Data.List using (List; []; _∷_)
 open import Data.Unit.Polymorphic.Base using (⊤; tt)
 open import Data.Empty using (⊥)
 open import Data.Nat using (ℕ)
@@ -365,7 +365,7 @@ subst-to-env* {x ∷ Δ₁} σ* η₂ = ⟦ σ* _ here ⟧ η₂ ∷ subst-to-en
 
 --! substVarPreservesType
 subst-var-preserves : (α : l ∈ Δ₁) (τ* : TSub Δ₁ Δ₂) (η₂ : Env* Δ₂)
-  → apply-env (subst-to-env* τ* η₂) α ≡ ⟦ τ* l α ⟧ η₂
+  → lookup α (subst-to-env* τ* η₂) ≡ ⟦ τ* l α ⟧ η₂
 
 subst-var-preserves here σ* η₂ = refl
 subst-var-preserves (there x) σ* η₂ = subst-var-preserves x (Tdropₛ σ*) η₂

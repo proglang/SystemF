@@ -696,7 +696,7 @@ open import Level
 open import Data.Product using (_×_; Σ; Σ-syntax; ∃-syntax; _,_; proj₁; proj₂)
 open import Data.Sum using (_⊎_)
 open import Data.Fin using (Fin) renaming (zero to fzero; suc to fsuc)
-open import Data.List using (List; []; _∷_; [_]; _++_; length; lookup; tabulate)
+open import Data.List using (List; []; _∷_; [_])
 open import Data.Unit.Polymorphic.Base using (⊤; tt)
 open import Data.Empty using (⊥)
 open import Data.Nat using (ℕ)

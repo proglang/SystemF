@@ -4,7 +4,7 @@ open import Level
 open import Data.Product using (_×_; Σ; Σ-syntax; ∃-syntax; _,_; _,′_; proj₁; proj₂)
 open import Data.Sum using (_⊎_)
 open import Data.Fin using (Fin) renaming (zero to fzero; suc to fsuc)
-open import Data.List using (List; []; _∷_; [_]; _++_; length; lookup; tabulate)
+open import Data.List using (List; []; _∷_; [_])
 open import Data.Unit.Polymorphic.Base using (⊤; tt)
 open import Data.Empty using (⊥)
 open import Data.Nat using (ℕ)
@@ -37,13 +37,13 @@ LRVren-eq′ :  ∀ {Δ₁}{Δ₂}{l}
   → (T : Type Δ₁ l)
   → (ρ : RelEnv Δ₂)
   → (τ* : TRen Δ₁ Δ₂)
-  → (v : Value (Tsub (τ* ∘ᵣₛ subst←RE ρ) T))
-  → (z : ⟦ T ⟧ (subst-to-env* (subst←RE (Tren-act τ* ρ)) []))
-  → let σ* = subst←RE ρ
-  in 𝓥⟦ T ⟧ (Tren-act τ* ρ) v z ≡
+  → let ρ* = π₁ ρ
+  in (v : Value (Tsub (τ* ∘ᵣₛ ρ*) T))
+  → (z : ⟦ T ⟧ (subst-to-env* (π₁ (Tren-act τ* ρ)) []))
+  → 𝓥⟦ T ⟧ (Tren-act τ* ρ) v z ≡
     subst₂ (λ vv zz → Value vv → zz → Set l)
-           (assoc-sub-ren T τ* σ*)
-           (Tren*-preserves-semantics {ρ* = τ*}{subst-to-env* (subst←RE (Tren-act τ* ρ)) []}{subst-to-env* σ* []} (τ*∈Ren* τ* σ*) T)
+           (assoc-sub-ren T τ* ρ*)
+           (Tren*-preserves-semantics {ρ* = τ*}{subst-to-env* (π₁ (Tren-act τ* ρ)) []}{subst-to-env* ρ* []} (τ*∈Ren* τ* ρ*) T)
            (𝓥⟦ Tren τ* T ⟧ ρ) v z
 
 LRVren-eq′ `ℕ ρ τ* v z = refl
@@ -1711,25 +1711,27 @@ LRVren-eq :  ∀ {Δ₁}{Δ₂}{l}
   → (T : Type Δ₁ l)
   → (ρ : RelEnv Δ₂)
   → (τ* : TRen Δ₁ Δ₂)
-  → let σ* = subst←RE ρ
+  → let ρ* = subst←RE ρ
   in 𝓥⟦ T ⟧ (Tren-act τ* ρ) ≡
     subst₂ (λ vv zz → Value vv → zz → Set l)
-           (assoc-sub-ren T τ* σ*)
-           (Tren*-preserves-semantics {ρ* = τ*}{subst-to-env* (subst←RE (Tren-act τ* ρ)) []}{subst-to-env* σ* []} (τ*∈Ren* τ* σ*) T)
+           (assoc-sub-ren T τ* ρ*)
+           (Tren*-preserves-semantics {ρ* = τ*}{subst-to-env* (subst←RE (Tren-act τ* ρ)) []}{subst-to-env* ρ* []} (τ*∈Ren* τ* ρ*) T)
            (𝓥⟦ Tren τ* T ⟧ ρ)
 LRVren-eq T ρ τ* = fun-ext (λ v → fun-ext (λ z → LRVren-eq′ T ρ τ* v z))
 
+--! LRVwk
 LRVwk-eq : ∀ {Δ}{l}{l₁}
   → (T : Type Δ l)
   → (ρ : RelEnv (l₁ ∷ Δ))
-  → let σ* = subst←RE ρ
-  in (v : Value (Tsub (Tdropₛ σ*) T))
-  → (z : ⟦ T ⟧ (subst-to-env* (Tdropₛ σ*) []))
+  → let ρ* = π₁ ρ
+  in (v : Value (Tsub (Tdropₛ ρ*) T))
+  → (z : ⟦ T ⟧ (subst-to-env* (Tdropₛ ρ*) []))
   → 𝓥⟦ T ⟧ (REdrop ρ) v z
   ≡ 𝓥⟦ Twk T ⟧
         ρ
-        (subst Value (sym (assoc-sub-ren T (Twkᵣ Tidᵣ) (subst←RE ρ))) v)
-        (subst id (sym (Tren*-preserves-semantics {ρ* = Twkᵣ Tidᵣ} {subst-to-env* (Tdropₛ σ*) []} {subst-to-env* σ* []} (wkᵣ∈Ren* (subst-to-env* (Tdropₛ σ*) []) (⟦ σ* _ here ⟧ [])) T)) z)
+        (subst Value (sym (assoc-sub-ren T (Twkᵣ Tidᵣ) (π₁ ρ))) v)
+        (subst id (sym (Tren*-preserves-semantics {ρ* = Twkᵣ Tidᵣ} {subst-to-env* (Tdropₛ ρ*) []} {subst-to-env* ρ* []} (wkᵣ∈Ren* (subst-to-env* (Tdropₛ ρ*) []) (⟦ ρ* _ here ⟧ [])) T)) z)
+
 LRVwk-eq T ρ v z =
   begin
     𝓥⟦ T ⟧ (REdrop ρ) v z
@@ -1841,15 +1843,16 @@ LRVwk-eq T ρ v z =
   ∎
 
 --! MCGLookupType
-𝓖-lookup : (Γ : TEnv Δ) (ρ : RelEnv Δ) (χ : CSub (subst←RE ρ) Γ) (γ : Env Δ Γ (subst-to-env* (subst←RE ρ) [])) (T : Type Δ l)
-  → 𝓖⟦_⟧ Γ ρ χ γ
-  → (x : inn T Γ)
-  → 𝓥⟦ T ⟧ ρ (χ l _ x) (γ l T x)
+𝓖-lookup : (Γ : TEnv Δ) (ρ : RelEnv Δ) (χ : CSub (π₁ ρ) Γ)
+  → (γ : Env Δ Γ (subst-to-env* (π₁ ρ) [])) (T : Type Δ l)
+  → 𝓖⟦ Γ ⟧ ρ χ γ → (x : inn T Γ) → 𝓥⟦ T ⟧ ρ (χ _ _ x) (γ _ _ x)
 
+--! MCGLookupBody
 𝓖-lookup .(T ◁ _) ρ χ γ T (𝓥 , 𝓖) here = 𝓥
-𝓖-lookup (_ ◁ Γ) ρ χ γ T (𝓥 , 𝓖) (there x) = 𝓖-lookup Γ ρ (Cdrop χ) (ENVdrop Γ _ γ) T 𝓖 x
+𝓖-lookup (_ ◁ Γ) ρ χ γ T (𝓥 , 𝓖) (there x) = 𝓖-lookup Γ ρ (Cdrop χ) (Gdrop γ) T 𝓖 x
 𝓖-lookup (_ ◁* Γ) ρ χ γ .(Twk _) 𝓖 (tskip {T = T} x) =
-  let ih = 𝓖-lookup Γ (REdrop ρ) (Cdropt χ) (Gdropt (subst←RE ρ) γ) T 𝓖 x in
+  let ih = 𝓖-lookup Γ (REdrop ρ) (Cdrop-t χ) (Gdrop-t (π₁ ρ) γ) T 𝓖 x in
+
   let v = χ _ (Twk T) (tskip x) in
   let z = γ _ (Twk T) (tskip x) in
   let eq = LRVwk-eq T ρ (subst Value (assoc-sub-ren T (Twkᵣ Tidᵣ) (subst←RE ρ)) v) (subst id (Tren*-preserves-semantics
@@ -1857,7 +1860,7 @@ LRVwk-eq T ρ v z =
           (⟦ subst←RE ρ _ here ⟧ []))
          T) z) in
   subst id (begin
-    𝓥⟦ T ⟧ (REdrop ρ) (Cdropt χ _ T x) (Gdropt (subst←RE ρ) γ _ T x)
+    𝓥⟦ T ⟧ (REdrop ρ) (Cdrop-t χ _ T x) (Gdrop-t (subst←RE ρ) γ _ T x)
   ≡⟨ refl ⟩
     𝓥⟦ T ⟧ (REdrop ρ)
       (subst Value (assoc-sub-ren T (Twkᵣ Tidᵣ) (subst←RE ρ)) v)
@@ -1977,19 +1980,19 @@ Cextend-Elift {Δ} {σ*} {Γ} {l} {T} {l′} {T′} χ w e =
   ∎
 
 
-Gdropt-ext≡id : (ρ : RelEnv Δ) (γ : Env Δ Γ (subst-to-env* (subst←RE ρ) [])) (T′ : Type [] l) (R : REL T′)
-  → (Gdropt (subst←RE (REext ρ (T′ , R))) (extend-tskip γ)) ≡ω γ
-Gdropt-ext≡id ρ γ T′ R =
+Gdrop-t-ext≡id : (ρ : RelEnv Δ) (γ : Env Δ Γ (subst-to-env* (subst←RE ρ) [])) (T′ : Type [] l) (R : REL T′)
+  → (Gdrop-t (subst←RE (REext ρ (T′ , R))) (extend-tskip γ)) ≡ω γ
+Gdrop-t-ext≡id ρ γ T′ R =
   fun-ext-llω-ω (λ x y z → subst-subst-sym (Tren*-preserves-semantics (λ x₁ → refl) y))
 
-Cdropt-Cextt≡id : (Γ : TEnv Δ) (ρ : RelEnv Δ) (χ : CSub (subst←RE ρ) Γ) (l : Level) (T′ : Type [] l) (R : REL T′)
-  → (Cdropt (subst (λ σ → CSub σ (l ◁* Γ)) (sym (subst←RE-ext-ext ρ T′ R)) (Cextt χ T′))) ≡ χ
-Cdropt-Cextt≡id Γ ρ χ l T′ R =
+Cdrop-t-Cextt≡id : (Γ : TEnv Δ) (ρ : RelEnv Δ) (χ : CSub (subst←RE ρ) Γ) (l : Level) (T′ : Type [] l) (R : REL T′)
+  → (Cdrop-t (subst (λ σ → CSub σ (l ◁* Γ)) (sym (subst←RE-ext-ext ρ T′ R)) (Cextt χ T′))) ≡ χ
+Cdrop-t-Cextt≡id Γ ρ χ l T′ R =
   let sub₁ = subst (λ σ → CSub σ (l ◁* Γ)) (sym (subst←RE-ext-ext ρ T′ R)) in
   begin
-    Cdropt (sub₁ (Cextt χ T′))
-  ≡⟨ dist-subst' {F = (λ σ → CSub σ (l ◁* Γ))} {G = id} (λ x → CSub (Tdropₛ x) Γ) Cdropt (sym (subst←RE-ext-ext ρ T′ R)) refl (Cextt χ T′) ⟩ 
-    Cdropt (Cextt χ T′)
+    Cdrop-t (sub₁ (Cextt χ T′))
+  ≡⟨ dist-subst' {F = (λ σ → CSub σ (l ◁* Γ))} {G = id} (λ x → CSub (Tdropₛ x) Γ) Cdrop-t (sym (subst←RE-ext-ext ρ T′ R)) refl (Cextt χ T′) ⟩ 
+    Cdrop-t (Cextt χ T′)
   ≡⟨ (fun-ext λ x → fun-ext λ y → fun-ext λ z → (elim-subst Value
        (assoc-sub-ren y (λ z₁ x₁ → there x₁) (Textₛ (λ l₁ x₁ → proj₁ (ρ l₁ x₁)) T′))
        (sym

@@ -4,7 +4,7 @@ open import Level renaming (suc to lsuc; zero to lzero)
 open import Data.Product using (_×_; Σ; Σ-syntax; ∃-syntax; _,_; proj₁; proj₂)
 open import Data.Sum using (_⊎_)
 open import Data.Fin using (Fin) renaming (zero to fzero; suc to fsuc)
-open import Data.List using (List; []; _∷_; _++_; length; lookup; tabulate)
+open import Data.List using (List; []; _∷_)
 open import Data.Unit.Polymorphic.Base using (⊤; tt)
 open import Data.Empty using (⊥)
 open import Data.Nat using (ℕ; zero; suc)
@@ -25,21 +25,21 @@ open import TypeSubstProperties
 -- type environments
 
 --! TVEnv 
-data TEnv : LEnv → Set where
-  ∅    : TEnv []
-  _◁_  : Type Δ l → TEnv Δ → TEnv Δ
-  _◁*_ : (l : Level) → TEnv Δ → TEnv (l ∷ Δ)
+data Ctx : LEnv → Set where
+  ∅    : Ctx []
+  _◁_  : Type Δ l → Ctx Δ → Ctx Δ          -- term variable
+  _◁*_ : (l : Level) → Ctx Δ → Ctx (l ∷ Δ) -- type variable
 
-variable Γ Γ₁ Γ₂ Γ₂₁ Γ₂₂ : TEnv Δ
+variable Γ Γ₁ Γ₂ Γ₂₁ Γ₂₂ : Ctx Δ
 
 --! inn
-data inn : Type Δ l → TEnv Δ → Set where
+data inn : Type Δ l → Ctx Δ → Set where
   here  : ∀ {T Γ} → inn {Δ}{l} T (T ◁ Γ)
   there : ∀ {T : Type Δ l}{T′ : Type Δ l′}{Γ} → inn {Δ}{l} T Γ → inn {Δ} T (T′ ◁ Γ)
   tskip : ∀ {T l Γ} → inn {Δ}{l′} T Γ → inn (Twk T) (l ◁* Γ)
 
 --! Expr
-data Expr (Δ : LEnv) (Γ : TEnv Δ) : Type Δ l → Set where
+data Expr (Δ : LEnv) (Γ : Ctx Δ) : Type Δ l → Set where
   #_   : (n : ℕ) → Expr Δ Γ `ℕ
   `suc : Expr Δ Γ `ℕ → Expr Δ Γ `ℕ
   `_   : ∀ {T : Type Δ l} → inn T Γ → Expr Δ Γ T
@@ -53,25 +53,26 @@ variable n : ℕ
 
 -- value environments
 --! VEnv
-Env : (Δ : LEnv) → TEnv Δ → Env* Δ → Setω
+Env : (Δ : LEnv) → Ctx Δ → Env* Δ → Setω
 Env Δ Γ η = ∀ l (T : Type Δ l) → (x : inn T Γ) → ⟦ T ⟧ η
 
 variable 
   γ γ₁ γ₂ : Env Δ Γ η
 
-extend : ∀ {T : Type Δ l}{Γ : TEnv Δ}{η : Env* Δ}
+extend : ∀ {T : Type Δ l}{Γ : Ctx Δ}{η : Env* Δ}
   → Env Δ Γ η → ⟦ T ⟧ η → Env Δ (T ◁ Γ) η
 extend γ v _ _ here = v
 extend γ v _ _ (there x) = γ _ _ x
 
 --! ExtendTskip
-extend-tskip : ∀ {Δ : LEnv}{Γ : TEnv Δ}{η : Env* Δ}{⟦α⟧ : Set l}
+extend-tskip : ∀ {Δ : LEnv}{Γ : Ctx Δ}{η : Env* Δ}{⟦α⟧ : Set l}
   → Env Δ Γ η → Env (l ∷ Δ) (l ◁* Γ) (⟦α⟧ ∷ η)
 extend-tskip {η = η} {⟦α⟧ = ⟦α⟧} γ _ _ (tskip {T = T} x)
-  = subst id (sym (Tren*-preserves-semantics {ρ* = Twkᵣ Tidᵣ} {η} {⟦α⟧ ∷ η} (wkᵣ∈Ren* η ⟦α⟧) T)) (γ _ _ x)
+  = subst id (sym (Tren*-preserves-semantics {ρ* = Twkᵣ Tidᵣ} {η} {⟦α⟧ ∷ η} (wkᵣ∈Ren* η ⟦α⟧) T))
+             (γ _ _ x)
 
 --! ExprSem
-E⟦_⟧ : ∀ {T : Type Δ l}{Γ : TEnv Δ} → Expr Δ Γ T → (η : Env* Δ) → Env Δ Γ η → ⟦ T ⟧ η
+E⟦_⟧ : ∀ {T : Type Δ l}{Γ : Ctx Δ} → Expr Δ Γ T → (η : Env* Δ) → Env Δ Γ η → ⟦ T ⟧ η
 E⟦ # n ⟧ η γ = n
 E⟦ `suc e ⟧ η γ = suc (E⟦ e ⟧ η γ)
 E⟦ ` x ⟧ η γ = γ _ _ x
@@ -87,8 +88,12 @@ E⟦ _∙_ {T = T} e T′ ⟧ η γ  =
 levelTy : Type Δ l → Level
 levelTy {l = l} T = l
 
-levelEnv : TEnv Δ → Level
+levelEnv : Ctx Δ → Level
 levelEnv ∅ = lzero
 levelEnv (T ◁ Γ) = levelTy T ⊔ levelEnv Γ
 levelEnv (l ◁* Γ) = levelEnv Γ
 
+----------------------------------------------------------------------
+-- compatibility
+
+TEnv = Ctx

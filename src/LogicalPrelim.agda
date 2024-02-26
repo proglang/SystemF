@@ -5,7 +5,7 @@ open import Level
 open import Data.Product using (_×_; Σ; Σ-syntax; ∃-syntax; _,_; proj₁; proj₂)
 open import Data.Sum using (_⊎_)
 open import Data.Fin using (Fin) renaming (zero to fzero; suc to fsuc)
-open import Data.List using (List; []; _∷_; [_]; _++_; length; lookup; tabulate)
+open import Data.List using (List; []; _∷_; [_])
 open import Data.Unit.Polymorphic.Base using (⊤; tt)
 open import Data.Empty using (⊥)
 open import Data.Nat using (ℕ)
@@ -39,7 +39,7 @@ _∧_ = _×_
 -- relation between a syntactic value and a semantic value
 --! REL
 REL : Type [] l → Set (suc l)
-REL {l} T = Value T → ⟦ T ⟧ [] → Set l 
+REL {l} T = CValue T → ⟦ T ⟧ [] → Set l 
 
 --! RelEnv
 RelEnv : (Δ : LEnv) → Setω
@@ -93,10 +93,11 @@ subst←RE-ren : ∀ (ρ : RelEnv Δ₂) (τ* : TRen Δ₁ Δ₂)
   → (l′ : Level) (x : l′ ∈ Δ₁) → subst←RE (Tren-act τ* ρ) l′ x ≡ (τ* ∘ᵣₛ subst←RE ρ) l′ x
 subst←RE-ren ρ τ* l′ x = refl
 
+--! lemmaOne
+RE-ext∘lift : ∀ (ρ : RelEnv Δ) (T : Type (l ∷ Δ) l′) (T′ : Type [] l) (R : REL T′)
+  → Tsub (Tliftₛ (π₁ ρ) l) T [ T′ ]T ≡ Tsub (π₁ (REext ρ (T′ , R))) T
 
-lemma1 : (ρ  : RelEnv Δ) → (T  : Type (l ∷ Δ) l′) → (T′ : Type [] l) → (R  : REL T′)
-  → Tsub (Tliftₛ (subst←RE ρ) l) T [ T′ ]T ≡ Tsub (subst←RE (REext ρ (T′ , R))) T
-lemma1 {l = l} ρ T T′ R =
+RE-ext∘lift {l = l} ρ T T′ R =
   begin
     Tsub (Tliftₛ (subst←RE ρ) l) T [ T′ ]T
     ≡⟨ lemma2 (subst←RE ρ) T T′ ⟩
@@ -104,6 +105,8 @@ lemma1 {l = l} ρ T T′ R =
     ≡⟨ cong (λ G → Tsub G T) (sym (subst←RE-ext-ext ρ T′ R)) ⟩
     Tsub (subst←RE (REext ρ (T′ , R))) T
     ∎
+
+lemma1 = RE-ext∘lift
 
 postulate
   relenv-ext : ∀ {Δ}{f g : RelEnv Δ} → (∀ l x → f l x ≡ g l x) → f ≡ω g
@@ -130,23 +133,93 @@ Tren-act-REext ρ τ* T′ R = relenv-ext (Tren-act-REext-ext ρ τ* T′ R)
 
 -- auxiliary
 
-Gdropt : (σ* : TSub (l ∷ Δ) [])
+Gdrop-t : (σ* : TSub (l ∷ Δ) [])
   → Env (l ∷ Δ) (l ◁* Γ) (subst-to-env* σ* [])
   → Env Δ Γ (subst-to-env* (Tdropₛ σ*) [])
-Gdropt σ* γ l T x =
+Gdrop-t σ* γ l T x =
   let r = γ l (Twk T) (tskip x) in
   subst id (Tren*-preserves-semantics {ρ* = Twkᵣ Tidᵣ} {subst-to-env* (Tdropₛ σ*) []} {subst-to-env* σ* []} (wkᵣ∈Ren* (subst-to-env* (Tdropₛ σ*) []) (⟦ σ* _ here ⟧ [])) T) r
 
-ENVdrop : ∀ {l}{T : Type Δ l} → (Γ : TEnv Δ) → (η : Env* Δ) → Env Δ (T ◁ Γ) η → Env Δ Γ η
-ENVdrop Γ η γ l T x = γ l T (there x)
+Gdrop : ∀ {l}{T : Type Δ l} {Γ : Ctx Δ} {η : Env* Δ} → Env Δ (T ◁ Γ) η → Env Δ Γ η
+Gdrop γ l T x = γ l T (there x)
 
-ENVdrop-extend : ∀ {l}{Δ}{Γ}{T : Type Δ l}{η : Env* Δ}
+Gdrop-extend : ∀ {l}{Δ}{Γ}{T : Type Δ l}{η : Env* Δ}
   → (γ : Env Δ Γ η)
   → (z : ⟦ T ⟧ η)
-  → γ ≡ω ENVdrop {T = T} Γ η (extend γ z)
-ENVdrop-extend {l = l} {Δ = Δ} {Γ = Γ}{T = T}{η = η} γ z = fun-extω (λ l′ → fun-ext₂ (aux l′))
+  → γ ≡ω Gdrop {T = T} (extend γ z)
+Gdrop-extend {l = l} {Δ = Δ} {Γ = Γ}{T = T}{η = η} γ z = fun-extω (λ l′ → fun-ext₂ (aux l′))
   where
-    aux : (l′ : Level) (T′ : Type Δ l′) (x : inn T′ Γ) → γ l′ T′ x ≡ ENVdrop {T = T} Γ η (extend γ z) l′ T′ x
+    aux : (l′ : Level) (T′ : Type Δ l′) (x : inn T′ Γ) → γ l′ T′ x ≡ Gdrop {T = T} (extend γ z) l′ T′ x
     aux l′ T′ here = refl
     aux l′ T′ (there x) = refl
     aux l′ .(Twk _) (tskip x) = refl
+
+-- closing value substitution
+
+--! CSub
+CSub : TSub Δ [] → Ctx Δ → Set
+CSub {Δ} σ* Γ = ∀ l (T : Type Δ l) → inn T Γ → CValue (Tsub σ* T)
+
+--! ESSC
+ES←SC : {σ* : TSub Δ []} → CSub σ* Γ → ESub σ* Γ ∅
+ES←SC χ = λ l T x → exp (χ l T x)
+
+--! Csub
+Csub : {Γ : Ctx Δ} {σ* : TSub Δ []} → CSub σ* Γ → Expr Δ Γ T → CExpr (Tsub σ* T)
+Csub {σ* = σ*} χ e = Esub σ* (ES←SC χ) e
+
+--! Cdrop
+Cdrop : ∀ {l} {T : Type Δ l} → CSub σ* (T ◁ Γ) → CSub σ* Γ
+Cdrop χ l T x = χ l T (there x)
+
+--! Cextend
+Cextend : ∀ {l} {T : Type Δ l} → CSub σ* Γ → CValue (Tsub σ* T) → CSub σ* (T ◁ Γ)
+Cextend χ v _ _ here = v
+Cextend χ v _ _ (there x) = χ _ _ x
+
+Cextend-Eext : ∀ {l} {T : Type Δ l} → (χ : CSub σ* Γ) → (w : CValue (Tsub σ* T)) → 
+  ES←SC (Cextend {T = T} χ w) ≡ Eextₛ _ (ES←SC χ) (exp w)
+Cextend-Eext {Δ = Δ} {σ* = σ*} {Γ = Γ} {T = T} χ w =
+  fun-ext (λ l → fun-ext (λ T′ → fun-ext (λ x → aux l T′ x)))
+    where
+      aux :  (l : Level) (T′ : Type Δ l) (x : inn T′ (T ◁ Γ)) →
+        exp ((Cextend χ w) l _ x) ≡ Eextₛ σ* (ES←SC χ) (exp w) l _ x
+      aux l T′ here = refl
+      aux l T′ (there x) = refl
+
+Cdrop-Cextend : ∀ {l} {σ* : TSub Δ []} {T : Type Δ l}
+  → (χ : CSub σ* Γ) → (v : CValue (Tsub σ* T))
+  → Cdrop {l = l} {T = T} (Cextend {l = l} χ v) ≡ χ
+Cdrop-Cextend {Δ = Δ} {Γ = Γ} {l = l} {T = T} χ v =
+  fun-ext λ l′ → fun-ext λ T′ → fun-ext λ x → aux l′ T′ x
+  where
+    aux : ∀ l′ (T′ : Type Δ l′) → (x : inn T′ Γ) → Cdrop {T = T} (Cextend χ v) l′ _ x ≡ χ l′ _ x
+    aux _ _ here = refl
+    aux _ _ (there x) = refl
+    aux _ _ (tskip x) = refl
+
+Cdrop-t : {Γ : Ctx Δ} → CSub σ* (l ◁* Γ) → CSub (Tdropₛ σ*) Γ
+Cdrop-t {σ* = σ*} χ l T x = subst CValue (assoc-sub-ren T (Twkᵣ Tidᵣ) σ*) (χ _ _ (tskip x))
+
+--! Cextt
+Cextt : ∀{l} → CSub σ* Γ → (T′ : Type [] l) → CSub (Textₛ σ* T′) (l ◁* Γ)
+Cextt {σ* = σ*} χ T′ _ _ (tskip {T = T} x) = subst CValue (sym (σT≡TextₛσTwkT σ* T)) (χ _ _ x)
+
+Cextt-Eextₛ-l : ∀{l} {T′ : Type [] l} → (χ : CSub σ* Γ)
+  → ES←SC (Cextt χ T′) ≡ Eextₛ-l _ (ES←SC χ)
+Cextt-Eextₛ-l {σ* = σ*}{T′ = T′} χ = fun-ext (λ l′ → fun-ext (λ T → fun-ext (λ x → aux l′ T x)))
+  where
+    aux : ∀ {T′} (l′ : Level) (T : Type _ l′) (x : inn T (l ◁* _))
+      → ES←SC (Cextt χ T′) l′ T x ≡ Eextₛ-l σ* (ES←SC χ) l′ T x
+    aux {T′ = T′} l′ .(Twk _) (tskip {T = T} x) =
+      dist-subst' {F = CValue} {G = CExpr} id exp
+        (sym
+          (trans (assoc-sub-ren T (λ z x₁ → there x₁) (Textₛ σ* T′))
+           (trans (sym (assoc-sub-sub T (λ z → `_) σ*))
+            (trans (cong (Tsub σ*) (TidₛT≡T T)) refl))))
+        (sym
+          (trans (assoc-sub-ren T (λ z x₁ → there x₁) (Textₛ σ* T′))
+           (trans (sym (assoc-sub-sub T (λ z → `_) σ*))
+            (trans (cong (Tsub σ*) (TidₛT≡T T)) refl))))
+         (χ l′ T x)
+

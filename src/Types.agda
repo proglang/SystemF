@@ -4,7 +4,7 @@ open import Level
 open import Data.Product using (_×_; Σ; Σ-syntax; ∃-syntax; _,_; proj₁; proj₂)
 open import Data.Sum using (_⊎_)
 open import Data.Fin using (Fin) renaming (zero to fzero; suc to fsuc)
-open import Data.List using (List; []; _∷_; _++_; length; lookup; tabulate)
+open import Data.List using (List; []; _∷_)
 open import Data.Unit.Polymorphic.Base using (⊤; tt)
 open import Data.Empty using (⊥)
 open import Data.Nat using (ℕ)
@@ -38,10 +38,10 @@ data _∈_ : Level → LEnv → Set where
 
 --! Type
 data Type Δ : Level → Set where
-  `_     : l ∈ Δ → Type Δ l
-  _⇒_    : Type Δ l → Type Δ l′ → Type Δ (l ⊔ l′)
-  `∀α_,_ : ∀ l → Type (l ∷ Δ) l′ → Type Δ (suc l ⊔ l′)
   `ℕ     : Type Δ zero
+  _⇒_    : Type Δ l → Type Δ l′ → Type Δ (l ⊔ l′)
+  `_     : l ∈ Δ → Type Δ l
+  `∀α_,_ : ∀ l → Type (l ∷ Δ) l′ → Type Δ (suc l ⊔ l′)
 
 variable T T′ T₁ T₂ : Type Δ l
 
@@ -60,16 +60,18 @@ data Env* : LEnv → Setω where
 variable
   η η₁ η₂ : Env* Δ  
 
+lookup : l ∈ Δ → Env* Δ → Set l
+lookup here      (x ∷ _) = x
+lookup (there x) (_ ∷ η) = lookup x η
+
 apply-env : Env* Δ → l ∈ Δ → Set l
-apply-env [] ()
-apply-env (x ∷ _) here = x
-apply-env (_ ∷ η) (there x) = apply-env η x
+apply-env η x = lookup x η
 
 -- the meaning of a stratified type in terms of Agda universes
 
 --! TSem
 ⟦_⟧ : (T : Type Δ l) → Env* Δ → Set l
-⟦ ` α ⟧ η = apply-env η α  
-⟦ T₁ ⇒ T₂ ⟧ η = ⟦ T₁ ⟧ η → ⟦ T₂ ⟧ η
-⟦ `∀α l , T ⟧ η = (α : Set l) → ⟦ T ⟧ (α ∷ η)
 ⟦ `ℕ ⟧ η = ℕ
+⟦ T₁ ⇒ T₂ ⟧ η = ⟦ T₁ ⟧ η → ⟦ T₂ ⟧ η
+⟦ ` α ⟧ η = lookup α η  
+⟦ `∀α l , T ⟧ η = (α : Set l) → ⟦ T ⟧ (α ∷ η)
