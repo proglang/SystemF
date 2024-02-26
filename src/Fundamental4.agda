@@ -41,7 +41,7 @@ open import HeterogeneousEqualityLemmas hiding (module R)
 Tsub-act-Text :
   ∀ (ρ : RelEnv Δ)
   → (T′ : Type Δ l)
-  → let ρ* = subst←RE ρ in
+  → let ρ* = π₁ ρ in
     (l₂ : Level)
   → (x : l₂ ∈ (l ∷ Δ))
   → REext ρ (Tsub ρ* T′ ,
@@ -51,12 +51,12 @@ Tsub-act-Text :
   ≡ Tsub-act (Textₛ Tidₛ T′) ρ l₂ x
 Tsub-act-Text ρ T′ l₂ here = refl
 Tsub-act-Text ρ T′ l₂ (there x) =
-  let ρ* = subst←RE ρ in
+  let ρ* = π₁ ρ in
   begin
     REext ρ
-      (Tsub (subst←RE ρ) T′ ,
-       subst (λ ⟦T⟧ → CValue (Tsub (subst←RE ρ) T′) → ⟦T⟧ → Set _)
-       (sym (subst-preserves (subst←RE ρ) T′))
+      (Tsub (π₁ ρ) T′ ,
+       subst (λ ⟦T⟧ → CValue (Tsub (π₁ ρ) T′) → ⟦T⟧ → Set _)
+       (sym (subst-preserves (π₁ ρ) T′))
        (𝓥⟦ T′ ⟧ ρ))
       l₂ (there x)
   ≡⟨ refl ⟩
@@ -101,14 +101,14 @@ Tsub-act-Text ρ T′ l₂ (there x) =
   ∎
 
 -- next one will become obsolete
-Elift-[]≡Cextt : (Γ : Ctx Δ) (ρ : RelEnv Δ) (χ : CSub (subst←RE ρ) Γ) (l′ l : Level) (T : Type (l ∷ Δ) l′) (e : Expr (l ∷ Δ) (l ◁* Γ) T) (T′ : Type [] l) (R : REL T′)
-  → let σ = subst←RE ρ in
-    let lhs = (Esub (Tliftₛ σ l) (Eliftₛ-l σ (ES←SC χ)) e [ T′ ]ET) in
+Elift-[]≡Cextt : (Γ : Ctx Δ) (ρ : RelEnv Δ) (χ : CSub (π₁ ρ) Γ) (l′ l : Level) (T : Type (l ∷ Δ) l′) (e : Expr (l ∷ Δ) (l ◁* Γ) T) (T′ : Type [] l) (R : REL T′)
+  → let σ = π₁ ρ in
+    let lhs = (Esub (Tliftₛ σ l) (Eliftₛ-l σ (ς₁ χ)) e [ T′ ]ET) in
     let rhs = Csub (subst (λ σ → CSub σ (l ◁* Γ)) (sym (subst←RE-ext-ext ρ T′ R)) (Cextt χ T′)) e in
     subst (Expr [] ∅) (lemma1 ρ T T′ R) lhs ≡ rhs
 Elift-[]≡Cextt Γ ρ χ l′ l T e T′ R =
-  let τ* = subst←RE ρ in
-  let σ = ES←SC χ in
+  let τ* = π₁ ρ in
+  let σ = ς₁ χ in
   begin
     subst CExpr (lemma1 ρ T T′ R)
       (Esub (Tliftₛ τ* l) (Eliftₛ-l τ* σ) e [ T′ ]ET)  -- : Expr [] ∅ (Tsub (Tliftₛ τ* l) T [ T′ ]T)
@@ -129,10 +129,10 @@ Elift-[]≡Cextt Γ ρ χ l′ l T e T′ R =
       (Esub (Textₛ τ* T′) (Eextₛ-l τ* σ) e)   -- : Expr [] ∅ (Tsub (Textₛ τ* T′) T)
   ≡⟨ cong (λ σ → subst CExpr
       (cong (λ τ* → Tsub τ* T) (sym (subst←RE-ext-ext ρ T′ R)))
-      (Esub (Textₛ (subst←RE ρ) T′) σ e))
+      (Esub (Textₛ (π₁ ρ) T′) σ e))
       (sym (Cextt-Eextₛ-l {T′ = T′} χ)) ⟩
     subst CExpr (cong (λ τ* → Tsub τ* T) (sym (subst←RE-ext-ext ρ T′ R)))
-    (Esub (Textₛ (subst←RE ρ) T′) (ES←SC (Cextt χ T′)) e)
+    (Esub (Textₛ (π₁ ρ) T′) (ς₁ (Cextt χ T′)) e)
   ≡⟨ refl ⟩
     subst CExpr (cong (λ τ* → Tsub τ* T) (sym (subst←RE-ext-ext ρ T′ R))) (Csub (Cextt χ T′) e)
   ≡˘⟨ dist-subst' {F = (λ τ* → CSub τ* (l ◁* Γ))} {G = CExpr} (λ τ* → Tsub τ* T) (λ χ → Csub χ e) (sym (subst←RE-ext-ext ρ T′ R)) (cong (λ τ* → Tsub τ* T) (sym (subst←RE-ext-ext ρ T′ R))) (Cextt χ T′) ⟩
@@ -144,8 +144,8 @@ Elift-[]≡Cextt Γ ρ χ l′ l T e T′ R =
 
 -- χ-val-extend :  ∀ (Γ : Ctx Δ)
 --   → (ρ : RelEnv Δ)
---   → let σ* = subst←RE ρ in (χ : CSub σ* Γ)
---   → (w       : CValue (Tsub (subst←RE ρ) T₁))
+--   → let σ* = π₁ ρ in (χ : CSub σ* Γ)
+--   → (w       : CValue (Tsub (π₁ ρ) T₁))
 --   → (w ⇓ w)
 --   → (∀ {l′} (T′ : Type Δ l′) (x : inn T′ Γ) → χ _ _ x ⇓ χ _ _ x)
 --   → ∀ {l′} (T′ : Type Δ l′) (x : inn T′ (T₁ ◁ Γ)) →
@@ -184,38 +184,42 @@ fundamental Γ .`ℕ (`suc e) ρ χ γ 𝓖⟦Γ⟧
 --! FundamentalVariable
 fundamental Γ T (` x) ρ χ γ 𝓖⟦Γ⟧ =
   let w = χ _ _ x in
-  let 𝓥⟦w⟧ = 𝓖-lookup Γ ρ χ γ T 𝓖⟦Γ⟧ x in
-  w , Value-⇓ w , 𝓥⟦w⟧
+  let 𝓥⟦T⟧wz = 𝓖-lookup Γ ρ χ γ T 𝓖⟦Γ⟧ x in
+  w , Value-⇓ w , 𝓥⟦T⟧wz
 
 --! FundamentalLambda
-fundamental Γ (T₁ ⇒ T₂) (ƛ e) ρ χ γ lrg =
+fundamental Γ (T₁ ⇒ T₂) (ƛ e) ρ χ γ 𝓖⟦Γ⟧ =
   (Csub χ (ƛ e), V-ƛ) ,
   ⇓-ƛ ,
-  Esub _ (Eliftₛ _ (ES←SC χ)) e ,
+  Esub _ (Eliftₛ _ (ς₁ χ)) e ,
   refl ,
-  (λ w z lrv-w-z →
-    let lrg′ = (lrv-w-z , substlω (𝓖⟦ Γ ⟧ ρ) (sym (Cdrop-Cextend {T = T₁} χ w)) (Gdrop-extend {T = T₁} γ z) lrg) in
-    let r = fundamental (T₁ ◁ Γ) T₂ e ρ (Cextend χ w) (extend γ z) lrg′ in
-    case r of λ where
-      (v , ew⇓v , lrv-v) → v ,
-                           subst (_⇓ v) (Cextend-Elift χ w e) ew⇓v ,
-                           lrv-v)
+  (λ w z 𝓥⟦T₁⟧wz →
+    let eq₁  : χ ≡ Cdrop {T = T₁} (Cextend χ w)
+        eq₁  = Cdrop-Cextend {T = T₁} χ w
+        eqω₁ : γ ≡ω Gdrop {T = T₁} (extend γ z)
+        eqω₁ = Gdrop-extend {T = T₁} γ z
+        𝓖⟦T₁◁Γ⟧ = (𝓥⟦T₁⟧wz , substlω (𝓖⟦ Γ ⟧ ρ) eq₁ eqω₁ 𝓖⟦Γ⟧)
+        eq₂ : Csub (Cextend χ w) e ≡ (Esub (π₁ ρ) (Eliftₛ (π₁ ρ) (ς₁ χ)) e [ exp w ]E)
+        eq₂ = Cextend-Elift χ w e
+    in
+    fundamental (T₁ ◁ Γ) T₂ e ρ (Cextend χ w) (extend γ z) 𝓖⟦T₁◁Γ⟧ |> λ where
+      (v , ew⇓v , 𝓥⟦T₂⟧vy) → v , subst (_⇓ v) eq₂ ew⇓v , 𝓥⟦T₂⟧vy)
 
 --! FundamentalApplication
-fundamental Γ T (_·_ {T = T₂} {T′ = .T} e₁ e₂) ρ χ γ lrg
-  with fundamental Γ (T₂ ⇒ T) e₁ ρ χ γ lrg | fundamental Γ T₂ e₂ ρ χ γ lrg
-... | v₁@(_ , V-ƛ) , e₁⇓v₁ , e₁′ , refl , lrv₁ | v₂ , e₂⇓v₂ , lrv₂
-  with lrv₁ v₂ (E⟦ e₂ ⟧ (subst-to-env* (subst←RE ρ) []) γ) lrv₂
-... | v₃ , e₃[]⇓v₃ , lrv₃
+fundamental Γ T (_·_ {T = T₂} {T′ = .T} e₁ e₂) ρ χ γ 𝓖⟦Γ⟧
+  with fundamental Γ (T₂ ⇒ T) e₁ ρ χ γ 𝓖⟦Γ⟧ | fundamental Γ T₂ e₂ ρ χ γ 𝓖⟦Γ⟧
+... | v₁@(_ , V-ƛ) , e₁⇓v₁ , (e₁′ , refl , 𝓥⟦T₂⇒T⟧v₁z₁) | v₂ , e₂⇓v₂ , 𝓥⟦T₂⟧v₂z₂
+  with 𝓥⟦T₂⇒T⟧v₁z₁ v₂ (E⟦ e₂ ⟧ (subst-to-env* (π₁ ρ) []) γ) 𝓥⟦T₂⟧v₂z₂
+... | v₃ , e₃[]⇓v₃ , 𝓥⟦T⟧v₃z₃
   = v₃ ,
     ⇓-· e₁⇓v₁ e₂⇓v₂ e₃[]⇓v₃ ,
-    lrv₃
+    𝓥⟦T⟧v₃z₃
 
 --! FundamentalTypeAbstraction
 fundamental Γ (`∀α .l , T) (Λ l ⇒ e) ρ χ γ lrg =
   (Csub χ (Λ l ⇒ e), V-Λ) ,
   ⇓-Λ ,
-  Esub (Tliftₛ (subst←RE ρ) l) (Eliftₛ-l (subst←RE ρ) (ES←SC χ)) e ,
+  Esub (Tliftₛ (π₁ ρ) l) (Eliftₛ-l (π₁ ρ) (ς₁ χ)) e ,
   refl ,
   λ T′ R →
     let lrg′ = substωlω-l (𝓖⟦ Γ ⟧)
@@ -234,8 +238,8 @@ fundamental Γ (`∀α .l , T) (Λ l ⇒ e) ρ χ γ lrg =
         let v′ = subst CValue (sym (lemma1 ρ T T′ R)) v in
         let e⇓v = subst₂ _⇓_ (sym (Elift-[]≡Cextt Γ ρ χ _ l T e T′ R)) refl e⇓v in
         let sub-lrvt = subst₂ (𝓥⟦ T ⟧ (REext ρ (T′ , R))) (sym (subst-subst-sym (lemma1 ρ T T′ R))) refl in
-        let σ* = subst←RE ρ in
-        let σ = ES←SC χ in
+        let σ* = π₁ ρ in
+        let σ = ς₁ χ in
         let 𝕖 = Esub (Textₛ Tidₛ T′) (Eextₛ-l Tidₛ Eidₛ) (Esub (Tliftₛ σ* l) (Eliftₛ-l σ* σ) e) in
         let eq = lemma1 ρ T T′ R in
            v′ ,
@@ -249,15 +253,15 @@ fundamental Γ (`∀α .l , T) (Λ l ⇒ e) ρ χ γ lrg =
 fundamental Γ .(T [ T′ ]T) (_∙_ {l = l}{T = T} e  T′) ρ χ γ lrg
   with fundamental Γ (`∀α l , T) e ρ χ γ lrg
 ... | v@ (_ , V-Λ) , e⇓v , e′ , refl , lrv
-  with lrv (Tsub (subst←RE ρ) T′) 
-           (subst (λ ⟦T⟧ → CValue (Tsub (subst←RE ρ) T′) → ⟦T⟧ → Set l) 
-                  (sym (subst-preserves (subst←RE ρ) T′))
+  with lrv (Tsub (π₁ ρ) T′) 
+           (subst (λ ⟦T⟧ → CValue (Tsub (π₁ ρ) T′) → ⟦T⟧ → Set l) 
+                  (sym (subst-preserves (π₁ ρ) T′))
                   (𝓥⟦ T′ ⟧ ρ)) 
 ... | v₂ , vT′⇓v₂ , lrv₂  = 
-  let ρ* = subst←RE ρ in
-  let σ = ES←SC χ in
+  let ρ* = π₁ ρ in
+  let σ = ς₁ χ in
   let η = subst-to-env* ρ* [] in
-  let eq₁ = sym (swap-Tsub-[] (subst←RE ρ) T T′)  in
+  let eq₁ = sym (swap-Tsub-[] (π₁ ρ) T T′)  in
   let e•T⇓v = ⇓-∙ e⇓v vT′⇓v₂ in
   subst CValue eq₁ v₂ ,
   subst id (begin 
@@ -369,7 +373,7 @@ fundamental Γ .(T [ T′ ]T) (_∙_ {l = l}{T = T} e  T′) ρ χ γ lrg
                     (subst (λ ⟦T⟧ → CValue (Tsub ρ* T′) → ⟦T⟧ → Set l)
                      (sym (subst-preserves ρ* T′)) (𝓥⟦ T′ ⟧ ρ))))))) ⟩∷ [])
                                (⟨ CValue , (trans eq₁ (assoc-sub-sub T (Textₛ Tidₛ T′) ρ*)) ⟩∷
-                                ⟨ CValue , (congωl (λ z → Tsub (subst←RE z) T)
+                                ⟨ CValue , (congωl (λ z → Tsub (π₁ z) T)
                 (symω
                  (relenv-ext
                   (λ l₂ x →
@@ -381,7 +385,7 @@ fundamental Γ .(T [ T′ ]T) (_∙_ {l = l}{T = T} e  T′) ρ χ γ lrg
                       l₂ x)
                      (Tsub-act (Textₛ Tidₛ T′) ρ l₂ x ∎) (Tsub-act-Text ρ T′ l₂ x))))) ⟩∷ []) v₂ ⟩
              subst CValue
-               (congωl (λ z → Tsub (subst←RE z) T)
+               (congωl (λ z → Tsub (π₁ z) T)
                 (symω
                  (relenv-ext
                   (λ l₂ x →
@@ -393,7 +397,7 @@ fundamental Γ .(T [ T′ ]T) (_∙_ {l = l}{T = T} e  T′) ρ χ γ lrg
                       l₂ x)
                      (Tsub-act (Textₛ Tidₛ T′) ρ l₂ x ∎) (Tsub-act-Text ρ T′ l₂ x)))))
                (subst CValue (trans eq₁ (assoc-sub-sub T (Textₛ Tidₛ T′) ρ*)) v₂)
-           ≡⟨ sym (substω-congω CValue (λ z → (Tsub (subst←RE z) T))
+           ≡⟨ sym (substω-congω CValue (λ z → (Tsub (π₁ z) T))
                                  (symω
                 (relenv-ext
                  (λ l₂ x →
@@ -405,7 +409,7 @@ fundamental Γ .(T [ T′ ]T) (_∙_ {l = l}{T = T} e  T′) ρ χ γ lrg
                      l₂ x)
                     (Tsub-act (Textₛ Tidₛ T′) ρ l₂ x ∎) (Tsub-act-Text ρ T′ l₂ x))))
                     (subst CValue (trans eq₁ (assoc-sub-sub T (Textₛ Tidₛ T′) ρ*)) v₂)) ⟩
-             substω (λ z → CValue (Tsub (subst←RE z) T))
+             substω (λ z → CValue (Tsub (π₁ z) T))
                (symω
                 (relenv-ext
                  (λ l₂ x →
@@ -434,7 +438,7 @@ fundamental Γ .(T [ T′ ]T) (_∙_ {l = l}{T = T} e  T′) ρ χ γ lrg
              subst id (congωl ⟦ T ⟧ (conglω (_∷ η) (sym (subst-preserves ρ* T′)))) (E⟦ e ⟧ η γ (⟦ T′ ⟧ η))
            ≡⟨ subst*-irrelevant (⟨ id , (congωl ⟦ T ⟧ (conglω (_∷ η) (sym (subst-preserves ρ* T′)))) ⟩∷ [])
                                  (⟨ id , (cong (λ α → ⟦ T ⟧ (α ∷ η)) (sym (subst-preserves ρ* T′))) ⟩∷
-                                  ⟨ id , (congωl (λ z → ⟦ T ⟧ (subst-to-env* (subst←RE z) []))
+                                  ⟨ id , (congωl (λ z → ⟦ T ⟧ (subst-to-env* (π₁ z) []))
                 (symω
                  (relenv-ext
                   (λ l₂ x →
@@ -447,7 +451,7 @@ fundamental Γ .(T [ T′ ]T) (_∙_ {l = l}{T = T} e  T′) ρ χ γ lrg
                      (Tsub-act (Textₛ Tidₛ T′) ρ l₂ x ∎) (Tsub-act-Text ρ T′ l₂ x))))) ⟩∷ [])
                     (E⟦ e ⟧ η γ (⟦ T′ ⟧ η))  ⟩
              subst id
-               (congωl (λ z → ⟦ T ⟧ (subst-to-env* (subst←RE z) []))
+               (congωl (λ z → ⟦ T ⟧ (subst-to-env* (π₁ z) []))
                 (symω
                  (relenv-ext
                   (λ l₂ x →
@@ -461,7 +465,7 @@ fundamental Γ .(T [ T′ ]T) (_∙_ {l = l}{T = T} e  T′) ρ χ γ lrg
                (subst id
                 (cong (λ α → ⟦ T ⟧ (α ∷ η)) (sym (subst-preserves ρ* T′)))
                 (E⟦ e ⟧ η γ (⟦ T′ ⟧ η)))
-           ≡⟨ sym (substω-congω id (λ z → ⟦ T ⟧ (subst-to-env* (subst←RE z) []))
+           ≡⟨ sym (substω-congω id (λ z → ⟦ T ⟧ (subst-to-env* (π₁ z) []))
                                  (symω
                 (relenv-ext
                  (λ l₂ x →
@@ -475,7 +479,7 @@ fundamental Γ .(T [ T′ ]T) (_∙_ {l = l}{T = T} e  T′) ρ χ γ lrg
                     (subst id
                 (cong (λ α → ⟦ T ⟧ (α ∷ η)) (sym (subst-preserves ρ* T′)))
                 (E⟦ e ⟧ η γ (⟦ T′ ⟧ η)))) ⟩
-             substω (λ z → ⟦ T ⟧ (subst-to-env* (subst←RE z) []))
+             substω (λ z → ⟦ T ⟧ (subst-to-env* (π₁ z) []))
                (symω
                 (relenv-ext
                  (λ l₂ x →
@@ -562,7 +566,7 @@ Tsub-closed {T = `ℕ} = refl
 Tsub-[]-is-Tid : ∀ (σ* : TSub [] Δ) → (λ l ()) ≡ σ*
 Tsub-[]-is-Tid σ* = fun-ext λ l → fun-ext λ ()
 
-Csub-[]-is-Eid : ∀ (χ : CSub {[]} (λ l ()) ∅) → ES←SC χ ≅ Eidₛ {Γ = ∅}
+Csub-[]-is-Eid : ∀ (χ : CSub {[]} (λ l ()) ∅) → ς₁ χ ≅ Eidₛ {Γ = ∅}
 Csub-[]-is-Eid χ = fun-ext-h-ESub (Tsub-[]-is-Tid Tidₛ) refl λ l T ()
 
 Csub-closed' : {T : Type [] l} (χ : CSub {[]} (λ l ()) ∅) → (e : CExpr T) →
@@ -571,7 +575,7 @@ Csub-closed' {T = T} χ e =
   R.begin
     Csub χ e
   R.≅⟨ refl ⟩
-    Esub (λ l ()) (ES←SC χ) e
+    Esub (λ l ()) (ς₁ χ) e
   R.≅⟨ H.cong₂ {B = λ ■ → ESub ■ ∅ ∅} (λ ■₁ ■₂ → Esub ■₁ ■₂ e)
                (H.≡-to-≅ (Tsub-[]-is-Tid Tidₛ)) (Csub-[]-is-Eid χ) ⟩
     Esub Tidₛ Eidₛ e

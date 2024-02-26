@@ -161,8 +161,10 @@ CSub : TSub Δ [] → Ctx Δ → Set
 CSub {Δ} σ* Γ = ∀ l (T : Type Δ l) → inn T Γ → CValue (Tsub σ* T)
 
 --! ESSC
-ES←SC : {σ* : TSub Δ []} → CSub σ* Γ → ESub σ* Γ ∅
-ES←SC χ = λ l T x → exp (χ l T x)
+ς₁ : {σ* : TSub Δ []} → CSub σ* Γ → ESub σ* Γ ∅
+ς₁ χ = λ l T x → exp (χ l T x)
+
+ES←SC = ς₁
 
 --! Csub
 Csub : {Γ : Ctx Δ} {σ* : TSub Δ []} → CSub σ* Γ → Expr Δ Γ T → CExpr (Tsub σ* T)
@@ -189,7 +191,7 @@ Cextend-Eext {Δ = Δ} {σ* = σ*} {Γ = Γ} {T = T} χ w =
 
 Cdrop-Cextend : ∀ {l} {σ* : TSub Δ []} {T : Type Δ l}
   → (χ : CSub σ* Γ) → (v : CValue (Tsub σ* T))
-  → Cdrop {l = l} {T = T} (Cextend {l = l} χ v) ≡ χ
+  → χ ≡ Cdrop {l = l} {T = T} (Cextend {l = l} χ v)
 Cdrop-Cextend {Δ = Δ} {Γ = Γ} {l = l} {T = T} χ v =
   fun-ext λ l′ → fun-ext λ T′ → fun-ext λ x → aux l′ T′ x
   where
