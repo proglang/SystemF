@@ -378,7 +378,16 @@ ETsingle-subst-preserves {Δ = Δ} {Γ = Γ} {η = η} {T′ = T′} γ e T = (H
   R.∎))
   where lemma : ∀ {l} {Δ} {Γ} {η} {γ} {T : Type Δ l} → 
                 subst-to-env {Γ₂ = Γ} (Eextₛ-l {T = T} Tidₛ Eidₛ) γ ≡ω substωω (Env _ _) (congωω (⟦ T ⟧ η ∷_) (symω (subst-to-env*-id η))) (extend-tskip γ)
-        lemma = {!   !}
+        lemma {l} {Δ} {Γ} {η} {γ} {T} = fun-extω λ l → fun-ext λ T₁ → fun-ext λ where
+          (tskip {T = T₂} x) →
+            let eq = (sym  (trans (fusion-Tsub-Tren T₂ (λ z x₁ → there x₁) (Textₛ (λ z → `_) T)) (trans (sym (fusion-Tsub-Tsub T₂ (λ z → `_) (λ z → `_))) (trans (cong (Tsub (λ z → `_)) (TidₛT≡T T₂)) refl)))) in
+            (H.≅-to-≡(R.begin 
+               subst id (subst-preserves (Textₛ (λ z → `_) T) (Tren (λ z x₁ → there x₁) T₂)) (E⟦ subst (Expr Δ Γ) eq (subst (Expr Δ Γ) (sym (TidₛT≡T T₂)) (` x)) ⟧ η γ)   
+            R.≅⟨ {!  !} ⟩
+              E⟦ subst (Expr Δ Γ) eq (subst (Expr Δ Γ) (sym (TidₛT≡T T₂)) (` x)) ⟧ η γ
+            R.≅⟨ {!  !} ⟩ 
+               substωω (Env (_ ∷ Δ) (_ ◁* Γ)) (congωω (_∷_ (⟦ T ⟧ η)) (symω (subst-to-env*-id η))) (extend-tskip γ) l (Twk T₂) (tskip x)
+            R.∎))
 
 soundness : ∀ {e₁ e₂ : Expr Δ Γ T} → e₁ ↪ e₂ → E⟦ e₁ ⟧ η γ ≡ E⟦ e₂ ⟧ η γ
 soundness β-suc = refl
