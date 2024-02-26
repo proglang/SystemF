@@ -387,9 +387,9 @@ functions mapping variables to variables and types, respectively.
 \end{minipage}
 
 The operations for applying renamings and substitutions, {\ATren}
-and {\ATsub}, are defined by induction over the type. They use
-{\ATliftR} and {\ATliftS} to lift the renaming and substitution under a
-binder, respectively.
+and {\ATsub}, are defined by induction over the type. When the
+operations need to go under a binder, they lift the renaming and
+substitution with {\ATliftR} and {\ATliftS}, respectively.
 
 \noindent\hspace{-\fboxsep}
 \begin{minipage}{0.5\linewidth}
