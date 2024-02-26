@@ -282,7 +282,7 @@ fundamental Γ .(T [ T′ ]T) (_∙_ {l = l}{T = T} e  T′) ρ χ γ lrg
             (subst CValue
              (trans
                (trans
-                (assoc-sub-sub T (Tliftₛ ρ* l)
+                (fusion-Tsub-Tsub T (Tliftₛ ρ* l)
                  (Textₛ Tidₛ (Tsub ρ* T′)))
                 (trans
                  (cong (λ σ₁ → Tsub σ₁ T)
@@ -307,7 +307,7 @@ fundamental Γ .(T [ T′ ]T) (_∙_ {l = l}{T = T} e  T′) ρ χ γ lrg
                   (sym (subst-preserves ρ* T′)) (𝓥⟦ T′ ⟧ ρ)))
                 (subst CValue
                  (trans
-                  (trans (assoc-sub-sub T (Tliftₛ ρ* l) (Textₛ Tidₛ (Tsub ρ* T′)))
+                  (trans (fusion-Tsub-Tsub T (Tliftₛ ρ* l) (Textₛ Tidₛ (Tsub ρ* T′)))
                    E₁)
                   E₂)
                  v₂)
@@ -328,7 +328,7 @@ fundamental Γ .(T [ T′ ]T) (_∙_ {l = l}{T = T} e  T′) ρ χ γ lrg
             (subst CValue
              (trans
                (trans
-                (assoc-sub-sub T (Tliftₛ ρ* l)
+                (fusion-Tsub-Tsub T (Tliftₛ ρ* l)
                  (Textₛ Tidₛ (Tsub ρ* T′)))
                 (cong (λ σ₁ → Tsub σ₁ T)
                   (sym (fun-ext₂ (sublemma-ext ρ*)))))
@@ -355,7 +355,7 @@ fundamental Γ .(T [ T′ ]T) (_∙_ {l = l}{T = T} e  T′) ρ χ γ lrg
            (begin
              subst CValue
                (trans
-                (trans (assoc-sub-sub T (Tliftₛ ρ* l) (Textₛ Tidₛ (Tsub ρ* T′)))
+                (trans (fusion-Tsub-Tsub T (Tliftₛ ρ* l) (Textₛ Tidₛ (Tsub ρ* T′)))
                  (cong (λ σ₁ → Tsub σ₁ T) (sym (fun-ext₂ (sublemma-ext ρ*)))))
                 (cong (λ G → Tsub G T)
                  (sym
@@ -365,7 +365,7 @@ fundamental Γ .(T [ T′ ]T) (_∙_ {l = l}{T = T} e  T′) ρ χ γ lrg
                      (sym (subst-preserves ρ* T′)) (𝓥⟦ T′ ⟧ ρ)))))))
                v₂
            ≡⟨ subst*-irrelevant (⟨ CValue , (trans
-                (trans (assoc-sub-sub T (Tliftₛ ρ* l) (Textₛ Tidₛ (Tsub ρ* T′)))
+                (trans (fusion-Tsub-Tsub T (Tliftₛ ρ* l) (Textₛ Tidₛ (Tsub ρ* T′)))
                  (cong (λ σ₁ → Tsub σ₁ T) (sym (fun-ext₂ (sublemma-ext ρ*)))))
                 (cong (λ G → Tsub G T)
                  (sym
@@ -373,7 +373,7 @@ fundamental Γ .(T [ T′ ]T) (_∙_ {l = l}{T = T} e  T′) ρ χ γ lrg
                    (subst←RE-ext ρ (Tsub ρ* T′)
                     (subst (λ ⟦T⟧ → CValue (Tsub ρ* T′) → ⟦T⟧ → Set l)
                      (sym (subst-preserves ρ* T′)) (𝓥⟦ T′ ⟧ ρ))))))) ⟩∷ [])
-                               (⟨ CValue , (trans eq₁ (assoc-sub-sub T (Textₛ Tidₛ T′) ρ*)) ⟩∷
+                               (⟨ CValue , (trans eq₁ (fusion-Tsub-Tsub T (Textₛ Tidₛ T′) ρ*)) ⟩∷
                                 ⟨ CValue , (congωl (λ z → Tsub (π₁ z) T)
                 (symω
                  (relenv-ext
@@ -397,7 +397,7 @@ fundamental Γ .(T [ T′ ]T) (_∙_ {l = l}{T = T} e  T′) ρ χ γ lrg
                        (sym (subst-preserves ρ* T′)) (𝓥⟦ T′ ⟧ ρ))
                       l₂ x)
                      (Tsub-act (Textₛ Tidₛ T′) ρ l₂ x ∎) (Tsub-act-Text ρ T′ l₂ x)))))
-               (subst CValue (trans eq₁ (assoc-sub-sub T (Textₛ Tidₛ T′) ρ*)) v₂)
+               (subst CValue (trans eq₁ (fusion-Tsub-Tsub T (Textₛ Tidₛ T′) ρ*)) v₂)
            ≡⟨ sym (substω-congω CValue (λ z → (Tsub (π₁ z) T))
                                  (symω
                 (relenv-ext
@@ -409,7 +409,7 @@ fundamental Γ .(T [ T′ ]T) (_∙_ {l = l}{T = T} e  T′) ρ χ γ lrg
                       (sym (subst-preserves ρ* T′)) (𝓥⟦ T′ ⟧ ρ))
                      l₂ x)
                     (Tsub-act (Textₛ Tidₛ T′) ρ l₂ x ∎) (Tsub-act-Text ρ T′ l₂ x))))
-                    (subst CValue (trans eq₁ (assoc-sub-sub T (Textₛ Tidₛ T′) ρ*)) v₂)) ⟩
+                    (subst CValue (trans eq₁ (fusion-Tsub-Tsub T (Textₛ Tidₛ T′) ρ*)) v₂)) ⟩
              substω (λ z → CValue (Tsub (π₁ z) T))
                (symω
                 (relenv-ext
@@ -421,7 +421,7 @@ fundamental Γ .(T [ T′ ]T) (_∙_ {l = l}{T = T} e  T′) ρ χ γ lrg
                       (sym (subst-preserves ρ* T′)) (𝓥⟦ T′ ⟧ ρ))
                      l₂ x)
                     (Tsub-act (Textₛ Tidₛ T′) ρ l₂ x ∎) (Tsub-act-Text ρ T′ l₂ x))))
-               (subst CValue (trans eq₁ (assoc-sub-sub T (Textₛ Tidₛ T′) ρ*)) v₂)
+               (subst CValue (trans eq₁ (fusion-Tsub-Tsub T (Textₛ Tidₛ T′) ρ*)) v₂)
            ∎)
     --------------------------------------------------
            (begin
@@ -498,19 +498,19 @@ fundamental Γ .(T [ T′ ]T) (_∙_ {l = l}{T = T} e  T′) ρ χ γ lrg
     --------------------------------------------------
         ⟩
           𝓥⟦ T ⟧ (Tsub-act (Textₛ Tidₛ T′) ρ)
-            (subst CValue (trans eq₁ (assoc-sub-sub T (Textₛ Tidₛ T′) ρ*)) v₂)
+            (subst CValue (trans eq₁ (fusion-Tsub-Tsub T (Textₛ Tidₛ T′) ρ*)) v₂)
             (subst id
              (cong (λ α → ⟦ T ⟧ (α ∷ η)) (sym (subst-preserves ρ* T′)))
              (E⟦ e ⟧ η γ (⟦ T′ ⟧ η)))
         ≡⟨ LRVsub T ρ
                   (Textₛ Tidₛ T′)
-                  (subst CValue (trans eq₁ (assoc-sub-sub T (Textₛ Tidₛ T′) ρ*)) v₂)
+                  (subst CValue (trans eq₁ (fusion-Tsub-Tsub T (Textₛ Tidₛ T′) ρ*)) v₂)
                   (subst id (cong (λ α → ⟦ T ⟧ (α ∷ η)) (sym (subst-preserves ρ* T′)))
                             (E⟦ e ⟧ η γ (⟦ T′ ⟧ η)))
         ⟩
           𝓥⟦ Tsub (Textₛ Tidₛ T′) T ⟧ ρ
-            (subst CValue (sym (assoc-sub-sub T (Textₛ Tidₛ T′) ρ*))
-             (subst CValue (trans eq₁ (assoc-sub-sub T (Textₛ Tidₛ T′) ρ*)) v₂))
+            (subst CValue (sym (fusion-Tsub-Tsub T (Textₛ Tidₛ T′) ρ*))
+             (subst CValue (trans eq₁ (fusion-Tsub-Tsub T (Textₛ Tidₛ T′) ρ*)) v₂))
             (subst id
              (sym
               (step-≡ (⟦ Tsub (Textₛ Tidₛ T′) T ⟧ η)
@@ -520,8 +520,8 @@ fundamental Γ .(T [ T′ ]T) (_∙_ {l = l}{T = T} e  T′) ρ χ γ lrg
               (cong (λ α → ⟦ T ⟧ (α ∷ η)) (sym (subst-preserves ρ* T′)))
               (E⟦ e ⟧ η γ (⟦ T′ ⟧ η))))
         ≡⟨ cong₂ (𝓥⟦ Tsub (Textₛ Tidₛ T′) T ⟧ ρ)
-          (subst*-irrelevant (⟨ CValue , (trans eq₁ (assoc-sub-sub T (Textₛ Tidₛ T′) ρ*)) ⟩∷
-                              ⟨ CValue , (sym (assoc-sub-sub T (Textₛ Tidₛ T′) ρ*)) ⟩∷
+          (subst*-irrelevant (⟨ CValue , (trans eq₁ (fusion-Tsub-Tsub T (Textₛ Tidₛ T′) ρ*)) ⟩∷
+                              ⟨ CValue , (sym (fusion-Tsub-Tsub T (Textₛ Tidₛ T′) ρ*)) ⟩∷
                               [])
                              (⟨ CValue , eq₁ ⟩∷
                              []) v₂)

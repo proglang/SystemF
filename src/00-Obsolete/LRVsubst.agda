@@ -53,7 +53,7 @@ ext-σ-T′≡σ[T′] T′ T ρ R′ =
     Tsub (Textₛ (subst←RE ρ) (Tsub (subst←RE ρ) T′)) T
   ≡⟨ cong (λ τ → Tsub τ T) (fun-ext₂ (Text-sub-sub (subst←RE ρ) T′)) ⟩
     Tsub (Textₛ Tidₛ T′ ∘ₛₛ subst←RE ρ) T
-  ≡⟨ sym (assoc-sub-sub T (Textₛ Tidₛ T′) (subst←RE ρ)) ⟩
+  ≡⟨ sym (fusion-Tsub-Tsub T (Textₛ Tidₛ T′) (subst←RE ρ)) ⟩
     Tsub (subst←RE ρ) (T [ T′ ]T)
   ∎ 
 
@@ -101,7 +101,7 @@ Tsub-act-REext-ext {l = l} ρ τ* T′ R l₂ (there x) =
   let eq₂r = subst-preserves ρ*r T₂r in
   let eq-1 = begin
                Tsub (subst←RE ρ) (τ* l₂ x)
-             ≡˘⟨ assoc-sub-ren (τ* l₂ x) (Twkᵣ Tidᵣ) (Textₛ (subst←RE ρ) T′)  ⟩
+             ≡˘⟨ fusion-Tsub-Tren (τ* l₂ x) (Twkᵣ Tidᵣ) (Textₛ (subst←RE ρ) T′)  ⟩
                Tsub (Textₛ (subst←RE ρ) T′) (Twk (τ* l₂ x))
              ≡˘⟨ cong (λ σ → Tsub σ (Twk (τ* l₂ x))) (subst←RE-ext-ext ρ T′ R) ⟩
                Tsub (subst←RE (REext ρ (T′ , R))) (Twk (τ* l₂ x))
@@ -142,7 +142,7 @@ LRVsubst : ∀ {Δ₁}{Δ₂}{l}
   → (z : ⟦ T ⟧ (subst-to-env* (subst←RE (Tsub-act τ* ρ)) []))
   → 𝓥⟦ T ⟧ (Tsub-act τ* ρ) v z
   → 𝓥⟦ Tsub τ* T ⟧ ρ 
-       (subst Value (sym (assoc-sub-sub T τ* (subst←RE ρ))) v)
+       (subst Value (sym (fusion-Tsub-Tsub T τ* (subst←RE ρ))) v)
        (subst id (sym (begin
                         ⟦ Tsub τ* T ⟧ (subst-to-env* (subst←RE ρ) [])
                       ≡⟨ subst-preserves τ* T ⟩
@@ -160,7 +160,7 @@ LRVsubst′ :  ∀ {Δ₁}{Δ₂}{l}
   → let ρ* = subst←RE ρ
   in (v : Value (Tsub (subst←RE (Tsub-act τ* ρ)) T))
   → (z : ⟦ T ⟧ (subst-to-env* (subst←RE (Tsub-act τ* ρ)) []))
-  → 𝓥⟦ Tsub τ* T ⟧ ρ (subst Value (sym (assoc-sub-sub T τ* (subst←RE ρ))) v)
+  → 𝓥⟦ Tsub τ* T ⟧ ρ (subst Value (sym (fusion-Tsub-Tsub T τ* (subst←RE ρ))) v)
                      (subst id (sym (begin
                         ⟦ Tsub τ* T ⟧ (subst-to-env* (subst←RE ρ) [])
                       ≡⟨ subst-preserves τ* T ⟩
@@ -201,10 +201,10 @@ LRVsubst {l = l} (` x) ρ τ* v z lrv-t =
            ∎) lrv-t
 
 LRVsubst (T₁ ⇒ T₂) ρ τ* v z (e , refl , F) =
-  let eq-T₁ = (assoc-sub-sub T₁ τ* (subst←RE ρ)) in
-  let eq-T₂ = (assoc-sub-sub T₂ τ* (subst←RE ρ)) in
+  let eq-T₁ = (fusion-Tsub-Tsub T₁ τ* (subst←RE ρ)) in
+  let eq-T₂ = (fusion-Tsub-Tsub T₂ τ* (subst←RE ρ)) in
   subst₂ (λ T₁ T₂ → Expr [] (T₁ ◁ ∅) T₂) (sym eq-T₁) (sym eq-T₂) e ,
-  subst-split-ƛ (sym (assoc-sub-sub (T₁ ⇒ T₂) τ* (subst←RE ρ))) (sym eq-T₁) (sym eq-T₂) e ,
+  subst-split-ƛ (sym (fusion-Tsub-Tsub (T₁ ⇒ T₂) τ* (subst←RE ρ))) (sym eq-T₁) (sym eq-T₂) e ,
   λ w₁ z₁ lrv-sub-t1 →
   let σ* = subst←RE ρ in
   let w₁′ = (subst Value eq-T₁ w₁) in
@@ -368,7 +368,7 @@ LRVsubst (`∀α l , T) ρ τ* v z (e , v≡Λe , F) =
                                                   (congωl (λ ρ₁ → Tsub (subst←RE ρ₁) T) (Tsub-act-REext ρ τ* T′ R)))
                                                  (cong (λ σ → Tsub σ T) (subst←RE-ext-ext (Tsub-act τ* ρ) T′ R)))
                                                 (σ↑T[T′]≡TextₛσT′T (subst←RE (Tsub-act τ* ρ)) T′ T))
-                                              {y≡z = (sym (assoc-sub-sub T (Tliftₛ τ* l) (subst←RE (REext ρ (T′ , R)))))})
+                                              {y≡z = (sym (fusion-Tsub-Tsub T (Tliftₛ τ* l) (subst←RE (REext ρ (T′ , R)))))})
                      (trans
                        (subst-irrelevant {F = Value} _ _ vT[T′])
                        (sym (subst-subst {P = Value} (cong (Tsub (Textₛ Tidₛ T′)) (sym (assoc-sub↑-sub↑ T τ* (subst←RE ρ))))

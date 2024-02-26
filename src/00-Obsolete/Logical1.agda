@@ -156,7 +156,7 @@ sublemma {T = T} σ = fun-ext₂ λ where
         σ _ x
       ≡⟨ sym (TidₛT≡T (σ _ x)) ⟩
         Tsub Tidₛ (σ _ x)
-      ≡⟨ sym (assoc-sub-ren (σ _ x) (Twkᵣ Tidᵣ) (Textₛ Tidₛ T)) ⟩
+      ≡⟨ sym (fusion-Tsub-Tren (σ _ x) (Twkᵣ Tidᵣ) (Textₛ Tidₛ T)) ⟩
         Tsub (Textₛ Tidₛ T) (Twk (σ _ x)) 
       ∎
 
@@ -164,7 +164,7 @@ lemma2 : (σ : TSub Δ []) → (T  : Type (l ∷ Δ) l′) → (T′ : Type [] l
   → Tsub (Tliftₛ σ l) T [ T′ ]T ≡ Tsub (Textₛ σ T′) T
 lemma2 σ T T′ = begin 
     Tsub (Textₛ Tidₛ T′) (Tsub (Tliftₛ σ _) T)
-  ≡⟨ assoc-sub-sub T (Tliftₛ σ _) (Textₛ Tidₛ T′) ⟩
+  ≡⟨ fusion-Tsub-Tsub T (Tliftₛ σ _) (Textₛ Tidₛ T′) ⟩
     Tsub (Tliftₛ σ _ ∘ₛₛ Textₛ Tidₛ T′) T
   ≡⟨ cong (λ σ → Tsub σ T) (sym (sublemma σ)) ⟩
     Tsub (Textₛ σ T′) T
@@ -309,7 +309,7 @@ Cdrop-Cextend {Δ = Δ} {Γ = Γ} {l = l} {T = T} χ v = fun-ext λ l′ → fun
     aux _ _ (tskip x) = refl
 
 Cdropt : {Γ : TEnv Δ} → CSub σ* (l ◁* Γ) → CSub (Tdropₛ σ*) Γ
-Cdropt {σ* = σ*} χ l T x = subst Value (assoc-sub-ren T (Twkᵣ Tidᵣ) σ*) (χ _ _ (tskip x))
+Cdropt {σ* = σ*} χ l T x = subst Value (fusion-Tsub-Tren T (Twkᵣ Tidᵣ) σ*) (χ _ _ (tskip x))
 
 Cextt : ∀{l} → CSub σ* Γ → (T′ : Type [] l) → CSub (Textₛ σ* T′) (l ◁* Γ)
 Cextt {σ* = σ*} χ T′ _ _ (tskip {T = T} x) = subst Value (sym (σT≡TextₛσTwkT σ* T)) (χ _ _ x)

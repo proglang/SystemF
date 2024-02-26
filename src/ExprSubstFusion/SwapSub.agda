@@ -30,10 +30,10 @@ swap-sub-Ewk :
 swap-sub-Ewk {Δ₁} {Δ₂} {l} {ρ*} {Γ₁} {Γ₂} ρ T =
   fun-ext-h-ESub (sym (∘ₛᵣ-neutralˡ ρ*)) refl λ l₁ T₁ x →
     let
-      F₁ = (Expr Δ₂ (Tsub ρ* T ◁ Γ₂)) ; E₁ = (assoc-sub-ren T₁ Tidᵣ ρ*)                  ; sub₁ = subst F₁ E₁
+      F₁ = (Expr Δ₂ (Tsub ρ* T ◁ Γ₂)) ; E₁ = (fusion-Tsub-Tren T₁ Tidᵣ ρ*)                  ; sub₁ = subst F₁ E₁
       F₂ = (Expr Δ₂ (Tsub ρ* T ◁ Γ₂)) ; E₂ = (TidᵣT≡T (Tsub ρ* (Tren (λ _ x₁ → x₁) T₁))) ; sub₂ = subst F₂ E₂
       F₃ = (λ T₂ → inn T₂ Γ₁)         ; E₃ = (sym (TidᵣT≡T T₁))                          ; sub₃ = subst F₃ E₃
-      F₄ = (Expr Δ₂ (Tsub ρ* T ◁ Γ₂)) ; E₄ = (assoc-ren-sub T₁ ρ* (λ _ x₁ → x₁))         ; sub₄ = subst F₄ E₄
+      F₄ = (Expr Δ₂ (Tsub ρ* T ◁ Γ₂)) ; E₄ = (fusion-Tren-Tsub T₁ ρ* (λ _ x₁ → x₁))         ; sub₄ = subst F₄ E₄
     in
     R.begin
       (Ewkᵣ {T = T} Tidᵣ Eidᵣ >>RS Eliftₛ ρ* ρ) l₁ T₁ x
@@ -60,12 +60,12 @@ swap-Esub-Ewk :
 swap-Esub-Ewk {Δ₁} {Δ₂} {l} {l′} {ρ*} {Γ₁} {Γ₂} {T} ρ T′ e =
   R.begin
     Esub ρ* (Eliftₛ ρ* ρ) (Eren Tidᵣ (Ewkᵣ Tidᵣ Eidᵣ) e)
-  R.≅⟨ Eassoc-sub-ren' e (Ewkᵣ Tidᵣ Eidᵣ) (Eliftₛ ρ* ρ) ⟩
+  R.≅⟨ fusion-Esub-Eren' e (Ewkᵣ Tidᵣ Eidᵣ) (Eliftₛ ρ* ρ) ⟩
     Esub ρ* (Ewkᵣ {T = T′} Tidᵣ Eidᵣ >>RS Eliftₛ ρ* ρ) e
   R.≅⟨ H.cong₂ {B = λ ■ → ESub ■ Γ₁ (Tsub ρ* T′ ◁ Γ₂)} (λ ■₁ ■₂ → Esub ■₁ ■₂ e)
                (H.≡-to-≅ (sym (∘ₛᵣ-neutralˡ ρ*))) (swap-sub-Ewk ρ T′) ⟩
     Esub (ρ* ∘ₛᵣ Tidᵣ) (ρ >>SR Ewkᵣ {T = Tsub ρ* T′} Tidᵣ Eidᵣ) e
-  R.≅⟨ H.sym (Eassoc-ren-sub' e ρ (Ewkᵣ Tidᵣ Eidᵣ)) ⟩
+  R.≅⟨ H.sym (fusion-Eren-Esub' e ρ (Ewkᵣ Tidᵣ Eidᵣ)) ⟩
     Eren Tidᵣ (Ewkᵣ Tidᵣ Eidᵣ) (Esub ρ* ρ e)
   R.∎
 
@@ -76,9 +76,9 @@ swap-sub-Ewk-l :
 swap-sub-Ewk-l {Δ₁} {Δ₂} {ρ*} {Γ₁} {Γ₂} ρ l =
   fun-ext-h-ESub refl refl λ l₁ T₁ x →
     let
-      F₁ = (Expr (l ∷ Δ₂) (l ◁* Γ₂)) ; E₁ = (assoc-sub-ren T₁ (Twkᵣ Tidᵣ) (Tliftₛ ρ* l))              ; sub₁ = subst F₁ E₁
+      F₁ = (Expr (l ∷ Δ₂) (l ◁* Γ₂)) ; E₁ = (fusion-Tsub-Tren T₁ (Twkᵣ Tidᵣ) (Tliftₛ ρ* l))              ; sub₁ = subst F₁ E₁
       F₂ = (Expr (l ∷ Δ₂) (l ◁* Γ₂)) ; E₂ = (sym (swap-Tsub-Twk ρ* T₁)) ; sub₂ = subst F₂ E₂
-      F₃ = (Expr (l ∷ Δ₂) (l ◁* Γ₂)) ; E₃ = (assoc-ren-sub T₁ ρ* (Twkᵣ Tidᵣ))                         ; sub₃ = subst F₃ E₃
+      F₃ = (Expr (l ∷ Δ₂) (l ◁* Γ₂)) ; E₃ = (fusion-Tren-Tsub T₁ ρ* (Twkᵣ Tidᵣ))                         ; sub₃ = subst F₃ E₃
     in
     R.begin
       (Ewkᵣ-l l >>RS Eliftₛ-l ρ* ρ) l₁ T₁ x
@@ -102,10 +102,10 @@ swap-Esub-Ewk-l :
 swap-Esub-Ewk-l {Δ₁} {Δ₂} {l} {ρ*} {Γ₁} {Γ₂} {T} ρ l′ e =
   R.begin
     Esub (Tliftₛ ρ* l′) (Eliftₛ-l ρ* ρ) (Eren (Twkᵣ Tidᵣ) (Ewkᵣ-l l′) e)
-  R.≅⟨ Eassoc-sub-ren' e (Ewkᵣ-l l′) (Eliftₛ-l ρ* ρ) ⟩
+  R.≅⟨ fusion-Esub-Eren' e (Ewkᵣ-l l′) (Eliftₛ-l ρ* ρ) ⟩
     Esub (Twkᵣ Tidᵣ ∘ᵣₛ Tliftₛ ρ* l′) (Ewkᵣ-l l′ >>RS Eliftₛ-l ρ* ρ) e
   R.≅⟨ H.cong (λ ■ → Esub (Twkᵣ Tidᵣ ∘ᵣₛ Tliftₛ ρ* l′) ■ e) (swap-sub-Ewk-l ρ l′) ⟩
     Esub (ρ* ∘ₛᵣ Twkᵣ Tidᵣ) (ρ >>SR Ewkᵣ-l l′) e
-  R.≅⟨ H.sym (Eassoc-ren-sub' e ρ (Ewkᵣ-l l′)) ⟩
+  R.≅⟨ H.sym (fusion-Eren-Esub' e ρ (Ewkᵣ-l l′)) ⟩
     Eren (Twkᵣ Tidᵣ) (Ewkᵣ-l l′) (Esub ρ* ρ e)
   R.∎

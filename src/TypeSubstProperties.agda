@@ -38,20 +38,20 @@ mutual
     Tsub (Tliftₛ σ _) (Tren (Tliftᵣ ρ _) T) ≡ Tsub (Tliftₛ (ρ ∘ᵣₛ σ) _) T
   assoc-sub↑-ren↑ T ρ σ = begin
       Tsub (Tliftₛ σ _) (Tren (Tliftᵣ ρ _) T) 
-    ≡⟨ assoc-sub-ren T (Tliftᵣ ρ _) (Tliftₛ σ _) ⟩
+    ≡⟨ fusion-Tsub-Tren T (Tliftᵣ ρ _) (Tliftₛ σ _) ⟩
       Tsub (Tliftᵣ ρ _ ∘ᵣₛ Tliftₛ σ _) T
     ≡⟨ cong (λ σ → Tsub σ T) (sym (sub↑-dist-∘ᵣₛ _ ρ σ)) ⟩
       Tsub (Tliftₛ (ρ ∘ᵣₛ σ) _) T
     ∎
 
   --! FusionSubRen
-  assoc-sub-ren : ∀ (T : Type Δ₁ l) (ρ : TRen Δ₁ Δ₂) (σ : TSub Δ₂ Δ₃) →
+  fusion-Tsub-Tren : ∀ (T : Type Δ₁ l) (ρ : TRen Δ₁ Δ₂) (σ : TSub Δ₂ Δ₃) →
     Tsub σ (Tren ρ T) ≡ Tsub (ρ ∘ᵣₛ σ) T
 
-  assoc-sub-ren (` x) ρ σ = refl
-  assoc-sub-ren (T₁ ⇒ T₂) ρ σ = cong₂ _⇒_ (assoc-sub-ren T₁ ρ σ) (assoc-sub-ren T₂ ρ σ)
-  assoc-sub-ren (`∀α l , T) ρ σ = cong (`∀α l ,_) (assoc-sub↑-ren↑ T ρ σ)
-  assoc-sub-ren `ℕ ρ σ = refl
+  fusion-Tsub-Tren (` x) ρ σ = refl
+  fusion-Tsub-Tren (T₁ ⇒ T₂) ρ σ = cong₂ _⇒_ (fusion-Tsub-Tren T₁ ρ σ) (fusion-Tsub-Tren T₂ ρ σ)
+  fusion-Tsub-Tren (`∀α l , T) ρ σ = cong (`∀α l ,_) (assoc-sub↑-ren↑ T ρ σ)
+  fusion-Tsub-Tren `ℕ ρ σ = refl
 
 ren↑-dist-∘ᵣᵣ : ∀ l (ρ₁ : TRen Δ₁ Δ₂) (ρ₂ : TRen Δ₂ Δ₃) →
   Tliftᵣ (ρ₁ ∘ᵣᵣ ρ₂) _ ≡ ((Tliftᵣ ρ₁ l) ∘ᵣᵣ (Tliftᵣ ρ₂ _)) 
@@ -64,29 +64,29 @@ mutual
     Tren (Tliftᵣ ρ₂ _) (Tren (Tliftᵣ ρ₁ _) T) ≡ Tren (Tliftᵣ (ρ₁ ∘ᵣᵣ ρ₂) _) T
   assoc-ren↑-ren↑ {l = l} T ρ₁ ρ₂ =
       Tren (Tliftᵣ ρ₂ _) (Tren (Tliftᵣ ρ₁ _) T) 
-    ≡⟨ assoc-ren-ren T (Tliftᵣ ρ₁ _) (Tliftᵣ ρ₂ _) ⟩
+    ≡⟨ fusion-Tren-Tren T (Tliftᵣ ρ₁ _) (Tliftᵣ ρ₂ _) ⟩
       Tren (Tliftᵣ ρ₁ _ ∘ᵣᵣ Tliftᵣ ρ₂ _) T
     ≡⟨ cong (λ ρ → Tren ρ T) (sym (ren↑-dist-∘ᵣᵣ l ρ₁ ρ₂))  ⟩
       Tren (Tliftᵣ (ρ₁ ∘ᵣᵣ ρ₂) _) T
     ∎
 
   --! FusionRenRen
-  assoc-ren-ren : ∀ (T : Type Δ₁ l) (ρ₁ : TRen Δ₁ Δ₂) (ρ₂ : TRen Δ₂ Δ₃) →
+  fusion-Tren-Tren : ∀ (T : Type Δ₁ l) (ρ₁ : TRen Δ₁ Δ₂) (ρ₂ : TRen Δ₂ Δ₃) →
     Tren ρ₂ (Tren ρ₁ T) ≡ Tren (ρ₁ ∘ᵣᵣ ρ₂) T
 
-  assoc-ren-ren (` x) ρ₁ ρ₂ = refl
-  assoc-ren-ren (T₁ ⇒ T₂) ρ₁ ρ₂ = cong₂ _⇒_ (assoc-ren-ren T₁ ρ₁ ρ₂) (assoc-ren-ren T₂ ρ₁ ρ₂)
-  assoc-ren-ren (`∀α l , T) ρ₁ ρ₂ = cong (`∀α l ,_) (assoc-ren↑-ren↑ T ρ₁ ρ₂)
-  assoc-ren-ren `ℕ ρ₁ ρ₂ = refl
+  fusion-Tren-Tren (` x) ρ₁ ρ₂ = refl
+  fusion-Tren-Tren (T₁ ⇒ T₂) ρ₁ ρ₂ = cong₂ _⇒_ (fusion-Tren-Tren T₁ ρ₁ ρ₂) (fusion-Tren-Tren T₂ ρ₁ ρ₂)
+  fusion-Tren-Tren (`∀α l , T) ρ₁ ρ₂ = cong (`∀α l ,_) (assoc-ren↑-ren↑ T ρ₁ ρ₂)
+  fusion-Tren-Tren `ℕ ρ₁ ρ₂ = refl
 
 swap-Tren-Twk : ∀ (ρ : TRen Δ₁ Δ₂) (T : Type Δ₁ l′) →
   Tren (Tliftᵣ ρ l) (Twk T) ≡ Twk (Tren ρ T) 
 swap-Tren-Twk {l = l} ρ T = 
   begin 
     Tren (Tliftᵣ ρ _) (Tren (Twkᵣ Tidᵣ) T)
-  ≡⟨ assoc-ren-ren T (Twkᵣ Tidᵣ) (Tliftᵣ ρ _) ⟩
+  ≡⟨ fusion-Tren-Tren T (Twkᵣ Tidᵣ) (Tliftᵣ ρ _) ⟩
     Tren ((Twkᵣ Tidᵣ) ∘ᵣᵣ Tliftᵣ ρ _) T
-  ≡⟨ sym (assoc-ren-ren T ρ (Twkᵣ Tidᵣ)) ⟩
+  ≡⟨ sym (fusion-Tren-Tren T ρ (Twkᵣ Tidᵣ)) ⟩
     Tren (Twkᵣ Tidᵣ) (Tren ρ T)
   ∎
 
@@ -101,29 +101,29 @@ mutual
     Tren (Tliftᵣ ρ _) (Tsub (Tliftₛ σ _) T) ≡ Tsub (Tliftₛ (σ ∘ₛᵣ ρ) _) T
   assoc-ren↑-sub↑ {l = l} T σ ρ = begin 
       Tren (Tliftᵣ ρ _) (Tsub (Tliftₛ σ _) T)
-    ≡⟨ assoc-ren-sub T (Tliftₛ σ _) (Tliftᵣ ρ _) ⟩
+    ≡⟨ fusion-Tren-Tsub T (Tliftₛ σ _) (Tliftᵣ ρ _) ⟩
       Tsub (Tliftₛ σ _ ∘ₛᵣ Tliftᵣ ρ _) T
     ≡⟨ cong (λ σ → Tsub σ T) (sym (ren↑-dist-∘ₛᵣ l σ ρ)) ⟩
       Tsub (Tliftₛ (σ ∘ₛᵣ ρ) _) T
     ∎ 
 
   --! FusionRenSub
-  assoc-ren-sub : ∀ (T : Type Δ₁ l) (σ : TSub Δ₁ Δ₂) (ρ : TRen Δ₂ Δ₃) →
+  fusion-Tren-Tsub : ∀ (T : Type Δ₁ l) (σ : TSub Δ₁ Δ₂) (ρ : TRen Δ₂ Δ₃) →
     Tren ρ (Tsub σ T) ≡ Tsub (σ ∘ₛᵣ ρ) T
 
-  assoc-ren-sub (` x) ρ σ = refl
-  assoc-ren-sub (T₁ ⇒ T₂) ρ σ = cong₂ _⇒_ (assoc-ren-sub T₁ ρ σ) (assoc-ren-sub T₂ ρ σ)
-  assoc-ren-sub (`∀α l , T) ρ σ = cong (`∀α l ,_) (assoc-ren↑-sub↑ T ρ σ)
-  assoc-ren-sub `ℕ ρ σ = refl
+  fusion-Tren-Tsub (` x) ρ σ = refl
+  fusion-Tren-Tsub (T₁ ⇒ T₂) ρ σ = cong₂ _⇒_ (fusion-Tren-Tsub T₁ ρ σ) (fusion-Tren-Tsub T₂ ρ σ)
+  fusion-Tren-Tsub (`∀α l , T) ρ σ = cong (`∀α l ,_) (assoc-ren↑-sub↑ T ρ σ)
+  fusion-Tren-Tsub `ℕ ρ σ = refl
 
 swap-Tsub-Twk : ∀ {l} (σ : TSub Δ₁ Δ₂) (T : Type Δ₁ l′) →
   Tsub (Tliftₛ σ _) (Twk {l = l} T) ≡ Twk (Tsub σ T)
 swap-Tsub-Twk σ T = 
   begin 
     Tsub (Tliftₛ σ _) (Twk T) 
-  ≡⟨ assoc-sub-ren T (Twkᵣ Tidᵣ) (Tliftₛ σ _) ⟩
+  ≡⟨ fusion-Tsub-Tren T (Twkᵣ Tidᵣ) (Tliftₛ σ _) ⟩
     Tsub (σ ∘ₛᵣ λ _ → there) T
-  ≡⟨ sym (assoc-ren-sub T σ (Twkᵣ Tidᵣ)) ⟩
+  ≡⟨ sym (fusion-Tren-Tsub T σ (Twkᵣ Tidᵣ)) ⟩
     Twk (Tsub σ T)
   ∎
 
@@ -143,25 +143,20 @@ mutual
     Tsub (Tliftₛ σ₂ _) (Tsub (Tliftₛ σ₁ _) T) ≡ Tsub (Tliftₛ (σ₁ ∘ₛₛ σ₂) _) T
   assoc-sub↑-sub↑ {l = l} T σ₁ σ₂ = begin 
       Tsub (Tliftₛ σ₂ _) (Tsub (Tliftₛ σ₁ _) T)
-    ≡⟨ assoc-sub-sub T (Tliftₛ σ₁ _) (Tliftₛ σ₂ _) ⟩
+    ≡⟨ fusion-Tsub-Tsub T (Tliftₛ σ₁ _) (Tliftₛ σ₂ _) ⟩
       Tsub (Tliftₛ σ₁ _ ∘ₛₛ Tliftₛ σ₂ _) T
     ≡⟨ cong (λ σ → Tsub σ T) (sym (sub↑-dist-∘ₛₛ l σ₁ σ₂)) ⟩
       Tsub (Tliftₛ (σ₁ ∘ₛₛ σ₂) _) T
     ∎ 
 
   --! FusionSubSub
-  Tassoc-sub-sub : ∀ (T : Type Δ₁ l) (σ₁ : TSub Δ₁ Δ₂) (σ₂ : TSub Δ₂ Δ₃) →
+  fusion-Tsub-Tsub : ∀ (T : Type Δ₁ l) (σ₁ : TSub Δ₁ Δ₂) (σ₂ : TSub Δ₂ Δ₃) →
     Tsub σ₂ (Tsub σ₁ T) ≡ Tsub (σ₁ ∘ₛₛ σ₂) T
 
-  Tassoc-sub-sub = assoc-sub-sub
-
-  assoc-sub-sub : ∀ (T : Type Δ₁ l) (σ₁ : TSub Δ₁ Δ₂) (σ₂ : TSub Δ₂ Δ₃) →
-    Tsub σ₂ (Tsub σ₁ T) ≡ Tsub (σ₁ ∘ₛₛ σ₂) T
-
-  assoc-sub-sub (` x) σ₁ σ₂ = refl
-  assoc-sub-sub (T₁ ⇒ T₂) σ₁ σ₂ = cong₂ _⇒_ (assoc-sub-sub T₁ σ₁ σ₂) (assoc-sub-sub T₂ σ₁ σ₂)
-  assoc-sub-sub (`∀α l , T) σ₁ σ₂ = cong (`∀α l ,_) (assoc-sub↑-sub↑ T σ₁ σ₂)
-  assoc-sub-sub `ℕ σ₁ σ₂ = refl
+  fusion-Tsub-Tsub (` x) σ₁ σ₂ = refl
+  fusion-Tsub-Tsub (T₁ ⇒ T₂) σ₁ σ₂ = cong₂ _⇒_ (fusion-Tsub-Tsub T₁ σ₁ σ₂) (fusion-Tsub-Tsub T₂ σ₁ σ₂)
+  fusion-Tsub-Tsub (`∀α l , T) σ₁ σ₂ = cong (`∀α l ,_) (assoc-sub↑-sub↑ T σ₁ σ₂)
+  fusion-Tsub-Tsub `ℕ σ₁ σ₂ = refl
 
 TliftᵣTidᵣ≡Tidᵣ : ∀ Δ l →
   (Tliftᵣ {Δ₁ = Δ} Tidᵣ l) ≡ Tidᵣ
@@ -187,11 +182,11 @@ swap-Tren-[] : ∀ (ρ : TRen Δ₁ Δ₂) (T : Type (l ∷ Δ₁) l′) (T′ :
   Tren ρ (T [ T′ ]T) ≡ Tren (Tliftᵣ ρ _) T [ Tren ρ T′ ]T 
 swap-Tren-[] ρ T T′ = begin 
     Tren ρ (T [ T′ ]T)
-  ≡⟨ assoc-ren-sub T (Textₛ Tidₛ T′) ρ ⟩
+  ≡⟨ fusion-Tren-Tsub T (Textₛ Tidₛ T′) ρ ⟩
     Tsub (Textₛ Tidₛ T′ ∘ₛᵣ ρ) T
   ≡⟨ cong (λ σ → Tsub σ T) (ρ[T]≡[ρT]ρ↑ T′ ρ) ⟩
     Tsub ((Tliftᵣ ρ _) ∘ᵣₛ (Textₛ Tidₛ (Tren ρ T′))) T
-  ≡⟨ sym (assoc-sub-ren T (Tliftᵣ ρ _) (Textₛ Tidₛ (Tren ρ T′))) ⟩
+  ≡⟨ sym (fusion-Tsub-Tren T (Tliftᵣ ρ _) (Textₛ Tidₛ (Tren ρ T′))) ⟩
     Tsub (Textₛ Tidₛ (Tren ρ T′)) (Tren (Tliftᵣ ρ _) T)
   ∎
 
@@ -217,7 +212,7 @@ TidₛT≡T `ℕ = refl
         σ _ x
       ≡⟨ sym (TidₛT≡T (σ _ x)) ⟩
         Tsub Tidₛ (σ _ x)
-      ≡⟨ sym (assoc-sub-ren (σ _ x) (Twkᵣ Tidᵣ) (Textₛ Tidₛ (Tsub σ T))) ⟩
+      ≡⟨ sym (fusion-Tsub-Tren (σ _ x) (Twkᵣ Tidᵣ) (Textₛ Tidₛ (Tsub σ T))) ⟩
         Tsub (Textₛ Tidₛ (Tsub σ T)) (Twk (σ _ x))
       ∎
 
@@ -238,11 +233,11 @@ swap-Tsub-[] : ∀ (σ : TSub Δ₁ Δ₂) (T : Type (l ∷ Δ₁) l′) (T′ :
 swap-Tsub-[] σ T T′ = 
   begin 
     Tsub σ (T [ T′ ]T) 
-  ≡⟨ assoc-sub-sub T (Textₛ Tidₛ T′) σ ⟩
+  ≡⟨ fusion-Tsub-Tsub T (Textₛ Tidₛ T′) σ ⟩
     Tsub (Textₛ Tidₛ T′ ∘ₛₛ σ) T
   ≡⟨ cong (λ σ → Tsub σ T) (σ[T]≡[σT]σ↑ T′ σ) ⟩
     Tsub (Tliftₛ σ _ ∘ₛₛ Textₛ Tidₛ (Tsub σ T′)) T
-  ≡⟨ sym (assoc-sub-sub T (Tliftₛ σ _) (Textₛ Tidₛ (Tsub σ T′))) ⟩
+  ≡⟨ sym (fusion-Tsub-Tsub T (Tliftₛ σ _) (Textₛ Tidₛ (Tsub σ T′))) ⟩
     (Tsub (Tliftₛ σ _) T) [ Tsub σ T′ ]T
   ∎
 
@@ -257,9 +252,9 @@ Twkᵣ∘Textₛ {T′ = T′} σ =
 σT≡TextₛσTwkT : {T′ : Type Δ₂ l′} (σ : TSub Δ₁ Δ₂) (T : Type Δ₁ l) → Tsub (Textₛ σ T′) (Twk T) ≡ Tsub σ T
 σT≡TextₛσTwkT {T′ = T′} σ T = begin 
     Tsub (Textₛ σ _) (Twk T)
-  ≡⟨ assoc-sub-ren T (Twkᵣ Tidᵣ) (Textₛ σ _) ⟩
+  ≡⟨ fusion-Tsub-Tren T (Twkᵣ Tidᵣ) (Textₛ σ _) ⟩
     Tsub (Twkᵣ Tidᵣ ∘ᵣₛ Textₛ σ T′) T
-  ≡⟨ sym (assoc-sub-sub T _ σ) ⟩
+  ≡⟨ sym (fusion-Tsub-Tsub T _ σ) ⟩
     Tsub σ (Tsub Tidₛ T)
   ≡⟨ cong (λ T → Tsub σ T) (TidₛT≡T T) ⟩
     Tsub σ T
@@ -273,7 +268,7 @@ Tliftₛ∘Textₛ l τ* T′ = fun-ext₂ λ where
       (Tliftₛ τ* l ∘ₛₛ Textₛ Tidₛ T′) _ (there x)
     ≡⟨ refl ⟩
       Tsub (Textₛ (λ z → `_) T′) (Tren (λ z x₂ → there x₂) (τ* _ x))
-    ≡⟨ assoc-sub-ren (τ* _ x)  (λ z x₂ → there x₂) (Textₛ (λ z → `_) T′) ⟩
+    ≡⟨ fusion-Tsub-Tren (τ* _ x)  (λ z x₂ → there x₂) (Textₛ (λ z → `_) T′) ⟩
       Tsub ((λ z x₂ → there x₂) ∘ᵣₛ Textₛ (λ z → `_) T′) (τ* _ x)
     ≡⟨ TidₛT≡T (τ* _ x) ⟩
       τ* _ x
@@ -286,7 +281,7 @@ Tliftₛ∘Textₛ l τ* T′ = fun-ext₂ λ where
 σ↑T[T′]≡TextₛσT′T σ* T′ T =
   begin
     Tsub (Textₛ (λ z → `_) T′) (Tsub (Tliftₛ σ* _) T)
-  ≡⟨ assoc-sub-sub T _ _ ⟩
+  ≡⟨ fusion-Tsub-Tsub T _ _ ⟩
     Tsub (Tliftₛ σ* _ ∘ₛₛ Textₛ (λ z → `_) T′) T
   ≡⟨ cong (λ τ* → Tsub τ* T) (fun-ext₂ aux) ⟩
     Tsub (Textₛ σ* T′) T
@@ -294,7 +289,7 @@ Tliftₛ∘Textₛ l τ* T′ = fun-ext₂ λ where
   where
     aux : ∀ {l}{Δ}{σ* : TSub Δ []} {T′ : Type [] l} → (x : Level) (y : x ∈ (l ∷ Δ)) → (Tliftₛ σ* l ∘ₛₛ Textₛ (λ z → `_) T′) x y ≡ Textₛ σ* T′ x y
     aux _ here = refl
-    aux {σ* = σ*}{T′ = T′} x (there y) = trans (assoc-sub-ren (σ* x y) (λ z x₁ → there x₁) (Textₛ (λ z → `_) T′)) (TidₛT≡T (σ* x y))
+    aux {σ* = σ*}{T′ = T′} x (there y) = trans (fusion-Tsub-Tren (σ* x y) (λ z x₁ → there x₁) (Textₛ (λ z → `_) T′)) (TidₛT≡T (σ* x y))
 
 
 T[T′]T≡Tidₛ↑T[T′]T : ∀ (T : Type (l′ ∷ Δ) l) (T′ : Type Δ l′) → (T [ T′ ]T) ≡ (Tsub (Tliftₛ Tidₛ l′) T [ T′ ]T)
@@ -357,7 +352,7 @@ sublemma-ext : (σ : TSub Δ []) → ∀ l x → (Textₛ σ T) l x ≡ (Tlift�
 sublemma-ext σ l here = refl
 sublemma-ext{T = T} σ l (there x) =
   trans (sym (TidₛT≡T (σ l x)))
-        (sym (assoc-sub-ren (σ _ x) (Twkᵣ Tidᵣ) (Textₛ Tidₛ T)))
+        (sym (fusion-Tsub-Tren (σ _ x) (Twkᵣ Tidᵣ) (Textₛ Tidₛ T)))
 
 sublemma : (σ : TSub Δ []) → (Textₛ σ T) ≡ Tliftₛ σ _ ∘ₛₛ Textₛ Tidₛ T
 sublemma {T = T} σ = fun-ext₂ (sublemma-ext σ)
@@ -366,7 +361,7 @@ lemma2 : (σ : TSub Δ []) → (T  : Type (l ∷ Δ) l′) → (T′ : Type [] l
   → Tsub (Tliftₛ σ l) T [ T′ ]T ≡ Tsub (Textₛ σ T′) T
 lemma2 σ T T′ = begin 
     Tsub (Textₛ Tidₛ T′) (Tsub (Tliftₛ σ _) T)
-  ≡⟨ assoc-sub-sub T (Tliftₛ σ _) (Textₛ Tidₛ T′) ⟩
+  ≡⟨ fusion-Tsub-Tsub T (Tliftₛ σ _) (Textₛ Tidₛ T′) ⟩
     Tsub (Tliftₛ σ _ ∘ₛₛ Textₛ Tidₛ T′) T
   ≡⟨ cong (λ σ → Tsub σ T) (sym (sublemma σ)) ⟩
     Tsub (Textₛ σ T′) T

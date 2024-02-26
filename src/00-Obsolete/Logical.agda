@@ -137,7 +137,7 @@ sublemma {T = T} σ = fun-ext₂ λ where
         σ _ x
       ≡⟨ sym (TidₛT≡T (σ _ x)) ⟩
         Tsub Tidₛ (σ _ x)
-      ≡⟨ sym (assoc-sub-ren (σ _ x) (Twkᵣ Tidᵣ) (Textₛ Tidₛ T)) ⟩
+      ≡⟨ sym (fusion-Tsub-Tren (σ _ x) (Twkᵣ Tidᵣ) (Textₛ Tidₛ T)) ⟩
         Tsub (Textₛ Tidₛ T) (Twk (σ _ x)) 
       ∎
 
@@ -145,7 +145,7 @@ lemma2 : (σ : TSub Δ []) → (T  : Type (l ∷ Δ) l′) → (T′ : Type [] l
   → Tsub (Tliftₛ σ l) T [ T′ ]T ≡ Tsub (Textₛ σ T′) T
 lemma2 σ T T′ = begin 
     Tsub (Textₛ Tidₛ T′) (Tsub (Tliftₛ σ _) T)
-  ≡⟨ assoc-sub-sub T (Tliftₛ σ _) (Textₛ Tidₛ T′) ⟩
+  ≡⟨ fusion-Tsub-Tsub T (Tliftₛ σ _) (Textₛ Tidₛ T′) ⟩
     Tsub (Tliftₛ σ _ ∘ₛₛ Textₛ Tidₛ T′) T
   ≡⟨ cong (λ σ → Tsub σ T) (sym (sublemma σ)) ⟩
     Tsub (Textₛ σ T′) T
@@ -274,7 +274,7 @@ Cdrop-Cextend {Δ = Δ} {Γ = Γ} {l = l} {T = T} χ v = fun-ext (λ l → fun-e
     aux _ _ (tskip x) = refl
 
 Cdropt : {Γ : TEnv Δ} → CSub σ* (l ◁* Γ) → CSub (Tdropₛ σ*) Γ
-Cdropt {σ* = σ*} χ l T x = subst (λ T → Σ (Expr [] ∅ T) Val) (assoc-sub-ren T (Twkᵣ Tidᵣ) σ*) (χ _ _ (tskip x))
+Cdropt {σ* = σ*} χ l T x = subst (λ T → Σ (Expr [] ∅ T) Val) (fusion-Tsub-Tren T (Twkᵣ Tidᵣ) σ*) (χ _ _ (tskip x))
 
 Cextt : ∀{l} → CSub σ* Γ → (T′ : Type [] l) → CSub (Textₛ σ* T′) (l ◁* Γ)
 Cextt {σ* = σ*} χ T′ _ _ (tskip {T = T} x) = subst (λ T → Σ (Expr [] ∅ T) Val) (sym (σT≡TextₛσTwkT σ* T)) (χ _ _ x)
@@ -284,8 +284,8 @@ Cextt {σ* = σ*} χ T′ _ _ (tskip {T = T} x) = subst (λ T → Σ (Expr [] �
 --   → (χ : CSub (subst←RE ρ) (l₁ ◁* Γ))
 --   → {l : Level} {T : Type Δ l}
 --   → (x : inn T Γ)
---   → Cdropt χ l x ≡ subst (λ T → Σ (Expr [] ∅ T) Val) (assoc-sub-ren T _ (subst←RE ρ)) (χ l (tskip x))
--- lemma-lrv-wk1 ρ χ {l}{T} here with assoc-sub-ren T (Twkᵣ Tidᵣ) (subst←RE ρ) in eq
+--   → Cdropt χ l x ≡ subst (λ T → Σ (Expr [] ∅ T) Val) (fusion-Tsub-Tren T _ (subst←RE ρ)) (χ l (tskip x))
+-- lemma-lrv-wk1 ρ χ {l}{T} here with fusion-Tsub-Tren T (Twkᵣ Tidᵣ) (subst←RE ρ) in eq
 -- ... | rrr = refl
 -- lemma-lrv-wk1 ρ χ (there x) = refl
 -- lemma-lrv-wk1 ρ χ (tskip x) = refl
@@ -296,27 +296,27 @@ Cextt {σ* = σ*} χ T′ _ _ (tskip {T = T} x) = subst (λ T → Σ (Expr [] �
 --   → (e : Expr [] (Tsub (λ l₂ x₁ → proj₁ (ρ l₂ x₁)) (Tren (λ z₁ → there) T₁) ◁ ∅)
 --                  (Tsub (λ l₂ x₁ → proj₁ (ρ l₂ x₁)) (Tren (λ z₁ → there) T₂)))
 --   -- → subst (λ T → Σ (Expr [] ∅ T) Val)
---   --         (assoc-sub-ren (T₁ ⇒ T₂) (Twkᵣ Tidᵣ) (subst←RE ρ))
+--   --         (fusion-Tsub-Tren (T₁ ⇒ T₂) (Twkᵣ Tidᵣ) (subst←RE ρ))
 --   --         ((ƛ e) , v-ƛ)
---   → let eq = cong₂ _,_ (assoc-sub-ren T₁ (Twkᵣ Tidᵣ) (subst←RE ρ)) (assoc-sub-ren T₂ (Twkᵣ Tidᵣ) (subst←RE ρ)) in
+--   → let eq = cong₂ _,_ (fusion-Tsub-Tren T₁ (Twkᵣ Tidᵣ) (subst←RE ρ)) (fusion-Tsub-Tren T₂ (Twkᵣ Tidᵣ) (subst←RE ρ)) in
 --     subst (λ{ (T₁ , T₂) → Σ (Expr [] ∅ (T₁ ⇒ T₂)) Val }) eq ((ƛ e) , v-ƛ)
 --   ≡ ((ƛ (subst (λ{ (T₁ , T₂) → Expr [] (T₁ ◁ ∅) T₂ }) eq e)) , v-ƛ)
 -- lemma-lrv-wk2 ρ T₁ T₂ e =
---   subst-application′ (λ{ (T₁ , T₂) → Expr [] (T₁ ◁ ∅) T₂ }) (λ{ (T₁ , T₂) e → (ƛ e) , v-ƛ }) (cong₂ _,_ (assoc-sub-ren T₁ (Twkᵣ Tidᵣ) (subst←RE ρ)) (assoc-sub-ren T₂ (Twkᵣ Tidᵣ) (subst←RE ρ)))
+--   subst-application′ (λ{ (T₁ , T₂) → Expr [] (T₁ ◁ ∅) T₂ }) (λ{ (T₁ , T₂) e → (ƛ e) , v-ƛ }) (cong₂ _,_ (fusion-Tsub-Tren T₁ (Twkᵣ Tidᵣ) (subst←RE ρ)) (fusion-Tsub-Tren T₂ (Twkᵣ Tidᵣ) (subst←RE ρ)))
 -- 
 -- lemma-lrv-wk3 :
 --   (ρ     : RelEnv (l ∷ Δ))
 --   (T₁ : Type Δ l₁) (T₂ : Type Δ l₂)
 --   → (e : Expr [] (Tsub (λ l₂ x₁ → proj₁ (ρ l₂ x₁)) (Tren (λ z₁ → there) T₁) ◁ ∅)
 --                  (Tsub (λ l₂ x₁ → proj₁ (ρ l₂ x₁)) (Tren (λ z₁ → there) T₂)))
---   → let eq = cong₂ _,_ (assoc-sub-ren T₁ (Twkᵣ Tidᵣ) (subst←RE ρ)) (assoc-sub-ren T₂ (Twkᵣ Tidᵣ) (subst←RE ρ)) in
+--   → let eq = cong₂ _,_ (fusion-Tsub-Tren T₁ (Twkᵣ Tidᵣ) (subst←RE ρ)) (fusion-Tsub-Tren T₂ (Twkᵣ Tidᵣ) (subst←RE ρ)) in
 --     subst (λ T → Σ (Expr [] ∅ T) Val)
---           (assoc-sub-ren (T₁ ⇒ T₂) (Twkᵣ Tidᵣ) (subst←RE ρ))
+--           (fusion-Tsub-Tren (T₁ ⇒ T₂) (Twkᵣ Tidᵣ) (subst←RE ρ))
 --           ((ƛ e) , v-ƛ)
 --   ≡ ((ƛ (subst (λ{ (T₁ , T₂) → Expr [] (T₁ ◁ ∅) T₂ }) eq e)) , v-ƛ)
 -- lemma-lrv-wk3 {l₁ = l₁}{l₂ = l₂} ρ T₁ T₂ e =
---   let eq = cong₂ _,_ (assoc-sub-ren T₁ (Twkᵣ Tidᵣ) (subst←RE ρ)) (assoc-sub-ren T₂ (Twkᵣ Tidᵣ) (subst←RE ρ)) in
---   sym (dist-subst' {F = F} {G = G} h aux eq (assoc-sub-ren (T₁ ⇒ T₂) (Twkᵣ Tidᵣ) (subst←RE ρ)) e)
+--   let eq = cong₂ _,_ (fusion-Tsub-Tren T₁ (Twkᵣ Tidᵣ) (subst←RE ρ)) (fusion-Tsub-Tren T₂ (Twkᵣ Tidᵣ) (subst←RE ρ)) in
+--   sym (dist-subst' {F = F} {G = G} h aux eq (fusion-Tsub-Tren (T₁ ⇒ T₂) (Twkᵣ Tidᵣ) (subst←RE ρ)) e)
 --   where
 --     F : Type [] l₁ × Type [] l₂ → Set
 --     F (T₁ , T₂) = Expr [] (T₁ ◁ ∅) T₂
@@ -407,13 +407,13 @@ Cdropt-Cextt≡id Γ ρ χ l T′ R =
   ≡⟨⟩
     Cdropt (Cextt χ T′)
   ≡⟨ (fun-ext λ x → fun-ext λ y → fun-ext λ z → (elim-subst Value
-       (assoc-sub-ren y (λ z₁ x₁ → there x₁) (Textₛ (λ l₁ x₁ → proj₁ (ρ l₁ x₁)) T′))
+       (fusion-Tsub-Tren y (λ z₁ x₁ → there x₁) (Textₛ (λ l₁ x₁ → proj₁ (ρ l₁ x₁)) T′))
        (sym
         (trans
-         (assoc-sub-ren y (λ z₁ x₁ → there x₁)
+         (fusion-Tsub-Tren y (λ z₁ x₁ → there x₁)
           (Textₛ (λ l₁ x₁ → proj₁ (ρ l₁ x₁)) T′))
          (trans
-          (sym (assoc-sub-sub y (λ z₁ → `_) (λ l₁ x₁ → proj₁ (ρ l₁ x₁))))
+          (sym (fusion-Tsub-Tsub y (λ z₁ → `_) (λ l₁ x₁ → proj₁ (ρ l₁ x₁))))
           (trans (cong (Tsub (λ l₁ x₁ → proj₁ (ρ l₁ x₁))) (TidₛT≡T y))
            refl)))) (χ x y z)))
   ⟩
