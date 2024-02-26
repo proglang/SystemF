@@ -345,6 +345,133 @@ where type $T'$ has been substituted in the body $T$ of the
 quantified type. Substitution is defined as in PLFA
 \cite{DBLP:journals/jar/BentonHKM12,DBLP:journals/scp/KokkeSW20}. 
 
+\section{Substitutions}
+\label{sec:substitutions}
+
+\subsection{Type Substitutions}
+\label{sec:substitutions:type}
+
+The infrastructure for type-substitutions is standard for
+intrinsically-typed terms in de Bruijn
+style, and defines substitutions in terms of renamings as in
+\cite{DBLP:journals/jar/BentonHKM12, DBLP:journals/scp/KokkeSW20}.
+
+% \begin{figure}[tp]
+%   \caption{Simply typed lambda calculus, denotationally}
+%   \label{fig:stlc}
+% \end{figure}
+
+% \noindent\hspace{-\fboxsep}
+% \begin{minipage}{0.5\linewidth}
+%   \SubDefTRen
+%   \SubDefTren
+%   \SubDefTliftR
+%   \SubDefTidR
+% \end{minipage}
+% \begin{minipage}{0.5\linewidth}
+%   \SubDefTSub
+%   \SubDefTsub
+%   \SubDefTliftS
+%   \SubDefTidS
+% \end{minipage}
+
+Renamings {\ATRen} and Substitutions {\ATSub} are defined as
+functions mapping variables to variables and terms, respectively.
+
+\noindent\hspace{-\fboxsep}
+\begin{minipage}{0.5\linewidth}
+  \SubDefTRen
+\end{minipage}
+\begin{minipage}{0.5\linewidth}
+  \SubDefTSub
+\end{minipage}
+
+The operations for applying renamings and substitutions, {\ATren}
+and {\ATsub}, are defined by induction over the type, lifting the
+renaming or substitution when going under a binder using
+{\ATliftR} and {\ATliftS}, respectively.
+
+\noindent\hspace{-\fboxsep}
+\begin{minipage}{0.5\linewidth}
+  \SubDefTren
+  \SubDefTliftR
+\end{minipage}
+\begin{minipage}{0.5\linewidth}
+  \SubDefTsub
+  \SubDefTliftS
+\end{minipage}
+
+The identity renaming {\ATidR} and substitution
+{\ATidS} behave like the identity function and the variable
+type constructor, respectively, and act as neutral elements when applied to a type:
+
+\noindent\hspace{-\fboxsep}
+\begin{minipage}{0.5\linewidth}
+  \SubDefTidR
+  \TFTidRNeutral
+\end{minipage}
+\begin{minipage}{0.5\linewidth}
+  \SubDefTidS
+  \TFTidSNeutral
+\end{minipage}
+
+
+To prove lemmas about the interaction of multiple renamings and substitutions,
+compositions and fusion lemmas are defined for all four combinations
+of renamings and substiutions.
+For example, the composition between two substitutions is
+\SubDefTCompositionSS
+and the corresponding fusion lemmas is
+\TFFusionSubSub
+
+TODO: Show some of the interaction lemmas, e.g. that weakening cancels singleton-substitution?
+
+% \SubDefTCompositionRR
+% \SubDefTCompositionRS
+% \SubDefTCompositionSR
+% \TFFusionRenRen
+% \TFFusionRenSub
+% \TFFusionSubRen
+
+\subsection{Expression Substitutions}
+\label{sec:substitutions:expr}
+
+The infrastructure for expression substitution is conceptionally very similar to
+that of type substitution.
+The main difference is that we index expression substitutions with
+type substitutions as in \cite{DBLP:conf/mpc/ChapmanKNW19}.
+This allows for combining type-in-expression and
+expression-in-expression substitutions into a single substitution
+operation. We only present the definitions for substitutions, because
+the definitions for renamings are completely analogous.
+
+An expression substitution of type {\AESub} is indexed by a type
+substitution {\AsigmaStar} and maps variables of type \texttt{T}
+to expressions of type \AgdaCode{\ATsub~\AsigmaStar~T}
+\SubDefESub
+
+The operation of applying an expression substitution {\Asigma}, which
+is indexed by a type substitution {\AsigmaStar}, performs a
+type-in-expression substitution according to {\AsigmaStar} and an
+expression-in-expression substitution according to {\Asigma}.
+The operation is defined by induction on the expression, and lifts {\Asigma} when
+going under an expression- or type-binder using {\AEliftS} and
+{\AEliftSL}, respectively.
+\SubDefEsub
+
+\SubDefECompositionSS
+
+\EFFusionSubSub
+
+% \SubDefERen
+% \SubDefEren
+% \SubDefECompositionRR
+% \SubDefECompositionRS
+% \SubDefECompositionSR
+% \EFFusionRenRen
+% \EFFusionRenSub
+% \EFFusionSubRen
+
 \section{Semantics}
 \label{sec:semantics}
 
@@ -689,37 +816,63 @@ This lemma becomes relevant when an equality proof cannot be matched
 on, because it witnesses the equality between two non-unifiable
 expressions, e.g. between two function applications: \texttt{f x $\equiv$ g y}.
 
-It is harmless to use {\Asubst} in proofs, but if it is used in
-regular definitions, then complications arise in subsequent
-equational lemmas about those definitions, where the {\Asubst}
-reappears.
+It is harmless to use {\Asubst} in a proof, but if a {\Asubst} appears
+in the \emph{type} of a proof, then often complications arise.
+Consider for example the type \texttt{Vec} -- a list that
+intrinsically tracks its length -- and its append function \verb/_++_/:
+\SubstExamplesVec
+\SubstExamplesAppend
 
-% Consider for example the definition of the substitution type:
-% \SubstExamplesESubDef
+Stating that \verb/_++_/ is associative requires us to use a {\Asubst}:
+\SubstExamplesAssocType
+The term \texttt{(xs ++ ys) ++ zs} has type \texttt{Vec A ((m + n) + p)}, whereas
+the term \texttt{xs ++ (ys ++ zs)} has type \texttt{Vec A (m + (n + p))}, so a
+{\Asubst} is needed to apply the associativity of addition.
 
-Consider for example the definition of the identity expression-substitution:
-\SubstExamplesEidDef
+\SubstExamplesAppendR
 
-One would expect \texttt{Eid} to simply map each variable \texttt{x}
-to it's corresponding variable term \texttt{\AgdaInductiveConstructor{`} x}.
-However, because the type of expression substitutions \texttt{ESub} is
-indexed by a type-substitution -- in this case \texttt{Tid} -- we need
-to produce a value of type \texttt{Expr Δ Γ (Tsub Tid T)}, while
-the variable term \texttt{\AgdaInductiveConstructor{`} x} has type \texttt{Expr Δ Γ T}.
-The two types are obviously equivalent, but only propositionally due
-to the lemma \texttt{TidT≡T : ∀ T → Tsub Tidₛ T ≡ T}, so a
-{\Asubst} is needed to adjust the type.\footnote{
-  Similar problems also appear if separate definitions for
-  expression-in-expression and type-in-expression substitutions are
-  employed instead of indexing expression-substitutions with type-substitutions.
-}
+% \SubstExamplesAssoc
+\SubstExamplesAssocR
 
-This {\Asubst} now reappears in lemmas about \texttt{Eid}, e.g. when proving
-that \texttt{Eid} is the neutral element for expression-substitution \texttt{Esub}:
-\SubstExamplesEidNeutral
+% \SubstExamplesAssocHet
+\SubstExamplesAssocRHet
+
+\SubstExamplesDistSubst
+\SubstExamplesSubstRemovable
 
 
+% It is harmless to use {\Asubst} in proofs, but if it is used in
+% regular definitions, then complications arise in subsequent
+% equational lemmas about those definitions, where the {\Asubst}
+% reappears.
 
+% Old Example %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% % Consider for example the definition of the substitution type:
+% % \SubstExamplesESubDef
+
+% Consider for example the definition of the identity expression-substitution:
+% \SubstExamplesEidDef
+
+% One would expect \texttt{Eid} to simply map each variable \texttt{x}
+% to its corresponding variable term \texttt{\AgdaInductiveConstructor{`} x}.
+% However, because the type of expression substitutions \texttt{ESub} is
+% indexed by a type-substitution -- in this case \texttt{Tid} -- we need
+% to produce a value of type \texttt{Expr Δ Γ (Tsub Tid T)}, while
+% the variable term \texttt{\AgdaInductiveConstructor{`} x} has type \texttt{Expr Δ Γ T}.
+% The two types are obviously equivalent, but only propositionally due
+% to the lemma \texttt{TidT≡T : ∀ T → Tsub Tidₛ T ≡ T}, so a
+% {\Asubst} is needed to adjust the type.\footnote{
+%   Similar problems also appear if separate definitions for
+%   expression-in-expression and type-in-expression substitutions are
+%   employed instead of indexing expression-substitutions with type-substitutions.
+% }
+
+% This {\Asubst} now reappears in lemmas about \texttt{Eid}, e.g. when proving
+% that \texttt{Eid} is the neutral element for expression-substitution \texttt{Esub}:
+% \SubstExamplesEidNeutral
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Related Work}
 \label{sec:related-work}
