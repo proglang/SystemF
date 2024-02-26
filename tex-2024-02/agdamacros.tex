@@ -85,17 +85,28 @@
 \newcommand\Adollar{\AgdaOperator{\AgdaFunction{\AgdaUnderscore{}\$\AgdaUnderscore{}}}}
 \newcommand\AVSem{\AgdaOperator{\AgdaFunction{𝓥⟦\AgdaUnderscore{}⟧}}}
 \newcommand\AESem{\AgdaOperator{\AgdaFunction{𝓔⟦\AgdaUnderscore{}⟧}}}
+\newcommand\AESemx[1]{\AgdaOperator{\AgdaFunction{𝓔⟦#1⟧}}}
 \newcommand\AGSem{\AgdaOperator{\AgdaDatatype{𝓖⟦\AgdaUnderscore{}⟧}}}
 \newcommand\ATSem{\AgdaOperator{\AgdaDatatype{𝓣⟦\AgdaUnderscore{}⟧}}}
-\newcommand\ADEnv{\AgdaDatatype{DEnv}}
+\newcommand\Ainn{\AgdaDatatype{inn}}
+\newcommand\ADEnv{\AgdaDatatype{Env\ensuremath{^*}}}
+\newcommand\AapplyEnv{\AgdaFunction{apply-env}}
+\newcommand\Alookup{\AgdaFunction{lookup}}
 \newcommand\AREL{\AgdaFunction{REL}}
 \newcommand\ARelEnv{\AgdaFunction{RelEnv}}
 \newcommand{\AV}{\AgdaFunction{𝓥}}
 \newcommand{\Asubst}{\AgdaFunction{subst}}
+\newcommand{\Acong}{\AgdaFunction{cong}}
+\newcommand{\Atrans}{\AgdaFunction{trans}}
 \newcommand{\Arefl}{\AgdaInductiveConstructor{refl}}
 \newcommand{\AValueDown}{\AgdaFunction{Value-\ensuremath{\Downarrow}}}
 \newcommand{\AGLookup}{\AgdaFunction{𝓖-lookup}}
 \newcommand{\ACsubClosed}{\AgdaFunction{Csub-closed}}
+\newcommand{\Ahere}{\AgdaInductiveConstructor{here}}
+\newcommand{\Athere}{\AgdaInductiveConstructor{there}}
+\newcommand{\Atskip}{\AgdaInductiveConstructor{tskip}}
+\newcommand{\ATwk}{\AgdaFunction{Twk}}
+\newcommand{\Anull}{\AgdaInductiveConstructor{∅}}
 
 %%% Local Variables:
 %%% mode: latex

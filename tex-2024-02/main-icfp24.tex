@@ -290,52 +290,56 @@ paper. It is defined as an inductive type parameterized over a level
 environment (that assigns levels to free type variables) and indexed
 over the level of the type. 
 \TFType
-The unit type lives at level $0$. Type variables live at their
-declared level.
+The number type is just a set and inhabits level $0$.
 The level of a function type $S \Rightarrow T$ is the maximum of the
-levels of $S$ and $T$. The level of a universal quantification at
+levels of $S$ and $T$.
+Type variables live at their declared level.
+The level of a universal quantification at
 level $l$ is the maximum of $l + 1$ and the level of the body.
 
 As for the simply-typed lambda calculus, we can define a compositional
 mapping from type syntax to Agda types.
 \TFTSem
 Given a type at level $l$, this function returns an Agda type in
-$\ASet~l$. To do so it needs a domain environment to interpret type
-variables. This environment gets extended in the last clause that maps
+$\ASet~l$. To do so it needs a domain environment  {\ADEnv} to interpret type
+variables. This environment gets accessed by function {\Alookup} and
+it gets extended in the last clause that maps
 universal quantification to a dependent function that takes an element
 of $\ASet~l$ and pushes it on the environment.
 
 The type of the domain environment is interesting because its range type is
 unusual.
 \TFTEnv
-As a value in the environment (the interpretation of a type, colloquially speaking) can live
-in a $\ASet~l$, for any finite level $l$, we 
-cannot assign the type any finite level. Hence, the type {\ADEnv} lives in
-the limit type $\ASeto$, which we use in this definition. 
+The environment contains the interpretations of the type
+variables. These values can live in some $\ASet~l$, for any finite
+level $l$, which means we cannot assign the type {\ADEnv} any finite
+level. Hence, the type {\ADEnv} lives in the limit type $\ASeto$, as
+shown in this definition. 
 
 \section{Expressions}
 \label{sec:expressions}
 
 Inspired by the encoding of System $F\omega$ by Chapman and coworkers
 \cite{DBLP:conf/mpc/ChapmanKNW19}, we define a 
-unified environment for type variables and term variables. Type
-environments grow to the left.
+unified context for type variables and term variables. Contexts grow to the left.
 \TFTVEnv
-Membership of a term variable in a type environment is defined by the
-inn relation.
+Membership of a term variable in a context is defined by the
+{\Ainn} relation.
 \TFinn
-In the last alternative, we skip over a type binding. Hence, the type
-$T$ we find under the binding must be weakened to account for the
-extra type variables. Weakening is a special case of renaming, which
+The constructors {\Ahere} and {\Athere} locate or skip over variable bindings.
+The last alternative {\Atskip} skips over a type binding. Hence, the type
+$T$ we find outside the binding must be weakened to account for the
+extra type variables (using {\ATwk}). Weakening is a special case of renaming, which
 is implemented as advocated by Benton and coworkers \cite{DBLP:journals/jar/BentonHKM12}.
 
 The type of expressions is now given as follows.
 \TFExpr
+We add numeric values and the successor function as examples of observables.
 Variables, lambda abstractions, and application are encoded just like
 for the simply-typed lambda calculus.
-Type abstraction takes a level $l$ and a body where the new type
+Type abstraction \texttt{Λ $l$ ⇒ $e$} takes a level $l$ and a body where the new type
 variable is bound to $l$. 
-Type application takes an expression with universal quantification at
+Type application \texttt{$e$ ∙ $T'$} takes an expression with universal quantification at
 level $l$ and a type $T'$ of level $l$. It constructs an expression
 where type $T'$ has been substituted in the body $T$ of the
 quantified type. Substitution is defined as in PLFA
@@ -355,10 +359,11 @@ Section~\ref{sec:types}. We start with value environments.
 \TFVEnv
 Value environments are represented as functions---we could have done
 that in the simply-typed interpreter, too. They are indexed by a
-domain environment to be able to calculate the correct return type.
+domain environment $\eta$ to be able to calculate the correct return type.
 
 The definition of the interpretation function follows.
 \TFExprSem
+The cases for numerical constants and the successor function are straightforward.
 The cases for term variables, lambda abstraction, and application are
 similar to the  simply-typed lambda calculus.
 
@@ -366,23 +371,25 @@ The first issue arises in the case for type abstraction. We interpret
 a type abstraction at level $l$ as a function with argument type
 $\ASet~l$. This argument has to be pushed onto the domain environment
 $\eta$ and we have to account at the value level for the additional
-type variable in the type environment. The following function
+type variable in the context. The following function
 adapts the types.
 \TFExtendTskip
-The lemma we need in the rewrite clause proves that interpreting a
+Semantically, all we need is $(\gamma\ \_\ \_\ x)$, but it does not have
+the expected type. The {\Asubst} function enables us to apply a lemma
+to the type. It establishes that interpreting a
 weakened type in an extended domain environment gives the same result
 as interpreting the type in the orginal domain environment.
-The statement of this lemma is more general as it applies to arbitrary
-renamings:
+The actual statement of this lemma is for arbitrary
+renamings. This added generality is needed to prove it.
 \TFRenPreservesSemanticsType
-The argument $ren*$ roughly states that $\eta_1$ and $\eta_2$ are domain
-environments related by renaming $\rho$ by precomposition  $\eta_1 \equiv \eta_2 \circ \rho$.
+The argument $Tren^*$ roughly states that $\eta_1$ and $\eta_2$ are domain
+environments related by renaming $\rho^*$ by precomposition  $\eta_1 \equiv \eta_2 \circ \rho^*$.
 The proof of the lemma is by induction on $T$ with an interesting
 subgoal in the case for universal quantification:
 %\TFProblematicGoal
 We can show that the ranges of the function are equal
-with the inductive hypothesis. But the usual extensionality principle does
-not let us expose this equation. However, it can be used to prove a
+with the inductive hypothesis, but the standard extensionality principle does
+not let us expose this equation. However, standard extensionality can be used to prove a
 dependent extensionality principle (from the standard library), which enables us to complete the proof.
 \TFDependentExt
 
@@ -396,9 +403,9 @@ Second, some steps in the proof involve equalities over entities of
 $\ASeto$. These cannot be handled with the standard definition of
 propositional equality which works parametrically for entities of
 $\ASet~l$, for any $l$, but not for $\ASeto$. While it is easy to
-define these equalities, it is somewhat tedious to re-establish
-standard lemmas for transforming equality proofs
-like cong, subst, and trans to deal with $\ASeto$.
+define an equality type at $\ASeto$, it is somewhat tedious to
+re-establish the standard toolbox for transforming equality proofs
+like {\Acong}, {\Asubst}, {\Atrans}, and equational reasoning to deal with $\ASeto$.
 
 \subsection{Big Step Operational}
 \label{sec:big-step-operational}
@@ -416,22 +423,23 @@ pairs of a closed expression and evidence {\AisValue} that it is a syntactic val
 \BigStepValue
 The evaluation judgment relates closed expressions to closed values.
 Its inference rules define a standard call-by-value evaluation.
-We treat the ``big lambda'' as a syntactic value for
-simplicity.\footnote{This choice works out for the
+For simplicity we treat the ``big lambda'' as a syntactic value
+without asking its body to be a value, too.\footnote{This choice works out for the
   side-effect-free language that we consider here. If the language had
   effects, we would enforce the well-known value restriction by
   requiring the body of the big lambda to be a syntactic value.}
 \BigStepSemantics
 
-The reader may wonder why the relation does not simply relate two closed
-expressions. While this alternative works almost all the way, we
+The reader may wonder why the evaluation relation does not simply relate two closed
+expressions. While this approach works almost all the way, we
 failed to prove the (expression) variable case of the fundamental theorem with
 it. The problem is that the variable case does not constrain the type
-of the variable's value. In particular, the type of a variable can be
-a type variable, so that the type is unknown at compile time.
+of the variable's value, so that we cannot recover its shape via
+the {\AisValue} type. In particular, the type of an expression variable can be
+a type variable, so that the type is unknown at compile time. See Section~\ref{sec:fundamental}.
 
 However, with our present setup we can use the following lemma to show
-that a syntac value evaluates to itself.
+that a syntactic value evaluates to itself.
 \BigStepValueReduceSelf
 
 \section{Logical Relation}
@@ -450,8 +458,8 @@ nontrivial steps are needed to mechanize the results.
 \subsection{Relating closed values}
 \label{sec:relat-clos-valu}
 
-Generally, we talk about type-indexed relations between syntactic values of type $T$ to semantic values of the same
-type. This relation {\AREL} is indexed by the stratification level.
+Generally, we talk about type-indexed relations {\AREL} between syntactic values of type $T$ to semantic values of the same
+type. This relation also depends on the stratification level.
 \LogicalREL
 A relation environment {\ARelEnv} abstracts over the current instantiation of the
 type variables. It maps a type variable to a
@@ -463,14 +471,15 @@ Clearly, the first ``half'' of a relation environment is a type
 substitution and we use lifted projection functions $\pi_1$ and $\pi_2$ to obtain this
 substitution and the actual relation.
 
-We define extension of a relation environment analogous to extension
-of substitutions. This extension is needed in the case for universal
+We define the extension of a relation environment by a new a new type
+variable binding analogous to the extension
+of a substitution. This extension is needed in the case for universal
 quantification.
 \LogicalREext
 
 With these definitions in place, we can state the type of the logical relation.
 \LogicalMCVType
-The relation {\AVSem} on values is defined by induction on the type $T$ and the parameter
+The  relation {\AVSem} on values is defined by induction on the type $T$ and the parameter
 $\rho$ contains the relation environment. The intention is to define a
 relation on objects of type $T$ after closing $T$ with the relation
 environment. Hence, we apply $\rho$'s type substitution to the type of
@@ -489,15 +498,15 @@ interpretation.
 to a semantic function $f$ in
 the usual way: given arguments $w$ and $z$ related at type $T_1$, we ask that the
 application of the lambda to $w$ evaluates to a syntactic value $v$ that is
-relates to $(f z)$ at type $T_2$.
+related to $(f z)$ at type $T_2$.
 We interpret a type variable by looking it up in the relation
 environment.
 At universal type $\forall l, T$ we relate a big lambda to a semantic
 function $F$ as follows: given any type argument $T'$ and relation $R :
 \AREL\ T'$, evaluating the type application to a syntactic value $v$,
-we find that this $v$ is related at type $T$, but in an extended
-relation environment that binds the type variable to $(T', R)$, to the
-function $F$ applied to the semantics of $T'$.
+we find that this $v$ is related at type $T$ to the
+function $F$ applied to the semantics of $T'$, but in an extended
+relation environment that binds the type variable to $(T', R)$.
 
 The expression relation extends the value relation by interposing
 evaluation on the syntactic side. The denotation $z$ remains the
@@ -526,7 +535,8 @@ different type for the value relation:
 \LogicalVariationMCVType
 Alas, this choice gets rid of the {\Asubst} in the case for type
 variables, but an additional {\Asubst} is needed in the case for type
-application.
+application. We will not go further into this matter.
+\LogicalVariationMCVBodyUniversal
 
 We close with a usability aspect.
 In the definition of {\AVSem} it is crucial that we only pattern match
@@ -538,8 +548,8 @@ reduces as soon as the type is sufficiently known.
 \label{sec:relat-open-expr}
 
 To lift the expression relation {\AESem} to open expressions we start
-with an expression of type \texttt{e : Expr Δ Γ T} and want to relate it
-to its denotational interpretation \texttt{E⟦ e ⟧}. As the type $T$
+with an expression of type \texttt{$e$ : Expr Δ Γ T} and want to relate it
+to its denotational interpretation \AESemx{\ensuremath{e}}. As the type $T$
 may also contain type variables, we first need a relational
 environment $\rho$ and its semantic counterpart $\eta$ to interpret
 the type variables as suitable sets.
@@ -559,14 +569,14 @@ Let's dissect the parts. First, the closing value substitution:
 \LogicalCSub
 This type is pretty much the same as the type for an expression
 substitution with two differences. First, it is indexed by a closing
-type substitution and, second, it returns a closed value instead of an
+type substitution $\sigma^*$ and, second, it returns a closed value instead of an
 expression. The latter is needed to prove the variable case of the
 fundamental lemma.
 
-The following definition of {\AGSem} is the extension of {\AVSem} to
-environments. The {\AlevelEnv} function calculates the universe level
-of the resulting conjunction from the levels of the {\AVSem}'s of the
-context entries.
+The relation {\AGSem} extends {\AVSem} to relate closing substitutions
+with semantic environments. The {\AlevelEnv} function (omitted) calculates the universe level
+of the resulting conjunction from the levels of the types in the
+context.
 \LogicalMCG
 The empty environments are related in the empty context.
 If the context starts with a variable binding, then the head entries of
@@ -574,9 +584,9 @@ the environments are related by {\AVSem} and their tails are
 related by {\AGSem}.
 The various \texttt{drop} functions pop the head entry from the
 respective environments.
-If the context starts with a type variable bindings, then this binding
+If the context starts with a type variable binding, then this binding
 does not contribute to the relation, but we still have to skip over it
-by popping the heap entry of the relation environment and adjusting the
+by popping the head entry of the relation environment and adjusting the
 substitution and the semantic environment.
 The respective \texttt{drop} and \texttt{drop-t} functions may be
 found in the supplemental material.
@@ -592,8 +602,8 @@ This proof is very easy for constants and for the successor.
 \FundamentalFundamentalConstant
 The three components of the resulting value of type {\AESem} contain
 \begin{enumerate}
-\item the result is syntactic value for the number $n$,
-\item this value reduces to itself,
+\item the result is a syntactic value for the number $n$,
+\item evidence that this value reduces to itself, and
 \item the value relation: the denotational semantics yields the same
   number $n$ with the two {\Arefl}s fixing the equality between the
   syntactic value and the semantics. 
@@ -625,13 +635,14 @@ ways of handling these problems.
 \subsection{Adequacy}
 \label{sec:adequacy}
 
-The holy grail is the proof of the adequacy theorem.
+The adequacy theorem constitutes the holy grail of any development
+using logical relations.
 Suppose we have a closed expression $e$ of number type.
-If the denotational semantics of $e$ is the number $n$, then big-step
+If the denotational semantics of $e$ is the number $n$, then the big-step
 semantics applied to $e$ terminates and yields the syntactic value for
 $n$.
 The statement looks a bit odd because we have to construct an empty
-environment, but there is no issue in doing so.
+environment of type \texttt{Env [] {\Anull} []}, but there is no issue in doing so.
 \FundamentalAdequacyType
 This theorem follows immediately from the semantic soundness that we proved with the
 fundamental theorem.
@@ -657,7 +668,7 @@ it rather has to be generalized to arbitrary renamings acting on the
 type.
 We can finally prove this renaming lemma with another excursion to
 ``subst hell''.
-\LRVrenEqType
+\LRVrenLRVrenEqType
 
 
 \section{A Journey to Subst-Hell}
