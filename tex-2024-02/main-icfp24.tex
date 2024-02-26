@@ -619,9 +619,13 @@ from {\AGSem} and construct the result from $w$, the proof that $w$
 evaluates to itself, and the value relation. We have to rely on
 {\AValueDown} for the proof because there is no way to infer the shape
 of $w$ from $T$ (which might be a type variable, for instance).
+We will have a closer look at some technicalities involving
+{\AGLookup} in Section~\ref{sec:technical-lemmas}  
 
-We defer the remaining cases to the supplemental material because we
-want to have a closer look at {\AGLookup} in Section~\ref{sec:technical-lemmas}. The case
+\FundamentalFundamentalLambda
+\FundamentalFundamentalApplication
+
+We defer the remaining cases to the supplemental material. The case
 for function application is by simple application of the inductive
 hypotheses.
 The cases for lambda abstraction and type abstraction are slightly more involved because of
