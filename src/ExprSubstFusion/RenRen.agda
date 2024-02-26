@@ -1,5 +1,3 @@
-{-# OPTIONS --allow-unsolved-metas #-}
-
 module ExprSubstFusion.RenRen where
 
 open import Level

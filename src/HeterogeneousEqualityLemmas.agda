@@ -1,4 +1,3 @@
-{-# OPTIONS --allow-unsolved-metas #-}
 module HeterogeneousEqualityLemmas where
 
 open import Relation.Binary.PropositionalEquality using (_≡_; refl; sym; trans; cong; cong₂; subst; subst₂)

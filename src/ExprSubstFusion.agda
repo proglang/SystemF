@@ -1,5 +1,3 @@
-{-# OPTIONS --allow-unsolved-metas #-}
-
 module ExprSubstFusion where
 
 open import ExprSubstFusion.RenRen  public

@@ -624,3 +624,4 @@ adequacy e n ⟦e⟧≡n
 ... | ((# .(E⟦ e ⟧ [] γ₀)) , V-♯) , e⇓v , (.(E⟦ e ⟧ [] γ₀) , refl , refl) =
   subst₂ _⇓_ (Csub-closed χ₀ e) (cong (λ n → (# n) , V-♯) ⟦e⟧≡n) e⇓v
 
+ 

@@ -37,7 +37,7 @@ Eidᵣ l T x = subst (λ T → inn T _) (sym (TidᵣT≡T T)) x
 Edropᵣ : (ρ* : TRen Δ₁ Δ₂) → ERen ρ* (T ◁ Γ₁) Γ₂ → ERen ρ* Γ₁ Γ₂
 Edropᵣ ρ* ρ l T x = ρ _ _ (there x)
 
-Ewkᵣ : (ρ* : TRen Δ₁ Δ₂) → ERen ρ* Γ₁ Γ₂ → ERen ρ* Γ₁ (T ◁ Γ₂) 
+Ewkᵣ : ∀ {l} {T : Type Δ₂ l} → (ρ* : TRen Δ₁ Δ₂) → ERen ρ* Γ₁ Γ₂ → ERen ρ* Γ₁ (T ◁ Γ₂) 
 Ewkᵣ ρ* ρ l T x = there (ρ _ _ x) 
 
 Eliftᵣ : (ρ* : TRen Δ₁ Δ₂) → ERen ρ* Γ₁ Γ₂ → ERen ρ* (T ◁ Γ₁) (Tren ρ* T ◁ Γ₂)
@@ -59,7 +59,7 @@ Eren ρ* ρ (Λ l ⇒ e) = Λ l ⇒ Eren (Tliftᵣ ρ* l) (Eliftᵣ-l ρ* ρ) e
 Eren {Δ₂ = Δ₂} {Γ₂ = Γ₂} {T = .(T [ T′ ]T)} ρ* ρ (_∙_ {T = T} e T′) = 
   subst (Expr Δ₂ Γ₂) (sym (swap-Tren-[] ρ* T T′)) (Eren ρ* ρ e ∙ Tren ρ* T′)
 
-Ewk : Expr Δ Γ T → Expr Δ (T₁ ◁ Γ) (T) 
+Ewk : Expr Δ Γ T → Expr Δ (T₁ ◁ Γ) T 
 Ewk {T = T} e = subst (λ T → Expr _ _ T) (TidᵣT≡T T) (Eren _ (Ewkᵣ Tidᵣ Eidᵣ) e)
 
 Ewkᵣ-l : ∀ (l : Level) → ERen (Twkᵣ Tidᵣ) Γ (l ◁* Γ)

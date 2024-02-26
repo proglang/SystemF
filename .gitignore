@@ -14,3 +14,4 @@ auto
 *.toc
 _region_.tex
 .DS_Store
+**/latex

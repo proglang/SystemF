@@ -1,5 +1,3 @@
-{-# OPTIONS --allow-unsolved-metas #-}
-
 module ExprSubstFusion.SwapSub where
 
 open import Level
