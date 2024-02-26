@@ -39,14 +39,12 @@ Tdropᵣ ρ* _ x = ρ* _ (there x)
 Twkᵣ : TRen Δ₁ Δ₂ → TRen Δ₁ (l ∷ Δ₂)
 Twkᵣ ρ* _ x = there (ρ* _ x)
 
---! DefTliftR
+--! DefTren
+Tren : TRen Δ₁ Δ₂ → (Type Δ₁ l → Type Δ₂ l)
 Tliftᵣ : TRen Δ₁ Δ₂ → ∀ l → TRen (l ∷ Δ₁) (l ∷ Δ₂)
 
 Tliftᵣ ρ* _ _ here = here
 Tliftᵣ ρ* _ _ (there x) = there (ρ* _ x)
-
---! DefTren
-Tren : TRen Δ₁ Δ₂ → (Type Δ₁ l → Type Δ₂ l)
 
 Tren ρ* (` x) = ` ρ* _ x
 Tren ρ* (T₁ ⇒ T₂) = Tren ρ* T₁ ⇒ Tren ρ* T₂
@@ -76,14 +74,12 @@ Tdropₛ σ* _ x = σ* _ (there x)
 Twkₛ : TSub Δ₁ Δ₂ → TSub Δ₁ (l ∷ Δ₂)
 Twkₛ σ* _ x = Twk (σ* _ x)
 
---! DefTliftS
+--! DefTsub
+Tsub : TSub Δ₁ Δ₂ → Type Δ₁ l → Type Δ₂ l
 Tliftₛ : TSub Δ₁ Δ₂ → ∀ l → TSub (l ∷ Δ₁) (l ∷ Δ₂)  
 
 Tliftₛ σ* _ _ here = ` here
 Tliftₛ σ* _ _ (there x) = Twk (σ* _ x)
-
---! DefTsub
-Tsub : TSub Δ₁ Δ₂ → Type Δ₁ l → Type Δ₂ l
 
 Tsub σ* (` x) = σ* _ x
 Tsub σ* (T₁ ⇒ T₂) = Tsub σ* T₁ ⇒ Tsub σ* T₂
