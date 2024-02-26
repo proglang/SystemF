@@ -43,7 +43,11 @@ LRVren-eq′ :  ∀ {Δ₁}{Δ₂}{l}
   → 𝓥⟦ T ⟧ (Tren-act τ* ρ) v z ≡
     subst₂ (λ vv zz → Value vv → zz → Set l)
            (fusion-Tsub-Tren T τ* ρ*)
-           (Tren*-preserves-semantics {ρ* = τ*}{subst-to-env* (π₁ (Tren-act τ* ρ)) []}{subst-to-env* ρ* []} (τ*∈Ren* τ* ρ*) T)
+           (Tren*-preserves-semantics {ρ* = τ*}
+                                      {subst-to-env* (π₁ (Tren-act τ* ρ)) []}
+                                      {subst-to-env* ρ* []}
+                                      (τ*∈Ren* τ* ρ*)
+                                      T)
            (𝓥⟦ Tren τ* T ⟧ ρ) v z
 
 LRVren-eq′ `ℕ ρ τ* v z = refl
@@ -1729,8 +1733,12 @@ LRVwk-eq : ∀ {Δ}{l}{l₁}
   → 𝓥⟦ T ⟧ (REdrop ρ) v z
   ≡ 𝓥⟦ Twk T ⟧
         ρ
-        (subst Value (sym (fusion-Tsub-Tren T (Twkᵣ Tidᵣ) (π₁ ρ))) v)
-        (subst id (sym (Tren*-preserves-semantics {ρ* = Twkᵣ Tidᵣ} {subst-to-env* (Tdropₛ ρ*) []} {subst-to-env* ρ* []} (wkᵣ∈Ren* (subst-to-env* (Tdropₛ ρ*) []) (⟦ ρ* _ here ⟧ [])) T)) z)
+        (subst Value (sym (fusion-Tsub-Tren T (Twkᵣ Tidᵣ) ρ*)) v)
+        (subst id (sym (Tren*-preserves-semantics {ρ* = Twkᵣ Tidᵣ}
+                                                  {subst-to-env* (Tdropₛ ρ*) []}
+                                                  {subst-to-env* ρ* []}
+                                                  (wkᵣ∈Ren* (subst-to-env* (Tdropₛ ρ*) []) (⟦ ρ* _ here ⟧ []))
+                                                  T)) z)
 
 LRVwk-eq T ρ v z =
   begin

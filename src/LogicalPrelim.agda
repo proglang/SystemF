@@ -161,7 +161,7 @@ CSub : TSub Δ [] → Ctx Δ → Set
 CSub {Δ} σ* Γ = ∀ l (T : Type Δ l) → inn T Γ → CValue (Tsub σ* T)
 
 --! ESSC
-ς₁ : {σ* : TSub Δ []} → CSub σ* Γ → ESub σ* Γ ∅
+ς₁ : CSub σ* Γ → ESub σ* Γ ∅
 ς₁ χ = λ l T x → exp (χ l T x)
 
 ES←SC = ς₁

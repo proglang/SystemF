@@ -586,8 +586,20 @@ Csub-closed' {T = T} χ e =
     e
   R.∎
 
+--! EmptyEnv
+γ₀ : Env [] ∅ []
+γ₀ = λ l T ()
+
+--! EmptyRelEnv
+ρ₀ : RelEnv []
+ρ₀ = λ l ()
+
+--! EmptyCSub
+χ₀ : CSub (π₁ ρ₀) ∅
+χ₀ l T ()
+
 --! CsubClosed
-Csub-closed : {T : Type [] l} (χ : CSub {[]} (λ l ()) ∅) → (e : CExpr T) →
+Csub-closed : {T : Type [] l} (χ : CSub (π₁ ρ₀) ∅) → (e : CExpr T) →
   Csub χ e ≡ subst CExpr Tsub-closed e
 
 Csub-closed χ e = 
@@ -600,16 +612,6 @@ Csub-closed χ e =
       subst CExpr Tsub-closed e
     R.∎
   )
-
---! EmptyEnv
-γ₀ : Env [] ∅ []
-γ₀ = λ l T ()
-
-ρ₀ : RelEnv []
-ρ₀ = λ l ()
-
-χ₀ : CSub (π₁ ρ₀) ∅
-χ₀ l T ()
 
 --! AdequacyType
 adequacy : (e : CExpr `ℕ) → (n : ℕ)
