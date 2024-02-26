@@ -85,15 +85,15 @@ Ewkₛ σ* σ _ T x = Ewk (σ _ T x)
 Edropₛ : (σ* : TSub Δ₁ Δ₂) → ESub σ* (T ◁ Γ₁) Γ₂ → ESub σ* Γ₁ Γ₂
 Edropₛ σ* σ _ _ x = σ _ _ (there x)
 
-Eliftₛ : ∀ {l} {T : Type Δ₁ l} (σ* : TSub Δ₁ Δ₂) → ESub σ* Γ₁ Γ₂ → ESub σ* (T ◁ Γ₁) ((Tsub σ* T) ◁ Γ₂)
+--! DefEsub
+Esub      : (σ* : TSub Δ₁ Δ₂) → ESub σ* Γ₁ Γ₂ → Expr Δ₁ Γ₁ T → Expr Δ₂ Γ₂ (Tsub σ* T)
+Eliftₛ    : (σ* : TSub Δ₁ Δ₂) → ESub σ* Γ₁ Γ₂ → ESub σ* (T ◁ Γ₁) (Tsub σ* T ◁ Γ₂)
+Eliftₛ-l  : (σ* : TSub Δ₁ Δ₂) → ESub σ* Γ₁ Γ₂ → ESub (Tliftₛ σ* l) (l ◁* Γ₁) (l ◁* Γ₂)
+
 Eliftₛ _ σ _ _ here = ` here
 Eliftₛ _ σ _ _ (there x) = Ewk (σ _ _ x)
 
-Eliftₛ-l : ∀ {l} → (σ* : TSub Δ₁ Δ₂) → ESub σ* Γ₁ Γ₂ → ESub (Tliftₛ σ* _) (l ◁* Γ₁) (l ◁* Γ₂)
 Eliftₛ-l σ* σ _ _ (tskip {T = T} x) = subst (Expr _ _) (sym (swap-Tsub-Twk σ* T)) (Ewk-l (σ _ _ x))
-
---! DefEsub
-Esub : (σ* : TSub Δ₁ Δ₂) → ESub σ* Γ₁ Γ₂ → Expr Δ₁ Γ₁ T → Expr Δ₂ Γ₂ (Tsub σ* T)
 
 Esub σ* σ (# n) = # n
 Esub σ* σ (`suc e) = `suc (Esub σ* σ e)

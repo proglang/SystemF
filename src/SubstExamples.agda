@@ -175,18 +175,15 @@ fusion-Tsub-Tsub : ∀ (T : Type Δ₁ l) (σ₁ : TSub Δ₂ Δ₃) (σ₂ : TS
 fusion-Tsub-Tsub = {!!}
 
 --! ECompSS
-_∘Eₛₛ_ : ∀ {σ₁* : TSub Δ₂ Δ₃} {σ₂* : TSub Δ₁ Δ₂} {Γ₁ : TEnv Δ₁} {Γ₂ : TEnv Δ₂} {Γ₃ : TEnv Δ₃}
-  → ESub σ₁* Γ₂ Γ₃ → ESub σ₂* Γ₁ Γ₂ → ESub (σ₁* ∘Tₛₛ σ₂*) Γ₁ Γ₃
-_∘Eₛₛ_ {Δ₃ = Δ₃} {σ₁* = σ₁*} {σ₂* = σ₂*} {Γ₃ = Γ₃} σ₁ σ₂ l T x =
-  subst (Expr Δ₃ Γ₃) (fusion-Tsub-Tsub T σ₁* σ₂*) (Esub _ σ₁ (σ₂ _ _ x))
+_∘Eₛₛ_ : ∀ {σ₁* : TSub Δ₂ Δ₃} {σ₂* : TSub Δ₁ Δ₂} {Γ₁ : TEnv Δ₁} {Γ₂ : TEnv Δ₂} {Γ₃ : TEnv Δ₃} →
+  ESub σ₁* Γ₂ Γ₃ → ESub σ₂* Γ₁ Γ₂ → ESub (σ₁* ∘Tₛₛ σ₂*) Γ₁ Γ₃
+_∘Eₛₛ_ {Δ₃ = Δ₃} {σ₁* = σ₁*} {σ₂* = σ₂*} {Γ₃ = Γ₃} σ₁ σ₂ =
+  λ l T x → subst (Expr Δ₃ Γ₃) (fusion-Tsub-Tsub T σ₁* σ₂*) {!Esub _ σ₁ (σ₂ _ _ x)!}
 
 --! FusionESubESub
 fusion-Esub-Esub : 
-  ∀ {σ₁* : TSub Δ₂ Δ₃} {σ₂* : TSub Δ₁ Δ₂}
-    {Γ₁ : TEnv Δ₁}{Γ₂ : TEnv Δ₂}{Γ₃ : TEnv Δ₃}
-    {T : Type Δ₁ l}
-    (e : Expr Δ₁ Γ₁ T)
-    (σ₂ : ESub σ₂* Γ₁ Γ₂) (σ₁ : ESub σ₁* Γ₂ Γ₃)  →
+  ∀ {σ₁* : TSub Δ₂ Δ₃} {σ₂* : TSub Δ₁ Δ₂} {Γ₁ : TEnv Δ₁} {Γ₂ : TEnv Δ₂} {Γ₃ : TEnv Δ₃}
+    {T : Type Δ₁ l} (e : Expr Δ₁ Γ₁ T) (σ₂ : ESub σ₂* Γ₁ Γ₂) (σ₁ : ESub σ₁* Γ₂ Γ₃) →
   let sub = subst (Expr Δ₃ Γ₃) (fusion-Tsub-Tsub T σ₁* σ₂*) in
   sub (Esub σ₁* σ₁ (Esub σ₂* σ₂ e)) ≡ Esub (σ₁* ∘Tₛₛ σ₂*) (σ₁ ∘Eₛₛ σ₂) e
 
