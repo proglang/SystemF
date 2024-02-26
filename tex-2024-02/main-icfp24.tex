@@ -374,8 +374,8 @@ style, and defines substitutions in terms of renamings as in
 %   \SubDefTidS
 % \end{minipage}
 
-Renamings {\ATRen} and Substitutions {\ATSub} are defined as
-functions mapping variables to variables and terms, respectively.
+Renamings {\ATRen} and substitutions {\ATSub} are defined as
+functions mapping variables to variables and types, respectively.
 
 \noindent\hspace{-\fboxsep}
 \begin{minipage}{0.5\linewidth}
@@ -386,9 +386,9 @@ functions mapping variables to variables and terms, respectively.
 \end{minipage}
 
 The operations for applying renamings and substitutions, {\ATren}
-and {\ATsub}, are defined by induction over the type, lifting the
-renaming or substitution when going under a binder using
-{\ATliftR} and {\ATliftS}, respectively.
+and {\ATsub}, are defined by induction over the type. When the
+operations need to go under a binder, they lift the renaming and
+substitution with {\ATliftR} and {\ATliftS}, respectively.
 
 \noindent\hspace{-\fboxsep}
 \begin{minipage}{0.5\linewidth}
