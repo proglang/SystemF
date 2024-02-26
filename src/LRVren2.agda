@@ -1981,15 +1981,15 @@ Cextend-Elift {Δ} {σ*} {Γ} {l} {T} {l′} {T′} χ w e =
 
 
 Gdrop-t-ext≡id : (ρ : RelEnv Δ) (γ : Env Δ Γ (subst-to-env* (subst←RE ρ) [])) (T′ : Type [] l) (R : REL T′)
-  → (Gdrop-t (subst←RE (REext ρ (T′ , R))) (extend-tskip γ)) ≡ω γ
+  →  γ ≡ω (Gdrop-t (subst←RE (REext ρ (T′ , R))) (extend-tskip γ))
 Gdrop-t-ext≡id ρ γ T′ R =
-  fun-ext-llω-ω (λ x y z → subst-subst-sym (Tren*-preserves-semantics (λ x₁ → refl) y))
+  symω (fun-ext-llω-ω (λ x y z → subst-subst-sym (Tren*-preserves-semantics (λ x₁ → refl) y)))
 
 Cdrop-t-Cextt≡id : (Γ : TEnv Δ) (ρ : RelEnv Δ) (χ : CSub (subst←RE ρ) Γ) (l : Level) (T′ : Type [] l) (R : REL T′)
-  → (Cdrop-t (subst (λ σ → CSub σ (l ◁* Γ)) (sym (subst←RE-ext-ext ρ T′ R)) (Cextt χ T′))) ≡ χ
+  → χ ≡ (Cdrop-t (subst (λ σ → CSub σ (l ◁* Γ)) (sym (subst←RE-ext-ext ρ T′ R)) (Cextt χ T′)))
 Cdrop-t-Cextt≡id Γ ρ χ l T′ R =
   let sub₁ = subst (λ σ → CSub σ (l ◁* Γ)) (sym (subst←RE-ext-ext ρ T′ R)) in
-  begin
+  sym (begin
     Cdrop-t (sub₁ (Cextt χ T′))
   ≡⟨ dist-subst' {F = (λ σ → CSub σ (l ◁* Γ))} {G = id} (λ x → CSub (Tdropₛ x) Γ) Cdrop-t (sym (subst←RE-ext-ext ρ T′ R)) refl (Cextt χ T′) ⟩ 
     Cdrop-t (Cextt χ T′)
@@ -2004,5 +2004,4 @@ Cdrop-t-Cextt≡id Γ ρ χ l T′ R =
           (trans (cong (Tsub (λ l₁ x₁ → proj₁ (ρ l₁ x₁))) (TidₛT≡T y))
            refl)))) (χ x y z)))
   ⟩
-    χ ∎
-
+    χ ∎)

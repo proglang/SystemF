@@ -201,9 +201,9 @@ fundamental Γ (T₁ ⇒ T₂) (ƛ e) ρ χ γ 𝓖⟦Γ⟧ =
         𝓖⟦T₁◁Γ⟧ = (𝓥⟦T₁⟧wz , substlω (𝓖⟦ Γ ⟧ ρ) eq₁ eqω₁ 𝓖⟦Γ⟧)
         eq₂ : Csub (Cextend χ w) e ≡ (Esub (π₁ ρ) (Eliftₛ (π₁ ρ) (ς₁ χ)) e [ exp w ]E)
         eq₂ = Cextend-Elift χ w e
+        (v , ew⇓v , 𝓥⟦T₂⟧vy) = fundamental (T₁ ◁ Γ) T₂ e ρ (Cextend χ w) (extend γ z) 𝓖⟦T₁◁Γ⟧
     in
-    fundamental (T₁ ◁ Γ) T₂ e ρ (Cextend χ w) (extend γ z) 𝓖⟦T₁◁Γ⟧ |> λ where
-      (v , ew⇓v , 𝓥⟦T₂⟧vy) → v , subst (_⇓ v) eq₂ ew⇓v , 𝓥⟦T₂⟧vy)
+        v , subst (_⇓ v) eq₂ ew⇓v , 𝓥⟦T₂⟧vy)
 
 --! FundamentalApplication
 fundamental Γ T (_·_ {T = T₂} {T′ = .T} e₁ e₂) ρ χ γ 𝓖⟦Γ⟧
@@ -216,7 +216,7 @@ fundamental Γ T (_·_ {T = T₂} {T′ = .T} e₁ e₂) ρ χ γ 𝓖⟦Γ⟧
   = v₃ , ⇓-· e₁⇓v₁ e₂⇓v₂ e₃[]⇓v₃ , 𝓥⟦T⟧v₃z₃
 
 --! FundamentalTypeAbstraction
-fundamental Γ (`∀α .l , T) (Λ l ⇒ e) ρ χ γ lrg =
+fundamental Γ (`∀α .l , T) (Λ l ⇒ e) ρ χ γ 𝓖⟦Γ⟧ =
   (Csub χ (Λ l ⇒ e), V-Λ) ,
   ⇓-Λ ,
   Esub (Tliftₛ (π₁ ρ) l) (Eliftₛ-l (π₁ ρ) (ς₁ χ)) e ,
@@ -224,8 +224,9 @@ fundamental Γ (`∀α .l , T) (Λ l ⇒ e) ρ χ γ lrg =
   λ T′ R →
     let lrg′ = substωlω-l (𝓖⟦ Γ ⟧)
                       refl
-                      (sym (Cdrop-t-Cextt≡id Γ ρ χ l T′ R))
-                      (symω (Gdrop-t-ext≡id ρ γ T′ R)) lrg in
+                      (Cdrop-t-Cextt≡id Γ ρ χ l T′ R)
+                      (Gdrop-t-ext≡id ρ γ T′ R)
+                      𝓖⟦Γ⟧ in
     fundamental (l ◁* Γ)
         T
         e
@@ -244,8 +245,8 @@ fundamental Γ (`∀α .l , T) (Λ l ⇒ e) ρ χ γ lrg =
         let eq = lemma1 ρ T T′ R in
            v′ ,
            subst id (begin 
-              subst (Expr [] ∅) eq 𝕖 ⇓ v
-            ≡⟨ subst-swap′′ (Expr [] ∅) CValue _⇓_ 𝕖 v (sym eq) eq ⟩
+              subst CExpr eq 𝕖 ⇓ v
+            ≡⟨ subst-swap′′ CExpr CValue _⇓_ 𝕖 v (sym eq) eq ⟩
               𝕖 ⇓ subst CValue (sym eq) v
             ∎) e⇓v ,
            sub-lrvt lrv-t
@@ -600,14 +601,24 @@ Csub-closed χ e =
     R.∎
   )
 
+--! EmptyEnv
+γ₀ : Env [] ∅ []
+γ₀ = λ l T ()
+
+ρ₀ : RelEnv []
+ρ₀ = λ l ()
+
+χ₀ : CSub (π₁ ρ₀) ∅
+χ₀ l T ()
+
 --! AdequacyType
 adequacy : (e : CExpr `ℕ) → (n : ℕ)
-  → E⟦ e ⟧ [] (λ l T → λ()) ≡ n
+  → E⟦ e ⟧ [] γ₀ ≡ n
   → e ⇓ (# n , V-♯)
 
 --! AdequacyBody
 adequacy e n ⟦e⟧≡n
-  with fundamental ∅ `ℕ e (λ l ()) (λ l T ()) (λ l T ()) tt
-... | ((# .(E⟦ e ⟧ [] (λ l T ()))) , V-♯) , e⇓v , (.(E⟦ e ⟧ [] (λ l T ())) , refl , refl) =
-  subst₂ _⇓_ (Csub-closed (λ l T ()) e) (cong (λ n → (# n) , V-♯) ⟦e⟧≡n) e⇓v
+  with fundamental ∅ `ℕ e ρ₀ χ₀ γ₀ tt
+... | ((# .(E⟦ e ⟧ [] γ₀)) , V-♯) , e⇓v , (.(E⟦ e ⟧ [] γ₀) , refl , refl) =
+  subst₂ _⇓_ (Csub-closed χ₀ e) (cong (λ n → (# n) , V-♯) ⟦e⟧≡n) e⇓v
 
