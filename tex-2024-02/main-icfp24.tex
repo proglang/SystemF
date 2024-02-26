@@ -685,37 +685,63 @@ This lemma becomes relevant when an equality proof cannot be matched
 on, because it witnesses the equality between two non-unifiable
 expressions, e.g. between two function applications: \texttt{f x $\equiv$ g y}.
 
-It is harmless to use {\Asubst} in proofs, but if it is used in
-regular definitions, then complications arise in subsequent
-equational lemmas about those definitions, where the {\Asubst}
-reappears.
+It is harmless to use {\Asubst} in a proof, but if a {\Asubst} appears
+in the \emph{type} of a proof, then often complications arise.
+Consider for example the type \texttt{Vec} -- a list that
+intrinsically tracks its length -- and its append function \verb/_++_/:
+\SubstExamplesVec
+\SubstExamplesAppend
 
-% Consider for example the definition of the substitution type:
-% \SubstExamplesESubDef
+Stating that \verb/_++_/ is associative requires us to use a {\Asubst}:
+\SubstExamplesAssocType
+The term \texttt{(xs ++ ys) ++ zs} has type \texttt{Vec A ((m + n) + p)}, whereas
+the term \texttt{xs ++ (ys ++ zs)} has type \texttt{Vec A (m + (n + p))}, so a
+{\Asubst} is needed to apply the associativity of addition.
 
-Consider for example the definition of the identity expression-substitution:
-\SubstExamplesEidDef
+\SubstExamplesAppendR
 
-One would expect \texttt{Eid} to simply map each variable \texttt{x}
-to it's corresponding variable term \texttt{\AgdaInductiveConstructor{`} x}.
-However, because the type of expression substitutions \texttt{ESub} is
-indexed by a type-substitution -- in this case \texttt{Tid} -- we need
-to produce a value of type \texttt{Expr Δ Γ (Tsub Tid T)}, while
-the variable term \texttt{\AgdaInductiveConstructor{`} x} has type \texttt{Expr Δ Γ T}.
-The two types are obviously equivalent, but only propositionally due
-to the lemma \texttt{TidT≡T : ∀ T → Tsub Tidₛ T ≡ T}, so a
-{\Asubst} is needed to adjust the type.\footnote{
-  Similar problems also appear if separate definitions for
-  expression-in-expression and type-in-expression substitutions are
-  employed instead of indexing expression-substitutions with type-substitutions.
-}
+% \SubstExamplesAssoc
+\SubstExamplesAssocR
 
-This {\Asubst} now reappears in lemmas about \texttt{Eid}, e.g. when proving
-that \texttt{Eid} is the neutral element for expression-substitution \texttt{Esub}:
-\SubstExamplesEidNeutral
+% \SubstExamplesAssocHet
+\SubstExamplesAssocRHet
+
+\SubstExamplesDistSubst
+\SubstExamplesSubstRemovable
 
 
+% It is harmless to use {\Asubst} in proofs, but if it is used in
+% regular definitions, then complications arise in subsequent
+% equational lemmas about those definitions, where the {\Asubst}
+% reappears.
 
+% Old Example %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% % Consider for example the definition of the substitution type:
+% % \SubstExamplesESubDef
+
+% Consider for example the definition of the identity expression-substitution:
+% \SubstExamplesEidDef
+
+% One would expect \texttt{Eid} to simply map each variable \texttt{x}
+% to its corresponding variable term \texttt{\AgdaInductiveConstructor{`} x}.
+% However, because the type of expression substitutions \texttt{ESub} is
+% indexed by a type-substitution -- in this case \texttt{Tid} -- we need
+% to produce a value of type \texttt{Expr Δ Γ (Tsub Tid T)}, while
+% the variable term \texttt{\AgdaInductiveConstructor{`} x} has type \texttt{Expr Δ Γ T}.
+% The two types are obviously equivalent, but only propositionally due
+% to the lemma \texttt{TidT≡T : ∀ T → Tsub Tidₛ T ≡ T}, so a
+% {\Asubst} is needed to adjust the type.\footnote{
+%   Similar problems also appear if separate definitions for
+%   expression-in-expression and type-in-expression substitutions are
+%   employed instead of indexing expression-substitutions with type-substitutions.
+% }
+
+% This {\Asubst} now reappears in lemmas about \texttt{Eid}, e.g. when proving
+% that \texttt{Eid} is the neutral element for expression-substitution \texttt{Esub}:
+% \SubstExamplesEidNeutral
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Related Work}
 \label{sec:related-work}
