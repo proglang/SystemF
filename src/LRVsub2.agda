@@ -49,7 +49,7 @@ open import LRVren2
 --     Tsub (Textₛ (subst←RE ρ) (Tsub (subst←RE ρ) T′)) T
 --   ≡⟨ cong (λ τ → Tsub τ T) (fun-ext₂ (Text-sub-sub (subst←RE ρ) T′)) ⟩
 --     Tsub (Textₛ Tidₛ T′ ∘ₛₛ subst←RE ρ) T
---   ≡⟨ sym (assoc-sub-sub T (Textₛ Tidₛ T′) (subst←RE ρ)) ⟩
+--   ≡⟨ sym (fusion-Tsub-Tsub T (Textₛ Tidₛ T′) (subst←RE ρ)) ⟩
 --     Tsub (subst←RE ρ) (T [ T′ ]T)
 --   ∎ 
 
@@ -86,7 +86,7 @@ Tsub-act-REext-ext {l = l} ρ τ* T′ R l₂ (there x) =
   let eq₂r = subst-preserves ρ*r Tₓr in
   let eq-1 = begin
                Tsub (subst←RE ρ) (τ* l₂ x)
-             ≡˘⟨ assoc-sub-ren (τ* l₂ x) (Twkᵣ Tidᵣ) (Textₛ (subst←RE ρ) T′)  ⟩
+             ≡˘⟨ fusion-Tsub-Tren (τ* l₂ x) (Twkᵣ Tidᵣ) (Textₛ (subst←RE ρ) T′)  ⟩
                Tsub (Textₛ (subst←RE ρ) T′) (Twk (τ* l₂ x))
              ≡˘⟨ cong (λ σ → Tsub σ (Twk (τ* l₂ x))) (subst←RE-ext-ext ρ T′ R) ⟩
                Tsub (subst←RE (REext ρ (T′ , R))) (Twk (τ* l₂ x))
@@ -98,36 +98,36 @@ Tsub-act-REext-ext {l = l} ρ τ* T′ R l₂ (there x) =
               (𝓥⟦ Tₓ ⟧ ρ))
         ≡⟨ subst*-irrelevant (⟨ F , sym eq₂ ⟩∷ ⟨ REL , eq-1 ⟩∷ [] )
                              (⟨ (λ zz → Value (Tsub (Twkᵣ Tidᵣ ∘ᵣₛ ρ*r) Tₓ) → zz → Set l₂) , (sym (Tren*-preserves-semantics (τ*∈Ren* (Twkᵣ Tidᵣ) ρ*r) Tₓ)) ⟩∷
-                              ⟨ (λ v → Value v → ⟦ Tren (Twkᵣ Tidᵣ) Tₓ ⟧ (subst-to-env* ρ*r []) → Set l₂) , (sym (assoc-sub-ren Tₓ (Twkᵣ Tidᵣ) ρ*r)) ⟩∷
+                              ⟨ (λ v → Value v → ⟦ Tren (Twkᵣ Tidᵣ) Tₓ ⟧ (subst-to-env* ρ*r []) → Set l₂) , (sym (fusion-Tsub-Tren Tₓ (Twkᵣ Tidᵣ) ρ*r)) ⟩∷
                               ⟨ Fr , sym eq₂r ⟩∷
                               [])
                              (𝓥⟦ Tₓ ⟧ ρ) ⟩
           subst Fr (sym eq₂r)
-            (subst (λ v → Value v → ⟦ Tren (Twkᵣ Tidᵣ) Tₓ ⟧ (subst-to-env* ρ*r []) → Set l₂) (sym (assoc-sub-ren Tₓ (Twkᵣ Tidᵣ) ρ*r))
+            (subst (λ v → Value v → ⟦ Tren (Twkᵣ Tidᵣ) Tₓ ⟧ (subst-to-env* ρ*r []) → Set l₂) (sym (fusion-Tsub-Tren Tₓ (Twkᵣ Tidᵣ) ρ*r))
              (subst (λ zz → Value (Tsub (Twkᵣ Tidᵣ ∘ᵣₛ ρ*r) Tₓ) → zz → Set l₂) (sym (Tren*-preserves-semantics (τ*∈Ren* (Twkᵣ Tidᵣ) ρ*r) Tₓ))
               (𝓥⟦ Tₓ ⟧ ρ)))
         ≡˘⟨ cong (subst Fr (sym eq₂r))
            (subst₂-subst-subst (λ vv zz → Value vv → zz → Set l₂)
-                               (sym (assoc-sub-ren Tₓ (Twkᵣ Tidᵣ) ρ*r))
+                               (sym (fusion-Tsub-Tren Tₓ (Twkᵣ Tidᵣ) ρ*r))
                                (sym (Tren*-preserves-semantics (τ*∈Ren* (Twkᵣ Tidᵣ) ρ*r) Tₓ))
                                (𝓥⟦ Tₓ ⟧ ρ)) ⟩
           subst Fr (sym eq₂r)
             (subst₂ (λ vv zz → Value vv → zz → Set l₂)
-             (sym (assoc-sub-ren Tₓ (Twkᵣ Tidᵣ) ρ*r))
+             (sym (fusion-Tsub-Tren Tₓ (Twkᵣ Tidᵣ) ρ*r))
              (sym (Tren*-preserves-semantics (τ*∈Ren* (Twkᵣ Tidᵣ) ρ*r) Tₓ))
              (𝓥⟦ Tₓ ⟧ ρ))
         ≡⟨ cong (subst Fr (sym eq₂r))
            (cong (subst₂ (λ vv zz → Value vv → zz → Set l₂)
-             (sym (assoc-sub-ren Tₓ (Twkᵣ Tidᵣ) ρ*r))
+             (sym (fusion-Tsub-Tren Tₓ (Twkᵣ Tidᵣ) ρ*r))
              (sym (Tren*-preserves-semantics (τ*∈Ren* (Twkᵣ Tidᵣ) ρ*r) Tₓ)))
              (dcongωl (𝓥⟦ Tₓ ⟧) refl)) ⟩
           subst Fr (sym eq₂r)
             (subst₂ (λ vv zz → Value vv → zz → Set l₂)
-             (sym (assoc-sub-ren Tₓ (Twkᵣ Tidᵣ) ρ*r))
+             (sym (fusion-Tsub-Tren Tₓ (Twkᵣ Tidᵣ) ρ*r))
              (sym (Tren*-preserves-semantics (τ*∈Ren* (Twkᵣ Tidᵣ) ρ*r) Tₓ))
              (𝓥⟦ Tₓ ⟧ (Tren-act (Twkᵣ Tidᵣ) (REext ρ (T′ , R)))))
         ≡⟨ cong (subst Fr (sym eq₂r))
-                (subst₂-swap′ (assoc-sub-ren Tₓ (Twkᵣ Tidᵣ) ρ*r)
+                (subst₂-swap′ (fusion-Tsub-Tren Tₓ (Twkᵣ Tidᵣ) ρ*r)
                               (Tren*-preserves-semantics (τ*∈Ren* (Twkᵣ Tidᵣ) ρ*r) Tₓ)
                               _
                               _
@@ -166,7 +166,7 @@ LRVsub : ∀ {Δ₁}{Δ₂}{l}
   → (z : ⟦ T ⟧ (subst-to-env* (subst←RE (Tsub-act τ* ρ)) []))
   → 𝓥⟦ T ⟧ (Tsub-act τ* ρ) v z
   ≡ 𝓥⟦ Tsub τ* T ⟧ ρ
-       (subst Value (sym (assoc-sub-sub T τ* (subst←RE ρ))) v)
+       (subst Value (sym (fusion-Tsub-Tsub T τ* (subst←RE ρ))) v)
        (subst id (sym (begin
                         ⟦ Tsub τ* T ⟧ (subst-to-env* (subst←RE ρ) [])
                       ≡⟨ subst-preserves τ* T ⟩
@@ -236,7 +236,7 @@ LRVsub (` α) ρ τ* v z =
        z)
   ≡⟨ refl ⟩
     𝓥⟦ Tsub τ* (` α) ⟧ ρ
-      (subst Value (sym (assoc-sub-sub (` α) τ* (subst←RE ρ))) v)
+      (subst Value (sym (fusion-Tsub-Tsub (` α) τ* (subst←RE ρ))) v)
       (subst id
        (sym
         (step-≡ (⟦ Tsub τ* (` α) ⟧ (subst-to-env* (subst←RE ρ) []))
@@ -256,7 +256,7 @@ LRVsub (T₁ ⇒ T₂) ρ τ* v z =
           Tsub (subst←RE (Tsub-act τ* ρ)) T
         ≡⟨ refl ⟩
           Tsub (τ* ∘ₛₛ ρ*) T
-        ≡˘⟨ assoc-sub-sub T τ* (subst←RE ρ) ⟩
+        ≡˘⟨ fusion-Tsub-Tsub T τ* (subst←RE ρ) ⟩
           Tsub ρ* (Tsub τ* T)
         ∎
 
@@ -283,11 +283,11 @@ LRVsub (T₁ ⇒ T₂) ρ τ* v z =
             (cong₂ (λ T₃ T₄ → Expr [] (T₃ ◁ ∅) T₄)
              (step-≡ (Tsub (subst←RE (Tsub-act τ* ρ)) T₁)
               (step-≡˘ (Tsub (τ* ∘ₛₛ ρ*) T₁) (Tsub ρ* (Tsub τ* T₁) ∎)
-               (assoc-sub-sub T₁ τ* ρ*))
+               (fusion-Tsub-Tsub T₁ τ* ρ*))
               refl)
              (step-≡ (Tsub (subst←RE (Tsub-act τ* ρ)) T₂)
               (step-≡˘ (Tsub (τ* ∘ₛₛ ρ*) T₂) (Tsub ρ* (Tsub τ* T₂) ∎)
-               (assoc-sub-sub T₂ τ* ρ*))
+               (fusion-Tsub-Tsub T₂ τ* ρ*))
               refl)))
            e))
          ∧
@@ -301,11 +301,11 @@ LRVsub (T₁ ⇒ T₂) ρ τ* v z =
                (cong₂ (λ T₃ T₄ → Expr [] (T₃ ◁ ∅) T₄)
                 (step-≡ (Tsub (subst←RE (Tsub-act τ* ρ)) T₁)
                  (step-≡˘ (Tsub (τ* ∘ₛₛ ρ*) T₁) (Tsub ρ* (Tsub τ* T₁) ∎)
-                  (assoc-sub-sub T₁ τ* ρ*))
+                  (fusion-Tsub-Tsub T₁ τ* ρ*))
                  refl)
                 (step-≡ (Tsub (subst←RE (Tsub-act τ* ρ)) T₂)
                  (step-≡˘ (Tsub (τ* ∘ₛₛ ρ*) T₂) (Tsub ρ* (Tsub τ* T₂) ∎)
-                  (assoc-sub-sub T₂ τ* ρ*))
+                  (fusion-Tsub-Tsub T₂ τ* ρ*))
                  refl)))
               e
               [ exp w ]E)
@@ -323,11 +323,11 @@ LRVsub (T₁ ⇒ T₂) ρ τ* v z =
               (cong₂ (λ T₃ T₄ → Expr [] (T₃ ◁ ∅) T₄)
                (step-≡ (Tsub (subst←RE (Tsub-act τ* ρ)) T₁)
                 (step-≡˘ (Tsub (τ* ∘ₛₛ ρ*) T₁) (Tsub ρ* (Tsub τ* T₁) ∎)
-                 (assoc-sub-sub T₁ τ* ρ*))
+                 (fusion-Tsub-Tsub T₁ τ* ρ*))
                 refl)
                (step-≡ (Tsub (subst←RE (Tsub-act τ* ρ)) T₂)
                 (step-≡˘ (Tsub (τ* ∘ₛₛ ρ*) T₂) (Tsub ρ* (Tsub τ* T₂) ∎)
-                 (assoc-sub-sub T₂ τ* ρ*))
+                 (fusion-Tsub-Tsub T₂ τ* ρ*))
                 refl)))
              e)
         ≡⟨ cong (exp v ≡_)
@@ -335,11 +335,11 @@ LRVsub (T₁ ⇒ T₂) ρ τ* v z =
             (sym-cong₂ (λ T₃ T₄ → Expr [] (T₃ ◁ ∅) T₄)
                (step-≡ (Tsub (subst←RE (Tsub-act τ* ρ)) T₁)
                 (step-≡˘ (Tsub (τ* ∘ₛₛ ρ*) T₁) (Tsub ρ* (Tsub τ* T₁) ∎)
-                 (assoc-sub-sub T₁ τ* ρ*))
+                 (fusion-Tsub-Tsub T₁ τ* ρ*))
                 refl)
                 (step-≡ (Tsub (subst←RE (Tsub-act τ* ρ)) T₂)
                 (step-≡˘ (Tsub (τ* ∘ₛₛ ρ*) T₂) (Tsub ρ* (Tsub τ* T₂) ∎)
-                 (assoc-sub-sub T₂ τ* ρ*))
+                 (fusion-Tsub-Tsub T₂ τ* ρ*))
                 refl))) ⟩
           exp v ≡
             (ƛ
@@ -348,12 +348,12 @@ LRVsub (T₁ ⇒ T₂) ρ τ* v z =
               (sym
                (step-≡ (Tsub (subst←RE (Tsub-act τ* ρ)) T₁)
                 (step-≡˘ (Tsub (τ* ∘ₛₛ ρ*) T₁) (Tsub ρ* (Tsub τ* T₁) ∎)
-                 (assoc-sub-sub T₁ τ* ρ*))
+                 (fusion-Tsub-Tsub T₁ τ* ρ*))
                 refl))
               (sym
                (step-≡ (Tsub (subst←RE (Tsub-act τ* ρ)) T₂)
                 (step-≡˘ (Tsub (τ* ∘ₛₛ ρ*) T₂) (Tsub ρ* (Tsub τ* T₂) ∎)
-                 (assoc-sub-sub T₂ τ* ρ*))
+                 (fusion-Tsub-Tsub T₂ τ* ρ*))
                 refl)))
              e)
         ≡˘⟨ cong (exp v ≡_)
@@ -362,12 +362,12 @@ LRVsub (T₁ ⇒ T₂) ρ τ* v z =
              (sym
                (step-≡ (Tsub (subst←RE (Tsub-act τ* ρ)) T₁)
                 (step-≡˘ (Tsub (τ* ∘ₛₛ ρ*) T₁) (Tsub ρ* (Tsub τ* T₁) ∎)
-                 (assoc-sub-sub T₁ τ* ρ*))
+                 (fusion-Tsub-Tsub T₁ τ* ρ*))
                 refl))
               (sym
                (step-≡ (Tsub (subst←RE (Tsub-act τ* ρ)) T₂)
                 (step-≡˘ (Tsub (τ* ∘ₛₛ ρ*) T₂) (Tsub ρ* (Tsub τ* T₂) ∎)
-                 (assoc-sub-sub T₂ τ* ρ*))
+                 (fusion-Tsub-Tsub T₂ τ* ρ*))
                 refl)) e)) ⟩
           exp v ≡
             (ƛ
@@ -375,12 +375,12 @@ LRVsub (T₁ ⇒ T₂) ρ τ* v z =
              (sym
               (step-≡ (Tsub (subst←RE (Tsub-act τ* ρ)) T₁)
                (step-≡˘ (Tsub (τ* ∘ₛₛ ρ*) T₁) (Tsub ρ* (Tsub τ* T₁) ∎)
-                (assoc-sub-sub T₁ τ* ρ*))
+                (fusion-Tsub-Tsub T₁ τ* ρ*))
                refl))
              (sym
               (step-≡ (Tsub (subst←RE (Tsub-act τ* ρ)) T₂)
                (step-≡˘ (Tsub (τ* ∘ₛₛ ρ*) T₂) (Tsub ρ* (Tsub τ* T₂) ∎)
-                (assoc-sub-sub T₂ τ* ρ*))
+                (fusion-Tsub-Tsub T₂ τ* ρ*))
                refl))
              e)
         ≡˘⟨ cong (exp v ≡_)
@@ -388,12 +388,12 @@ LRVsub (T₁ ⇒ T₂) ρ τ* v z =
             (sym
               (step-≡ (Tsub (subst←RE (Tsub-act τ* ρ)) T₁)
                (step-≡˘ (Tsub (τ* ∘ₛₛ ρ*) T₁) (Tsub ρ* (Tsub τ* T₁) ∎)
-                (assoc-sub-sub T₁ τ* ρ*))
+                (fusion-Tsub-Tsub T₁ τ* ρ*))
                refl))
              (sym
               (step-≡ (Tsub (subst←RE (Tsub-act τ* ρ)) T₂)
                (step-≡˘ (Tsub (τ* ∘ₛₛ ρ*) T₂) (Tsub ρ* (Tsub τ* T₂) ∎)
-                (assoc-sub-sub T₂ τ* ρ*))
+                (fusion-Tsub-Tsub T₂ τ* ρ*))
                refl)) e ) ⟩
           exp v ≡ (subst CExpr (cong₂ _⇒_ (sym (eq-T T₁)) (sym (eq-T T₂))) (ƛ e))
         ≡˘⟨ cong (exp v ≡_)
@@ -401,11 +401,11 @@ LRVsub (T₁ ⇒ T₂) ρ τ* v z =
           (sym-cong₂ _⇒_
               (step-≡ (Tsub (subst←RE (Tsub-act τ* ρ)) T₁)
                (step-≡˘ (Tsub (τ* ∘ₛₛ ρ*) T₁) (Tsub ρ* (Tsub τ* T₁) ∎)
-                (assoc-sub-sub T₁ τ* ρ*))
+                (fusion-Tsub-Tsub T₁ τ* ρ*))
                refl)
               (step-≡ (Tsub (subst←RE (Tsub-act τ* ρ)) T₂)
                (step-≡˘ (Tsub (τ* ∘ₛₛ ρ*) T₂) (Tsub ρ* (Tsub τ* T₂) ∎)
-                (assoc-sub-sub T₂ τ* ρ*))
+                (fusion-Tsub-Tsub T₂ τ* ρ*))
                refl))) ⟩
           exp v ≡
             subst CExpr
@@ -413,21 +413,21 @@ LRVsub (T₁ ⇒ T₂) ρ τ* v z =
              (cong₂ _⇒_
               (step-≡ (Tsub (subst←RE (Tsub-act τ* ρ)) T₁)
                (step-≡˘ (Tsub (τ* ∘ₛₛ ρ*) T₁) (Tsub ρ* (Tsub τ* T₁) ∎)
-                (assoc-sub-sub T₁ τ* ρ*))
+                (fusion-Tsub-Tsub T₁ τ* ρ*))
                refl)
               (step-≡ (Tsub (subst←RE (Tsub-act τ* ρ)) T₂)
                (step-≡˘ (Tsub (τ* ∘ₛₛ ρ*) T₂) (Tsub ρ* (Tsub τ* T₂) ∎)
-                (assoc-sub-sub T₂ τ* ρ*))
+                (fusion-Tsub-Tsub T₂ τ* ρ*))
                refl)))
             (ƛ e)
         ≡˘⟨ subst-swap-eq {F = CExpr} (cong₂ _⇒_ (eq-T T₁) (eq-T T₂)) (exp v) (ƛ e) ⟩
           subst CExpr (cong₂ _⇒_ (eq-T T₁) (eq-T T₂)) (exp v) ≡ (ƛ e)
         ≡˘⟨ cong (_≡ (ƛ e))
             (dist-subst' {F = Value} {G = CExpr} id exp
-                          (sym (cong₂ _⇒_ (assoc-sub-sub T₁ τ* ρ*) (assoc-sub-sub T₂ τ* ρ*)))
+                          (sym (cong₂ _⇒_ (fusion-Tsub-Tsub T₁ τ* ρ*) (fusion-Tsub-Tsub T₂ τ* ρ*)))
                           (cong₂ _⇒_ (eq-T T₁) (eq-T T₂))
                           v) ⟩
-          exp (subst Value (sym (cong₂ _⇒_ (assoc-sub-sub T₁ τ* ρ*) (assoc-sub-sub T₂ τ* ρ*))) v)
+          exp (subst Value (sym (cong₂ _⇒_ (fusion-Tsub-Tsub T₁ τ* ρ*) (fusion-Tsub-Tsub T₂ τ* ρ*))) v)
             ≡ (ƛ e)
         ∎)
       --------------------------------------------------
@@ -440,8 +440,8 @@ LRVsub (T₁ ⇒ T₂) ρ τ* v z =
                (subst id
                 (sym
                  (cong₂ (λ T₃ → Expr [] (T₃ ◁ ∅))
-                  (trans (sym (assoc-sub-sub T₁ τ* ρ*)) refl)
-                  (trans (sym (assoc-sub-sub T₂ τ* ρ*)) refl)))
+                  (trans (sym (fusion-Tsub-Tsub T₁ τ* ρ*)) refl)
+                  (trans (sym (fusion-Tsub-Tsub T₂ τ* ρ*)) refl)))
                 e
                 [ exp w ]E)
                ⇓ v₁
@@ -455,8 +455,8 @@ LRVsub (T₁ ⇒ T₂) ρ τ* v z =
                    (subst id
                     (sym
                      (cong₂ (λ T₃ → Expr [] (T₃ ◁ ∅))
-                       (trans (sym (assoc-sub-sub T₁ τ* ρ*)) refl)
-                       (trans (sym (assoc-sub-sub T₂ τ* ρ*)) refl)))
+                       (trans (sym (fusion-Tsub-Tsub T₁ τ* ρ*)) refl)
+                       (trans (sym (fusion-Tsub-Tsub T₂ τ* ρ*)) refl)))
                     e
                     [ exp w ]E)
                    ⇓ v₁
@@ -468,7 +468,7 @@ LRVsub (T₁ ⇒ T₂) ρ τ* v z =
             (subst id
              (cong Value
               (sym
-               (trans (sym (assoc-sub-sub T₁ τ* ρ*)) refl)))
+               (trans (sym (fusion-Tsub-Tsub T₁ τ* ρ*)) refl)))
              w)
             z₁ →
             ∃-syntax
@@ -478,11 +478,11 @@ LRVsub (T₁ ⇒ T₂) ρ τ* v z =
                  (cong₂ (λ T₃ → Expr [] (T₃ ◁ ∅))
                   (step-≡ (Tsub (subst←RE (Tsub-act τ* ρ)) T₁)
                    (step-≡˘ (Tsub (τ* ∘ₛₛ ρ*) T₁) (Tsub ρ* (Tsub τ* T₁) ∎)
-                    (assoc-sub-sub T₁ τ* ρ*))
+                    (fusion-Tsub-Tsub T₁ τ* ρ*))
                    refl)
                   (step-≡ (Tsub (subst←RE (Tsub-act τ* ρ)) T₂)
                    (step-≡˘ (Tsub (τ* ∘ₛₛ ρ*) T₂) (Tsub ρ* (Tsub τ* T₂) ∎)
-                    (assoc-sub-sub T₂ τ* ρ*))
+                    (fusion-Tsub-Tsub T₂ τ* ρ*))
                    refl)))
                 e
                 [
@@ -492,7 +492,7 @@ LRVsub (T₁ ⇒ T₂) ρ τ* v z =
                   (sym
                    (step-≡ (Tsub (subst←RE (Tsub-act τ* ρ)) T₁)
                     (step-≡˘ (Tsub (τ* ∘ₛₛ ρ*) T₁) (Tsub ρ* (Tsub τ* T₁) ∎)
-                     (assoc-sub-sub T₁ τ* ρ*))
+                     (fusion-Tsub-Tsub T₁ τ* ρ*))
                     refl)))
                  w)
                 ]E)
@@ -507,7 +507,7 @@ LRVsub (T₁ ⇒ T₂) ρ τ* v z =
                  (sym
                   (step-≡ (Tsub (subst←RE (Tsub-act τ* ρ)) T₁)
                    (step-≡˘ (Tsub (τ* ∘ₛₛ ρ*) T₁) (Tsub ρ* (Tsub τ* T₁) ∎)
-                    (assoc-sub-sub T₁ τ* ρ*))
+                    (fusion-Tsub-Tsub T₁ τ* ρ*))
                    refl)))
                 w)
                z₁ →
@@ -518,11 +518,11 @@ LRVsub (T₁ ⇒ T₂) ρ τ* v z =
                     (cong₂ (λ T₃ → Expr [] (T₃ ◁ ∅))
                      (step-≡ (Tsub (subst←RE (Tsub-act τ* ρ)) T₁)
                       (step-≡˘ (Tsub (τ* ∘ₛₛ ρ*) T₁) (Tsub ρ* (Tsub τ* T₁) ∎)
-                       (assoc-sub-sub T₁ τ* ρ*))
+                       (fusion-Tsub-Tsub T₁ τ* ρ*))
                       refl)
                      (step-≡ (Tsub (subst←RE (Tsub-act τ* ρ)) T₂)
                       (step-≡˘ (Tsub (τ* ∘ₛₛ ρ*) T₂) (Tsub ρ* (Tsub τ* T₂) ∎)
-                       (assoc-sub-sub T₂ τ* ρ*))
+                       (fusion-Tsub-Tsub T₂ τ* ρ*))
                       refl)))
                    e
                    [
@@ -532,7 +532,7 @@ LRVsub (T₁ ⇒ T₂) ρ τ* v z =
                      (sym
                       (step-≡ (Tsub (subst←RE (Tsub-act τ* ρ)) T₁)
                        (step-≡˘ (Tsub (τ* ∘ₛₛ ρ*) T₁) (Tsub ρ* (Tsub τ* T₁) ∎)
-                        (assoc-sub-sub T₁ τ* ρ*))
+                        (fusion-Tsub-Tsub T₁ τ* ρ*))
                        refl)))
                     w)
                    ]E)
@@ -546,7 +546,7 @@ LRVsub (T₁ ⇒ T₂) ρ τ* v z =
                      (sym
                       (step-≡ (Tsub (subst←RE (Tsub-act τ* ρ)) T₁)
                        (step-≡˘ (Tsub (τ* ∘ₛₛ ρ*) T₁) (Tsub ρ* (Tsub τ* T₁) ∎)
-                        (assoc-sub-sub T₁ τ* ρ*))
+                        (fusion-Tsub-Tsub T₁ τ* ρ*))
                        refl)))
                     w)
                    z₁ →
@@ -557,11 +557,11 @@ LRVsub (T₁ ⇒ T₂) ρ τ* v z =
                         (cong₂ (λ T₃ → Expr [] (T₃ ◁ ∅))
                          (step-≡ (Tsub (subst←RE (Tsub-act τ* ρ)) T₁)
                           (step-≡˘ (Tsub (τ* ∘ₛₛ ρ*) T₁) (Tsub ρ* (Tsub τ* T₁) ∎)
-                           (assoc-sub-sub T₁ τ* ρ*))
+                           (fusion-Tsub-Tsub T₁ τ* ρ*))
                           refl)
                          (step-≡ (Tsub (subst←RE (Tsub-act τ* ρ)) T₂)
                           (step-≡˘ (Tsub (τ* ∘ₛₛ ρ*) T₂) (Tsub ρ* (Tsub τ* T₂) ∎)
-                           (assoc-sub-sub T₂ τ* ρ*))
+                           (fusion-Tsub-Tsub T₂ τ* ρ*))
                           refl)))
                        e
                        [
@@ -571,7 +571,7 @@ LRVsub (T₁ ⇒ T₂) ρ τ* v z =
                          (sym
                           (step-≡ (Tsub (subst←RE (Tsub-act τ* ρ)) T₁)
                            (step-≡˘ (Tsub (τ* ∘ₛₛ ρ*) T₁) (Tsub ρ* (Tsub τ* T₁) ∎)
-                            (assoc-sub-sub T₁ τ* ρ*))
+                            (fusion-Tsub-Tsub T₁ τ* ρ*))
                            refl)))
                         w)
                        ]E)
@@ -587,7 +587,7 @@ LRVsub (T₁ ⇒ T₂) ρ τ* v z =
                                             (sym
                                              (step-≡ (Tsub (subst←RE (Tsub-act τ* ρ)) T₁)
                                               (step-≡˘ (Tsub (τ* ∘ₛₛ ρ*) T₁) (Tsub ρ* (Tsub τ* T₁) ∎)
-                                               (assoc-sub-sub T₁ τ* ρ*))
+                                               (fusion-Tsub-Tsub T₁ τ* ρ*))
                                               refl)))
                                            w)
                                           (subst id (trans (subst-preserves τ* T₁) _) z₁) →
@@ -598,11 +598,11 @@ LRVsub (T₁ ⇒ T₂) ρ τ* v z =
                                                (cong₂ (λ T₃ → Expr [] (T₃ ◁ ∅))
                                                 (step-≡ (Tsub (subst←RE (Tsub-act τ* ρ)) T₁)
                                                  (step-≡˘ (Tsub (τ* ∘ₛₛ ρ*) T₁) (Tsub ρ* (Tsub τ* T₁) ∎)
-                                                  (assoc-sub-sub T₁ τ* ρ*))
+                                                  (fusion-Tsub-Tsub T₁ τ* ρ*))
                                                  refl)
                                                 (step-≡ (Tsub (subst←RE (Tsub-act τ* ρ)) T₂)
                                                  (step-≡˘ (Tsub (τ* ∘ₛₛ ρ*) T₂) (Tsub ρ* (Tsub τ* T₂) ∎)
-                                                  (assoc-sub-sub T₂ τ* ρ*))
+                                                  (fusion-Tsub-Tsub T₂ τ* ρ*))
                                                  refl)))
                                               e
                                               [
@@ -612,7 +612,7 @@ LRVsub (T₁ ⇒ T₂) ρ τ* v z =
                                                 (sym
                                                  (step-≡ (Tsub (subst←RE (Tsub-act τ* ρ)) T₁)
                                                   (step-≡˘ (Tsub (τ* ∘ₛₛ ρ*) T₁) (Tsub ρ* (Tsub τ* T₁) ∎)
-                                                   (assoc-sub-sub T₁ τ* ρ*))
+                                                   (fusion-Tsub-Tsub T₁ τ* ρ*))
                                                   refl)))
                                                w)
                                               ]E)
@@ -628,7 +628,7 @@ LRVsub (T₁ ⇒ T₂) ρ τ* v z =
                     (sym
                      (step-≡ (Tsub (subst←RE (Tsub-act τ* ρ)) T₁)
                       (step-≡˘ (Tsub (τ* ∘ₛₛ ρ*) T₁) (Tsub ρ* (Tsub τ* T₁) ∎)
-                       (assoc-sub-sub T₁ τ* ρ*))
+                       (fusion-Tsub-Tsub T₁ τ* ρ*))
                       refl)))
                    w)
                   (subst id
@@ -645,11 +645,11 @@ LRVsub (T₁ ⇒ T₂) ρ τ* v z =
                        (cong₂ (λ T₃ → Expr [] (T₃ ◁ ∅))
                         (step-≡ (Tsub (subst←RE (Tsub-act τ* ρ)) T₁)
                          (step-≡˘ (Tsub (τ* ∘ₛₛ ρ*) T₁) (Tsub ρ* (Tsub τ* T₁) ∎)
-                          (assoc-sub-sub T₁ τ* ρ*))
+                          (fusion-Tsub-Tsub T₁ τ* ρ*))
                          refl)
                         (step-≡ (Tsub (subst←RE (Tsub-act τ* ρ)) T₂)
                          (step-≡˘ (Tsub (τ* ∘ₛₛ ρ*) T₂) (Tsub ρ* (Tsub τ* T₂) ∎)
-                          (assoc-sub-sub T₂ τ* ρ*))
+                          (fusion-Tsub-Tsub T₂ τ* ρ*))
                          refl)))
                       e
                       [
@@ -659,7 +659,7 @@ LRVsub (T₁ ⇒ T₂) ρ τ* v z =
                         (sym
                          (step-≡ (Tsub (subst←RE (Tsub-act τ* ρ)) T₁)
                           (step-≡˘ (Tsub (τ* ∘ₛₛ ρ*) T₁) (Tsub ρ* (Tsub τ* T₁) ∎)
-                           (assoc-sub-sub T₁ τ* ρ*))
+                           (fusion-Tsub-Tsub T₁ τ* ρ*))
                           refl)))
                        w)
                       ]E)
@@ -683,7 +683,7 @@ LRVsub (T₁ ⇒ T₂) ρ τ* v z =
                       (sym
                        (step-≡ (Tsub (subst←RE (Tsub-act τ* ρ)) T₁)
                         (step-≡˘ (Tsub (τ* ∘ₛₛ ρ*) T₁) (Tsub ρ* (Tsub τ* T₁) ∎)
-                         (assoc-sub-sub T₁ τ* ρ*))
+                         (fusion-Tsub-Tsub T₁ τ* ρ*))
                         refl)))
                      w)
                     (subst id
@@ -699,7 +699,7 @@ LRVsub (T₁ ⇒ T₂) ρ τ* v z =
                       (sym
                        (step-≡ (Tsub (subst←RE (Tsub-act τ* ρ)) T₁)
                         (step-≡˘ (Tsub (τ* ∘ₛₛ ρ*) T₁) (Tsub ρ* (Tsub τ* T₁) ∎)
-                         (assoc-sub-sub T₁ τ* ρ*))
+                         (fusion-Tsub-Tsub T₁ τ* ρ*))
                         refl)))
                      w)
                      (subst id
@@ -710,13 +710,13 @@ LRVsub (T₁ ⇒ T₂) ρ τ* v z =
                          (symω (subst-to-env*-comp τ* ρ* []))))))
                      z₁) ⟩
                   𝓥⟦ Tsub τ* T₁ ⟧ ρ
-                    (subst Value (sym (assoc-sub-sub T₁ τ* ρ*))
+                    (subst Value (sym (fusion-Tsub-Tsub T₁ τ* ρ*))
                      (subst id
                       (cong Value
                        (sym
                         (step-≡ (Tsub (subst←RE (Tsub-act τ* ρ)) T₁)
                          (step-≡˘ (Tsub (τ* ∘ₛₛ ρ*) T₁) (Tsub ρ* (Tsub τ* T₁) ∎)
-                          (assoc-sub-sub T₁ τ* ρ*))
+                          (fusion-Tsub-Tsub T₁ τ* ρ*))
                          refl)))
                       w))
                     (subst id
@@ -738,9 +738,9 @@ LRVsub (T₁ ⇒ T₂) ρ τ* v z =
                      (⟨ id , (cong Value (sym
                                             (step-≡ (Tsub (subst←RE (Tsub-act τ* ρ)) T₁)
                                              (step-≡˘ (Tsub (τ* ∘ₛₛ ρ*) T₁) (Tsub ρ* (Tsub τ* T₁) ∎)
-                                              (assoc-sub-sub T₁ τ* ρ*))
+                                              (fusion-Tsub-Tsub T₁ τ* ρ*))
                                              refl))) ⟩∷
-                     ⟨ Value , (sym (assoc-sub-sub T₁ τ* ρ*)) ⟩∷
+                     ⟨ Value , (sym (fusion-Tsub-Tsub T₁ τ* ρ*)) ⟩∷
                      []) [] w)
                    (subst*-irrelevant
                      (⟨ id , (trans (subst-preserves τ* T₁)
@@ -768,11 +768,11 @@ LRVsub (T₁ ⇒ T₂) ρ τ* v z =
                          (cong₂ (λ T₃ → Expr [] (T₃ ◁ ∅))
                           (step-≡ (Tsub (subst←RE (Tsub-act τ* ρ)) T₁)
                            (step-≡˘ (Tsub (τ* ∘ₛₛ ρ*) T₁) (Tsub ρ* (Tsub τ* T₁) ∎)
-                            (assoc-sub-sub T₁ τ* ρ*))
+                            (fusion-Tsub-Tsub T₁ τ* ρ*))
                            refl)
                           (step-≡ (Tsub (subst←RE (Tsub-act τ* ρ)) T₂)
                            (step-≡˘ (Tsub (τ* ∘ₛₛ ρ*) T₂) (Tsub ρ* (Tsub τ* T₂) ∎)
-                            (assoc-sub-sub T₂ τ* ρ*))
+                            (fusion-Tsub-Tsub T₂ τ* ρ*))
                            refl)))
                         e
                         [
@@ -782,7 +782,7 @@ LRVsub (T₁ ⇒ T₂) ρ τ* v z =
                           (sym
                            (step-≡ (Tsub (subst←RE (Tsub-act τ* ρ)) T₁)
                             (step-≡˘ (Tsub (τ* ∘ₛₛ ρ*) T₁) (Tsub ρ* (Tsub τ* T₁) ∎)
-                             (assoc-sub-sub T₁ τ* ρ*))
+                             (fusion-Tsub-Tsub T₁ τ* ρ*))
                             refl)))
                          w)
                         ]E)
@@ -803,11 +803,11 @@ LRVsub (T₁ ⇒ T₂) ρ τ* v z =
                          (cong₂ (λ T₃ → Expr [] (T₃ ◁ ∅))
                           (step-≡ (Tsub (subst←RE (Tsub-act τ* ρ)) T₁)
                            (step-≡˘ (Tsub (τ* ∘ₛₛ ρ*) T₁) (Tsub ρ* (Tsub τ* T₁) ∎)
-                            (assoc-sub-sub T₁ τ* ρ*))
+                            (fusion-Tsub-Tsub T₁ τ* ρ*))
                            refl)
                           (step-≡ (Tsub (subst←RE (Tsub-act τ* ρ)) T₂)
                            (step-≡˘ (Tsub (τ* ∘ₛₛ ρ*) T₂) (Tsub ρ* (Tsub τ* T₂) ∎)
-                            (assoc-sub-sub T₂ τ* ρ*))
+                            (fusion-Tsub-Tsub T₂ τ* ρ*))
                            refl)))
                         e
                         [
@@ -817,7 +817,7 @@ LRVsub (T₁ ⇒ T₂) ρ τ* v z =
                           (sym
                            (step-≡ (Tsub (subst←RE (Tsub-act τ* ρ)) T₁)
                             (step-≡˘ (Tsub (τ* ∘ₛₛ ρ*) T₁) (Tsub ρ* (Tsub τ* T₁) ∎)
-                             (assoc-sub-sub T₁ τ* ρ*))
+                             (fusion-Tsub-Tsub T₁ τ* ρ*))
                             refl)))
                          w)
                         ]E)
@@ -840,11 +840,11 @@ LRVsub (T₁ ⇒ T₂) ρ τ* v z =
                          (cong₂ (λ T₃ → Expr [] (T₃ ◁ ∅))
                           (step-≡ (Tsub (subst←RE (Tsub-act τ* ρ)) T₁)
                            (step-≡˘ (Tsub (τ* ∘ₛₛ ρ*) T₁) (Tsub ρ* (Tsub τ* T₁) ∎)
-                            (assoc-sub-sub T₁ τ* ρ*))
+                            (fusion-Tsub-Tsub T₁ τ* ρ*))
                            refl)
                           (step-≡ (Tsub (subst←RE (Tsub-act τ* ρ)) T₂)
                            (step-≡˘ (Tsub (τ* ∘ₛₛ ρ*) T₂) (Tsub ρ* (Tsub τ* T₂) ∎)
-                            (assoc-sub-sub T₂ τ* ρ*))
+                            (fusion-Tsub-Tsub T₂ τ* ρ*))
                            refl)))
                         e
                         [
@@ -854,7 +854,7 @@ LRVsub (T₁ ⇒ T₂) ρ τ* v z =
                           (sym
                            (step-≡ (Tsub (subst←RE (Tsub-act τ* ρ)) T₁)
                             (step-≡˘ (Tsub (τ* ∘ₛₛ ρ*) T₁) (Tsub ρ* (Tsub τ* T₁) ∎)
-                             (assoc-sub-sub T₁ τ* ρ*))
+                             (fusion-Tsub-Tsub T₁ τ* ρ*))
                             refl)))
                          w)
                         ]E)
@@ -864,7 +864,7 @@ LRVsub (T₁ ⇒ T₂) ρ τ* v z =
                         (cong Value
                          (step-≡ (Tsub (subst←RE (Tsub-act τ* ρ)) T₂)
                           (step-≡˘ (Tsub (τ* ∘ₛₛ ρ*) T₂) (Tsub ρ* (Tsub τ* T₂) ∎)
-                           (assoc-sub-sub T₂ τ* ρ*))
+                           (fusion-Tsub-Tsub T₂ τ* ρ*))
                           refl)))
                        v₁
                        ∧
@@ -874,7 +874,7 @@ LRVsub (T₁ ⇒ T₂) ρ τ* v z =
                          (cong Value
                           (step-≡ (Tsub (subst←RE (Tsub-act τ* ρ)) T₂)
                            (step-≡˘ (Tsub (τ* ∘ₛₛ ρ*) T₂) (Tsub ρ* (Tsub τ* T₂) ∎)
-                            (assoc-sub-sub T₂ τ* ρ*))
+                            (fusion-Tsub-Tsub T₂ τ* ρ*))
                            refl)))
                         v₁)
                        (z
@@ -895,11 +895,11 @@ LRVsub (T₁ ⇒ T₂) ρ τ* v z =
                           (cong₂ (λ T₃ → Expr [] (T₃ ◁ ∅))
                            (step-≡ (Tsub (subst←RE (Tsub-act τ* ρ)) T₁)
                             (step-≡˘ (Tsub (τ* ∘ₛₛ ρ*) T₁) (Tsub ρ* (Tsub τ* T₁) ∎)
-                             (assoc-sub-sub T₁ τ* ρ*))
+                             (fusion-Tsub-Tsub T₁ τ* ρ*))
                             refl)
                            (step-≡ (Tsub (subst←RE (Tsub-act τ* ρ)) T₂)
                             (step-≡˘ (Tsub (τ* ∘ₛₛ ρ*) T₂) (Tsub ρ* (Tsub τ* T₂) ∎)
-                             (assoc-sub-sub T₂ τ* ρ*))
+                             (fusion-Tsub-Tsub T₂ τ* ρ*))
                             refl)))
                          e
                          [
@@ -909,7 +909,7 @@ LRVsub (T₁ ⇒ T₂) ρ τ* v z =
                            (sym
                             (step-≡ (Tsub (subst←RE (Tsub-act τ* ρ)) T₁)
                              (step-≡˘ (Tsub (τ* ∘ₛₛ ρ*) T₁) (Tsub ρ* (Tsub τ* T₁) ∎)
-                              (assoc-sub-sub T₁ τ* ρ*))
+                              (fusion-Tsub-Tsub T₁ τ* ρ*))
                              refl)))
                           w)
                          ]E)
@@ -919,12 +919,12 @@ LRVsub (T₁ ⇒ T₂) ρ τ* v z =
                          (cong Value
                           (step-≡ (Tsub (subst←RE (Tsub-act τ* ρ)) T₂)
                            (step-≡˘ (Tsub (τ* ∘ₛₛ ρ*) T₂) (Tsub ρ* (Tsub τ* T₂) ∎)
-                            (assoc-sub-sub T₂ τ* ρ*))
+                            (fusion-Tsub-Tsub T₂ τ* ρ*))
                            refl)))
                         v₁
                     ≡⟨ cong (_ ⇓_)
                        (cong (λ ∎ → subst id ∎ v₁)
-                         (sym-cong {f = Value} (trans (sym (assoc-sub-sub T₂ τ* ρ*)) (Tsub ρ* (Tsub τ* T₂) ∎)))) ⟩
+                         (sym-cong {f = Value} (trans (sym (fusion-Tsub-Tsub T₂ τ* ρ*)) (Tsub ρ* (Tsub τ* T₂) ∎)))) ⟩
                       subst (Expr [] ∅) (TidₛT≡T (Tsub (subst←RE (Tsub-act τ* ρ)) T₂))
                         (Esub Tidₛ
                          (Eextₛ Tidₛ Eidₛ
@@ -936,7 +936,7 @@ LRVsub (T₁ ⇒ T₂) ρ τ* v z =
                               (sym
                                (step-≡ (Tsub (subst←RE (Tsub-act τ* ρ)) T₁)
                                 (step-≡˘ (Tsub (τ* ∘ₛₛ ρ*) T₁) (Tsub ρ* (Tsub τ* T₁) ∎)
-                                 (assoc-sub-sub T₁ τ* ρ*))
+                                 (fusion-Tsub-Tsub T₁ τ* ρ*))
                                 refl)))
                              w))))
                          (subst id
@@ -944,21 +944,21 @@ LRVsub (T₁ ⇒ T₂) ρ τ* v z =
                            (cong₂ (λ T₃ → Expr [] (T₃ ◁ ∅))
                             (step-≡ (Tsub (subst←RE (Tsub-act τ* ρ)) T₁)
                              (step-≡˘ (Tsub (τ* ∘ₛₛ ρ*) T₁) (Tsub ρ* (Tsub τ* T₁) ∎)
-                              (assoc-sub-sub T₁ τ* ρ*))
+                              (fusion-Tsub-Tsub T₁ τ* ρ*))
                              refl)
                             (step-≡ (Tsub (subst←RE (Tsub-act τ* ρ)) T₂)
                              (step-≡˘ (Tsub (τ* ∘ₛₛ ρ*) T₂) (Tsub ρ* (Tsub τ* T₂) ∎)
-                              (assoc-sub-sub T₂ τ* ρ*))
+                              (fusion-Tsub-Tsub T₂ τ* ρ*))
                              refl)))
                           e))
                         ⇓
                         subst id
                         (cong Value
                          (sym
-                          (trans (sym (assoc-sub-sub T₂ τ* ρ*)) (Tsub ρ* (Tsub τ* T₂) ∎))))
+                          (trans (sym (fusion-Tsub-Tsub T₂ τ* ρ*)) (Tsub ρ* (Tsub τ* T₂) ∎))))
                         v₁
                     ≡˘⟨ cong (_ ⇓_) (subst-∘ {P = id} {f = Value}
-                                              (sym (trans (sym (assoc-sub-sub T₂ τ* ρ*)) (Tsub ρ* (Tsub τ* T₂) ∎))) {v₁}) ⟩
+                                              (sym (trans (sym (fusion-Tsub-Tsub T₂ τ* ρ*)) (Tsub ρ* (Tsub τ* T₂) ∎))) {v₁}) ⟩
                       subst CExpr (TidₛT≡T (Tsub (subst←RE (Tsub-act τ* ρ)) T₂))
                         (Esub Tidₛ
                          (Eextₛ Tidₛ Eidₛ
@@ -968,32 +968,32 @@ LRVsub (T₁ ⇒ T₂) ρ τ* v z =
                             (subst id
                              (cong Value
                               (sym
-                               (trans (sym (assoc-sub-sub T₁ τ* ρ*)) refl)))
+                               (trans (sym (fusion-Tsub-Tsub T₁ τ* ρ*)) refl)))
                              w))))
                          (subst id
                           (sym
                            (cong₂ (λ T₃ → Expr [] (T₃ ◁ ∅))
-                            (trans (sym (assoc-sub-sub T₁ τ* ρ*)) refl)
-                            (trans (sym (assoc-sub-sub T₂ τ* ρ*)) refl)))
+                            (trans (sym (fusion-Tsub-Tsub T₁ τ* ρ*)) refl)
+                            (trans (sym (fusion-Tsub-Tsub T₂ τ* ρ*)) refl)))
                           e))
                         ⇓
-                        subst Value (sym (trans (sym (assoc-sub-sub T₂ τ* ρ*)) refl)) v₁
-                    ≡⟨ cong (_ ⇓_) (cong (λ ∎ → subst Value ∎ v₁) (sym-trans (sym (assoc-sub-sub T₂ τ* ρ*)) refl)) ⟩
+                        subst Value (sym (trans (sym (fusion-Tsub-Tsub T₂ τ* ρ*)) refl)) v₁
+                    ≡⟨ cong (_ ⇓_) (cong (λ ∎ → subst Value ∎ v₁) (sym-trans (sym (fusion-Tsub-Tsub T₂ τ* ρ*)) refl)) ⟩
                       subst CExpr (TidₛT≡T (Tsub (subst←RE (Tsub-act τ* ρ)) T₂))
                         (Esub Tidₛ
                          (Eextₛ Tidₛ Eidₛ
                           (subst CExpr (sym (TidₛT≡T (Tsub (subst←RE (Tsub-act τ* ρ)) T₁)))
                            (exp
                             (subst id
-                             (cong Value (sym (trans (sym (assoc-sub-sub T₁ τ* ρ*)) refl)))
+                             (cong Value (sym (trans (sym (fusion-Tsub-Tsub T₁ τ* ρ*)) refl)))
                              w))))
                          (subst id
                           (sym
                            (cong₂ (λ T₃ → Expr [] (T₃ ◁ ∅))
-                            (trans (sym (assoc-sub-sub T₁ τ* ρ*)) refl)
-                            (trans (sym (assoc-sub-sub T₂ τ* ρ*)) refl)))
+                            (trans (sym (fusion-Tsub-Tsub T₁ τ* ρ*)) refl)
+                            (trans (sym (fusion-Tsub-Tsub T₂ τ* ρ*)) refl)))
                           e)) ⇓
-                        subst Value (sym (sym (assoc-sub-sub T₂ τ* ρ*))) v₁
+                        subst Value (sym (sym (fusion-Tsub-Tsub T₂ τ* ρ*))) v₁
                     ≡⟨ cong (λ H → subst CExpr (TidₛT≡T (Tsub (subst←RE (Tsub-act τ* ρ)) T₂))
                         (Esub Tidₛ
                          (Eextₛ Tidₛ Eidₛ
@@ -1002,25 +1002,25 @@ LRVsub (T₁ ⇒ T₂) ρ τ* v z =
                          (subst id
                           (sym
                            (cong₂ (λ T₃ → Expr [] (T₃ ◁ ∅))
-                            (trans (sym (assoc-sub-sub T₁ τ* ρ*)) refl)
-                            (trans (sym (assoc-sub-sub T₂ τ* ρ*)) refl)))
+                            (trans (sym (fusion-Tsub-Tsub T₁ τ* ρ*)) refl)
+                            (trans (sym (fusion-Tsub-Tsub T₂ τ* ρ*)) refl)))
                           e)) ⇓
-                        subst Value (sym (sym (assoc-sub-sub T₂ τ* ρ*))) v₁)
-                        (sym (subst-∘ {P = id} {f = Value} (sym (trans (sym (assoc-sub-sub T₁ τ* ρ*)) refl)) {w} )) ⟩
+                        subst Value (sym (sym (fusion-Tsub-Tsub T₂ τ* ρ*))) v₁)
+                        (sym (subst-∘ {P = id} {f = Value} (sym (trans (sym (fusion-Tsub-Tsub T₁ τ* ρ*)) refl)) {w} )) ⟩
                       subst CExpr (TidₛT≡T (Tsub (subst←RE (Tsub-act τ* ρ)) T₂))
                         (Esub Tidₛ
                          (Eextₛ Tidₛ Eidₛ
                           (subst CExpr (sym (TidₛT≡T (Tsub (subst←RE (Tsub-act τ* ρ)) T₁)))
                            (exp
-                            (subst Value (sym (trans (sym (assoc-sub-sub T₁ τ* ρ*)) refl))
+                            (subst Value (sym (trans (sym (fusion-Tsub-Tsub T₁ τ* ρ*)) refl))
                              w))))
                          (subst id
                           (sym
                            (cong₂ (λ T₃ → Expr [] (T₃ ◁ ∅))
-                            (trans (sym (assoc-sub-sub T₁ τ* ρ*)) refl)
-                            (trans (sym (assoc-sub-sub T₂ τ* ρ*)) refl)))
+                            (trans (sym (fusion-Tsub-Tsub T₁ τ* ρ*)) refl)
+                            (trans (sym (fusion-Tsub-Tsub T₂ τ* ρ*)) refl)))
                           e))
-                        ⇓ subst Value (sym (sym (assoc-sub-sub T₂ τ* ρ*))) v₁
+                        ⇓ subst Value (sym (sym (fusion-Tsub-Tsub T₂ τ* ρ*))) v₁
                     ≡⟨ cong (λ H → subst CExpr (TidₛT≡T (Tsub (subst←RE (Tsub-act τ* ρ)) T₂))
                         (Esub Tidₛ
                          (Eextₛ Tidₛ Eidₛ
@@ -1029,31 +1029,31 @@ LRVsub (T₁ ⇒ T₂) ρ τ* v z =
                          (subst id
                           (sym
                            (cong₂ (λ T₃ → Expr [] (T₃ ◁ ∅))
-                            (trans (sym (assoc-sub-sub T₁ τ* ρ*)) refl)
-                            (trans (sym (assoc-sub-sub T₂ τ* ρ*)) refl)))
+                            (trans (sym (fusion-Tsub-Tsub T₁ τ* ρ*)) refl)
+                            (trans (sym (fusion-Tsub-Tsub T₂ τ* ρ*)) refl)))
                           e)) ⇓
-                        subst Value (sym (sym (assoc-sub-sub T₂ τ* ρ*))) v₁)
+                        subst Value (sym (sym (fusion-Tsub-Tsub T₂ τ* ρ*))) v₁)
                         ( dist-subst' {F = Value} {G = CExpr}
                                        id
                                        exp
-                                       (sym (trans (sym (assoc-sub-sub T₁ τ* ρ*)) refl))
-                                       (sym (trans (sym (assoc-sub-sub T₁ τ* ρ*)) refl))
+                                       (sym (trans (sym (fusion-Tsub-Tsub T₁ τ* ρ*)) refl))
+                                       (sym (trans (sym (fusion-Tsub-Tsub T₁ τ* ρ*)) refl))
                                        w)
                     ⟩
                       subst CExpr (TidₛT≡T (Tsub (subst←RE (Tsub-act τ* ρ)) T₂))
                         (Esub Tidₛ
                          (Eextₛ Tidₛ Eidₛ
                           (subst CExpr (sym (TidₛT≡T (Tsub (subst←RE (Tsub-act τ* ρ)) T₁)))
-                           (subst CExpr (sym (trans (sym (assoc-sub-sub T₁ τ* ρ*)) refl))
+                           (subst CExpr (sym (trans (sym (fusion-Tsub-Tsub T₁ τ* ρ*)) refl))
                             (exp
                              w))))
                          (subst id
                           (sym
                            (cong₂ (λ T₃ → Expr [] (T₃ ◁ ∅))
-                            (trans (sym (assoc-sub-sub T₁ τ* ρ*)) refl)
-                            (trans (sym (assoc-sub-sub T₂ τ* ρ*)) refl)))
+                            (trans (sym (fusion-Tsub-Tsub T₁ τ* ρ*)) refl)
+                            (trans (sym (fusion-Tsub-Tsub T₂ τ* ρ*)) refl)))
                           e)) ⇓
-                        subst Value (sym (sym (assoc-sub-sub T₂ τ* ρ*))) v₁ 
+                        subst Value (sym (sym (fusion-Tsub-Tsub T₂ τ* ρ*))) v₁ 
                     ≡⟨ cong (λ H → subst CExpr (TidₛT≡T (Tsub (subst←RE (Tsub-act τ* ρ)) T₂))
                         (Esub Tidₛ
                          (Eextₛ Tidₛ Eidₛ
@@ -1061,12 +1061,12 @@ LRVsub (T₁ ⇒ T₂) ρ τ* v z =
                          (subst id
                           (sym
                            (cong₂ (λ T₃ → Expr [] (T₃ ◁ ∅))
-                            (trans (sym (assoc-sub-sub T₁ τ* ρ*)) refl)
-                            (trans (sym (assoc-sub-sub T₂ τ* ρ*)) refl)))
+                            (trans (sym (fusion-Tsub-Tsub T₁ τ* ρ*)) refl)
+                            (trans (sym (fusion-Tsub-Tsub T₂ τ* ρ*)) refl)))
                           e)) ⇓
-                        subst Value (sym (sym (assoc-sub-sub T₂ τ* ρ*))) v₁)
+                        subst Value (sym (sym (fusion-Tsub-Tsub T₂ τ* ρ*))) v₁)
                         (subst-subst {P = CExpr}
-                                      (sym (trans (sym (assoc-sub-sub T₁ τ* ρ*)) refl))
+                                      (sym (trans (sym (fusion-Tsub-Tsub T₁ τ* ρ*)) refl))
                                       {(sym (TidₛT≡T (Tsub (subst←RE (Tsub-act τ* ρ)) T₁)))}
                                       {exp w})
                     ⟩
@@ -1074,58 +1074,58 @@ LRVsub (T₁ ⇒ T₂) ρ τ* v z =
                         (Esub Tidₛ
                          (Eextₛ Tidₛ Eidₛ
                           (subst CExpr
-                           (trans (sym (trans (sym (assoc-sub-sub T₁ τ* ρ*)) refl))
+                           (trans (sym (trans (sym (fusion-Tsub-Tsub T₁ τ* ρ*)) refl))
                             (sym (TidₛT≡T (Tsub (subst←RE (Tsub-act τ* ρ)) T₁))))
                            (exp w)))
                          (subst id
                           (sym
                            (cong₂ (λ T₃ → Expr [] (T₃ ◁ ∅))
-                            (trans (sym (assoc-sub-sub T₁ τ* ρ*)) refl)
-                            (trans (sym (assoc-sub-sub T₂ τ* ρ*)) refl)))
+                            (trans (sym (fusion-Tsub-Tsub T₁ τ* ρ*)) refl)
+                            (trans (sym (fusion-Tsub-Tsub T₂ τ* ρ*)) refl)))
                           e))
-                        ⇓ subst Value (sym (sym (assoc-sub-sub T₂ τ* ρ*))) v₁
+                        ⇓ subst Value (sym (sym (fusion-Tsub-Tsub T₂ τ* ρ*))) v₁
                     ≡⟨ cong (λ H → subst CExpr (TidₛT≡T (Tsub (subst←RE (Tsub-act τ* ρ)) T₂))
                         (Esub Tidₛ
                          (Eextₛ Tidₛ Eidₛ
                           (subst CExpr
-                           (trans (sym (trans (sym (assoc-sub-sub T₁ τ* ρ*)) refl))
+                           (trans (sym (trans (sym (fusion-Tsub-Tsub T₁ τ* ρ*)) refl))
                             (sym (TidₛT≡T (Tsub (subst←RE (Tsub-act τ* ρ)) T₁))))
                            (exp w)))
                          (subst id
                           (sym
                            (cong₂ (λ T₃ → Expr [] (T₃ ◁ ∅))
-                            (trans (sym (assoc-sub-sub T₁ τ* ρ*)) refl)
-                            (trans (sym (assoc-sub-sub T₂ τ* ρ*)) refl)))
+                            (trans (sym (fusion-Tsub-Tsub T₁ τ* ρ*)) refl)
+                            (trans (sym (fusion-Tsub-Tsub T₂ τ* ρ*)) refl)))
                           e))
-                        ⇓ subst Value H v₁) (sym-sym (assoc-sub-sub T₂ τ* ρ*)) ⟩
+                        ⇓ subst Value H v₁) (sym-sym (fusion-Tsub-Tsub T₂ τ* ρ*)) ⟩
                       subst CExpr (TidₛT≡T (Tsub (subst←RE (Tsub-act τ* ρ)) T₂))
                         (Esub Tidₛ
                          (Eextₛ Tidₛ Eidₛ
                           (subst CExpr
-                           (trans (sym (trans (sym (assoc-sub-sub T₁ τ* ρ*)) refl))
+                           (trans (sym (trans (sym (fusion-Tsub-Tsub T₁ τ* ρ*)) refl))
                             (sym (TidₛT≡T (Tsub (subst←RE (Tsub-act τ* ρ)) T₁))))
                            (exp w)))
                          (subst id
                           (sym
                            (cong₂ (λ T₃ → Expr [] (T₃ ◁ ∅))
-                            (trans (sym (assoc-sub-sub T₁ τ* ρ*)) refl)
-                            (trans (sym (assoc-sub-sub T₂ τ* ρ*)) refl)))
+                            (trans (sym (fusion-Tsub-Tsub T₁ τ* ρ*)) refl)
+                            (trans (sym (fusion-Tsub-Tsub T₂ τ* ρ*)) refl)))
                           e))
-                        ⇓ subst Value (assoc-sub-sub T₂ τ* ρ*) v₁
-                    ≡⟨ cong (_⇓ subst Value (assoc-sub-sub T₂ τ* ρ*) v₁)
+                        ⇓ subst Value (fusion-Tsub-Tsub T₂ τ* ρ*) v₁
+                    ≡⟨ cong (_⇓ subst Value (fusion-Tsub-Tsub T₂ τ* ρ*) v₁)
                        (begin
                          subst CExpr (TidₛT≡T (Tsub (subst←RE (Tsub-act τ* ρ)) T₂))
                            (Esub Tidₛ
                             (Eextₛ Tidₛ Eidₛ
                              (subst CExpr
-                              (trans (sym (trans (sym (assoc-sub-sub T₁ τ* ρ*)) refl))
+                              (trans (sym (trans (sym (fusion-Tsub-Tsub T₁ τ* ρ*)) refl))
                                (sym (TidₛT≡T (Tsub (subst←RE (Tsub-act τ* ρ)) T₁))))
                               (exp w)))
                             (subst id
                              (sym
                               (cong₂ (λ T₃ → Expr [] (T₃ ◁ ∅))
-                               (trans (sym (assoc-sub-sub T₁ τ* ρ*)) refl)
-                               (trans (sym (assoc-sub-sub T₂ τ* ρ*)) refl)))
+                               (trans (sym (fusion-Tsub-Tsub T₁ τ* ρ*)) refl)
+                               (trans (sym (fusion-Tsub-Tsub T₂ τ* ρ*)) refl)))
                              e))
                        ≡⟨ cong (λ H → subst CExpr (TidₛT≡T (Tsub (subst←RE (Tsub-act τ* ρ)) T₂))
                            (Esub Tidₛ
@@ -1137,108 +1137,108 @@ LRVsub (T₁ ⇒ T₂) ρ τ* v z =
                             (subst id
                              (sym
                               (cong₂ (λ T₃ → Expr [] (T₃ ◁ ∅))
-                               (trans (sym (assoc-sub-sub T₁ τ* ρ*)) refl)
-                               (trans (sym (assoc-sub-sub T₂ τ* ρ*)) refl)))
+                               (trans (sym (fusion-Tsub-Tsub T₁ τ* ρ*)) refl)
+                               (trans (sym (fusion-Tsub-Tsub T₂ τ* ρ*)) refl)))
                              e)))
-                             (trans (sym-trans (sym (assoc-sub-sub T₁ τ* ρ*)) refl) 
-                                    (sym-sym (assoc-sub-sub T₁ τ* ρ*)))
+                             (trans (sym-trans (sym (fusion-Tsub-Tsub T₁ τ* ρ*)) refl) 
+                                    (sym-sym (fusion-Tsub-Tsub T₁ τ* ρ*)))
                        ⟩
                          subst CExpr (TidₛT≡T (Tsub (subst←RE (Tsub-act τ* ρ)) T₂))
                            (Esub Tidₛ
                             (Eextₛ Tidₛ Eidₛ
                              (subst CExpr
-                              (trans (assoc-sub-sub T₁ τ* ρ*)
+                              (trans (fusion-Tsub-Tsub T₁ τ* ρ*)
                                (sym (TidₛT≡T (Tsub (subst←RE (Tsub-act τ* ρ)) T₁))))
                               (exp w)))
                             (subst id
                              (sym
                               (cong₂ (λ T₃ → Expr [] (T₃ ◁ ∅))
-                               (trans (sym (assoc-sub-sub T₁ τ* ρ*)) refl)
-                               (trans (sym (assoc-sub-sub T₂ τ* ρ*)) refl)))
+                               (trans (sym (fusion-Tsub-Tsub T₁ τ* ρ*)) refl)
+                               (trans (sym (fusion-Tsub-Tsub T₂ τ* ρ*)) refl)))
                              e))
                        ≡⟨ cong (λ H → subst CExpr (TidₛT≡T (Tsub (subst←RE (Tsub-act τ* ρ)) T₂))
                            (Esub Tidₛ
                             (Eextₛ Tidₛ Eidₛ
                              (subst CExpr
-                              (trans (assoc-sub-sub T₁ τ* ρ*)
+                              (trans (fusion-Tsub-Tsub T₁ τ* ρ*)
                                (sym (TidₛT≡T (Tsub (subst←RE (Tsub-act τ* ρ)) T₁))))
                               (exp w)))
                             (subst id H e)))
                             (sym-cong₂ (λ T₃ → Expr [] (T₃ ◁ ∅))
-                                        (trans (sym (assoc-sub-sub T₁ τ* ρ*)) refl)
-                                        (trans (sym (assoc-sub-sub T₂ τ* ρ*)) refl)) ⟩
+                                        (trans (sym (fusion-Tsub-Tsub T₁ τ* ρ*)) refl)
+                                        (trans (sym (fusion-Tsub-Tsub T₂ τ* ρ*)) refl)) ⟩
                          subst CExpr (TidₛT≡T (Tsub (subst←RE (Tsub-act τ* ρ)) T₂))
                            (Esub Tidₛ
                             (Eextₛ Tidₛ Eidₛ
                              (subst CExpr
-                              (trans (assoc-sub-sub T₁ τ* ρ*)
+                              (trans (fusion-Tsub-Tsub T₁ τ* ρ*)
                                (sym (TidₛT≡T (Tsub (subst←RE (Tsub-act τ* ρ)) T₁))))
                               (exp w)))
                             (subst id
                              (cong₂ (λ T₃ → Expr [] (T₃ ◁ ∅))
-                              (sym (trans (sym (assoc-sub-sub T₁ τ* ρ*)) refl))
-                              (sym (trans (sym (assoc-sub-sub T₂ τ* ρ*)) refl)))
+                              (sym (trans (sym (fusion-Tsub-Tsub T₁ τ* ρ*)) refl))
+                              (sym (trans (sym (fusion-Tsub-Tsub T₂ τ* ρ*)) refl)))
                              e))
                        ≡⟨ cong₂ (λ H₁ H₂ → subst CExpr (TidₛT≡T (Tsub (subst←RE (Tsub-act τ* ρ)) T₂))
                            (Esub Tidₛ
                             (Eextₛ Tidₛ Eidₛ
                              (subst CExpr
-                              (trans (assoc-sub-sub T₁ τ* ρ*)
+                              (trans (fusion-Tsub-Tsub T₁ τ* ρ*)
                                (sym (TidₛT≡T (Tsub (subst←RE (Tsub-act τ* ρ)) T₁))))
                               (exp w)))
                             (subst id
                              (cong₂ (λ T₃ → Expr [] (T₃ ◁ ∅))
                               H₁ H₂)
-                             e))) (trans (sym-trans (sym (assoc-sub-sub T₁ τ* ρ*)) refl) 
-                                    (sym-sym (assoc-sub-sub T₁ τ* ρ*)))
-                                  (trans (sym-trans (sym (assoc-sub-sub T₂ τ* ρ*)) refl) 
-                                    (sym-sym (assoc-sub-sub T₂ τ* ρ*))) ⟩
+                             e))) (trans (sym-trans (sym (fusion-Tsub-Tsub T₁ τ* ρ*)) refl) 
+                                    (sym-sym (fusion-Tsub-Tsub T₁ τ* ρ*)))
+                                  (trans (sym-trans (sym (fusion-Tsub-Tsub T₂ τ* ρ*)) refl) 
+                                    (sym-sym (fusion-Tsub-Tsub T₂ τ* ρ*))) ⟩
                          subst CExpr (TidₛT≡T (Tsub (subst←RE (Tsub-act τ* ρ)) T₂))
                            (Esub Tidₛ
                             (Eextₛ Tidₛ Eidₛ
                              (subst CExpr
-                              (trans (assoc-sub-sub T₁ τ* ρ*)
+                              (trans (fusion-Tsub-Tsub T₁ τ* ρ*)
                                (sym (TidₛT≡T (Tsub (subst←RE (Tsub-act τ* ρ)) T₁))))
                               (exp w)))
                             (subst id
                              (cong₂ (λ T₃ → Expr [] (T₃ ◁ ∅))
-                               (assoc-sub-sub T₁ τ* ρ*)
-                              (assoc-sub-sub T₂ τ* ρ*))
+                               (fusion-Tsub-Tsub T₁ τ* ρ*)
+                              (fusion-Tsub-Tsub T₂ τ* ρ*))
                              e))
                        ≡⟨ cong (λ H → subst CExpr (TidₛT≡T (Tsub (subst←RE (Tsub-act τ* ρ)) T₂))
                            (Esub Tidₛ
                             (Eextₛ Tidₛ Eidₛ
                              (subst CExpr
-                              (trans (assoc-sub-sub T₁ τ* ρ*)
+                              (trans (fusion-Tsub-Tsub T₁ τ* ρ*)
                                (sym (TidₛT≡T (Tsub (subst←RE (Tsub-act τ* ρ)) T₁))))
                               (exp w)))
                             H))
-                            (sym (subst₂-∘ id (λ T₃ → Expr [] (T₃ ◁ ∅)) (assoc-sub-sub T₁ τ* ρ*) (assoc-sub-sub T₂ τ* ρ*) e))
+                            (sym (subst₂-∘ id (λ T₃ → Expr [] (T₃ ◁ ∅)) (fusion-Tsub-Tsub T₁ τ* ρ*) (fusion-Tsub-Tsub T₂ τ* ρ*) e))
                         ⟩
                          subst CExpr (TidₛT≡T (Tsub (subst←RE (Tsub-act τ* ρ)) T₂))
                            (Esub Tidₛ
                             (Eextₛ Tidₛ Eidₛ
                              (subst CExpr
-                              (trans (assoc-sub-sub T₁ τ* ρ*)
+                              (trans (fusion-Tsub-Tsub T₁ τ* ρ*)
                                (sym (TidₛT≡T (Tsub (subst←RE (Tsub-act τ* ρ)) T₁))))
                               (exp w)))
                             (subst₂ (λ T₃ → Expr [] (T₃ ◁ ∅))
-                             (assoc-sub-sub T₁ τ* ρ*) (assoc-sub-sub T₂ τ* ρ*) e))
+                             (fusion-Tsub-Tsub T₁ τ* ρ*) (fusion-Tsub-Tsub T₂ τ* ρ*) e))
                        ≡⟨ cong (subst CExpr (TidₛT≡T (Tsub (subst←RE (Tsub-act τ* ρ)) T₂)))
                          (cong (λ H → Esub Tidₛ H
-                                  (subst₂ (λ T₃ → Expr [] (T₃ ◁ ∅)) (assoc-sub-sub T₁ τ* ρ*) (assoc-sub-sub T₂ τ* ρ*) e))
+                                  (subst₂ (λ T₃ → Expr [] (T₃ ◁ ∅)) (fusion-Tsub-Tsub T₁ τ* ρ*) (fusion-Tsub-Tsub T₂ τ* ρ*) e))
                                (sym (cong (Eextₛ Tidₛ Eidₛ)
-                                    (subst-subst {P = CExpr} (assoc-sub-sub T₁ τ* ρ*)
+                                    (subst-subst {P = CExpr} (fusion-Tsub-Tsub T₁ τ* ρ*)
                                                              {(sym (TidₛT≡T (Tsub (τ* ∘ₛₛ ρ*) T₁)))}
                                                              {exp w})))) ⟩
-                         ((subst₂ (λ T₃ → Expr [] (T₃ ◁ ∅)) (assoc-sub-sub T₁ τ* ρ*) (assoc-sub-sub T₂ τ* ρ*) e) [ (subst CExpr (assoc-sub-sub T₁ τ* ρ*) (exp w)) ]E)
-                       ≡⟨ subst-split-[]E″ e (exp w) (assoc-sub-sub T₁ τ* ρ*) (assoc-sub-sub T₂ τ* ρ*) ⟩
-                         subst CExpr (assoc-sub-sub T₂ τ* ρ*) (e [ exp w ]E)
+                         ((subst₂ (λ T₃ → Expr [] (T₃ ◁ ∅)) (fusion-Tsub-Tsub T₁ τ* ρ*) (fusion-Tsub-Tsub T₂ τ* ρ*) e) [ (subst CExpr (fusion-Tsub-Tsub T₁ τ* ρ*) (exp w)) ]E)
+                       ≡⟨ subst-split-[]E″ e (exp w) (fusion-Tsub-Tsub T₁ τ* ρ*) (fusion-Tsub-Tsub T₂ τ* ρ*) ⟩
+                         subst CExpr (fusion-Tsub-Tsub T₂ τ* ρ*) (e [ exp w ]E)
                        ∎)
                      ⟩
-                        subst CExpr (assoc-sub-sub T₂ τ* ρ*) (e [ exp w ]E) 
-                        ⇓ subst Value (assoc-sub-sub T₂ τ* ρ*) v₁ 
-                    ≡⟨ sym (subst-split-eq-⇓₂ (assoc-sub-sub T₂ τ* ρ*)) ⟩
+                        subst CExpr (fusion-Tsub-Tsub T₂ τ* ρ*) (e [ exp w ]E) 
+                        ⇓ subst Value (fusion-Tsub-Tsub T₂ τ* ρ*) v₁ 
+                    ≡⟨ sym (subst-split-eq-⇓₂ (fusion-Tsub-Tsub T₂ τ* ρ*)) ⟩
                       (e [ exp w ]E) ⇓ v₁
                     ∎)
                 --------------------------------------------------
@@ -1249,7 +1249,7 @@ LRVsub (T₁ ⇒ T₂) ρ τ* v z =
                           (cong Value
                            (step-≡ (Tsub (subst←RE (Tsub-act τ* ρ)) T₂)
                             (step-≡˘ (Tsub (τ* ∘ₛₛ ρ*) T₂) (Tsub ρ* (Tsub τ* T₂) ∎)
-                             (assoc-sub-sub T₂ τ* ρ*))
+                             (fusion-Tsub-Tsub T₂ τ* ρ*))
                             refl)))
                          v₁)
                         (z
@@ -1266,7 +1266,7 @@ LRVsub (T₁ ⇒ T₂) ρ τ* v z =
                           (cong Value
                            (step-≡ (Tsub (subst←RE (Tsub-act τ* ρ)) T₂)
                             (step-≡˘ (Tsub (τ* ∘ₛₛ ρ*) T₂) (Tsub ρ* (Tsub τ* T₂) ∎)
-                             (assoc-sub-sub T₂ τ* ρ*))
+                             (fusion-Tsub-Tsub T₂ τ* ρ*))
                             refl)))
                          v₁)
                         (z
@@ -1278,13 +1278,13 @@ LRVsub (T₁ ⇒ T₂) ρ τ* v z =
                               (symω (subst-to-env*-comp τ* ρ* []))))))
                           z₁)) ⟩
                       𝓥⟦ Tsub τ* T₂ ⟧ ρ
-                        (subst Value (sym (assoc-sub-sub T₂ τ* ρ*))
+                        (subst Value (sym (fusion-Tsub-Tsub T₂ τ* ρ*))
                          (subst id
                           (sym
                            (cong Value
                             (step-≡ (Tsub (subst←RE (Tsub-act τ* ρ)) T₂)
                              (step-≡˘ (Tsub (τ* ∘ₛₛ ρ*) T₂) (Tsub ρ* (Tsub τ* T₂) ∎)
-                              (assoc-sub-sub T₂ τ* ρ*))
+                              (fusion-Tsub-Tsub T₂ τ* ρ*))
                              refl)))
                           v₁))
                         (subst id
@@ -1309,9 +1309,9 @@ LRVsub (T₁ ⇒ T₂) ρ τ* v z =
                             (cong Value
                              (step-≡ (Tsub (subst←RE (Tsub-act τ* ρ)) T₂)
                               (step-≡˘ (Tsub (τ* ∘ₛₛ ρ*) T₂) (Tsub ρ* (Tsub τ* T₂) ∎)
-                               (assoc-sub-sub T₂ τ* ρ*))
+                               (fusion-Tsub-Tsub T₂ τ* ρ*))
                               refl))) ⟩∷
-                         ⟨ Value , (sym (assoc-sub-sub T₂ τ* ρ*)) ⟩∷
+                         ⟨ Value , (sym (fusion-Tsub-Tsub T₂ τ* ρ*)) ⟩∷
                          [])
                         []
                         v₁)
@@ -1465,7 +1465,7 @@ LRVsub (T₁ ⇒ T₂) ρ τ* v z =
         )) ⟩
     Σ (Expr [] (Tsub ρ* (Tsub τ* T₁) ◁ ∅) (Tsub ρ* (Tsub τ* T₂)))
       (λ e →
-         (exp (subst Value (sym (cong₂ _⇒_ (assoc-sub-sub T₁ τ* ρ*) (assoc-sub-sub T₂ τ* ρ*))) v) ≡ (ƛ e))
+         (exp (subst Value (sym (cong₂ _⇒_ (fusion-Tsub-Tsub T₁ τ* ρ*) (fusion-Tsub-Tsub T₂ τ* ρ*))) v) ≡ (ƛ e))
          ∧
          ((w : Value (Tsub ρ* (Tsub τ* T₁))) (z₁ : ⟦ Tsub τ* T₁ ⟧ η) →
           𝓥⟦ Tsub τ* T₁ ⟧ ρ w z₁ →
@@ -1487,7 +1487,7 @@ LRVsub (T₁ ⇒ T₂) ρ τ* v z =
               z z₁))))
   ≡⟨ refl ⟩
     𝓥⟦ Tsub τ* (T₁ ⇒ T₂) ⟧ ρ
-      (subst Value (sym (assoc-sub-sub (T₁ ⇒ T₂) τ* ρ*)) v)
+      (subst Value (sym (fusion-Tsub-Tsub (T₁ ⇒ T₂) τ* ρ*)) v)
       (subst id
        (sym
         (step-≡ (⟦ Tsub τ* (T₁ ⇒ T₂) ⟧ η)
@@ -1594,7 +1594,7 @@ LRVsub {Δ₁ = Δ₁} (`∀α_,_ {l′ = l′} l T) ρ τ* v z =
                 (sym (assoc-sub↑-sub↑ T τ* ρ*)))) e)) ⟩
            exp v ≡ subst (Expr [] ∅) (cong (`∀α_,_ l)
                                        (trans
-                                        (trans (assoc-sub-sub T (Tliftₛ τ* l) (Tliftₛ ρ* l))
+                                        (trans (fusion-Tsub-Tsub T (Tliftₛ τ* l) (Tliftₛ ρ* l))
                                          (step-≡ (Tsub (Tliftₛ τ* l ∘ₛₛ Tliftₛ ρ* l) T)
                                           (Tsub (Tliftₛ (τ* ∘ₛₛ ρ*) l) T ∎)
                                           (cong (λ σ → Tsub σ T) (sym (sub↑-dist-∘ₛₛ l τ* ρ*)))))
@@ -1603,7 +1603,7 @@ LRVsub {Δ₁ = Δ₁} (`∀α_,_ {l′ = l′} l T) ρ τ* v z =
          ≡⟨ cong (exp v ≡_)
            (subst*-irrelevant (⟨ (Expr [] ∅) , (cong (`∀α_,_ l)
                                        (trans
-                                        (trans (assoc-sub-sub T (Tliftₛ τ* l) (Tliftₛ ρ* l))
+                                        (trans (fusion-Tsub-Tsub T (Tliftₛ τ* l) (Tliftₛ ρ* l))
                                          (step-≡ (Tsub (Tliftₛ τ* l ∘ₛₛ Tliftₛ ρ* l) T)
                                           (Tsub (Tliftₛ (τ* ∘ₛₛ ρ*) l) T ∎)
                                           (cong (λ σ → Tsub σ T) (sym (sub↑-dist-∘ₛₛ l τ* ρ*)))))
@@ -1837,7 +1837,7 @@ LRVsub {Δ₁ = Δ₁} (`∀α_,_ {l′ = l′} l T) ρ τ* v z =
                                 (step-≡ (Tsub (Tliftₛ ρ* l) (Tsub (Tliftₛ τ* l) T) [ T′ ]T)
                                  (step-≡ (Tsub (subst←RE (REext ρ (T′ , R))) (Tsub (Tliftₛ τ* l) T))
                                   (Tsub (subst←RE (Tsub-act (Tliftₛ τ* l) (REext ρ (T′ , R)))) T ∎)
-                                  (assoc-sub-sub T (Tliftₛ τ* l) (subst←RE (REext ρ (T′ , R)))))
+                                  (fusion-Tsub-Tsub T (Tliftₛ τ* l) (subst←RE (REext ρ (T′ , R)))))
                                  eq-1↑)
                                 (congωl (λ z₁ → Tsub (subst←RE z₁) T)
                                  (symω (Tsub-act-REext ρ τ* T′ R)))) ⟩∷ [])
@@ -1847,7 +1847,7 @@ LRVsub {Δ₁ = Δ₁} (`∀α_,_ {l′ = l′} l T) ρ τ* v z =
                                 (step-≡ (Tsub (Tliftₛ ρ* l) (Tsub (Tliftₛ τ* l) T) [ T′ ]T)
                                  (step-≡ (Tsub (subst←RE (REext ρ (T′ , R))) (Tsub (Tliftₛ τ* l) T))
                                   (Tsub (subst←RE (Tsub-act (Tliftₛ τ* l) (REext ρ (T′ , R)))) T ∎)
-                                  (assoc-sub-sub T (Tliftₛ τ* l) (subst←RE (REext ρ (T′ , R)))))
+                                  (fusion-Tsub-Tsub T (Tliftₛ τ* l) (subst←RE (REext ρ (T′ , R)))))
                                  eq-1↑)
                                 (congωl (λ z₁ → Tsub (subst←RE z₁) T)
                                  (symω (Tsub-act-REext ρ τ* T′ R))))
@@ -1855,7 +1855,7 @@ LRVsub {Δ₁ = Δ₁} (`∀α_,_ {l′ = l′} l T) ρ τ* v z =
                            ≡⟨ sym (subst-subst {P = Value} (step-≡ (Tsub (Tliftₛ ρ* l) (Tsub (Tliftₛ τ* l) T) [ T′ ]T)
                                  (step-≡ (Tsub (subst←RE (REext ρ (T′ , R))) (Tsub (Tliftₛ τ* l) T))
                                   (Tsub (subst←RE (Tsub-act (Tliftₛ τ* l) (REext ρ (T′ , R)))) T ∎)
-                                  (assoc-sub-sub T (Tliftₛ τ* l) (subst←RE (REext ρ (T′ , R)))))
+                                  (fusion-Tsub-Tsub T (Tliftₛ τ* l) (subst←RE (REext ρ (T′ , R)))))
                                  eq-1↑)
                                  {(congωl (λ z₁ → Tsub (subst←RE z₁) T)
                                 (symω (Tsub-act-REext ρ τ* T′ R)))}) ⟩
@@ -1866,7 +1866,7 @@ LRVsub {Δ₁ = Δ₁} (`∀α_,_ {l′ = l′} l T) ρ τ* v z =
                                 (step-≡ (Tsub (Tliftₛ ρ* l) (Tsub (Tliftₛ τ* l) T) [ T′ ]T)
                                  (step-≡ (Tsub (subst←RE (REext ρ (T′ , R))) (Tsub (Tliftₛ τ* l) T))
                                   (Tsub (subst←RE (Tsub-act (Tliftₛ τ* l) (REext ρ (T′ , R)))) T ∎)
-                                  (assoc-sub-sub T (Tliftₛ τ* l) (subst←RE (REext ρ (T′ , R)))))
+                                  (fusion-Tsub-Tsub T (Tliftₛ τ* l) (subst←RE (REext ρ (T′ , R)))))
                                  eq-1↑)
                                 v₁)
                            ≡⟨ sym (substω-congω Value (λ z₁ → Tsub (subst←RE z₁) T) (symω (Tsub-act-REext ρ τ* T′ R)) _ ) ⟩
@@ -1876,7 +1876,7 @@ LRVsub {Δ₁ = Δ₁} (`∀α_,_ {l′ = l′} l T) ρ τ* v z =
                                 (step-≡ (Tsub (Tliftₛ ρ* l) (Tsub (Tliftₛ τ* l) T) [ T′ ]T)
                                  (step-≡ (Tsub (subst←RE (REext ρ (T′ , R))) (Tsub (Tliftₛ τ* l) T))
                                   (Tsub (subst←RE (Tsub-act (Tliftₛ τ* l) (REext ρ (T′ , R)))) T ∎)
-                                  (assoc-sub-sub T (Tliftₛ τ* l) (subst←RE (REext ρ (T′ , R)))))
+                                  (fusion-Tsub-Tsub T (Tliftₛ τ* l) (subst←RE (REext ρ (T′ , R)))))
                                  eq-1↑)
                                 v₁)
                            ∎)
@@ -1942,7 +1942,7 @@ LRVsub {Δ₁ = Δ₁} (`∀α_,_ {l′ = l′} l T) ρ τ* v z =
                                 (Tsub (Tliftₛ ρ* l) (Tsub (Tliftₛ τ* l) T) [ T′ ]T)
                               ≡⟨ lemma1 ρ (Tsub (Tliftₛ τ* l) T) T′ R ⟩
                                 Tsub (subst←RE (REext ρ (T′ , R))) (Tsub (Tliftₛ τ* l) T)
-                              ≡⟨ assoc-sub-sub T  (Tliftₛ τ* l) (subst←RE (REext ρ (T′ , R))) ⟩
+                              ≡⟨ fusion-Tsub-Tsub T  (Tliftₛ τ* l) (subst←RE (REext ρ (T′ , R))) ⟩
                                 Tsub (subst←RE (Tsub-act (Tliftₛ τ* l) (REext ρ (T′ , R)))) T
                               ∎)
                               v₁)
@@ -1960,7 +1960,7 @@ LRVsub {Δ₁ = Δ₁} (`∀α_,_ {l′ = l′} l T) ρ τ* v z =
                                 (Tsub (Tliftₛ ρ* l) (Tsub (Tliftₛ τ* l) T) [ T′ ]T)
                               ≡⟨ lemma1 ρ (Tsub (Tliftₛ τ* l) T) T′ R ⟩
                                 Tsub (subst←RE (REext ρ (T′ , R))) (Tsub (Tliftₛ τ* l) T)
-                              ≡⟨ assoc-sub-sub T  (Tliftₛ τ* l) (subst←RE (REext ρ (T′ , R))) ⟩
+                              ≡⟨ fusion-Tsub-Tsub T  (Tliftₛ τ* l) (subst←RE (REext ρ (T′ , R))) ⟩
                                 Tsub (subst←RE (Tsub-act (Tliftₛ τ* l) (REext ρ (T′ , R)))) T
                               ∎)
                               v₁)
@@ -1972,10 +1972,10 @@ LRVsub {Δ₁ = Δ₁} (`∀α_,_ {l′ = l′} l T) ρ τ* v z =
                                 (z (⟦ T′ ⟧ []))) ⟩
                 𝓥⟦ Tsub (Tliftₛ τ* l) T ⟧ (REext ρ (T′ , R))
                   (subst Value
-                   (sym (assoc-sub-sub T (Tliftₛ τ* l) (subst←RE (REext ρ (T′ , R)))))
+                   (sym (fusion-Tsub-Tsub T (Tliftₛ τ* l) (subst←RE (REext ρ (T′ , R)))))
                    (subst Value
                     (step-≡ (Tsub (Tliftₛ ρ* l) (Tsub (Tliftₛ τ* l) T) [ T′ ]T)
-                     (trans (assoc-sub-sub T (Tliftₛ τ* l) (subst←RE (REext ρ (T′ , R)))) refl)
+                     (trans (fusion-Tsub-Tsub T (Tliftₛ τ* l) (subst←RE (REext ρ (T′ , R)))) refl)
                      eq-1↑)
                     v₁))
                   (subst id
@@ -1996,9 +1996,9 @@ LRVsub {Δ₁ = Δ₁} (`∀α_,_ {l′ = l′} l T) ρ τ* v z =
               --------------------------------------------------
                 (subst*-irrelevant (⟨ Value , (step-≡ (Tsub (Tliftₛ ρ* l) (Tsub (Tliftₛ τ* l) T) [ T′ ]T)
                                         (trans
-                                         (assoc-sub-sub T (Tliftₛ τ* l) (subst←RE (REext ρ (T′ , R)))) refl)
+                                         (fusion-Tsub-Tsub T (Tliftₛ τ* l) (subst←RE (REext ρ (T′ , R)))) refl)
                                         eq-1↑) ⟩∷
-                                     ⟨ Value , (sym (assoc-sub-sub T (Tliftₛ τ* l) (subst←RE (REext ρ (T′ , R))))) ⟩∷ [])
+                                     ⟨ Value , (sym (fusion-Tsub-Tsub T (Tliftₛ τ* l) (subst←RE (REext ρ (T′ , R))))) ⟩∷ [])
                                     (⟨ Value , eq-1↑ ⟩∷ []) v₁)
               --------------------------------------------------
                 (let
@@ -2045,11 +2045,11 @@ LRVsub {Δ₁ = Δ₁} (`∀α_,_ {l′ = l′} l T) ρ τ* v z =
                      (⟨ Value ,
                       step-≡ (Tsub (Tliftₛ ρ* l) (Tsub (Tliftₛ τ* l) T) [ T′ ]T)
                       (trans
-                       (assoc-sub-sub T (Tliftₛ τ* l) (subst←RE (REext ρ (T′ , R)))) refl)
+                       (fusion-Tsub-Tsub T (Tliftₛ τ* l) (subst←RE (REext ρ (T′ , R)))) refl)
                       eq-1↑
                       ⟩∷
                       (⟨ Value ,
-                       sym (assoc-sub-sub T (Tliftₛ τ* l) (subst←RE (REext ρ (T′ , R))))
+                       sym (fusion-Tsub-Tsub T (Tliftₛ τ* l) (subst←RE (REext ρ (T′ , R))))
                        ⟩∷ []))
                      (⟨ Value , eq-1↑ ⟩∷ []) v₁)
                     (subst id
@@ -2074,11 +2074,11 @@ LRVsub {Δ₁ = Δ₁} (`∀α_,_ {l′ = l′} l T) ρ τ* v z =
                      (⟨ Value ,
                       step-≡ (Tsub (Tliftₛ ρ* l) (Tsub (Tliftₛ τ* l) T) [ T′ ]T)
                       (trans
-                       (assoc-sub-sub T (Tliftₛ τ* l) (subst←RE (REext ρ (T′ , R)))) refl)
+                       (fusion-Tsub-Tsub T (Tliftₛ τ* l) (subst←RE (REext ρ (T′ , R)))) refl)
                       eq-1↑
                       ⟩∷
                       (⟨ Value ,
-                       sym (assoc-sub-sub T (Tliftₛ τ* l) (subst←RE (REext ρ (T′ , R))))
+                       sym (fusion-Tsub-Tsub T (Tliftₛ τ* l) (subst←RE (REext ρ (T′ , R))))
                        ⟩∷ []))
                      (⟨ Value , eq-1↑ ⟩∷ []) v₁) ⟩
                   subst id
@@ -2284,7 +2284,7 @@ LRVsub {Δ₁ = Δ₁} (`∀α_,_ {l′ = l′} l T) ρ τ* v z =
               z (⟦ T′ ⟧ [])))))
   ≡⟨ refl ⟩
     𝓥⟦ Tsub τ* (`∀α l , T) ⟧ ρ
-      (subst Value (sym (assoc-sub-sub (`∀α l , T) τ* (subst←RE ρ))) v)
+      (subst Value (sym (fusion-Tsub-Tsub (`∀α l , T) τ* (subst←RE ρ))) v)
       (subst id
        (sym
         (step-≡ (⟦ Tsub τ* (`∀α l , T) ⟧ (subst-to-env* (subst←RE ρ) []))
@@ -2308,7 +2308,7 @@ LRVsub `ℕ ρ τ* v z =
          (exp v ≡ (# n)) × (n ≡ subst id (sym (trans (congωl (λ η → ℕ) (subst-to-env*-comp τ* (λ l x₁ → proj₁ (ρ l x₁)) [])) refl)) z))
   ≡⟨ refl ⟩
     𝓥⟦ Tsub τ* `ℕ ⟧ ρ
-      (subst Value (sym (assoc-sub-sub `ℕ τ* (subst←RE ρ))) v)
+      (subst Value (sym (fusion-Tsub-Tsub `ℕ τ* (subst←RE ρ))) v)
       (subst id
        (sym
         (step-≡ (⟦ Tsub τ* `ℕ ⟧ (subst-to-env* (subst←RE ρ) []))

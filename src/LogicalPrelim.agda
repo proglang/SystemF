@@ -201,7 +201,7 @@ Cdrop-Cextend {Δ = Δ} {Γ = Γ} {l = l} {T = T} χ v =
     aux _ _ (tskip x) = refl
 
 Cdrop-t : {Γ : Ctx Δ} → CSub σ* (l ◁* Γ) → CSub (Tdropₛ σ*) Γ
-Cdrop-t {σ* = σ*} χ l T x = subst CValue (assoc-sub-ren T (Twkᵣ Tidᵣ) σ*) (χ _ _ (tskip x))
+Cdrop-t {σ* = σ*} χ l T x = subst CValue (fusion-Tsub-Tren T (Twkᵣ Tidᵣ) σ*) (χ _ _ (tskip x))
 
 --! Cextt
 Cextt : ∀{l} → CSub σ* Γ → (T′ : Type [] l) → CSub (Textₛ σ* T′) (l ◁* Γ)
@@ -216,12 +216,12 @@ Cextt-Eextₛ-l {σ* = σ*}{T′ = T′} χ = fun-ext (λ l′ → fun-ext (λ T
     aux {T′ = T′} l′ .(Twk _) (tskip {T = T} x) =
       dist-subst' {F = CValue} {G = CExpr} id exp
         (sym
-          (trans (assoc-sub-ren T (λ z x₁ → there x₁) (Textₛ σ* T′))
-           (trans (sym (assoc-sub-sub T (λ z → `_) σ*))
+          (trans (fusion-Tsub-Tren T (λ z x₁ → there x₁) (Textₛ σ* T′))
+           (trans (sym (fusion-Tsub-Tsub T (λ z → `_) σ*))
             (trans (cong (Tsub σ*) (TidₛT≡T T)) refl))))
         (sym
-          (trans (assoc-sub-ren T (λ z x₁ → there x₁) (Textₛ σ* T′))
-           (trans (sym (assoc-sub-sub T (λ z → `_) σ*))
+          (trans (fusion-Tsub-Tren T (λ z x₁ → there x₁) (Textₛ σ* T′))
+           (trans (sym (fusion-Tsub-Tsub T (λ z → `_) σ*))
             (trans (cong (Tsub σ*) (TidₛT≡T T)) refl))))
          (χ l′ T x)
 
