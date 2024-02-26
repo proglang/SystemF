@@ -695,7 +695,9 @@ This type is pretty much the same as the type for an expression
 substitution with two differences. First, it is indexed by a closing
 type substitution $\sigma^*$ and, second, it returns a closed value instead of an
 expression. The latter is needed to prove the variable case of the
-fundamental lemma.
+fundamental lemma. There is a projection function to obtain the
+underlying expression substitution analogous to $\pi_1$.
+\LogicalESSC
 
 The relation {\AGSem} extends {\AVSem} to relate closing substitutions
 with semantic environments. The {\AlevelEnv} function (omitted) calculates the universe level
@@ -758,8 +760,9 @@ lemmas as shown in $eq_1$ and $eq\omega_1$: if we extend an
 environment by one entry and then drop that entry, the resulting
 environment is extensionally equal to the initial one. The lemma
 $eq\omega_1$ requires equality at $\ASeto$, so a custom version
-{\Asubstlo} of the {\Asubst} function is needed. The fundamental
-theorem gives the correct result, only its type needs to be adjusted
+{\Asubstlo} of the {\Asubst} function is needed: it applies two
+equalities, one at a finite level, the other at level $\omega$. The
+fundamental theorem gives the correct result, only its type needs to be adjusted
 using a standard equation $eq_2$ about substitutions.
 
 \FundamentalFundamentalApplication
@@ -768,12 +771,9 @@ inductive hypotheses and exploiting the definition of the value
 relation for functions.
 
 
-We defer the remaining cases to the supplemental material. The case
-for function application is by simple application of the inductive
-hypotheses.
-The cases for lambda abstraction and type abstraction are slightly more involved because of
-type mismatches that need to be handled with {\Asubst}, apart from the
-appeal to the inductive hypothesis.
+We defer the remaining cases to the supplemental material.
+The case for type abstraction is similar, but slightly more involved than the case
+for lambda abstraction.
 The case for type application constitutes an outright annoying
 excursion to ``subst hell'', where an overwhelming number of type
 mismatches needs to be addressed in the proof. Section~\ref{sec:subst-hell} explains
@@ -788,8 +788,9 @@ Suppose we have a closed expression $e$ of number type.
 If the denotational semantics of $e$ is the number $n$, then the big-step
 semantics applied to $e$ terminates and yields the syntactic value for
 $n$.
-The statement looks a bit odd because we have to construct an empty
-environment of type \texttt{Env [] {\Anull} []}, but there is no issue in doing so.
+To state adequacy we first have to construct an empty
+environment of type \texttt{Env [] {\Anull} []}.
+\FundamentalEmptyEnv
 \FundamentalAdequacyType
 This theorem follows immediately from the semantic soundness that we proved with the
 fundamental theorem.
