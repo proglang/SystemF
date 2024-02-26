@@ -416,10 +416,12 @@ type constructor, respectively, and act as neutral elements when applied to a ty
 To prove lemmas about the interaction of multiple renamings and substitutions,
 compositions and fusion lemmas are defined for all four combinations
 of renamings and substiutions.
-For example, the composition of two substitutions is defined by
-\SubDefTCompositionSS
+For example, the composition of two type substitutions is defined by
+\SubstExamplesTCompSS
+% \SubDefTCompositionSS
 with the corresponding fusion lemma:
-\TFFusionSubSub
+\SubstExamplesFusionTSubTSub
+% \TFFusionSubSub
 
 TODO: Show some of the interaction lemmas, e.g. that weakening cancels singleton-substitution?
 
@@ -443,22 +445,24 @@ operation. We only present the definitions for substitutions, because
 the definitions for renamings are analogous.
 
 An expression substitution of type {\AESub} is indexed by a type
-substitution {\AsigmaStar} and maps variables of type \texttt{T}
-to expressions of type \AgdaCode{\ATsub~\AsigmaStar~T}
+substitution \AgdaCode{σ*} and maps variables of type \AgdaCode{T}
+to expressions of type \AgdaCode{\ATsub~σ*~T}
 \SubDefESub
 
-The operation of applying an expression substitution {\Asigma}, which
-is indexed by a type substitution {\AsigmaStar}, performs a
-type-in-expression substitution according to {\AsigmaStar} and an
-expression-in-expression substitution according to {\Asigma}.
-The operation is defined by induction on the expression, and lifts {\Asigma} when
+The operation of applying an expression substitution \AgdaCode{σ}, which
+is indexed by a type substitution \AgdaCode{σ*}, performs a
+type-in-expression substitution according to \AgdaCode{σ*} and an
+expression-in-expression substitution according to \AgdaCode{σ}.
+The operation is defined by induction on the expression, and lifts \AgdaCode{σ} when
 going under an expression- or type-binder using {\AEliftS} and
 {\AEliftSL}, respectively.
 \SubDefEsub
 
-\SubDefECompositionSS
+\SubstExamplesECompSS
+% \SubDefECompositionSS
 
-\EFFusionSubSub
+\SubstExamplesFusionESubESub
+% \EFFusionSubSub
 
 % \SubDefERen
 % \SubDefEren

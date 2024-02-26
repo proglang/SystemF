@@ -40,7 +40,7 @@ Twkᵣ : TRen Δ₁ Δ₂ → TRen Δ₁ (l ∷ Δ₂)
 Twkᵣ ρ* _ x = there (ρ* _ x)
 
 --! DefTren
-Tren : TRen Δ₁ Δ₂ → (Type Δ₁ l → Type Δ₂ l)
+Tren : TRen Δ₁ Δ₂ → Type Δ₁ l → Type Δ₂ l
 Tliftᵣ : TRen Δ₁ Δ₂ → ∀ l → TRen (l ∷ Δ₁) (l ∷ Δ₂)
 
 Tliftᵣ ρ* _ _ here = here
