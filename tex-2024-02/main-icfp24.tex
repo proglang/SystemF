@@ -1047,7 +1047,11 @@ level quantification as in Agda's universe polymorphism. However, Agda
 assigns universe polymorpic functions the type $\ASeto$. In
 consequence,  this extension no longer has a seamless denotational
 embedding in Agda as the meaning of a term lives either in $\ASet\
-\ell$  or in $\ASeto$. A suitable result type is defineable, 
+\ell$  or in $\ASeto$. A suitable result type to hold either value is
+defineable, but it lives in $\ASeto_1$. Thus, reasoning about it
+requires further variabts of equality types beyong $\ASeto$. Moreover, the definition of
+the denotational semantics is no longer as clean as shown in
+Section~\ref{sec:denotational}. 
 
 
 %%
