@@ -18,13 +18,11 @@ CExpr : Type [] l → Set
 CExpr T = Expr [] ∅ T
 
 --! isValue
-data isValue : ∀ {l}{T : Type [] l} → CExpr T → Set where
-  V-♯ : ∀ {n}
-    → isValue (# n)
-  V-ƛ : ∀ {l₁ l₂}{T₁ : Type [] l₁}{T₂ : Type [] l₂}{e : Expr [] (T₁ ◁ ∅) T₂}
-    → isValue (ƛ e)
-  V-Λ : ∀ {l₁ l₂}{T′ : Type (l₁ ∷ []) l₂}{e : Expr (l₁ ∷ []) (l₁ ◁* ∅) T′}
-    → isValue (Λ l₁ ⇒ e)
+data isValue : Expr Δ Γ T → Set where
+  V-♯ : isValue {Δ}{Γ} (# n)
+  V-ƛ : isValue (ƛ e)
+  V-Λ : isValue (Λ l ⇒ e)
+
 
 --! Value
 record CValue (T : Type [] l) : Set where

@@ -35,9 +35,9 @@ open import LogicalPrelim
 
 
 --! MCVType
-𝓥⟦_⟧ : (T : Type Δ l) → (ρ : RelEnv Δ)
+𝓥⟦_⟧ : (T : Type Δ l) → (ρ : 𝓓⟦ Δ ⟧)
   → CValue (Tsub (π₁ ρ) T) → ⟦ T ⟧ (⟦ π₁ ρ ⟧* []) → Set l
-𝓔⟦_⟧ : (T : Type Δ l) → (ρ : RelEnv Δ)
+𝓔⟦_⟧ : (T : Type Δ l) → (ρ : 𝓓⟦ Δ ⟧)
   → CExpr (Tsub (π₁ ρ) T) → ⟦ T ⟧ (⟦ π₁ ρ ⟧* []) → Set l
 
 --! MCVBody

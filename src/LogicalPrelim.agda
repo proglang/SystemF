@@ -43,8 +43,10 @@ REL : Type [] l → Set (suc l)
 REL {l} T = CValue T → ⟦ T ⟧ [] → Set l 
 
 --! RelEnv
-RelEnv : (Δ : LEnv) → Setω
-RelEnv Δ = ∀ l → l ∈ Δ → Σ (Type [] l) REL
+𝓓⟦_⟧ : (Δ : LEnv) → Setω
+𝓓⟦ Δ ⟧ = ∀ l → l ∈ Δ → Σ (Type [] l) REL
+
+RelEnv = 𝓓⟦_⟧
 
 --! substRE
 π₁ : RelEnv Δ → TSub Δ []
@@ -54,19 +56,21 @@ RelEnv Δ = ∀ l → l ∈ Δ → Σ (Type [] l) REL
 π₂ ρ l x = proj₂ (ρ l x)
 
 subst←RE = π₁
+_₁ = π₁
+_₂ = π₂
 
 -- type renaming acting on RelEnv by composition
 
 --! TrenAct
-Tren-act : TRen Δ₁ Δ₂ → RelEnv Δ₂ → RelEnv Δ₁
+Tren-act : TRen Δ₁ Δ₂ → 𝓓⟦ Δ₂ ⟧ → 𝓓⟦ Δ₁ ⟧
 Tren-act τ* ρ = λ l x → ρ l (τ* l x)
 
 --! REdrop
-REdrop : RelEnv (l ∷ Δ) → RelEnv Δ
+REdrop : 𝓓⟦ l ∷ Δ ⟧ → 𝓓⟦ Δ ⟧
 REdrop = Tren-act (Twkᵣ Tidᵣ)
 
 --! REext
-REext : RelEnv Δ → (Σ (Type [] l) REL) → RelEnv (l ∷ Δ)
+REext : 𝓓⟦ Δ ⟧ → (Σ (Type [] l) REL) → 𝓓⟦ l ∷ Δ ⟧
 REext ρ ΣTR _ here = ΣTR
 REext ρ ΣTR _ (there x) = ρ _ x
 
@@ -95,7 +99,7 @@ subst←RE-ren : ∀ (ρ : RelEnv Δ₂) (τ* : TRen Δ₁ Δ₂)
 subst←RE-ren ρ τ* l′ x = refl
 
 --! lemmaOne
-RE-ext∘lift : ∀ (ρ : RelEnv Δ) (T : Type (l ∷ Δ) l′) (T′ : Type [] l) (R : REL T′)
+RE-ext∘lift : ∀ (ρ : 𝓓⟦ Δ ⟧) (T : Type (l ∷ Δ) l′) (T′ : Type [] l) (R : REL T′)
   → Tsub (Tliftₛ (π₁ ρ) l) T [ T′ ]T ≡ Tsub (π₁ (REext ρ (T′ , R))) T
 
 RE-ext∘lift {l = l} ρ T T′ R =

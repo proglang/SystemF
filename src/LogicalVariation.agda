@@ -37,7 +37,7 @@ open import LogicalPrelim
 -- stratified logical relation
 
 postulate
-  π₁∘ext≡ext∘↑π₁ : ∀ (T : Type (l ∷ Δ) l′) (ρ : RelEnv Δ) (T′ : Type [] l) (R : REL T′)
+  π₁∘ext≡ext∘↑π₁ : ∀ (T : Type (l ∷ Δ) l′) (ρ : 𝓓⟦ Δ ⟧) (T′ : Type [] l) (R : REL T′)
     → let ρ′ = REext ρ (T′ , R)
     in Tsub (π₁ ρ′) T ≡ Tsub (Tliftₛ (π₁ ρ) l) T [ T′ ]T
   ⟦⟧∘ext≡ext∘⟦⟧ : ∀ (T : Type [ l ] l′) → (T′ : Type [] l)
@@ -45,10 +45,10 @@ postulate
   -- prove using: Tsingle-subst-preserves [] T′ T
 
 --! MCVType
-𝓥′⟦_⟧ : (T : Type Δ l) → (ρ : RelEnv Δ) → REL (Tsub (π₁ ρ) T)
+𝓥′⟦_⟧ : (T : Type Δ l) → (ρ : 𝓓⟦ Δ ⟧) → REL (Tsub (π₁ ρ) T)
 
 --! MCEType
-𝓔′⟦_⟧ : (T : Type Δ l) → (ρ : RelEnv Δ)
+𝓔′⟦_⟧ : (T : Type Δ l) → (ρ : 𝓓⟦ Δ ⟧)
   → CExpr (Tsub (π₁ ρ) T) → ⟦ Tsub (π₁ ρ) T ⟧ [] → Set l
 
 --! MCVBody

@@ -32,6 +32,8 @@ open import ExprSubstProperties
 open import SmallStep
 import HeterogeneousEqualityLemmas as HE
 
+--! ESPS >
+
 -- semantic renamings on expression
 ERen* : {ρ* : TRen Δ₁ Δ₂} (TRen* : TRen* ρ* η₁ η₂) → (ρ : ERen ρ* Γ₁ Γ₂) → (γ₁ : Env Δ₁ Γ₁ η₁) → (γ₂ : Env Δ₂ Γ₂ η₂) → Setω
 ERen* {Δ₁ = Δ₁} {Γ₁ = Γ₁} {ρ*} Tren* ρ γ₁ γ₂ = ∀ {l} {T : Type Δ₁ l} → 
@@ -387,8 +389,10 @@ Esubst-preserves {Δ₂ = Δ₂} {Γ₂ = Γ₂} {η₂ = η₂} {γ₂ = γ₂}
     subst id eq' (E⟦ e ∙ T′ ⟧ η₁ γ₁)
   ∎       
    
+--! EEsingleSubstPreserves
 EEsingle-subst-preserves : ∀ (γ : Env Δ Γ η) (e₁ : Expr Δ (T′ ◁ Γ) T) (e₂ : Expr Δ Γ T′) →
   E⟦ e₁ [ e₂ ]E ⟧ η γ ≡ E⟦ e₁ ⟧ η (extend γ (E⟦ e₂ ⟧ η γ))  
+
 EEsingle-subst-preserves {Δ = Δ} {Γ = Γ} {η = η} {T′ = T′} {T = T} γ e₁ e₂ = 
   (H.≅-to-≡(R.begin 
    E⟦ subst (Expr Δ Γ) (TidₛT≡T T) (Esub (λ z → `_) (Eextₛ (λ z → `_) (λ z T₁ x → subst (Expr Δ Γ) (sym (TidₛT≡T T₁)) (` x)) (subst (Expr Δ Γ) (sym (TidₛT≡T T′)) e₂)) e₁)  ⟧ η γ
@@ -407,8 +411,10 @@ EEsingle-subst-preserves {Δ = Δ} {Γ = Γ} {η = η} {T′ = T′} {T = T} γ 
     E⟦ e₁ ⟧ η (extend γ (E⟦ e₂ ⟧ η γ))
   R.∎))
 
+--! ETsingleSubstPreserves
 ETsingle-subst-preserves : ∀ (γ : Env Δ Γ η) (e : Expr (l ∷ Δ) (l ◁* Γ) T′) (T : Type Δ l) →
   E⟦ e [ T ]ET ⟧ η γ ≡ subst id (sym (Tsingle-subst-preserves η T T′)) (E⟦ e ⟧ (⟦ T ⟧ η ∷ η) (extend-tskip γ))
+
 ETsingle-subst-preserves {Δ = Δ} {Γ = Γ} {η = η} {T′ = T′} γ e T = (H.≅-to-≡(R.begin 
     E⟦ e [ T ]ET ⟧ η γ
   R.≅⟨ refl ⟩  

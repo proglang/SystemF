@@ -40,7 +40,7 @@ open import HeterogeneousEqualityLemmas hiding (module R)
 --! Fundamental >
 
 Tsub-act-Text :
-  ∀ (ρ : RelEnv Δ)
+  ∀ (ρ : 𝓓⟦ Δ ⟧)
   → (T′ : Type Δ l)
   → let ρ* = π₁ ρ in
     (l₂ : Level)
@@ -102,7 +102,7 @@ Tsub-act-Text ρ T′ l₂ (there x) =
   ∎
 
 -- next one will become obsolete
-Elift-[]≡Cextt : (Γ : Ctx Δ) (ρ : RelEnv Δ) (χ : CSub (π₁ ρ) Γ) (l′ l : Level) (T : Type (l ∷ Δ) l′) (e : Expr (l ∷ Δ) (l ◁* Γ) T) (T′ : Type [] l) (R : REL T′)
+Elift-[]≡Cextt : (Γ : Ctx Δ) (ρ : 𝓓⟦ Δ ⟧) (χ : CSub (π₁ ρ) Γ) (l′ l : Level) (T : Type (l ∷ Δ) l′) (e : Expr (l ∷ Δ) (l ◁* Γ) T) (T′ : Type [] l) (R : REL T′)
   → let σ = π₁ ρ in
     let lhs = (Esub (Tliftₛ σ l) (Eliftₛ-l σ (ς₁ χ)) e [ T′ ]ET) in
     let rhs = Csub (subst (λ σ → CSub σ (l ◁* Γ)) (sym (subst←RE-ext-ext ρ T′ R)) (Cextt χ T′)) e in
@@ -144,7 +144,7 @@ Elift-[]≡Cextt Γ ρ χ l′ l T e T′ R =
   ∎
 
 -- χ-val-extend :  ∀ (Γ : Ctx Δ)
---   → (ρ : RelEnv Δ)
+--   → (ρ : 𝓓⟦ Δ ⟧)
 --   → let σ* = π₁ ρ in (χ : CSub σ* Γ)
 --   → (w       : CValue (Tsub (π₁ ρ) T₁))
 --   → (w ⇓ w)
@@ -158,7 +158,7 @@ Elift-[]≡Cextt Γ ρ χ l′ l T e T′ R =
 --! SemanticSoundness {
 semanticSoundness : ∀ (Γ : Ctx Δ) (T : Type Δ l) (e : Expr Δ Γ T) → Setω
 semanticSoundness {Δ = Δ} Γ T e =
-  ∀ (ρ : RelEnv Δ)
+  ∀ (ρ : 𝓓⟦ Δ ⟧)
   → let ρ* = π₁ ρ in (χ : CSub ρ* Γ)
   → let η = ⟦ ρ* ⟧* [] in (γ : Env Δ Γ η)
   → 𝓖⟦ Γ ⟧ ρ χ γ
@@ -592,7 +592,7 @@ Csub-closed' {T = T} χ e =
 γ₀ = λ l T ()
 
 --! EmptyRelEnv
-ρ₀ : RelEnv []
+ρ₀ : 𝓓⟦ [] ⟧
 ρ₀ = λ l ()
 
 --! EmptyCSub

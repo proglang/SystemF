@@ -17,25 +17,25 @@ open import ExprSubstPropertiesSem using (EEsingle-subst-preserves; ETsingle-sub
 
 open import BigStep
 
+--! BigStep >
+
 γ₀ : Env [] ∅ []
 γ₀ = λ l T ()
 
+--! SoundnessType
 soundness : ∀ {T : Type [] l} {e : CExpr T} {v : CValue T}
-  → e ⇓ v
-  → E⟦ e ⟧ [] γ₀ ≡ E⟦ exp v ⟧ [] γ₀
+  → e ⇓ v → E⟦ e ⟧ [] γ₀ ≡ E⟦ exp v ⟧ [] γ₀
+
+--! Soundness
 soundness ⇓-n = refl
 soundness (⇓-s e⇓v) = cong suc (soundness e⇓v)
 soundness ⇓-ƛ = refl
 soundness {e = e₁ · e₂}{v = v} (⇓-· {e = e}{v₂ = v₂} e₁⇓v₁ e₂⇓v₂ e[]⇓v) =
   begin
-    E⟦ e₁ ⟧ [] γ₀ (E⟦ e₂ ⟧ [] γ₀)
-  ≡⟨ cong (λ H → H (E⟦ e₂ ⟧ [] γ₀)) (soundness e₁⇓v₁) ⟩
-    E⟦ ƛ e ⟧ [] γ₀ (E⟦ e₂ ⟧ [] γ₀)
-  ≡⟨ cong (E⟦ ƛ e ⟧ [] γ₀) (soundness e₂⇓v₂) ⟩
-    E⟦ ƛ e ⟧ [] γ₀ (E⟦ exp v₂ ⟧ [] γ₀)
-  ≡⟨ sym (EEsingle-subst-preserves γ₀ e (exp v₂)) ⟩
-    E⟦ e [ exp v₂ ]E ⟧ [] γ₀
-  ≡⟨ soundness e[]⇓v ⟩
+    E⟦ e₁ ⟧ [] γ₀ (E⟦ e₂ ⟧ [] γ₀)      ≡⟨ cong (λ H → H (E⟦ e₂ ⟧ [] γ₀)) (soundness e₁⇓v₁) ⟩
+    E⟦ ƛ e ⟧ [] γ₀ (E⟦ e₂ ⟧ [] γ₀)     ≡⟨ cong (E⟦ ƛ e ⟧ [] γ₀) (soundness e₂⇓v₂) ⟩
+    E⟦ ƛ e ⟧ [] γ₀ (E⟦ exp v₂ ⟧ [] γ₀) ≡⟨ sym (EEsingle-subst-preserves γ₀ e (exp v₂)) ⟩
+    E⟦ e [ exp v₂ ]E ⟧ [] γ₀           ≡⟨ soundness e[]⇓v ⟩
     E⟦ exp v ⟧ [] γ₀
   ∎
 soundness ⇓-Λ = refl

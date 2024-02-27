@@ -24,6 +24,7 @@ private variable
   ρ ρ₁ ρ₂ ρ′ : TSub Δ₁ Δ₂
   σ σ₁ σ₂ σ′ : TSub Δ₁ Δ₂
 
+--! TF >
 
 -- the action of renaming on semantic environments
 
@@ -33,8 +34,7 @@ TRen* {Δ₁} ρ* η₁ η₂ = ∀ {l : Level} → (x : l ∈ Δ₁) → apply-
 wkᵣ∈Ren* : ∀ (η : Env* Δ) (⟦α⟧ : Set l) → TRen* (Twkᵣ {Δ₁ = Δ}{l = l} Tidᵣ) η (⟦α⟧ ∷ η)
 wkᵣ∈Ren* η ⟦α⟧ x = refl
 
-Tren*-id : (η : Env* Δ) → TRen* (λ _ x → x) η η
-
+Tren*-id : (η : Env* Δ) → TRen* Tidᵣ η η
 Tren*-id η x = refl
 
 Tren*-pop : (ρ* : TRen (l ∷ Δ₁) Δ₂) (α : Set l) (η₁ : Env* Δ₁) (η₂ : Env* Δ₂) → 
@@ -82,10 +82,11 @@ Tdrop-σ≡Twk∘σ : ∀ (σ* : TSub (l ∷ Δ₁) Δ₂) → Tdropₛ σ* ≡ 
 Tdrop-σ≡Twk∘σ σ* = fun-ext₂ (λ x y → refl)
 
 -- the action of substitution on semantic environments
+
 --! substToEnv
 ⟦_⟧* : TSub Δ₁ Δ₂ → Env* Δ₂ → Env* Δ₁
-⟦_⟧* {[]} σ* η₂ = []
-⟦_⟧* {x ∷ Δ₁} σ* η₂ = ⟦ σ* _ here ⟧ η₂ ∷ ⟦ Tdropₛ σ* ⟧* η₂
+⟦_⟧* {Δ₁ = []} σ* η₂ = []
+⟦_⟧* {Δ₁ = _ ∷ _} σ* η₂ = ⟦ σ* _ here ⟧ η₂ ∷ ⟦ Tdropₛ σ* ⟧* η₂
 
 subst-to-env* : TSub Δ₁ Δ₂ → Env* Δ₂ → Env* Δ₁
 subst-to-env* = ⟦_⟧*
