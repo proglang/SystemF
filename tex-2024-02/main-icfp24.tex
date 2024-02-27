@@ -4,6 +4,8 @@
 \usepackage{stmaryrd}
 \usepackage{listings}
 
+% \AgdaNoSpaceAroundCode{}
+
 %% There is a limit of 25 pages for a full paper or Functional Pearl
 %% and 12 pages for an Experience Report; in either case, the
 %% bibliography and an optional clearly marked appendix will not be
@@ -444,15 +446,15 @@ expression-in-expression substitution operation.
 We only present the definitions for substitutions, because
 the definitions for renamings are analogous.
 
-For any type substitution \AgdaCode{σ*}, an expression substitution of
-type \AgdaCode{\AESub~σ*~Γ₁~Γ₂} maps variables of type \AgdaCode{T} in
-\AgdaCode{Γ₁} to expressions of type \AgdaCode{\ATsub~σ*~T} in \AgdaCode{Γ₂}.
+For any type substitution \ACode{σ*}, an expression substitution of
+type \ACode{\AESub~σ*~Γ₁~Γ₂} is a function that maps variables of type \ACode{T} in
+\ACode{Γ₁} to expressions of type \ACode{\ATsub~σ*~T} in \ACode{Γ₂}.
 \SubDefESub
 
-The operation {\AEsub} of applying an expression substitution \AgdaCode{σ} to an expression,
-performs an expression-in-expression substitution according to \AgdaCode{σ},
-and a type-in-expression substitution according to its index \AgdaCode{σ*}.
-The operation is defined by induction on the expression, and lifts \AgdaCode{σ} when
+The operation {\AEsub} of applying an expression substitution \ACode{σ} to an expression,
+performs an expression-in-expression substitution according to \ACode{σ},
+and a type-in-expression substitution according to its index \ACode{σ*}.
+The operation is defined by induction on the expression, and lifts \ACode{σ} when
 going under an expression- or type-binder using {\AEliftS} and
 {\AEliftSL}, respectively.
 \SubDefEsub
@@ -470,19 +472,19 @@ going under an expression- or type-binder using {\AEliftS} and
 
 % Consider for example the composition of two expression substitutions:
 
-The composition of two expression substitutions \AgdaCode{σ₁} and \AgdaCode{σ₂}, which
-are indexed with type substitutions \AgdaCode{σ₁*} and
-\AgdaCode{σ₂*}, respectively, yields an expression substitution that
+The composition of two expression substitutions \ACode{σ₁} and \ACode{σ₂}, which
+are indexed with type substitutions \ACode{σ₁*} and
+\ACode{σ₂*}, respectively, yields an expression substitution that
 is indexed with the composition of the type substitutions,
-\AgdaCode{σ₁* ∘Tₛₛ σ₂*}.
+\ACode{σ₁* ∘Tₛₛ σ₂*}.
 \SubstExamplesECompSS
 % \SubDefECompositionSS
 
 In contrast to the composition of type substitutions, the term
-\AgdaCode{\AEsub~\_~σ₁~(σ₂~\_~\_~x)} cannot be returned directly,
-as it has type \AgdaCode{\AExpr~Δ₃~Γ₃~(\ATsub~σ₁*~(\ATsub~σ₂*~T))},
+\ACode{\AEsub~\_~σ₁~(σ₂~\_~\_~x)} cannot be returned directly,
+as it has type \ACode{\AExpr~Δ₃~Γ₃~(\ATsub~σ₁*~(\ATsub~σ₂*~T))},
 while a term of the propositionally equivalent type
-\AgdaCode{\AExpr~Δ₃~Γ₃~(\ATsub~(σ₁* ∘Tₛₛ σ₂*)~T)} is expected.
+\ACode{\AExpr~Δ₃~Γ₃~(\ATsub~(σ₁* ∘Tₛₛ σ₂*)~T)} is expected.
 The required type conversion is achieved with the {\Asubst}-lemma
 using the fusion lemma for type substitutions as a witness.
 
