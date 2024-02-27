@@ -947,27 +947,66 @@ expressions, e.g. between two function applications: \texttt{f x $\equiv$ g y}.
 
 It is harmless to use {\Asubst} in a proof, but if a {\Asubst} appears
 in the \emph{type} of a proof, then often complications arise.
-Consider for example the type \texttt{Vec} -- a list that
-intrinsically tracks its length -- and its append function \verb/_++_/:
-\SubstExamplesVec
-\SubstExamplesAppend
+Consider for example the type application case of the lemma for
+expression substitution from Section~\ref{sec:substitutions:expr}:
 
-Stating that \verb/_++_/ is associative requires us to use a {\Asubst}:
-\SubstExamplesAssocType
-The term \texttt{(xs ++ ys) ++ zs} has type \texttt{Vec A ((m + n) + p)}, whereas
-the term \texttt{xs ++ (ys ++ zs)} has type \texttt{Vec A (m + (n + p))}, so a
-{\Asubst} is needed to apply the associativity of addition.
+\begin{AgdaBlock}
+  \SubstExamplesFusionESubESub
+  \SubstExamplesFusionESubESubBody
+\end{AgdaBlock}
 
-\SubstExamplesAppendR
+For the sake of readability we abstracted the {\Asubst} terms.
+Each \ACode{Sᵢ} stands for a \ACode{\Asubst~Fᵢ~Eᵢ}.
+As the concrete arguments of the \ACode{Sᵢ} are not relevant to the
+discussion, we elided the \AKw{where}-block of the proof.
 
-% \SubstExamplesAssoc
-\SubstExamplesAssocR
+In line (1), the \ACode{S₁} comes from the lemma statement itself.
+In line (2), the inner {\AEsub} from line (1) has been unfolded, which
+introduced another {\Asubst} we call \ACode{S₂}. The \ACode{S₂} blocks
+the unfolding of the outer {\AEsub}. It is impossible to get \ACode{S₂} to reduce,
+because \ACode{E₂} is an equality proof between two function
+applications, so it cannot be matched on. However,
+the \ACode{S₂} can be pulled outwards, which transforms it into
+\ACode{S₃} as shown in line (3) and unblocks the outer {\AEsub}.
+This is possible because {\AEsub} is sufficiently polymorphic, such that
+it is welltyped when called both with and without \ACode{S₂} -- it just produces a value
+of a different type, which needs to be accounted for with \ACode{S₃}.
 
-% \SubstExamplesAssocHet
-\SubstExamplesAssocRHet
-
+\SubstExamplesCongTApp
 \SubstExamplesDistSubst
-\SubstExamplesSubstRemovable
+
+\SubstExamplesFusionESubESubBodyProofA
+% \SubstExamplesFusionESubESubBodyProofB
+\SubstExamplesFusionESubESubBodyProofC
+
+\SubstExamplesFusionESubESubHet
+
+\SubstExamplesFusionESubESubHetProofA
+\SubstExamplesFusionESubESubHetProofB
+
+% Consider for example the type \texttt{Vec} -- a list that
+% intrinsically tracks its length -- and its append function \verb/_++_/:
+% \SubstExamplesVec
+% \SubstExamplesAppend
+
+% Stating that \verb/_++_/ is associative requires us to use a {\Asubst}:
+% \SubstExamplesAssocType
+% The term \texttt{(xs ++ ys) ++ zs} has type \texttt{Vec A ((m + n) + p)}, whereas
+% the term \texttt{xs ++ (ys ++ zs)} has type \texttt{Vec A (m + (n + p))}, so a
+% {\Asubst} is needed to apply the associativity of addition.
+
+% \SubstExamplesAppendR
+
+% % \SubstExamplesAssoc
+% \SubstExamplesAssocR
+
+% % \SubstExamplesAssocHet
+% \SubstExamplesAssocRHet
+
+% \SubstExamplesDistSubst
+% \SubstExamplesSubstRemovable
+
+
 
 
 % It is harmless to use {\Asubst} in proofs, but if it is used in
