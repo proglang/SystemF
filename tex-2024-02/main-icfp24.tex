@@ -4,8 +4,6 @@
 \usepackage{stmaryrd}
 \usepackage{listings}
 
-% \AgdaNoSpaceAroundCode{}
-
 %% There is a limit of 25 pages for a full paper or Functional Pearl
 %% and 12 pages for an Experience Report; in either case, the
 %% bibliography and an optional clearly marked appendix will not be
@@ -89,6 +87,15 @@
 
 
 \usepackage{agda-generated}
+
+
+\newenvironment{AgdaBlock}{%
+  \vspace{\AgdaEmptySkip}
+  \AgdaNoSpaceAroundCode{}
+}{%
+  \AgdaSpaceAroundCode{}
+  \vspace{\AgdaEmptySkip}
+}
 
 
 \begin{document}
@@ -406,13 +413,18 @@ type constructor, respectively, and act as neutral elements when applied to a ty
 
 \noindent\hspace{-\fboxsep}
 \begin{minipage}{0.5\linewidth}
-  \SubDefTidR
-  \TFTidRNeutral
+  \begin{AgdaBlock}
+    \SubDefTidR
+    \TFTidRNeutral
+  \end{AgdaBlock}
 \end{minipage}
 \begin{minipage}{0.5\linewidth}
-  \SubDefTidS
-  \TFTidSNeutral
+  \begin{AgdaBlock}
+    \SubDefTidS
+    \TFTidSNeutral
+  \end{AgdaBlock}
 \end{minipage}
+
 
 
 To prove lemmas about the interaction of multiple renamings and substitutions,
