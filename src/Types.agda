@@ -16,7 +16,7 @@ open ≡-Reasoning
 
 variable l l′ l₁ l₂ l₃ : Level
 
-open import Ext
+open import Extensionality
 
 ----------------------------------------------------------------------
 --! TF >

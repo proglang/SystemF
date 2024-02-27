@@ -17,7 +17,7 @@ open import Relation.Binary.PropositionalEquality
 open ≡-Reasoning
 open import Relation.Binary.HeterogeneousEquality as H using (_≅_; refl)
 
-open import Ext
+open import Extensionality
 open import Types
 open import TypeSubstitution
 open import TypeSubstProperties

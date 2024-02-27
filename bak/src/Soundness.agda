@@ -20,6 +20,6 @@ open import ExprSubstProperties
 open import Types
 open import TypeSubstitution
 open import TypeSubstProperties
-open import Ext
+open import Extensionality
 open import SmallStep
 open import SetOmega

@@ -1,4 +1,4 @@
-module Fundamental4 where
+module Fundamental where
 
 open import Level
 open import Data.Product using (_×_; Σ; Σ-syntax; ∃-syntax; _,_; proj₁; proj₂)
@@ -19,8 +19,8 @@ open ≡-Reasoning
 
 open import Relation.Binary.HeterogeneousEquality as H using (_≅_; refl)
 
-open import Ext
-open import SetOmega
+open import Extensionality
+open import PropositionalSetOmegaEquality
 open import SubstProperties
 open import Types
 open import TypeSubstitution
@@ -31,9 +31,9 @@ open import ExprSubstitution
 open import ExprSubstProperties
 open import BigStep
 open import LogicalPrelim
-open import Logical2
-open import LRVren2
-open import LRVsub2
+open import Logical
+open import LRVren
+open import LRVsub
 open import HeterogeneousEqualityLemmas hiding (module R)
 
 ----------------------------------------------------------------------

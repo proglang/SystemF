@@ -13,7 +13,7 @@ open import Level
 open import Data.Product
 open import Function
 open import Relation.Binary.PropositionalEquality using (_≡_; refl; sym; trans; cong; cong₂; subst; subst₂; module ≡-Reasoning)
-open import Ext
+open import Extensionality
 
 module SubstPropertiesHeq where
 
@@ -690,7 +690,7 @@ sym-sym : ∀ {a}{A : Set a}{x₁ x₂ : A}
   → sym (sym eq) ≡ eq
 sym-sym refl = refl
 
--- Lemmas from Logical2.agda ---------------------------------------------------
+-- Lemmas from Logical.agda ---------------------------------------------------
 
 open import Level
 open import Data.Product using (_×_; Σ; Σ-syntax; ∃-syntax; _,_; proj₁; proj₂)
@@ -707,7 +707,7 @@ open import Relation.Binary.PropositionalEquality
         module ≡-Reasoning)
 open import Axiom.Extensionality.Propositional using (∀-extensionality; Extensionality)
 
-open import SetOmega
+open import PropositionalSetOmegaEquality
 open import Types
 open import TypeSubstitution
 open import TypeSubstProperties
@@ -715,7 +715,7 @@ open import Expressions
 open import ExprSubstitution
 open import ExprSubstProperties hiding (module R)
 open import BigStep
-open import Logical2 hiding (
+open import Logical hiding (
   subst-split-eq-⇓; subst-split-eq-⇓₂; subst-split-[]E;
   subst-split-[]E′; subst-split-[]E″
   )

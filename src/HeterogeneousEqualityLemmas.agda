@@ -29,7 +29,7 @@ Hcong₄ :
     f x u i p ≅ f y v j q
 Hcong₄ f refl refl refl refl = refl
 
-open import Ext
+open import Extensionality
 open import Types
 open import TypeSubstitution
 open import Expressions

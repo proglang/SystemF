@@ -18,8 +18,8 @@ open ≡-Reasoning
 open import Relation.Binary.HeterogeneousEquality as H using (_≅_; refl)
 module R = H.≅-Reasoning
 
-open import Ext
-open import SetOmega
+open import Extensionality
+open import PropositionalSetOmegaEquality
 open import SubstProperties
 open import Types
 open import TypeSubstitution

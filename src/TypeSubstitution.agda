@@ -15,7 +15,7 @@ open import Axiom.Extensionality.Propositional using (∀-extensionality; Extens
 open ≡-Reasoning
 
 open import Types
-open import Ext
+open import Extensionality
 
 --! Sub >
 

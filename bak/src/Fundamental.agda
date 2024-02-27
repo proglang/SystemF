@@ -18,7 +18,7 @@ open import Relation.Binary.PropositionalEquality
 open import Axiom.Extensionality.Propositional using (∀-extensionality; Extensionality)
 open ≡-Reasoning
 
-open import Ext
+open import Extensionality
 open import SetOmega
 open import SubstProperties
 open import Types

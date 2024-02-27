@@ -1,10 +1,10 @@
-module Ext where
+module Extensionality where
 
 open import Relation.Binary.PropositionalEquality using (_≡_)
 open import Level
 open import Axiom.Extensionality.Propositional using (∀-extensionality; Extensionality)
 import Axiom.Extensionality.Heterogeneous as HEq
-open import SetOmega
+open import PropositionalSetOmegaEquality
 
 ----------------------------------------------------------------------
 --! TF >

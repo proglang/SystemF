@@ -1,4 +1,4 @@
-module SetOmega where
+module PropositionalSetOmegaEquality where
 
 open import Level
 open import Relation.Binary.PropositionalEquality using (_≡_; refl; subst; sym)

@@ -1,4 +1,4 @@
-module LRVren2 where
+module LRVren where
 
 open import Level
 open import Data.Product using (_×_; Σ; Σ-syntax; ∃-syntax; _,_; _,′_; proj₁; proj₂)
@@ -16,8 +16,8 @@ open import Relation.Binary.PropositionalEquality
 open import Axiom.Extensionality.Propositional using (∀-extensionality; Extensionality)
 open ≡-Reasoning
 
-open import Ext
-open import SetOmega
+open import Extensionality
+open import PropositionalSetOmegaEquality
 open import SubstProperties
 open import Types
 open import TypeSubstitution
@@ -28,7 +28,7 @@ open import ExprSubstitution
 open import ExprSubstProperties
 open import BigStep
 open import LogicalPrelim
-open import Logical2
+open import Logical
 
 ----------------------------------------------------------------------
 --! LRVren >

@@ -15,8 +15,8 @@ open import Axiom.Extensionality.Propositional using (∀-extensionality; Extens
 open ≡-Reasoning
 
 open import Types
-open import Ext
-open import SetOmega
+open import Extensionality
+open import PropositionalSetOmegaEquality
 open import TypeSubstitution
 
 private variable

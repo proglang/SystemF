@@ -16,11 +16,11 @@ open import Relation.Binary.PropositionalEquality
 open import Axiom.Extensionality.Propositional using (∀-extensionality; Extensionality)
 open ≡-Reasoning
 open import Relation.Binary.HeterogeneousEquality as H using (_≅_; refl)
-open import HeterogeneousSetωEquality as Hω using (_≅ω_; refl)
+open import HeterogeneousSetOmegaEquality as Hω using (_≅ω_; refl)
 module Rω = Hω.≅ω-Reasoning
 
-open import Ext
-open import SetOmega
+open import Extensionality
+open import PropositionalSetOmegaEquality
 open import SubstProperties
 open import Types
 open import TypeSubstitution

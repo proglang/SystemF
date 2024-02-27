@@ -14,11 +14,7 @@ open import BigStepSoundness
 
 open import BigSmallEq
 
-open import Logical2
-open import LRVren2
-open import LRVsub2
-open import Fundamental4
-
-open import Ext
-open import SetOmega
-open import SubstProperties
+open import Logical
+open import LRVren
+open import LRVsub
+open import Fundamental
