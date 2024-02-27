@@ -610,9 +610,33 @@ of the variable's value, so that we cannot recover its shape via
 the {\AisValue} type. In particular, the type of an expression variable can be
 a type variable, so that the type is unknown at compile time. See Section~\ref{sec:fundamental}.
 
-However, with our present setup we can use the following lemma to show
-that a syntactic value evaluates to itself.
+With our present setup we can prove that any syntactic value evaluates to itself.
 \BigStepValueReduceSelf
+
+\subsection{Soundness}
+\label{sec:soundness}
+
+At this point, we can prove the soundness of the operational semantics
+with respect to the denotational semantics. As the denotational
+semantics directly assigns the final meaning to an expression,
+evaluation does not matter in that it returns a value with the same
+meaning.
+\BigStepSoundnessType
+The proof of this theorem is remarkably simple, mostly by appealing to the
+inductive hypotheses. The cases for function application and type
+application require two lemmas {\AEEsingleSubstPreserves} and
+{\AETsingleSubstPreserves} that relate semantic substitution with
+expression-in-expression substitution and type-in-expression
+substitution, respectively.
+\ESPSEEsingleSubstPreserves
+\ESPSETsingleSubstPreserves
+These lemmas have similar problems with equalities as the fusion
+lemmas for expression substitution (cf.\
+Section~\ref{sec:substitutions:expr}), which are 
+addressed using the methods outlined in
+Section~\ref{sec:subst-hell}. However, there is an additional
+complication that some of the equalities relate elements of $\Seto$,
+which again leads to replication of infrastructure.
 
 \section{Logical Relation}
 \label{sec:logical-relation}
@@ -620,12 +644,17 @@ that a syntactic value evaluates to itself.
 
 We define a binary logical relation for finitely stratified System F.
 Its definition largely follows the development of the logical relation
-for System F in Ahmed's thesis/lecture notes \cite{AhmedLR}.
+for System F in Ahmed's lecture notes \cite{DBLP:journals/corr/abs-1907-11133,ahmed23:_oplss}.
 We first define the relation for closed values and expressions and
 then lift it open expressions.
 
 We are going slowly and detailed to highlight the places where
-nontrivial steps are needed to mechanize the results.
+nontrivial steps are needed to mechanize the results. Our relation is
+not the ``standard'' binary logical relation that relates two
+expressions with the goal of proving contextual equivalence under a
+small-step operational semantics. We rather
+follow \citet{DBLP:journals/jar/BentonHKM12} and relate an expression
+under big-step semantics to its denotational semantics.
 
 \subsection{Relating closed values}
 \label{sec:relat-clos-valu}
@@ -633,14 +662,16 @@ nontrivial steps are needed to mechanize the results.
 Generally, we talk about type-indexed relations {\AREL} between syntactic values of type $T$ to semantic values of the same
 type. This relation also depends on the stratification level.
 \LogicalREL
-A relation environment {\ARelEnv} abstracts over the current instantiation of the
-type variables. It maps a type variable to a
+A relation environment $\rho : \ADSemx{\ensuremath{\Delta}}$ abstracts over the
+current instantiation of the type variables. It maps a type variable to a
 type paired with its relational interpretation.  It is needed to
 define the cases for type abstraction and type application in a
 compositional, terminating way.
 \LogicalRelEnv
 Clearly, the first ``half'' of a relation environment is a type
-substitution and we use lifted projection functions $\pi_1$ and $\pi_2$ to obtain this
+substitution and we use lifted projection functions $\pi_1$ and
+$\pi_2$ (or sometimes just the suffixes $_1$ and $_2$ as in $\rho\ _1$
+and $\rho\ _2$ ) to obtain this
 substitution and the actual relation.
 
 We define the extension of a relation environment by a new a new type
@@ -649,7 +680,7 @@ of a substitution. This extension is needed in the case for universal
 quantification.
 \LogicalREext
 
-On the semantics side it remain the define the action of a type
+On the semantics side it remains to define the action of a type
 substitution on a semantic environment $\eta$. It returns a new
 semantic environment that interprets each substituted type according
 to $\eta$.
@@ -666,7 +697,9 @@ the relation environment.
 The value relation is mutually recursive with the expression relation
 {\AESem}, which interposes evaluation.
 \LogicalMCVBody
-The definition itself is fairly straightforward from the literature,
+The definition itself is an extension of the logical relation for the
+simply-typed lambda calculus by
+\citet{DBLP:journals/jar/BentonHKM12}. It is straightforward
 except for the type adjustments using the {\Asubst} function. We
 discuss those type adjustments after explaining the relations.
 
@@ -713,7 +746,7 @@ different type for the value relation:
 \LogicalVariationMCVType
 Alas, this choice gets rid of the {\Asubst} in the case for type
 variables, but an additional {\Asubst} is needed in the case for type
-application. We will not go further into this matter.
+application. We show the relevant part of the definition, but will not go further into this matter.
 \LogicalVariationMCVBodyUniversal
 
 We close with a usability aspect.
@@ -737,8 +770,8 @@ instantiation of the type variables. On the denotational side, we need
 a corresponding semantic environment \texttt{γ : Env Δ Γ η} that maps
 free variables of $e$ to their denotations. Finally, the closing
 substitution and the semantic environment need to send variables to
-items related by {\AVSem}. To this end, we extend {\AVSem} to
-environments.
+items related by {\AVSem}. To this end, we extend {\AVSem} to a
+relation {\AGSem} on environments.
 
 Taken together, these assumptions enable the definition of semantic soundness.
 \FundamentalSemanticSoundness
@@ -971,6 +1004,12 @@ the term \texttt{xs ++ (ys ++ zs)} has type \texttt{Vec A (m + (n + p))}, so a
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+\section{Excursion: Small-Step Operational Semantics}
+\label{sec:excurs-small-step}
+
+A small-step operational semantics completes our picture of finitely
+stratified System~F. 
+
 \section{Related Work}
 \label{sec:related-work}
 
@@ -1049,7 +1088,7 @@ consequence,  this extension no longer has a seamless denotational
 embedding in Agda as the meaning of a term lives either in $\ASet\
 \ell$  or in $\ASeto$. A suitable result type to hold either value is
 defineable, but it lives in $\ASeto_1$. Thus, reasoning about it
-requires further variabts of equality types beyong $\ASeto$. Moreover, the definition of
+requires further variants of equality types beyond $\ASeto$. Moreover, the definition of
 the denotational semantics is no longer as clean as shown in
 Section~\ref{sec:denotational}. 
 
