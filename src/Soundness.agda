@@ -330,7 +330,31 @@ Esubst-preserves {Δ₂ = Δ₂} {Γ₂ = Γ₂} {η₂ = η₂} {γ₂ = γ₂}
     subst id eq' (subst id eq₃ (E⟦ e ⟧ η₁ γ₁ (⟦ T′ ⟧ η₁)))
   ≡⟨⟩
     subst id eq' (E⟦ e ∙ T′ ⟧ η₁ γ₁)
-  ∎         
+  ∎    
+
+
+-- subst-to-env-dist-extend : {T : Type Δ₁ l} {σ* : TSub Δ₁ Δ₂} 
+--   → (γ₂ : Env Δ₂ Γ₂ η₂)
+--   → (σ : ESub σ* Γ₁ Γ₂) 
+--   → (⟦e⟧ : ⟦ Tsub σ* T ⟧ η₂)
+--   → subst-to-env (Eliftₛ {T = T} σ* σ) (extend {Γ = Γ₂} γ₂ ⟦e⟧) ≡ω extend (subst-to-env σ γ₂) (subst id (subst-preserves {η₂ = η₂} σ* T) ⟦e⟧)
+-- subst-to-env-dist-extend {Δ₂ = Δ₂} {Γ₂ = Γ₂} {η₂ = η₂} {T = T₂} {σ* = σ*} γ₂ σ ⟦e⟧ = fun-extω λ l → fun-ext λ T → fun-ext λ where 
+--   here → refl
+--   (there {T′ = T′} x) → cong (subst id (subst-preserves {η₂ = η₂} σ* T)) (H.≅-to-≡(R.begin 
+--      E⟦ Ewk (σ l T x) ⟧ η₂ (extend γ₂ ⟦e⟧)
+--    R.≅⟨ refl ⟩
+--     E⟦ subst (Expr Δ₂ (Tsub σ* T₂ ◁ Γ₂)) (TidᵣT≡T (Tsub σ* T)) (Eren _ (Ewkᵣ Tidᵣ Eidᵣ) (σ l T x)) ⟧ η₂ (extend γ₂ ⟦e⟧)
+--    R.≅⟨ H.cong {y = Ewk (σ l T x)} (λ ∎ → E⟦_⟧ {T = Tsub σ* T} ∎ η₂ (extend γ₂ ⟦e⟧)) (H.≡-subst-removable (Expr Δ₂ (Tsub σ* T₂ ◁ Γ₂)) refl _) ⟩
+--     E⟦ Ewk {Δ = Δ₂} (σ l T x) ⟧ η₂ (extend γ₂ ⟦e⟧)
+--    R.≅⟨ refl ⟩
+--     E⟦ subst (Expr Δ₂ (Tsub σ* T₂ ◁ Γ₂)) (TidᵣT≡T (Tsub σ* T)) (Eren _ (Ewkᵣ {l = _} {T = Tsub σ* T′} Tidᵣ Eidᵣ) (σ l T x)) ⟧ η₂ (extend γ₂ ⟦e⟧)
+--    R.≅⟨ H.cong₂ (λ T ∎ → E⟦_⟧ {T = T} ∎ η₂ (extend γ₂ ⟦e⟧)) (H.≡-to-≅ (sym (TidᵣT≡T (Tsub σ* T)))) (H.≡-subst-removable (Expr Δ₂ (Tsub σ* T₂ ◁ Γ₂)) (TidᵣT≡T (Tsub σ* T)) _) ⟩
+--     E⟦ (Eren _ (Ewkᵣ {l = _} {T = Tsub σ* T′} Tidᵣ Eidᵣ) (σ l T x)) ⟧ η₂ (extend γ₂ ⟦e⟧)
+--    R.≅⟨ H.≡-to-≅ (Eren*-preserves-semantics (Tren*-id η₂) (Ewk∈ERen* {l = _} {T = Tsub σ* T′} γ₂ ⟦e⟧) (σ l T x)) ⟩
+--     subst id (sym (Tren*-preserves-semantics (Tren*-id η₂) (Tsub σ* T))) (E⟦ σ l T x ⟧ η₂ γ₂)
+--    R.≅⟨ H.≡-subst-removable id (sym (Tren*-preserves-semantics (Tren*-id η₂) (Tsub σ* T))) _ ⟩
+--     E⟦ σ l T x ⟧ η₂ γ₂
+--    R.∎))     
    
 EEsingle-subst-preserves : ∀ (γ : Env Δ Γ η) (e₁ : Expr Δ (T′ ◁ Γ) T) (e₂ : Expr Δ Γ T′) →
   E⟦ e₁ [ e₂ ]E ⟧ η γ ≡ E⟦ e₁ ⟧ η (extend γ (E⟦ e₂ ⟧ η γ))  
@@ -353,13 +377,36 @@ EEsingle-subst-preserves {Δ = Δ} {Γ = Γ} {η = η} {T′ = T′} {T = T} γ 
   R.∎))
   where lemma : ∀ {l} {Δ} {Γ} {η} {γ} {T : Type Δ l} {e : Expr Δ Γ T} → 
                  subst-to-env (sub0 {T₁ = T} (subst (Expr Δ Γ) (sym (TidₛT≡T T)) e)) γ ≡ω substωω (Env _ _) (symω (subst-to-env*-id η)) (extend γ (E⟦ e ⟧ η γ))
-        lemma = {!   !}
-
+        lemma {l} {Δ} {Γ} {η} {γ} {T} {e} = fun-extω λ l → fun-ext λ T₁ → fun-ext λ where
+                    here → H.≅-to-≡ (R.begin 
+                        subst id (subst-preserves Tidₛ T₁) (E⟦ subst (Expr Δ Γ) (sym (TidₛT≡T T₁)) e ⟧ η γ)
+                      R.≅⟨ H.≡-subst-removable id (subst-preserves Tidₛ T₁) _ ⟩ 
+                        E⟦ subst (Expr Δ Γ) (sym (TidₛT≡T T₁)) e ⟧ η γ
+                      R.≅⟨ H.cong₂ (λ T ■ → E⟦_⟧ {T = T} ■ η γ) (H.≡-to-≅ (TidₛT≡T T₁)) (H.≡-subst-removable (Expr Δ Γ) (sym (TidₛT≡T T₁)) _) ⟩ 
+                        E⟦ e ⟧ η γ 
+                      R.≅⟨ refl ⟩
+                        (extend γ (E⟦ e ⟧ η γ)) l T₁ here 
+                      R.≅⟨ H.sym (Hω.cong₂-ωωl {B = λ η → Env Δ (_ ◁ Γ) η} (λ _ ■ → ■ l T₁ here) (Hω.≡ω-to-≅ω (subst-to-env*-id η)) (Hω.≡ω-substωω-removable ((Env _ _)) ((symω (subst-to-env*-id η))) _)) ⟩
+                        substωω (Env _ _) (symω (subst-to-env*-id η)) (extend γ (E⟦ e ⟧ η γ)) l T₁ here
+                      R.∎)
+                    (there x) → H.≅-to-≡ (R.begin
+                        subst id (subst-preserves Tidₛ T₁) (E⟦ subst (Expr Δ Γ) (sym (TidₛT≡T T₁)) (` x) ⟧ η γ)
+                      R.≅⟨ H.≡-subst-removable id (subst-preserves Tidₛ T₁) _ ⟩
+                        E⟦ subst (Expr Δ Γ) (sym (TidₛT≡T T₁)) (` x) ⟧ η γ
+                      R.≅⟨ H.cong₂ (λ T ■ → E⟦_⟧ {T = T} ■ η γ) (H.≡-to-≅ (TidₛT≡T T₁)) (H.≡-subst-removable (Expr Δ Γ) (sym (TidₛT≡T T₁)) _) ⟩
+                        E⟦ ` x ⟧ η γ
+                      R.≅⟨ refl ⟩
+                        γ l T₁ x
+                      R.≅⟨ refl ⟩
+                        (extend {T = T} γ (E⟦ e ⟧ η γ)) l T₁ (there x)
+                      R.≅⟨ H.sym (Hω.cong₂-ωωl {B = λ η → Env Δ (_ ◁ Γ) η} (λ _ ■ → ■ l T₁ (there x)) (Hω.≡ω-to-≅ω (subst-to-env*-id η)) (Hω.≡ω-substωω-removable (Env Δ (T ◁ Γ)) (symω (subst-to-env*-id η)) _)) ⟩
+                        substωω (Env Δ (T ◁ Γ)) (symω (subst-to-env*-id η)) (extend γ (E⟦ e ⟧ η γ)) l T₁ (there x)
+                      R.∎)
 ETsingle-subst-preserves : ∀ (γ : Env Δ Γ η) (e : Expr (l ∷ Δ) (l ◁* Γ) T′) (T : Type Δ l) →
   E⟦ e [ T ]ET ⟧ η γ ≡ subst id (sym (Tsingle-subst-preserves η T T′)) (E⟦ e ⟧ (⟦ T ⟧ η ∷ η) (extend-tskip γ))
 ETsingle-subst-preserves {Δ = Δ} {Γ = Γ} {η = η} {T′ = T′} γ e T = (H.≅-to-≡(R.begin 
     E⟦ e [ T ]ET ⟧ η γ
-  R.≅⟨ refl ⟩ 
+  R.≅⟨ refl ⟩  
     E⟦ Esub (Textₛ Tidₛ T) (Eextₛ-l Tidₛ Eidₛ) e ⟧ η γ
   R.≅⟨ H.≡-to-≅ (Esubst-preserves (Eextₛ-l Tidₛ Eidₛ) e) ⟩ 
     subst id (sym (subst-preserves ((Textₛ Tidₛ T)) T′)) (E⟦ e ⟧ (subst-to-env* (Textₛ Tidₛ T) η) (subst-to-env (Eextₛ-l {T = T} Tidₛ Eidₛ) γ))
@@ -379,13 +426,28 @@ ETsingle-subst-preserves {Δ = Δ} {Γ = Γ} {η = η} {T′ = T′} γ e T = (H
   where lemma : ∀ {l} {Δ} {Γ} {η} {γ} {T : Type Δ l} → 
                 subst-to-env {Γ₂ = Γ} (Eextₛ-l {T = T} Tidₛ Eidₛ) γ ≡ω substωω (Env _ _) (congωω (⟦ T ⟧ η ∷_) (symω (subst-to-env*-id η))) (extend-tskip γ)
         lemma {l} {Δ} {Γ} {η} {γ} {T} = fun-extω λ l → fun-ext λ T₁ → fun-ext λ where
-          (tskip {T = T₂} x) →
+          (tskip {T = T₂} {l = l₁} x) →
             let eq = (sym  (trans (fusion-Tsub-Tren T₂ (λ z x₁ → there x₁) (Textₛ (λ z → `_) T)) (trans (sym (fusion-Tsub-Tsub T₂ (λ z → `_) (λ z → `_))) (trans (cong (Tsub (λ z → `_)) (TidₛT≡T T₂)) refl)))) in
             (H.≅-to-≡(R.begin 
                subst id (subst-preserves (Textₛ (λ z → `_) T) (Tren (λ z x₁ → there x₁) T₂)) (E⟦ subst (Expr Δ Γ) eq (subst (Expr Δ Γ) (sym (TidₛT≡T T₂)) (` x)) ⟧ η γ)   
-            R.≅⟨ {!  !} ⟩
+            R.≅⟨ H.≡-subst-removable id (subst-preserves (Textₛ (λ z → `_) T) (Tren (λ z x₁ → there x₁) T₂)) _ ⟩
               E⟦ subst (Expr Δ Γ) eq (subst (Expr Δ Γ) (sym (TidₛT≡T T₂)) (` x)) ⟧ η γ
-            R.≅⟨ {!  !} ⟩ 
+            R.≅⟨ H.cong₂ (λ T ■ → E⟦_⟧ {T = T} ■ η γ) (H.≡-to-≅ (sym eq)) (H.≡-subst-removable (Expr Δ Γ) eq _) ⟩ 
+              E⟦ (subst (Expr Δ Γ) (sym (TidₛT≡T T₂)) (` x)) ⟧ η γ
+            R.≅⟨ H.cong₂ (λ T ■ → E⟦_⟧ {T = T} ■ η γ) (H.≡-to-≅ (TidₛT≡T T₂)) (H.≡-subst-removable (Expr Δ Γ) (sym (TidₛT≡T T₂)) _) ⟩ 
+              E⟦ ` x ⟧ η γ
+            R.≅⟨ refl ⟩ 
+              γ l T₂ x
+            R.≅⟨ H.sym (H.≡-subst-removable id (sym (Tren*-preserves-semantics (wkᵣ∈Ren* η (⟦ T ⟧ η)) T₂)) _) ⟩ 
+              subst id (sym (Tren*-preserves-semantics (wkᵣ∈Ren* η (⟦ T ⟧ η)) T₂)) (γ l T₂ x)
+            R.≅⟨ refl ⟩ 
+              (extend-tskip {⟦α⟧ = ⟦ T ⟧ η} γ) l (Twk T₂) (tskip x)
+            R.≅⟨ H.sym (Hω.cong₂-ωωl {B = λ η₁ → Env (l₁ ∷ Δ) (l₁ ◁* Γ) (⟦ T ⟧ η ∷ η₁)} 
+                       (λ _ ■ → ■ l (Twk T₂) (tskip x)) 
+                       (Hω.≡ω-to-≅ω (subst-to-env*-id η)) 
+                       (Hω.≡ω-substωω-removable 
+                          (Env (_ ∷ Δ) (_ ◁* Γ)) 
+                          (congωω (_∷_ (⟦ T ⟧ η)) (symω (subst-to-env*-id η))) _)) ⟩ 
                substωω (Env (_ ∷ Δ) (_ ◁* Γ)) (congωω (_∷_ (⟦ T ⟧ η)) (symω (subst-to-env*-id η))) (extend-tskip γ) l (Twk T₂) (tskip x)
             R.∎))
 
@@ -397,4 +459,4 @@ soundness {γ = γ} (β-Λ {T = T} {e = e}) = sym (ETsingle-subst-preserves γ e
 soundness {η = η} {γ = γ} (ξ-·₁ {e₂ = e₂} e₁↪e) = cong-app (soundness e₁↪e) (E⟦ e₂ ⟧ η γ)
 soundness {η = η} {γ = γ} (ξ-·₂ {e₁ = e₁} e₂↪e v₁) = cong (E⟦ e₁ ⟧ η γ) (soundness e₂↪e)
 soundness {η = η} {γ = γ} (ξ-∙ {T′ = T′} {T = T} e₁↪e₂) 
-  rewrite Tsingle-subst-preserves η T′ T = cong-app (soundness e₁↪e₂) (⟦ T′ ⟧ η)  
+  rewrite Tsingle-subst-preserves η T′ T = cong-app (soundness e₁↪e₂) (⟦ T′ ⟧ η)       
