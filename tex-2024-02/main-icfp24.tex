@@ -635,7 +635,7 @@ lemmas for expression substitution (cf.\
 Section~\ref{sec:substitutions:expr}), which are 
 addressed using the methods outlined in
 Section~\ref{sec:subst-hell}. However, there is an additional
-complication that some of the equalities relate elements of $\Seto$,
+complication that some of the equalities relate elements of $\ASeto$,
 which again leads to replication of infrastructure.
 
 \section{Logical Relation}
@@ -670,9 +670,7 @@ compositional, terminating way.
 \LogicalRelEnv
 Clearly, the first ``half'' of a relation environment is a type
 substitution and we use lifted projection functions $\pi_1$ and
-$\pi_2$ (or sometimes just the suffixes $_1$ and $_2$ as in $\rho\ _1$
-and $\rho\ _2$ ) to obtain this
-substitution and the actual relation.
+$\pi_2$ to obtain this substitution and the actual relation.
 
 We define the extension of a relation environment by a new a new type
 variable binding analogous to the extension
@@ -877,6 +875,7 @@ semantics applied to $e$ terminates and yields the syntactic value for
 $n$.
 To state adequacy we first have to construct an empty
 environment of type \texttt{Env [] {\Anull} []}.
+
 \begin{minipage}{0.3\linewidth}
   \FundamentalEmptyEnv
 \end{minipage}
@@ -884,7 +883,7 @@ environment of type \texttt{Env [] {\Anull} []}.
   \FundamentalEmptyRelEnv
 \end{minipage}
 \begin{minipage}{0.3\linewidth}
-  FundamentalEmptyCSub
+  \FundamentalEmptyCSub
 \end{minipage}
 \FundamentalAdequacyType
 This theorem follows immediately from the semantic soundness that we proved with the
@@ -1067,19 +1066,47 @@ prove the fundamental theorem (see
 Section~\ref{sec:technical-lemmas}), but they are not required for
 their executable formalization of System~F$\omega$.
 
+POPLMark reloaded \cite{DBLP:journals/jfp/AbelAHPMSS19} proposes
+mechanized proofs of strong normalization for a simply typed lambda
+calculus using logical relations. Their outline relies on
+intrinsically typed syntax using a calculus with explicit
+substitutions and full normalization. They highlight challenging
+problems that come up during formalization or proof and outline
+solutions in several different systems. 
+
 \section{Conclusion}
 \label{sec:conclusion}
 \label{sec:future-work}
 
+The ``POPLMark reloaded'' paper \cite[Section 5.1]{DBLP:journals/jfp/AbelAHPMSS19}
+says in their critical summary:
+\begin{quotation}
+  We feel that the jury is still out regarding the intrinsic versus
+  extrinsic types encoding debate: on one hand, the intrinsic type
+  discipline when it works---and recent results
+  \cite{DBLP:journals/pacmpl/PoulsenRTKV18} shows that it applies
+  outside the usual suspects---yields very compact and economic
+  encodings. On the other, extrinsic typing scales more easily to
+  dependent types
+  \cite{DBLP:conf/types/Danielsson06,DBLP:journals/entcs/Chapman09,DBLP:conf/popl/AltenkirchK16}
+  and see, for example, the Agda formalization in \citet{DBLP:journals/pacmpl/0001OV18}. 
+\end{quotation}
+It is our impression that the present work demonstrates the limits of
+the intrisically-typed approach. For System~F, the development up to a
+type soundness proof is tedious, but workable. However, once we
+consider applications that require non-trivial results about
+expression substitutions, transfer lemmas abound and clutter proofs
+significantly. We believe that these issues are not an artifact of the
+particular design choices we made in defining the syntax, as
+\citet{DBLP:journals/jar/BentonHKM12} chose another reasonable syntax
+design and ran into the same problems with equalities.
 
-% We are currently formalizing the small-step semantics of the language
-% with the goal of proving an adequacy theorem for reduction with
-% respect to the denotational semantics.
 
 A few extensions seem within reach. It should be possible to extend
 our approach to System F$\omega$ as formalized by
 \citet{DBLP:conf/mpc/ChapmanKNW19}. The logical relation as such would
-not be affected, but the supporting lemmas would have to be adjusted.
+not be affected, but the supporting lemmas would have to be adjusted
+to cater for normalization etc.
 
 It would also be interesting to extend the stratified calculus by
 level quantification as in Agda's universe polymorphism. However, Agda
