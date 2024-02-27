@@ -19,6 +19,7 @@ open import SetOmega
 open import Types
 open import TypeSubstitution
 open import TypeSubstProperties
+open import TypeSubstPropertiesSem
 
 --! TF >
 

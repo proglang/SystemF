@@ -10,11 +10,12 @@ open import Function using (id)
 
 open import Types
 open import TypeSubstProperties
+open import TypeSubstPropertiesSem
 open import Expressions
 open import ExprSubstitution
+open import ExprSubstPropertiesSem using (EEsingle-subst-preserves; ETsingle-subst-preserves)
 
 open import BigStep
-open import Soundness using (EEsingle-subst-preserves; ETsingle-subst-preserves)
 
 γ₀ : Env [] ∅ []
 γ₀ = λ l T ()

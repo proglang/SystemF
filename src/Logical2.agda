@@ -22,6 +22,7 @@ open import SubstProperties
 open import Types
 open import TypeSubstitution
 open import TypeSubstProperties
+open import TypeSubstPropertiesSem
 open import Expressions
 open import ExprSubstitution
 open import ExprSubstProperties

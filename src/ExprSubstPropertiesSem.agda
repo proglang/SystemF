@@ -1,6 +1,4 @@
-{-# OPTIONS --allow-unsolved-metas #-} 
-module Soundness where
-
+module ExprSubstPropertiesSem where
 open import Level
 open import Data.Product using (_×_; Σ; Σ-syntax; ∃-syntax; _,_; proj₁; proj₂)
 open import Data.Sum using (_⊎_)
@@ -17,7 +15,6 @@ open import Relation.Binary.PropositionalEquality
 open import Axiom.Extensionality.Propositional using (∀-extensionality; Extensionality)
 open ≡-Reasoning
 open import Relation.Binary.HeterogeneousEquality as H using (_≅_; refl)
-module R = H.≅-Reasoning
 open import HeterogeneousSetωEquality as Hω using (_≅ω_; refl)
 module Rω = Hω.≅ω-Reasoning
 
@@ -27,9 +24,11 @@ open import SubstProperties
 open import Types
 open import TypeSubstitution
 open import TypeSubstProperties
+open import TypeSubstPropertiesSem
 open import Expressions
 open import ExprSubstitution
 open import ExprSubstFusion public
+open import ExprSubstProperties
 open import SmallStep
 import HeterogeneousEqualityLemmas as HE
 
@@ -429,14 +428,3 @@ ETsingle-subst-preserves {Δ = Δ} {Γ = Γ} {η = η} {T′ = T′} γ e T = (H
   R.≅⟨ H.sym (H.≡-subst-removable id (sym (Tsingle-subst-preserves η T T′)) _) ⟩
     subst id (sym (Tsingle-subst-preserves η T T′)) (E⟦ e ⟧ (⟦ T ⟧ η ∷ η) (extend-tskip γ))
   R.∎))
-
-
-soundness : ∀ {e₁ e₂ : Expr Δ Γ T} → e₁ ↪ e₂ → E⟦ e₁ ⟧ η γ ≡ E⟦ e₂ ⟧ η γ
-soundness β-suc = refl
-soundness (ξ-suc e₁↪e₂) = cong ℕ.suc (soundness e₁↪e₂)
-soundness {γ = γ} (β-ƛ {e₂ = e₂} {e₁ = e₁} v₂) = sym (EEsingle-subst-preserves γ e₁ e₂)
-soundness {γ = γ} (β-Λ {T = T} {e = e}) = sym (ETsingle-subst-preserves γ e T)
-soundness {η = η} {γ = γ} (ξ-·₁ {e₂ = e₂} e₁↪e) = cong-app (soundness e₁↪e) (E⟦ e₂ ⟧ η γ)
-soundness {η = η} {γ = γ} (ξ-·₂ {e₁ = e₁} e₂↪e v₁) = cong (E⟦ e₁ ⟧ η γ) (soundness e₂↪e)
-soundness {η = η} {γ = γ} (ξ-∙ {T′ = T′} {T = T} e₁↪e₂) 
-  rewrite Tsingle-subst-preserves η T′ T = cong-app (soundness e₁↪e₂) (⟦ T′ ⟧ η)       
