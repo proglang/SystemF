@@ -29,7 +29,6 @@ data Val : Expr Δ Γ T → Set where
   v-ƛ : Val (ƛ e)
   v-Λ : Val (Λ l ⇒ e)
 
-
 data _↪_ : Expr Δ Γ T → Expr Δ Γ T → Set where
   β-ƛ : 
     Val e₂ →
@@ -51,3 +50,12 @@ data _↪_ : Expr Δ Γ T → Expr Δ Γ T → Set where
   ξ-suc :
     e₁ ↪ e →
     `suc e₁ ↪ `suc e
+
+data _—↠_ : Expr Δ Γ T → Expr Δ Γ T → Set where
+  —↠-refl :
+    e —↠ e
+  —↠-step :
+    e₁ ↪ e₂ →
+    e₂ —↠ e₃ →
+    e₁ —↠ e₃
+

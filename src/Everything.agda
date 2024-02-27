@@ -11,7 +11,8 @@ open import SmallStep
 open import SmallStepSoundness
 open import BigStep
 open import BigStepSoundness
-open import SmallBigEq
+
+open import BigSmallEq
 
 open import Logical2
 open import LRVren2
