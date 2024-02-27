@@ -635,6 +635,12 @@ of a substitution. This extension is needed in the case for universal
 quantification.
 \LogicalREext
 
+On the semantics side it remain the define the action of a type
+substitution on a semantic environment $\eta$. It returns a new
+semantic environment that interprets each substituted type according
+to $\eta$.
+\TFsubstToEnv
+
 With these definitions in place, we can state the type of the logical relation.
 \LogicalMCVType
 The  relation {\AVSem} on values is defined by induction on the type $T$ and the parameter
@@ -871,6 +877,13 @@ We can finally prove this renaming lemma with another excursion to
 ``subst hell''.
 \LRVrenLRVrenEqType
 
+The proof of the renaming lemma is the one place where we refer to the
+lemma {\AFusionESubESub} for expression substitutions.
+
+There is also a version {\ALRVsub} of the above lemma where a type substitution
+(instead of a type renaming) acts on a logical relation. This
+adaptation is needed to prove the case for type application of the
+fundamental lemma.
 
 \section{A Journey to Subst-Hell}
 \label{sec:subst-hell}
@@ -978,18 +991,49 @@ syntax for a simply-typed lambda applied calculus, they define a
 big-step semantics and a set-theoretic denotational semantics. They
 prove soundness of the former semantics with respect to the latter as
 well as adequacy (using a logical relation). They also develop an
-expression encoding for System~F, but the paper stops short of
-discussing its semantics. 
+intrinsically typed expression encoding for System~F and discuss the
+definitions of renaming and substitution for types and expressions.
+While their expression encoding is slightly different (their
+expression context does not contain type variable bindings), they run
+into very similar problems with equalities on type substitutions than
+our work. While they propose to lift all reasoning to heterogeneous
+equality, we additionally propose a direct approach to deal with
+equalities. 
+The paper stops short of discussing the denotational/operational
+semantics of System~F nor does it define a logical relation for it.
 
-\section{Future Work}
+Chapman and coworkers \cite{DBLP:conf/mpc/ChapmanKNW19} formalized
+System F$\omega$ in Agda using intrinsically typed encodings for types
+and terms. Our encodings for types, terms, and substitutions are
+simplified versions of their definitions, while their work is
+significantly complicated by the need to normalize types. While they
+prove similar results about type substitutions than we do, they do not
+prove the fusion lemmas for expression substitutions (see
+Section~\ref{sec:substitutions:expr}). The latter fusion lemmas are needed to
+prove the fundamental theorem (see
+Section~\ref{sec:technical-lemmas}), but they are not required for
+their executable formalization of System~F$\omega$.
+
+\section{Conclusion}
+\label{sec:conclusion}
 \label{sec:future-work}
 
-We are currently formalizing the small-step semantics of the language
-with the goal of proving an adequacy theorem for reduction with
-respect to the denotational semantics.
+
+% We are currently formalizing the small-step semantics of the language
+% with the goal of proving an adequacy theorem for reduction with
+% respect to the denotational semantics.
+
+A few extensions seem within reach. It should be possible to extend
+our approach to System F$\omega$ as formalized by
+\citet{DBLP:conf/mpc/ChapmanKNW19}. The logical relation as such would
+not be affected, but the supporting lemmas would have to be adjusted.
 
 It would also be interesting to extend the stratified calculus by
-level quantification as in Agda's universe polymorphism.
+level quantification as in Agda's universe polymorphism. However, Agda
+assigns universe polymorpic functions the type $\ASeto$. In
+consequence,  this extension no longer has a seamless denotational
+embedding in Agda as the meaning of a term lives either in $\ASet\
+\ell$  or in $\ASeto$. A suitable result type is defineable, 
 
 
 %%
