@@ -374,14 +374,17 @@ Tdrop-σ≡Twk∘σ σ* = fun-ext₂ (λ x y → refl)
 
 
 -- the action of substitution on semantic environments
+--! substToEnv
+⟦_⟧* : TSub Δ₁ Δ₂ → Env* Δ₂ → Env* Δ₁
+⟦_⟧* {[]} σ* η₂ = []
+⟦_⟧* {x ∷ Δ₁} σ* η₂ = ⟦ σ* _ here ⟧ η₂ ∷ ⟦ Tdropₛ σ* ⟧* η₂
 
 subst-to-env* : TSub Δ₁ Δ₂ → Env* Δ₂ → Env* Δ₁
-subst-to-env* {[]} σ* η₂ = []
-subst-to-env* {x ∷ Δ₁} σ* η₂ = ⟦ σ* _ here ⟧ η₂ ∷ subst-to-env* (Tdropₛ σ*) η₂
+subst-to-env* = ⟦_⟧*
 
 --! substVarPreservesType
 subst-var-preserves : (α : l ∈ Δ₁) (τ* : TSub Δ₁ Δ₂) (η₂ : Env* Δ₂)
-  → lookup α (subst-to-env* τ* η₂) ≡ ⟦ τ* l α ⟧ η₂
+  → lookup α (⟦ τ* ⟧* η₂) ≡ ⟦ τ* l α ⟧ η₂
 
 subst-var-preserves here σ* η₂ = refl
 subst-var-preserves (there x) σ* η₂ = subst-var-preserves x (Tdropₛ σ*) η₂

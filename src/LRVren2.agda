@@ -39,15 +39,12 @@ LRVren-eq′ :  ∀ {Δ₁}{Δ₂}{l}
   → (τ* : TRen Δ₁ Δ₂)
   → let ρ* = π₁ ρ
   in (v : Value (Tsub (τ* ∘ᵣₛ ρ*) T))
-  → (z : ⟦ T ⟧ (subst-to-env* (π₁ (Tren-act τ* ρ)) []))
+  → (z : ⟦ T ⟧ (⟦ π₁ (Tren-act τ* ρ) ⟧* []))
   → 𝓥⟦ T ⟧ (Tren-act τ* ρ) v z ≡
     subst₂ (λ vv zz → Value vv → zz → Set l)
            (fusion-Tsub-Tren T τ* ρ*)
-           (Tren*-preserves-semantics {ρ* = τ*}
-                                      {subst-to-env* (π₁ (Tren-act τ* ρ)) []}
-                                      {subst-to-env* ρ* []}
-                                      (τ*∈Ren* τ* ρ*)
-                                      T)
+           (Tren*-preserves-semantics {ρ* = τ*} {⟦ π₁ (Tren-act τ* ρ) ⟧* []} {⟦ ρ* ⟧* []}
+                                      (τ*∈Ren* τ* ρ*) T)
            (𝓥⟦ Tren τ* T ⟧ ρ) v z
 
 LRVren-eq′ `ℕ ρ τ* v z = refl
@@ -1729,15 +1726,13 @@ LRVwk-eq : ∀ {Δ}{l}{l₁}
   → (ρ : RelEnv (l₁ ∷ Δ))
   → let ρ* = π₁ ρ
   in (v : Value (Tsub (Tdropₛ ρ*) T))
-  → (z : ⟦ T ⟧ (subst-to-env* (Tdropₛ ρ*) []))
+  → (z : ⟦ T ⟧ (⟦ Tdropₛ ρ* ⟧* []))
   → 𝓥⟦ T ⟧ (REdrop ρ) v z
   ≡ 𝓥⟦ Twk T ⟧
         ρ
         (subst Value (sym (fusion-Tsub-Tren T (Twkᵣ Tidᵣ) ρ*)) v)
-        (subst id (sym (Tren*-preserves-semantics {ρ* = Twkᵣ Tidᵣ}
-                                                  {subst-to-env* (Tdropₛ ρ*) []}
-                                                  {subst-to-env* ρ* []}
-                                                  (wkᵣ∈Ren* (subst-to-env* (Tdropₛ ρ*) []) (⟦ ρ* _ here ⟧ []))
+        (subst id (sym (Tren*-preserves-semantics {ρ* = Twkᵣ Tidᵣ} {⟦ Tdropₛ ρ* ⟧* []} {⟦ ρ* ⟧* []}
+                                                  (wkᵣ∈Ren* (⟦ Tdropₛ ρ* ⟧* []) (⟦ ρ* _ here ⟧ []))
                                                   T)) z)
 
 LRVwk-eq T ρ v z =
@@ -1852,7 +1847,7 @@ LRVwk-eq T ρ v z =
 
 --! MCGLookupType
 𝓖-lookup : (Γ : TEnv Δ) (ρ : RelEnv Δ) (χ : CSub (π₁ ρ) Γ)
-  → (γ : Env Δ Γ (subst-to-env* (π₁ ρ) [])) (T : Type Δ l)
+  → (γ : Env Δ Γ (⟦ π₁ ρ ⟧* [])) (T : Type Δ l)
   → 𝓖⟦ Γ ⟧ ρ χ γ → (x : inn T Γ) → 𝓥⟦ T ⟧ ρ (χ _ _ x) (γ _ _ x)
 
 --! MCGLookupBody

@@ -35,9 +35,9 @@ open import LogicalPrelim
 
 --! MCVType
 𝓥⟦_⟧ : (T : Type Δ l) → (ρ : RelEnv Δ)
-  → CValue (Tsub (π₁ ρ) T) → ⟦ T ⟧ (subst-to-env* (π₁ ρ) []) → Set l
+  → CValue (Tsub (π₁ ρ) T) → ⟦ T ⟧ (⟦ π₁ ρ ⟧* []) → Set l
 𝓔⟦_⟧ : (T : Type Δ l) → (ρ : RelEnv Δ)
-  → CExpr (Tsub (π₁ ρ) T) → ⟦ T ⟧ (subst-to-env* (π₁ ρ) []) → Set l
+  → CExpr (Tsub (π₁ ρ) T) → ⟦ T ⟧ (⟦ π₁ ρ ⟧* []) → Set l
 
 --! MCVBody
 𝓥⟦ `ℕ ⟧ ρ u z =
@@ -60,7 +60,7 @@ open import LogicalPrelim
 -- extended LR on environments
 
 --! MCG
-𝓖⟦_⟧ : (Γ : Ctx Δ) (ρ : RelEnv Δ) → CSub (π₁ ρ) Γ → Env Δ Γ (subst-to-env* (π₁ ρ) [])
+𝓖⟦_⟧ : (Γ : Ctx Δ) (ρ : RelEnv Δ) → CSub (π₁ ρ) Γ → Env Δ Γ (⟦ π₁ ρ ⟧* [])
   → Set (levelEnv Γ)
 𝓖⟦ ∅ ⟧ ρ χ γ = ⊤
 𝓖⟦ T ◁ Γ ⟧ ρ χ γ = 𝓥⟦ T ⟧ ρ (χ _ _ here) (γ _ _ here)

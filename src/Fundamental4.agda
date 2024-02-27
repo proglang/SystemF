@@ -159,7 +159,7 @@ semanticSoundness : ∀ (Γ : Ctx Δ) (T : Type Δ l) (e : Expr Δ Γ T) → Set
 semanticSoundness {Δ = Δ} Γ T e =
   ∀ (ρ : RelEnv Δ)
   → let ρ* = π₁ ρ in (χ : CSub ρ* Γ)
-  → let η = subst-to-env* ρ* [] in (γ : Env Δ Γ η)
+  → let η = ⟦ ρ* ⟧* [] in (γ : Env Δ Γ η)
   → 𝓖⟦ Γ ⟧ ρ χ γ
   → 𝓔⟦ T ⟧ ρ (Csub χ e) (E⟦ e ⟧ η γ)
 
@@ -211,7 +211,7 @@ fundamental Γ T (_·_ {T = T₂} {T′ = .T} e₁ e₂) ρ χ γ 𝓖⟦Γ⟧
 ... | v₁@(_ , V-ƛ) , e₁⇓v₁ , (e₁′ , refl , 𝓥⟦T₂⇒T⟧v₁z₁)
   with fundamental Γ T₂ e₂ ρ χ γ 𝓖⟦Γ⟧
 ... | v₂ , e₂⇓v₂ , 𝓥⟦T₂⟧v₂z₂
-  with 𝓥⟦T₂⇒T⟧v₁z₁ v₂ (E⟦ e₂ ⟧ (subst-to-env* (π₁ ρ) []) γ) 𝓥⟦T₂⟧v₂z₂
+  with 𝓥⟦T₂⇒T⟧v₁z₁ v₂ (E⟦ e₂ ⟧ (⟦ π₁ ρ ⟧* []) γ) 𝓥⟦T₂⟧v₂z₂
 ... | v₃ , e₃[]⇓v₃ , 𝓥⟦T⟧v₃z₃
   = v₃ , ⇓-· e₁⇓v₁ e₂⇓v₂ e₃[]⇓v₃ , 𝓥⟦T⟧v₃z₃
 
@@ -261,7 +261,7 @@ fundamental Γ .(T [ T′ ]T) (_∙_ {l = l}{T = T} e  T′) ρ χ γ lrg
 ... | v₂ , vT′⇓v₂ , lrv₂  = 
   let ρ* = π₁ ρ in
   let σ = ς₁ χ in
-  let η = subst-to-env* ρ* [] in
+  let η = ⟦ ρ* ⟧* [] in
   let eq₁ = sym (swap-Tsub-[] (π₁ ρ) T T′)  in
   let e•T⇓v = ⇓-∙ e⇓v vT′⇓v₂ in
   subst CValue eq₁ v₂ ,
@@ -439,7 +439,7 @@ fundamental Γ .(T [ T′ ]T) (_∙_ {l = l}{T = T} e  T′) ρ χ γ lrg
              subst id (congωl ⟦ T ⟧ (conglω (_∷ η) (sym (subst-preserves ρ* T′)))) (E⟦ e ⟧ η γ (⟦ T′ ⟧ η))
            ≡⟨ subst*-irrelevant (⟨ id , (congωl ⟦ T ⟧ (conglω (_∷ η) (sym (subst-preserves ρ* T′)))) ⟩∷ [])
                                  (⟨ id , (cong (λ α → ⟦ T ⟧ (α ∷ η)) (sym (subst-preserves ρ* T′))) ⟩∷
-                                  ⟨ id , (congωl (λ z → ⟦ T ⟧ (subst-to-env* (π₁ z) []))
+                                  ⟨ id , (congωl (λ z → ⟦ T ⟧ (⟦ π₁ z ⟧* []))
                 (symω
                  (relenv-ext
                   (λ l₂ x →
