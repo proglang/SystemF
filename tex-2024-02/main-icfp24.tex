@@ -651,8 +651,8 @@ then lift it open expressions.
 We are going slowly and detailed to highlight the places where
 nontrivial steps are needed to mechanize the results. Our relation is
 not the ``standard'' binary logical relation that relates two
-expressions with the goal of proving contextual equivalence under a
-small-step operational semantics. We rather
+expressions with the goal of proving contextual equivalence or
+parametricity under a small-step operational semantics. We rather
 follow \citet{DBLP:journals/jar/BentonHKM12} and relate an expression
 under big-step semantics to its denotational semantics.
 
@@ -1105,20 +1105,45 @@ prove the fundamental theorem (see
 Section~\ref{sec:technical-lemmas}), but they are not required for
 their executable formalization of System~F$\omega$.
 
-POPLMark reloaded \cite{DBLP:journals/jfp/AbelAHPMSS19} proposes
+The POPLMark reloaded project \cite{DBLP:journals/jfp/AbelAHPMSS19} proposes
 mechanized proofs of strong normalization for a simply typed lambda
-calculus using logical relations. Their outline relies on
+calculus using logical relations as a challeging testbed for proof
+assistants. Their pen-and-paper blueprint for the proof relies on
 intrinsically typed syntax using a calculus with explicit
 substitutions and full normalization. They highlight challenging
 problems that come up during formalization or proof and outline
 solutions in several different systems. 
+
+The logical approach to type soundness
+\cite{timany24:_logic_approac_type_sound} advertises the use of Iris
+as a domain specific language to define logical relations. Iris
+\cite{DBLP:journals/jfp/JungKJBBD18} is much more than that, it is a
+framework for higher-order concurrent separation logic that is
+implemented as a domain specific language in Coq.
+Iris enables the definition of step-indexed Kripke logical relations (SKLR),
+which go way beyond the facilities we demonstrate in this paper.
+To do so, it relies on a custom program logic created to express SKLRs
+\cite{DBLP:journals/corr/abs-1103-0510}. 
+We see the value of our contribution in several aspects.
+\begin{enumerate}
+\item Iris relies on Coq, which supports an impredicative type
+  theory, whereas Agda's underlying theory is predicative. In Iris we
+  can formalize full System~F, but our
+  formalization of finitely stratified System~F explores the limit of
+  meaningful reasoning about polymorphic languages in plain Agda.
+  (Agda would choke on the specification of the value relation at type
+  $\forall\alpha.T$ for full System~F.)
+\item An exploration of the limits of intrinsically typed syntax, in
+  particular with respect to dealing with nontrivial type equalities
+  caused by its use.
+\end{enumerate}
 
 \section{Conclusion}
 \label{sec:conclusion}
 \label{sec:future-work}
 
 The ``POPLMark reloaded'' paper \cite[Section 5.1]{DBLP:journals/jfp/AbelAHPMSS19}
-says in their critical summary:
+says in its critical summary:
 \begin{quotation}
   We feel that the jury is still out regarding the intrinsic versus
   extrinsic types encoding debate: on one hand, the intrinsic type

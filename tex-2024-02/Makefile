@@ -13,6 +13,8 @@ AGDATEX= ../../agdatex/agdatex.py
 
 $(GOAL).pdf: $(GOAL).tex $(TARGET_FILES) $(PREFIX)/agda-generated.sty
 	TEXINPUTS=$(PREFIX)/:$(TEXINPUTS) pdflatex --synctex=1 -interaction=nonstopmode $(GOAL)
+	bibtex $(GOAL)
+	TEXINPUTS=$(PREFIX)/:$(TEXINPUTS) pdflatex --synctex=1 -interaction=nonstopmode $(GOAL)
 
 $(PREFIX)/%.tex: %.lagda
 	agda --latex --only-scope-checking $<
