@@ -4,6 +4,12 @@
 \usepackage{stmaryrd}
 \usepackage{listings}
 
+% Turn off ligatures ending in "-".
+% Without this Agda Comments "--" are typeset as "–".
+\usepackage[T1]{fontenc}
+\usepackage{microtype}
+\DisableLigatures[-]{encoding=T1}
+
 %% There is a limit of 25 pages for a full paper or Functional Pearl
 %% and 12 pages for an Experience Report; in either case, the
 %% bibliography and an optional clearly marked appendix will not be
