@@ -71,8 +71,8 @@ REdrop = Tren-act (Twkᵣ Tidᵣ)
 
 --! REext
 REext : 𝓓⟦ Δ ⟧ → (Σ (Type [] l) REL) → 𝓓⟦ l ∷ Δ ⟧
-REext ρ ΣTR _ here = ΣTR
-REext ρ ΣTR _ (there x) = ρ _ x
+REext ρ ΣTR _ here       = ΣTR
+REext ρ ΣTR _ (there x)  = ρ _ x
 
 subst←RE-ext : ∀ (ρ : RelEnv Δ) (T : Type [] l) (R : REL T) (l′ : Level) (x : l′ ∈ (l ∷ Δ)) → subst←RE (REext ρ (T , R)) l′ x ≡ Textₛ (subst←RE ρ) T l′ x
 subst←RE-ext ρ T R l here = refl
@@ -99,8 +99,8 @@ subst←RE-ren : ∀ (ρ : RelEnv Δ₂) (τ* : TRen Δ₁ Δ₂)
 subst←RE-ren ρ τ* l′ x = refl
 
 --! lemmaOne
-RE-ext∘lift : ∀ (ρ : 𝓓⟦ Δ ⟧) (T : Type (l ∷ Δ) l′) (T′ : Type [] l) (R : REL T′)
-  → Tsub (Tliftₛ (π₁ ρ) l) T [ T′ ]T ≡ Tsub (π₁ (REext ρ (T′ , R))) T
+RE-ext∘lift : ∀ (ρ : 𝓓⟦ Δ ⟧) (T : Type (l ∷ Δ) l′) (T′ : Type [] l) (R : REL T′) →
+  Tsub (Tliftₛ (π₁ ρ) l) T [ T′ ]T ≡ Tsub (π₁ (REext ρ (T′ , R))) T
 
 RE-ext∘lift {l = l} ρ T T′ R =
   begin
@@ -181,8 +181,8 @@ Cdrop χ l T x = χ l T (there x)
 
 --! Cextend
 Cextend : ∀ {l} {T : Type Δ l} → CSub σ* Γ → CValue (Tsub σ* T) → CSub σ* (T ◁ Γ)
-Cextend χ v _ _ here = v
-Cextend χ v _ _ (there x) = χ _ _ x
+Cextend χ v _ _ here       = v
+Cextend χ v _ _ (there x)  = χ _ _ x
 
 Cextend-Eext : ∀ {l} {T : Type Δ l} → (χ : CSub σ* Γ) → (w : CValue (Tsub σ* T)) → 
   ES←SC (Cextend {T = T} χ w) ≡ Eextₛ _ (ES←SC χ) (exp w)

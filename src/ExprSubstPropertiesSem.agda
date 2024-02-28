@@ -413,7 +413,8 @@ EEsingle-subst-preserves {Δ = Δ} {Γ = Γ} {η = η} {T′ = T′} {T = T} γ 
 
 --! ETsingleSubstPreserves
 ETsingle-subst-preserves : ∀ (γ : Env Δ Γ η) (e : Expr (l ∷ Δ) (l ◁* Γ) T′) (T : Type Δ l) →
-  E⟦ e [ T ]ET ⟧ η γ ≡ subst id (sym (Tsingle-subst-preserves η T T′)) (E⟦ e ⟧ (⟦ T ⟧ η ∷ η) (extend-tskip γ))
+  E⟦ e [ T ]ET ⟧ η γ ≡ subst id  (sym (Tsingle-subst-preserves η T T′))
+                                 (E⟦ e ⟧ (⟦ T ⟧ η ∷ η) (extend-tskip γ))
 
 ETsingle-subst-preserves {Δ = Δ} {Γ = Γ} {η = η} {T′ = T′} γ e T = (H.≅-to-≡(R.begin 
     E⟦ e [ T ]ET ⟧ η γ

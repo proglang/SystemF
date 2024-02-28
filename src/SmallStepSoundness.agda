@@ -36,9 +36,9 @@ import HeterogeneousEqualityLemmas as HE
 --! SmallStep >
 
 --! Soundness
-soundness : ∀ {e₁ e₂ : Expr Δ Γ T}
-  → e₁ ↪ e₂
-  → ∀ η γ → E⟦ e₁ ⟧ η γ ≡ E⟦ e₂ ⟧ η γ
+soundness : ∀ {e₁ e₂ : Expr Δ Γ T} →
+  e₁ ↪ e₂ →
+  ∀ η γ → E⟦ e₁ ⟧ η γ ≡ E⟦ e₂ ⟧ η γ
 
 --! SoundnessProof
 soundness β-suc η γ = refl

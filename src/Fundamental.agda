@@ -156,16 +156,23 @@ Elift-[]≡Cextt Γ ρ χ l′ l T e T′ R =
 
 -- semantic soundness
 --! SemanticSoundness {
-semanticSoundness : ∀ (Γ : Ctx Δ) (T : Type Δ l) (e : Expr Δ Γ T) → Setω
-semanticSoundness {Δ = Δ} Γ T e =
-  ∀ (ρ : 𝓓⟦ Δ ⟧)
-  → let ρ* = π₁ ρ in (χ : CSub ρ* Γ)
-  → let η = ⟦ ρ* ⟧* [] in (γ : Env Δ Γ η)
-  → 𝓖⟦ Γ ⟧ ρ χ γ
-  → 𝓔⟦ T ⟧ ρ (Csub χ e) (E⟦ e ⟧ η γ)
+semantic-soundness : ∀ (Γ : Ctx Δ) (T : Type Δ l) (e : Expr Δ Γ T) → Setω
+semantic-soundness {Δ = Δ} Γ T e =
+  (ρ : 𝓓⟦ Δ ⟧) →
+  let ρ* = π₁ ρ in
+  let η = ⟦ ρ* ⟧* [] in
+  (χ : CSub ρ* Γ) (γ : Env Δ Γ η) →
+  𝓖⟦ Γ ⟧ ρ χ γ → 𝓔⟦ T ⟧ ρ (Csub χ e) (E⟦ e ⟧ η γ)
 
-syntax semanticSoundness Γ T e = Γ ⊨ e ⦂ T
+syntax semantic-soundness Γ T e = Γ ⊨ e ⦂ T
 --! }
+
+-- semantic-soundness {Δ = Δ} Γ T e =
+--   ∀ (ρ : 𝓓⟦ Δ ⟧)
+--   → let ρ* = π₁ ρ in (χ : CSub ρ* Γ)
+--   → let η = ⟦ ρ* ⟧* [] in (γ : Env Δ Γ η)
+--   → 𝓖⟦ Γ ⟧ ρ χ γ
+--   → 𝓔⟦ T ⟧ ρ (Csub χ e) (E⟦ e ⟧ η γ)
 
 -- fundamental theorem
 
@@ -615,9 +622,7 @@ Csub-closed χ e =
   )
 
 --! AdequacyType
-adequacy : (e : CExpr `ℕ) → (n : ℕ)
-  → E⟦ e ⟧ [] γ₀ ≡ n
-  → e ⇓ (# n , V-♯)
+adequacy : (e : CExpr `ℕ) → (n : ℕ) → E⟦ e ⟧ [] γ₀ ≡ n → e ⇓ (# n , V-♯)
 
 --! AdequacyBody
 adequacy e n ⟦e⟧≡n

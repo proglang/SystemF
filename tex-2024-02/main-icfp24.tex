@@ -352,9 +352,9 @@ The type of expressions is now given as follows.
 We add numeric values and the successor function as examples of observables.
 Variables, lambda abstractions, and application are encoded just like
 for the simply-typed lambda calculus.
-Type abstraction \texttt{Λ $l$ ⇒ $e$} takes a level $l$ and a body where the new type
+Type abstraction \texttt{\ACon{Λ} $l$ \ACon{⇒} $e$} takes a level $l$ and a body where the new type
 variable is bound to $l$. 
-Type application \texttt{$e$ ∙ $T'$} takes an expression with universal quantification at
+Type application \texttt{$e$ \ACon{∙} $T'$} takes an expression with universal quantification at
 level $l$ and a type $T'$ of level $l$. It constructs an expression
 where type $T'$ has been substituted in the body $T$ of the
 quantified type.
@@ -1049,7 +1049,7 @@ The rest of the proof requires two more lemmas related to {\Asubst}:
   {\AFun{S₈}} around it:
   \begin{AgdaBlock}
     \SubstExamplesCongTApp
-    \SubstExamplesFusionESubESubBodyProofC
+    \SubstExamplesFusionESubESubBodyProofD
   \end{AgdaBlock}
 \end{enumerate}
 

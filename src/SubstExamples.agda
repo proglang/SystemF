@@ -40,7 +40,7 @@ module Subst where
 open import Relation.Binary.PropositionalEquality using (subst)
 open import Types
 open import TypeSubstitution hiding (_∘ₛₛ_)
-open import TypeSubstProperties hiding (fusion-Tsub-Tsub)
+open import TypeSubstProperties hiding (fusion-Tsub-Tsub; fusion-Tsub-Tsub-lift)
 open import Expressions
 open import ExprSubstitution hiding (Eidₛ; ESub)
 
@@ -134,15 +134,21 @@ module WithPropEq where
       --! FusionESubESubBodyProofB
       p₂ = {!!}
 
-      --! FusionESubESubBodyProofB
+      --! FusionESubESubBodyProofC
       p₃ = {!!}
 
-      --! FusionESubESubBodyProofC
+      --! FusionESubESubBodyProofD
       p₄ = cong S₅ (cong-∙ (fusion-Esub-Esub e σ₁ σ₂) (fusion-Tsub-Tsub T′ σ₁* σ₂*))
 
   fusion-Esub-Esub {Δ₂} {Δ₃} {Δ₁} {l} {σ₁*} {σ₂*} {Γ₁} {Γ₂} {Γ₃} {T} e σ₁ σ₂ = {!!}
 
 module WithHetEq where
+
+  fusion-Tsub-Tsub-lift :
+    ∀ (T : Type (l ∷ Δ₁) l′) (σ₁ : TSub Δ₂ Δ₃) (σ₂ : TSub Δ₁ Δ₂) →
+    Tsub (Tliftₛ σ₁ _) (Tsub (Tliftₛ σ₂ _) T) ≡ Tsub (Tliftₛ (σ₁ ∘Tₛₛ σ₂) _) T
+  fusion-Tsub-Tsub-lift = {!!}
+
   import Relation.Binary.PropositionalEquality as ≡
   open import Relation.Binary.HeterogeneousEquality
     using (_≅_; refl; trans; sym; cong; cong₂; module ≅-Reasoning; ≡-to-≅; ≡-subst-removable)
@@ -180,7 +186,7 @@ module WithHetEq where
       --! FusionESubESubHetProofC
       p₃ = cong₃  {A = Type (_ ∷ Δ₃) l} {B = λ T → Expr Δ₃ Γ₃ (`∀α _ , T)} {C = λ _ _ → Type Δ₃ _ }
                   (λ _ e T′ → e ∙ T′)
-                  (≡-to-≅ (fusion-Tsub-Tsub-lift T σ₂* σ₁*))
+                  (≡-to-≅ (fusion-Tsub-Tsub-lift T σ₁* σ₂*))
                   (fusion-Esub-Esub e σ₁ σ₂)
                   (≡-to-≅ (fusion-Tsub-Tsub T′ σ₁* σ₂*))
 

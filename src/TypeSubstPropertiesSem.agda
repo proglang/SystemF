@@ -47,8 +47,8 @@ Tren*-lift α Tren* here = refl
 Tren*-lift α Tren* (there x) = Tren* x
 
 --! RenPreservesSemanticsType
-Tren*-preserves-semantics : ∀ {ρ* : TRen Δ₁ Δ₂}{η₁ : Env* Δ₁}{η₂ : Env* Δ₂}
-  → (Tren* : TRen* ρ* η₁ η₂) → (T : Type Δ₁ l) →  ⟦ Tren ρ* T ⟧ η₂ ≡ ⟦ T ⟧ η₁
+Tren*-preserves-semantics : ∀ {ρ* : TRen Δ₁ Δ₂} {η₁ : Env* Δ₁} {η₂ : Env* Δ₂} →
+  (Tren* : TRen* ρ* η₁ η₂) → (T : Type Δ₁ l) → ⟦ Tren ρ* T ⟧ η₂ ≡ ⟦ T ⟧ η₁
 
 Tren*-preserves-semantics {ρ* = ρ*} {η₁} {η₂} Tren* (` x) = Tren* x
 Tren*-preserves-semantics {ρ* = ρ*} {η₁} {η₂} Tren* (T₁ ⇒ T₂) = cong₂ (λ A₁ A₂ → A₁ → A₂) (Tren*-preserves-semantics {ρ* = ρ*} {η₁} {η₂} Tren* T₁) (Tren*-preserves-semantics {ρ* = ρ*} {η₁} {η₂} Tren* T₂)
@@ -85,15 +85,15 @@ Tdrop-σ≡Twk∘σ σ* = fun-ext₂ (λ x y → refl)
 
 --! substToEnv
 ⟦_⟧* : TSub Δ₁ Δ₂ → Env* Δ₂ → Env* Δ₁
-⟦_⟧* {Δ₁ = []} σ* η₂ = []
-⟦_⟧* {Δ₁ = _ ∷ _} σ* η₂ = ⟦ σ* _ here ⟧ η₂ ∷ ⟦ Tdropₛ σ* ⟧* η₂
+⟦_⟧* {Δ₁ = []}     σ* η₂ = []
+⟦_⟧* {Δ₁ = _ ∷ _}  σ* η₂ = ⟦ σ* _ here ⟧ η₂ ∷ ⟦ Tdropₛ σ* ⟧* η₂
 
 subst-to-env* : TSub Δ₁ Δ₂ → Env* Δ₂ → Env* Δ₁
 subst-to-env* = ⟦_⟧*
 
 --! substVarPreservesType
-subst-var-preserves : (α : l ∈ Δ₁) (τ* : TSub Δ₁ Δ₂) (η₂ : Env* Δ₂)
-  → lookup α (⟦ τ* ⟧* η₂) ≡ ⟦ τ* l α ⟧ η₂
+subst-var-preserves : (α : l ∈ Δ₁) (τ* : TSub Δ₁ Δ₂) (η₂ : Env* Δ₂) →
+  lookup α (⟦ τ* ⟧* η₂) ≡ ⟦ τ* l α ⟧ η₂
 
 subst-var-preserves here σ* η₂ = refl
 subst-var-preserves (there x) σ* η₂ = subst-var-preserves x (Tdropₛ σ*) η₂

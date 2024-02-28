@@ -34,19 +34,30 @@ open import Logical
 --! LRVren >
 
 --! LRVrenEqType
-LRVren-eq′ :  ∀ {Δ₁}{Δ₂}{l}
-  → (T : Type Δ₁ l)
-  → (ρ : RelEnv Δ₂)
-  → (τ* : TRen Δ₁ Δ₂)
-  → let ρ* = π₁ ρ
-  in (v : Value (Tsub (τ* ∘ᵣₛ ρ*) T))
-  → (z : ⟦ T ⟧ (⟦ π₁ (Tren-act τ* ρ) ⟧* []))
-  → 𝓥⟦ T ⟧ (Tren-act τ* ρ) v z ≡
-    subst₂ (λ vv zz → Value vv → zz → Set l)
-           (fusion-Tsub-Tren T τ* ρ*)
-           (Tren*-preserves-semantics {ρ* = τ*} {⟦ π₁ (Tren-act τ* ρ) ⟧* []} {⟦ ρ* ⟧* []}
-                                      (τ*∈Ren* τ* ρ*) T)
-           (𝓥⟦ Tren τ* T ⟧ ρ) v z
+LRVren-eq′ :
+  ∀ {Δ₁} {Δ₂} {l} (T : Type Δ₁ l) (ρ : RelEnv Δ₂) (τ* : TRen Δ₁ Δ₂) →
+  let ρ* = π₁ ρ in
+  (v : Value (Tsub (τ* ∘ᵣₛ ρ*) T)) →
+  (z : ⟦ T ⟧ (⟦ π₁ (Tren-act τ* ρ) ⟧* [])) →
+  let S = subst₂  (λ vv zz → Value vv → zz → Set l)
+                  (fusion-Tsub-Tren T τ* ρ*)
+                  (Tren*-preserves-semantics  {ρ* = τ*} {⟦ π₁ (Tren-act τ* ρ) ⟧* []}
+                                               {⟦ ρ* ⟧* []} (τ*∈Ren* τ* ρ*) T) in
+  𝓥⟦ T ⟧ (Tren-act τ* ρ) v z ≡ S (𝓥⟦ Tren τ* T ⟧ ρ) v z
+
+-- LRVren-eq′ :  ∀ {Δ₁}{Δ₂}{l}
+--   → (T : Type Δ₁ l)
+--   → (ρ : RelEnv Δ₂)
+--   → (τ* : TRen Δ₁ Δ₂)
+--   → let ρ* = π₁ ρ
+--   in (v : Value (Tsub (τ* ∘ᵣₛ ρ*) T))
+--   → (z : ⟦ T ⟧ (⟦ π₁ (Tren-act τ* ρ) ⟧* []))
+--   → 𝓥⟦ T ⟧ (Tren-act τ* ρ) v z ≡
+--     subst₂ (λ vv zz → Value vv → zz → Set l)
+--            (fusion-Tsub-Tren T τ* ρ*)
+--            (Tren*-preserves-semantics {ρ* = τ*} {⟦ π₁ (Tren-act τ* ρ) ⟧* []} {⟦ ρ* ⟧* []}
+--                                       (τ*∈Ren* τ* ρ*) T)
+--            (𝓥⟦ Tren τ* T ⟧ ρ) v z
 
 LRVren-eq′ `ℕ ρ τ* v z = refl
 
@@ -1722,19 +1733,28 @@ LRVren-eq :  ∀ {Δ₁}{Δ₂}{l}
 LRVren-eq T ρ τ* = fun-ext (λ v → fun-ext (λ z → LRVren-eq′ T ρ τ* v z))
 
 --! LRVwk
-LRVwk-eq : ∀ {Δ}{l}{l₁}
-  → (T : Type Δ l)
-  → (ρ : RelEnv (l₁ ∷ Δ))
-  → let ρ* = π₁ ρ
-  in (v : Value (Tsub (Tdropₛ ρ*) T))
-  → (z : ⟦ T ⟧ (⟦ Tdropₛ ρ* ⟧* []))
-  → 𝓥⟦ T ⟧ (REdrop ρ) v z
-  ≡ 𝓥⟦ Twk T ⟧
-        ρ
-        (subst Value (sym (fusion-Tsub-Tren T (Twkᵣ Tidᵣ) ρ*)) v)
-        (subst id (sym (Tren*-preserves-semantics {ρ* = Twkᵣ Tidᵣ} {⟦ Tdropₛ ρ* ⟧* []} {⟦ ρ* ⟧* []}
-                                                  (wkᵣ∈Ren* (⟦ Tdropₛ ρ* ⟧* []) (⟦ ρ* _ here ⟧ []))
-                                                  T)) z)
+LRVwk-eq :
+  ∀ {Δ} {l} {l₁} (T : Type Δ l) (ρ : RelEnv (l₁ ∷ Δ)) →
+  let ρ* = π₁ ρ in
+  ∀ (v : Value (Tsub (Tdropₛ ρ*) T)) (z : ⟦ T ⟧ (⟦ Tdropₛ ρ* ⟧* [])) →
+  let S₁ = subst Value (sym (fusion-Tsub-Tren T (Twkᵣ Tidᵣ) ρ*)) in
+  let S₂ = subst id (sym (Tren*-preserves-semantics {ρ* = Twkᵣ Tidᵣ} {⟦ Tdropₛ ρ* ⟧* []} {⟦ ρ* ⟧* []}
+                            (wkᵣ∈Ren* (⟦ Tdropₛ ρ* ⟧* []) (⟦ ρ* _ here ⟧ [])) T)) in
+  𝓥⟦ T ⟧ (REdrop ρ) v z ≡ 𝓥⟦ Twk T ⟧ ρ (S₁ v) (S₂ z)
+
+-- LRVwk-eq : ∀ {Δ} {l} {l₁}
+--   → (T : Type Δ l)
+--   → (ρ : RelEnv (l₁ ∷ Δ))
+--   → let ρ* = π₁ ρ
+--   in (v : Value (Tsub (Tdropₛ ρ*) T))
+--   → (z : ⟦ T ⟧ (⟦ Tdropₛ ρ* ⟧* []))
+--   → 𝓥⟦ T ⟧ (REdrop ρ) v z
+--   ≡ 𝓥⟦ Twk T ⟧
+--         ρ
+--         (subst Value (sym (fusion-Tsub-Tren T (Twkᵣ Tidᵣ) ρ*)) v)
+--         (subst id (sym (Tren*-preserves-semantics {ρ* = Twkᵣ Tidᵣ} {⟦ Tdropₛ ρ* ⟧* []} {⟦ ρ* ⟧* []}
+--                                                   (wkᵣ∈Ren* (⟦ Tdropₛ ρ* ⟧* []) (⟦ ρ* _ here ⟧ []))
+--                                                   T)) z)
 
 LRVwk-eq T ρ v z =
   begin
@@ -1847,9 +1867,9 @@ LRVwk-eq T ρ v z =
   ∎
 
 --! MCGLookupType
-𝓖-lookup : (Γ : TEnv Δ) (ρ : RelEnv Δ) (χ : CSub (π₁ ρ) Γ)
-  → (γ : Env Δ Γ (⟦ π₁ ρ ⟧* [])) (T : Type Δ l)
-  → 𝓖⟦ Γ ⟧ ρ χ γ → (x : inn T Γ) → 𝓥⟦ T ⟧ ρ (χ _ _ x) (γ _ _ x)
+𝓖-lookup : (Γ : TEnv Δ) (ρ : RelEnv Δ) (χ : CSub (π₁ ρ) Γ) →
+  (γ : Env Δ Γ (⟦ π₁ ρ ⟧* [])) (T : Type Δ l) →
+  𝓖⟦ Γ ⟧ ρ χ γ → (x : inn T Γ) → 𝓥⟦ T ⟧ ρ (χ _ _ x) (γ _ _ x)
 
 --! MCGLookupBody
 𝓖-lookup .(T ◁ _) ρ χ γ T (𝓥 , 𝓖) here = 𝓥
