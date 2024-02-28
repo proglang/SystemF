@@ -100,8 +100,8 @@ module WithPropEq where
   fusion-Esub-Esub : 
     ∀ {σ₁* : TSub Δ₂ Δ₃} {σ₂* : TSub Δ₁ Δ₂} {Γ₁ : TEnv Δ₁} {Γ₂ : TEnv Δ₂} {Γ₃ : TEnv Δ₃}
       {T : Type Δ₁ l} (e : Expr Δ₁ Γ₁ T) (σ₁ : ESub σ₁* Γ₂ Γ₃) (σ₂ : ESub σ₂* Γ₁ Γ₂) →
-    let S = subst (Expr Δ₃ Γ₃) (fusion-Tsub-Tsub T σ₁* σ₂*) in
-    S (Esub σ₁* σ₁ (Esub σ₂* σ₂ e)) ≡ Esub (σ₁* ∘Tₛₛ σ₂*) (σ₁ ∘Eₛₛ σ₂) e
+    let S₁ = subst (Expr Δ₃ Γ₃) (fusion-Tsub-Tsub T σ₁* σ₂*) in
+    S₁ (Esub σ₁* σ₁ (Esub σ₂* σ₂ e)) ≡ Esub (σ₁* ∘Tₛₛ σ₂*) (σ₁ ∘Eₛₛ σ₂) e
 
   --! FusionESubESubBody
   fusion-Esub-Esub {Δ₂} {Δ₃} {Δ₁} {l} {σ₁*} {σ₂*} {Γ₁} {Γ₂} {Γ₃} {_} (_∙_ {l = l′} {T = T} e T′) σ₁ σ₂ = 

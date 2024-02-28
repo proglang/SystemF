@@ -964,8 +964,16 @@ expressions, e.g. between two function applications: \texttt{f x $\equiv$ g y}.
 
 It is harmless to use {\Asubst} in a proof, but if a {\Asubst} appears
 in the \emph{type} of a proof, then often complications arise.
-Consider for example the type application case {\ACon{\_∙\_}} of the fusion lemma for
-expression substitutions from Section~\ref{sec:substitutions:expr}:
+In this section, we take a closer look at these complications and
+discuss two approaches to combat them. We do so by looking at two
+alternative proofs of the fusion lemma for expression substitutions from
+Section~\ref{sec:substitutions:expr}.
+
+\subsection{Homogeneous Equality}
+\label{sec:subst-hell:hom}
+
+The following shows our first version of the type application case
+{\ACon{\_∙\_}} of the fusion lemma:
 
 \begin{AgdaBlock}
   \SubstExamplesFusionESubESub
@@ -975,10 +983,11 @@ expression substitutions from Section~\ref{sec:substitutions:expr}:
 This proof contains eight different uses of the {\Asubst} lemma!
 To increase readability, we replaced each {\Asubst} 
 with an auxilliary definition {\AFun{Sᵢ} = \Asubst~\AFun{Fᵢ}~\AFun{Eᵢ}}.
-As the concrete arguments of the {\AFun{Sᵢ}} are not relevant to the
-discussion, we elided the \AKw{where}-block of the proof.
+As the concrete arguments {\AFun{Fᵢ}} and {\AFun{Eᵢ}} are not relevant to the
+discussion, we elided the \AKw{where}-block containing their
+definitions from the presentation. The non-trivial proof terms {\AFun{pᵢ}} are explained below.
 
-In line \ACom{(1)}, the {\AFun{S₁}} is the \ACode{S} from the lemma statement itself.
+In line \ACom{(1)}, the {\AFun{S₁}} comes from the lemma statement itself.
 In line \ACom{(2)}, the inner {\AEsub} from line \ACom{(1)} has been reduced, which
 introduced another {\Asubst} we call {\AFun{S₂}}.
 The {\AFun{S₂}} blocks the reduction of the outer {\AEsub}.
@@ -996,7 +1005,7 @@ The trick for proving this equation, consists in abstraction:
 if we can generalize the equation, such that all equality proofs occuring in {\AFun{S₂}}
 and  {\AFun{S₃}} witness equalities between variables, e.g. \ACode{x~\AFun{≡}~y}, then
 we can simply match on the equality proofs and the {\AFun{Sᵢ}} reduce away.
-This is exactly what the {\AFun{dist-subst}} lemma does:
+This is exactly what our {\AFun{dist-subst}} lemma does:
 \SubstExamplesDistSubst
 To prove the equation required to go from line \ACom{(2)} to \ACom{(3)}, we
 instantiate {\AFun{dist-subst}} as follows:
@@ -1019,14 +1028,14 @@ instantiate {\AFun{dist-subst}} as follows:
 
 The rest of the proof requires two more lemmas related to {\Asubst}:
 \begin{enumerate}
-\item the equation between line \ACom{(4)} and \ACom{(5)} states that if
+\item the equation for {\AFun{p₂}} between line \ACom{(4)} and \ACom{(5)} states that if
   different {\Asubst}s are applied to the same term, then the terms are still equal.
   This is intuitively true, because {\Asubst} behaves like the identity function
   after it matched on the equality proof;
-\item the equation between line \ACom{(5)} and \ACom{(6)} requires another
+\item the equation for {\AFun{p₃}} between line \ACom{(5)} and \ACom{(6)} requires another
   use of {\AFun{dist-subst}} to pull {\AFun{S₆}} out of the left
   argument of the type application, which introduces {\AFun{S₈}};
-\item the equation between line \ACom{(6)} and \ACom{(7)} is where
+\item the equation for {\AFun{p₄}} between line \ACom{(6)} and \ACom{(7)} is where
   the actual meat of the proof is. Here the induction hypothesis is applied to the
   left side of the type application and the fusion lemma for type substitutions
   is applied to the right side of the type application. However, changing
@@ -1036,13 +1045,20 @@ The rest of the proof requires two more lemmas related to {\Asubst}:
   {\AFun{S₈}} around it.
 \end{enumerate}
 
-The rest of the proof uses similar techniques, so we take a step back
-to describe a different solution.
+This is a lot of technical proof work for equations that are obviously
+true, because {\Asubst} is semantically just an identity function!
+Let us take a step back to describe a different solution.
+
+% The rest of the proof uses similar techniques, so we take a step back
+% to describe a different solution.
+
+% Instead of taking a closer look at the proofs
 
 \subsection{Heterogeneous Equality}
+\label{sec:subst-hell:het}
 
 Heterogeneous equality was introduced by
-\citet{DBLP:conf/types/McBride00} as \emph{John Major equality} and
+\cite{DBLP:conf/types/McBride00} as \emph{John Major equality} and
 is defined in Agda as follows:
 \SubstExamplesHetEqDef
 In contrast to homogeneous equality \AFun{\_≡\_}, heterogenous
@@ -1050,18 +1066,24 @@ equality expresses equalities between values of different
 types. It is particularly useful to state and prove equalities between
 values of different but propositionally equal types.
 
-Applications of the {\Asubst} lemma can be simply removed with heterogeneous equality:
-\SubstExamplesHetEqSubstRemovable
+Before we revisit the proof example from the previous subsection, we take a look
+at three lemmas from Agda's standard library about heterogeneous equality:
 
-The {\AFun{cong₂}} lemma for heterogeneous equality lifts
-equalities for the arguments of a binary function to an equality 
-the function result.
-\SubstExamplesHetEqCongII
+\begin{enumerate}
+\item 
+  Applications of the {\Asubst} lemma can be simply removed with heterogeneous equality:
+  \SubstExamplesHetEqSubstRemovable
+\item 
+  The {\AFun{cong₂}} lemma for heterogeneous equality lifts
+  equalities for the arguments of a binary function to an equality 
+  for the function result.
+  \SubstExamplesHetEqCongII
+\item 
+  A homogeneous equality can be converted to a heterogeneous equality:
+  \SubstExamplesHetEqConv
+\end{enumerate}
 
-And finally, a homogeneous equality can be converted to a heterogeneous equality:
-\SubstExamplesHetEqConv
-
-Equipped with these lemmas, we turn back to the example of the fusion lemma for substitutions.
+Equipped with these lemmas, we turn back to our proof example:
 \SubstExamplesFusionESubESubHet
 Now that we can equate terms of different types, the lemma can be
 stated without using {\Asubst}.
@@ -1097,9 +1119,9 @@ for the type-index of the expression:
 
 \subsection{Assessment}
 We found that heterogeneous equality significantly simplifies the complications arising from
-using {\Asubst} in definitions and lemma statements. While it completely removes the need for using
-{\Asubst} in lemma statements, some {\Asubst}
-applications still show up in equality proofs due to definitions, where subst
+using {\Asubst} in definitions and lemma statements. While it completely removes the need for
+{\Asubst} in the statements of equational lemmas, some {\Asubst}
+applications still show up in equality proofs due to the unfolding of definitions, where {\Asubst}
 cannot be avoided in an intrinsically typed setting.
 These {\Asubst} applications need to be removed manually, which with heterogeneous
 equality behaves much more regular than with homogeneous equality. In
