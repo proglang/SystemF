@@ -34,9 +34,9 @@ sub↑-dist-∘ᵣₛ l ρ σ = fun-ext₂ λ where
   _ (there x) → refl
 
 mutual 
-  assoc-sub↑-ren↑ : ∀ (T : Type (l ∷ Δ₁) l′) (ρ : TRen Δ₁ Δ₂) (σ : TSub Δ₂ Δ₃) →
+  fusion-Tsub-Tren-lift : ∀ (T : Type (l ∷ Δ₁) l′) (ρ : TRen Δ₁ Δ₂) (σ : TSub Δ₂ Δ₃) →
     Tsub (Tliftₛ σ _) (Tren (Tliftᵣ ρ _) T) ≡ Tsub (Tliftₛ (ρ ∘ᵣₛ σ) _) T
-  assoc-sub↑-ren↑ T ρ σ = begin
+  fusion-Tsub-Tren-lift T ρ σ = begin
       Tsub (Tliftₛ σ _) (Tren (Tliftᵣ ρ _) T) 
     ≡⟨ fusion-Tsub-Tren T (Tliftᵣ ρ _) (Tliftₛ σ _) ⟩
       Tsub (Tliftᵣ ρ _ ∘ᵣₛ Tliftₛ σ _) T
@@ -50,7 +50,7 @@ mutual
 
   fusion-Tsub-Tren (` x) ρ σ = refl
   fusion-Tsub-Tren (T₁ ⇒ T₂) ρ σ = cong₂ _⇒_ (fusion-Tsub-Tren T₁ ρ σ) (fusion-Tsub-Tren T₂ ρ σ)
-  fusion-Tsub-Tren (`∀α l , T) ρ σ = cong (`∀α l ,_) (assoc-sub↑-ren↑ T ρ σ)
+  fusion-Tsub-Tren (`∀α l , T) ρ σ = cong (`∀α l ,_) (fusion-Tsub-Tren-lift T ρ σ)
   fusion-Tsub-Tren `ℕ ρ σ = refl
 
 ren↑-dist-∘ᵣᵣ : ∀ l (ρ₁ : TRen Δ₁ Δ₂) (ρ₂ : TRen Δ₂ Δ₃) →
@@ -60,9 +60,9 @@ ren↑-dist-∘ᵣᵣ l ρ₁ ρ₂ = fun-ext₂ λ where
   _ (there x) → refl
 
 mutual 
-  assoc-ren↑-ren↑ : ∀ (T : Type (l ∷ Δ₁) l′) (ρ₁ : TRen Δ₁ Δ₂) (ρ₂ : TRen Δ₂ Δ₃) →
+  fusion-Tren-Tren-lift : ∀ (T : Type (l ∷ Δ₁) l′) (ρ₁ : TRen Δ₁ Δ₂) (ρ₂ : TRen Δ₂ Δ₃) →
     Tren (Tliftᵣ ρ₂ _) (Tren (Tliftᵣ ρ₁ _) T) ≡ Tren (Tliftᵣ (ρ₁ ∘ᵣᵣ ρ₂) _) T
-  assoc-ren↑-ren↑ {l = l} T ρ₁ ρ₂ =
+  fusion-Tren-Tren-lift {l = l} T ρ₁ ρ₂ =
       Tren (Tliftᵣ ρ₂ _) (Tren (Tliftᵣ ρ₁ _) T) 
     ≡⟨ fusion-Tren-Tren T (Tliftᵣ ρ₁ _) (Tliftᵣ ρ₂ _) ⟩
       Tren (Tliftᵣ ρ₁ _ ∘ᵣᵣ Tliftᵣ ρ₂ _) T
@@ -76,7 +76,7 @@ mutual
 
   fusion-Tren-Tren (` x) ρ₁ ρ₂ = refl
   fusion-Tren-Tren (T₁ ⇒ T₂) ρ₁ ρ₂ = cong₂ _⇒_ (fusion-Tren-Tren T₁ ρ₁ ρ₂) (fusion-Tren-Tren T₂ ρ₁ ρ₂)
-  fusion-Tren-Tren (`∀α l , T) ρ₁ ρ₂ = cong (`∀α l ,_) (assoc-ren↑-ren↑ T ρ₁ ρ₂)
+  fusion-Tren-Tren (`∀α l , T) ρ₁ ρ₂ = cong (`∀α l ,_) (fusion-Tren-Tren-lift T ρ₁ ρ₂)
   fusion-Tren-Tren `ℕ ρ₁ ρ₂ = refl
 
 --! SwapTrenTwk
@@ -98,9 +98,9 @@ ren↑-dist-∘ₛᵣ l σ ρ = fun-ext₂ λ where
    _ (there x) → sym (swap-Tren-Twk ρ (σ _ x))
 
 mutual 
-  assoc-ren↑-sub↑ : ∀ (T : Type (l ∷ Δ₁) l′) (σ : TSub Δ₁ Δ₂) (ρ : TRen Δ₂ Δ₃) →
+  fusion-Tren-Tsub-lift : ∀ (T : Type (l ∷ Δ₁) l′) (σ : TSub Δ₁ Δ₂) (ρ : TRen Δ₂ Δ₃) →
     Tren (Tliftᵣ ρ _) (Tsub (Tliftₛ σ _) T) ≡ Tsub (Tliftₛ (σ ∘ₛᵣ ρ) _) T
-  assoc-ren↑-sub↑ {l = l} T σ ρ = begin 
+  fusion-Tren-Tsub-lift {l = l} T σ ρ = begin 
       Tren (Tliftᵣ ρ _) (Tsub (Tliftₛ σ _) T)
     ≡⟨ fusion-Tren-Tsub T (Tliftₛ σ _) (Tliftᵣ ρ _) ⟩
       Tsub (Tliftₛ σ _ ∘ₛᵣ Tliftᵣ ρ _) T
@@ -114,7 +114,7 @@ mutual
 
   fusion-Tren-Tsub (` x) ρ σ = refl
   fusion-Tren-Tsub (T₁ ⇒ T₂) ρ σ = cong₂ _⇒_ (fusion-Tren-Tsub T₁ ρ σ) (fusion-Tren-Tsub T₂ ρ σ)
-  fusion-Tren-Tsub (`∀α l , T) ρ σ = cong (`∀α l ,_) (assoc-ren↑-sub↑ T ρ σ)
+  fusion-Tren-Tsub (`∀α l , T) ρ σ = cong (`∀α l ,_) (fusion-Tren-Tsub-lift T ρ σ)
   fusion-Tren-Tsub `ℕ ρ σ = refl
 
 --! SwapTsubTwk
@@ -141,9 +141,9 @@ sub↑-dist-∘ₛₛ l σ₁ σ₂ = fun-ext₂ λ where
       ∎
 
 mutual 
-  assoc-sub↑-sub↑ : ∀ (T : Type (l ∷ Δ₁) l′) (σ₁ : TSub Δ₁ Δ₂) (σ₂ : TSub Δ₂ Δ₃) →
+  fusion-Tsub-Tsub-lift : ∀ (T : Type (l ∷ Δ₁) l′) (σ₁ : TSub Δ₁ Δ₂) (σ₂ : TSub Δ₂ Δ₃) →
     Tsub (Tliftₛ σ₂ _) (Tsub (Tliftₛ σ₁ _) T) ≡ Tsub (Tliftₛ (σ₁ ∘ₛₛ σ₂) _) T
-  assoc-sub↑-sub↑ {l = l} T σ₁ σ₂ = begin 
+  fusion-Tsub-Tsub-lift {l = l} T σ₁ σ₂ = begin 
       Tsub (Tliftₛ σ₂ _) (Tsub (Tliftₛ σ₁ _) T)
     ≡⟨ fusion-Tsub-Tsub T (Tliftₛ σ₁ _) (Tliftₛ σ₂ _) ⟩
       Tsub (Tliftₛ σ₁ _ ∘ₛₛ Tliftₛ σ₂ _) T
@@ -157,7 +157,7 @@ mutual
 
   fusion-Tsub-Tsub (` x) σ₁ σ₂ = refl
   fusion-Tsub-Tsub (T₁ ⇒ T₂) σ₁ σ₂ = cong₂ _⇒_ (fusion-Tsub-Tsub T₁ σ₁ σ₂) (fusion-Tsub-Tsub T₂ σ₁ σ₂)
-  fusion-Tsub-Tsub (`∀α l , T) σ₁ σ₂ = cong (`∀α l ,_) (assoc-sub↑-sub↑ T σ₁ σ₂)
+  fusion-Tsub-Tsub (`∀α l , T) σ₁ σ₂ = cong (`∀α l ,_) (fusion-Tsub-Tsub-lift T σ₁ σ₂)
   fusion-Tsub-Tsub `ℕ σ₁ σ₂ = refl
 
 TliftᵣTidᵣ≡Tidᵣ : ∀ Δ l →

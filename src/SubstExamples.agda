@@ -180,7 +180,7 @@ module WithHetEq where
       --! FusionESubESubHetProofC
       p₃ = cong₃  {A = Type (_ ∷ Δ₃) l} {B = λ T → Expr Δ₃ Γ₃ (`∀α _ , T)} {C = λ _ _ → Type Δ₃ _ }
                   (λ _ e T′ → e ∙ T′)
-                  (≡-to-≅ (assoc-sub↑-sub↑ T σ₂* σ₁*))
+                  (≡-to-≅ (fusion-Tsub-Tsub-lift T σ₂* σ₁*))
                   (fusion-Esub-Esub e σ₁ σ₂)
                   (≡-to-≅ (fusion-Tsub-Tsub T′ σ₁* σ₂*))
 
