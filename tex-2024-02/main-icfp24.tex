@@ -4,6 +4,12 @@
 \usepackage{stmaryrd}
 \usepackage{listings}
 
+% Turn off ligatures ending in "-".
+% Without this Agda Comments "--" are typeset as "–".
+\usepackage[T1]{fontenc}
+\usepackage{microtype}
+\DisableLigatures[-]{encoding=T1}
+
 %% There is a limit of 25 pages for a full paper or Functional Pearl
 %% and 12 pages for an Experience Report; in either case, the
 %% bibliography and an optional clearly marked appendix will not be
@@ -1021,8 +1027,6 @@ instantiate {\AFun{dist-subst}} as follows:
 % then \AgdaCode{f a₁ b₁ \AFun{≡} f a₂ b₂}. Unfortunately, type application {\ACon{\_∙\_}} is
 % not a valid choice for \AgdaCode{f}, because the second argument of type application, i.e. the \ACode{t}
 % in \AgdaCode{e \ACon{∙} t}, appears in the index of the type of \AgdaCode{e \ACon{∙} t}.
-% \SubstExamplesCongTApp
-% \SubstExamplesFusionESubESubBodyProofC
 
 % \SubstExamplesFusionESubESubBodyProofB
 
@@ -1042,7 +1046,11 @@ The rest of the proof requires two more lemmas related to {\Asubst}:
   the right side of the type application, changes the type of the
   whole type application, so another {\Asubst} lemma is required, which exchanges
   the right side of the type application and inserts another {\Asubst}
-  {\AFun{S₈}} around it.
+  {\AFun{S₈}} around it:
+  \begin{AgdaBlock}
+    \SubstExamplesCongTApp
+    \SubstExamplesFusionESubESubBodyProofC
+  \end{AgdaBlock}
 \end{enumerate}
 
 This is a lot of technical proof work for equations that are obviously

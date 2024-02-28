@@ -97,7 +97,7 @@ Eren↑-dist-∘ᵣᵣ-l {Δ₁} {Δ₂} {Δ₃} {ρ*} {σ*} {Γ₁} {Γ₂} {Γ
       R.∎
 
 mutual
-  Eassoc-ren↑-ren↑-l :
+  fusion-Eren-Eren-lift-l :
     ∀ {ρ* : TRen Δ₁ Δ₂} {σ* : TRen Δ₂ Δ₃}
       {Γ₁ : TEnv Δ₁} {Γ₂ : TEnv Δ₂} {Γ₃ : TEnv Δ₃}
       {l′ : Level}
@@ -106,14 +106,14 @@ mutual
       (ρ : ERen ρ* Γ₁ Γ₂) (σ : ERen σ* Γ₂ Γ₃) →
     Eren (Tliftᵣ ρ* l′ ∘ᵣᵣ Tliftᵣ σ* l′) (Eliftᵣ-l ρ* ρ >>RR Eliftᵣ-l σ* σ) e ≅
     Eren (Tliftᵣ (ρ* ∘ᵣᵣ σ*) l′) (Eliftᵣ-l (ρ* ∘ᵣᵣ σ*) (ρ >>RR σ)) e
-  Eassoc-ren↑-ren↑-l {Δ₁} {Δ₂} {Δ₃} {l} {ρ*} {σ*} {Γ₁} {Γ₂} {Γ₃} {l′} {T} e ρ σ =
+  fusion-Eren-Eren-lift-l {Δ₁} {Δ₂} {Δ₃} {l} {ρ*} {σ*} {Γ₁} {Γ₂} {Γ₃} {l′} {T} e ρ σ =
     R.begin
       Eren (Tliftᵣ ρ* l′ ∘ᵣᵣ Tliftᵣ σ* l′) (Eliftᵣ-l ρ* ρ >>RR Eliftᵣ-l σ* σ) e
     R.≅⟨ H.cong₂ (λ ■₁ ■₂ → Eren {Γ₂ = l′ ◁* Γ₃} ■₁ ■₂ e) (H.≡-to-≅ (sym (ren↑-dist-∘ᵣᵣ l′ ρ* σ*))) (Eren↑-dist-∘ᵣᵣ-l ρ σ) ⟩
       Eren (Tliftᵣ (ρ* ∘ᵣᵣ σ*) l′) (Eliftᵣ-l (ρ* ∘ᵣᵣ σ*) (ρ >>RR σ)) e
     R.∎
 
-  Eassoc-ren↑-ren↑ :
+  fusion-Eren-Eren-lift :
     ∀ {ρ* : TRen Δ₁ Δ₂} {σ* : TRen Δ₂ Δ₃}
       {Γ₁ : TEnv Δ₁}{Γ₂ : TEnv Δ₂}{Γ₃ : TEnv Δ₃}
       {T : Type Δ₁ l}
@@ -122,7 +122,7 @@ mutual
       (ρ : ERen ρ* Γ₁ Γ₂) (σ : ERen σ* Γ₂ Γ₃) →
     Eren σ* (Eliftᵣ {T = Tren ρ* T′} σ* σ) (Eren ρ* (Eliftᵣ ρ* ρ) e) ≅
     Eren (ρ* ∘ᵣᵣ σ*) (Eliftᵣ {T = T′} (ρ* ∘ᵣᵣ σ*) (ρ >>RR σ)) e
-  Eassoc-ren↑-ren↑ {Δ₃ = Δ₃} {ρ* = ρ*} {σ* = σ*} {Γ₁ = Γ₁} {Γ₃ = Γ₃} {T = T} {T′ = T′} e ρ σ =
+  fusion-Eren-Eren-lift {Δ₃ = Δ₃} {ρ* = ρ*} {σ* = σ*} {Γ₁ = Γ₁} {Γ₃ = Γ₃} {T = T} {T′ = T′} e ρ σ =
     R.begin
       Eren σ* (Eliftᵣ σ* σ) (Eren ρ* (Eliftᵣ ρ* ρ) e)
     R.≅⟨ fusion-Eren-Eren' e (Eliftᵣ ρ* ρ) (Eliftᵣ σ* σ) ⟩
@@ -170,7 +170,7 @@ mutual
     R.≅⟨ Hcong₃ {C = λ ■₁ ■₂ → Expr Δ₃ (■₁ ◁ Γ₃) ■₂} (λ _ _ ■ → ƛ ■)
                 (H.≡-to-≅ (fusion-Tren-Tren T₁ ρ* σ*))
                 (H.≡-to-≅ (fusion-Tren-Tren T₂ ρ* σ*))
-                (Eassoc-ren↑-ren↑ e ρ σ)  ⟩
+                (fusion-Eren-Eren-lift e ρ σ)  ⟩
       ƛ (Eren (ρ* ∘ᵣᵣ σ*) (Eliftᵣ (ρ* ∘ᵣᵣ σ*) (ρ >>RR σ)) e)
     R.≅⟨ refl ⟩
       Eren (ρ* ∘ᵣᵣ σ*) (ρ >>RR σ) (ƛ e)
@@ -198,7 +198,7 @@ mutual
       Λ l ⇒ Eren (Tliftᵣ ρ* l ∘ᵣᵣ Tliftᵣ σ* l) (Eliftᵣ-l ρ* ρ >>RR Eliftᵣ-l σ* σ) e
     R.≅⟨ H.cong₂ {B = Expr (l ∷ Δ₃) (l ◁* Γ₃)} (λ _ → Λ l ⇒_)
                  (H.≡-to-≅ (cong (λ σ → Tren σ T) (sym (ren↑-dist-∘ᵣᵣ _ ρ* σ*))))
-                 (Eassoc-ren↑-ren↑-l e ρ σ) ⟩
+                 (fusion-Eren-Eren-lift-l e ρ σ) ⟩
       Λ l ⇒ Eren (Tliftᵣ (ρ* ∘ᵣᵣ σ*) l) (Eliftᵣ-l (ρ* ∘ᵣᵣ σ*) (ρ >>RR σ)) e
     R.≅⟨ refl ⟩
       Eren (ρ* ∘ᵣᵣ σ*) (ρ >>RR σ) (Λ l ⇒ e)
@@ -220,7 +220,7 @@ mutual
     R.≅⟨ H.≡-subst-removable F₅ E₅ _ ⟩
       Eren σ* σ (Eren ρ* ρ e) ∙ Tren σ* (Tren ρ* T′)
     R.≅⟨ Hcong₃ {B = λ ■ → Expr Δ₃ Γ₃ (`∀α _ , ■)} {C = λ _ _ → Type Δ₃ _ } (λ _ ■₁ ■₂ → ■₁ ∙ ■₂)
-         (H.≡-to-≅ (assoc-ren↑-ren↑ T ρ* σ*)) (fusion-Eren-Eren' e ρ σ) (H.≡-to-≅ (fusion-Tren-Tren T′ ρ* σ*)) ⟩
+         (H.≡-to-≅ (fusion-Tren-Tren-lift T ρ* σ*)) (fusion-Eren-Eren' e ρ σ) (H.≡-to-≅ (fusion-Tren-Tren T′ ρ* σ*)) ⟩
       Eren (ρ* ∘ᵣᵣ σ*) (ρ >>RR σ) e ∙ Tren (ρ* ∘ᵣᵣ σ*) T′
     R.≅⟨ H.sym (H.≡-subst-removable F₃ E₃ _) ⟩
       sub₃ (Eren (ρ* ∘ᵣᵣ σ*) (ρ >>RR σ) e ∙ (Tren (ρ* ∘ᵣᵣ σ*) T′))

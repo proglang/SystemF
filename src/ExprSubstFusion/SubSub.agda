@@ -111,7 +111,7 @@ Esub↑-dist-∘ₛₛ-l {Δ₁} {Δ₂} {Δ₃} {σ*} {ρ*} {Γ₁} {Γ₂} {Γ
       R.∎
 
 mutual
-  Eassoc-sub↑-sub↑-l :
+  fusion-Esub-Esub-lift-l :
     ∀ {σ* : TSub Δ₁ Δ₂} {ρ* : TSub Δ₂ Δ₃}
       {Γ₁ : TEnv Δ₁} {Γ₂ : TEnv Δ₂} {Γ₃ : TEnv Δ₃}
       {l′ : Level}
@@ -120,14 +120,14 @@ mutual
       (σ : ESub σ* Γ₁ Γ₂) (ρ : ESub ρ* Γ₂ Γ₃) →
     Esub (Tliftₛ σ* l′ ∘ₛₛ Tliftₛ ρ* l′) (Eliftₛ-l σ* σ >>SS Eliftₛ-l ρ* ρ) e ≅
     Esub (Tliftₛ (σ* ∘ₛₛ ρ*) l′) (Eliftₛ-l (σ* ∘ₛₛ ρ*) (σ >>SS ρ)) e
-  Eassoc-sub↑-sub↑-l {Δ₁} {Δ₂} {Δ₃} {l} {σ*} {ρ*} {Γ₁} {Γ₂} {Γ₃} {l′} {T} e σ ρ =
+  fusion-Esub-Esub-lift-l {Δ₁} {Δ₂} {Δ₃} {l} {σ*} {ρ*} {Γ₁} {Γ₂} {Γ₃} {l′} {T} e σ ρ =
     R.begin
       Esub (Tliftₛ σ* l′ ∘ₛₛ Tliftₛ ρ* l′) (Eliftₛ-l σ* σ >>SS Eliftₛ-l ρ* ρ) e
     R.≅⟨ H.cong₂ (λ ■₁ ■₂ → Esub {Γ₂ = l′ ◁* Γ₃} ■₁ ■₂ e) (H.≡-to-≅ (sym (sub↑-dist-∘ₛₛ l′ σ* ρ*))) (Esub↑-dist-∘ₛₛ-l σ ρ) ⟩
       Esub (Tliftₛ (σ* ∘ₛₛ ρ*) l′) (Eliftₛ-l (σ* ∘ₛₛ ρ*) (σ >>SS ρ)) e
     R.∎
 
-  Eassoc-sub↑-sub↑ :
+  fusion-Esub-Esub-lift :
     ∀ {σ* : TSub Δ₁ Δ₂} {ρ* : TSub Δ₂ Δ₃}
       {Γ₁ : TEnv Δ₁}{Γ₂ : TEnv Δ₂}{Γ₃ : TEnv Δ₃}
       {T : Type Δ₁ l}
@@ -136,7 +136,7 @@ mutual
       (σ : ESub σ* Γ₁ Γ₂) (ρ : ESub ρ* Γ₂ Γ₃) →
     Esub ρ* (Eliftₛ {T = Tsub σ* T′} ρ* ρ) (Esub σ* (Eliftₛ σ* σ) e) ≅
     Esub (σ* ∘ₛₛ ρ*) (Eliftₛ {T = T′} (σ* ∘ₛₛ ρ*) (σ >>SS ρ)) e
-  Eassoc-sub↑-sub↑ {Δ₃ = Δ₃} {σ* = σ*} {ρ* = ρ*} {Γ₁ = Γ₁} {Γ₃ = Γ₃} {T = T} {T′ = T′} e σ ρ =
+  fusion-Esub-Esub-lift {Δ₃ = Δ₃} {σ* = σ*} {ρ* = ρ*} {Γ₁ = Γ₁} {Γ₃ = Γ₃} {T = T} {T′ = T′} e σ ρ =
     R.begin
       Esub ρ* (Eliftₛ ρ* ρ) (Esub σ* (Eliftₛ σ* σ) e)
     R.≅⟨ fusion-Esub-Esub' e (Eliftₛ σ* σ) (Eliftₛ ρ* ρ) ⟩
@@ -183,7 +183,7 @@ mutual
     R.≅⟨ Hcong₃ {C = λ ■₁ ■₂ → Expr Δ₃ (■₁ ◁ Γ₃) ■₂} (λ _ _ ■ → ƛ ■)
                 (H.≡-to-≅ (fusion-Tsub-Tsub T₁ σ* ρ*))
                 (H.≡-to-≅ (fusion-Tsub-Tsub T₂ σ* ρ*))
-                (Eassoc-sub↑-sub↑ e σ ρ)  ⟩
+                (fusion-Esub-Esub-lift e σ ρ)  ⟩
       ƛ (Esub (σ* ∘ₛₛ ρ*) (Eliftₛ (σ* ∘ₛₛ ρ*) (σ >>SS ρ)) e)
     R.≅⟨ refl ⟩
       Esub (σ* ∘ₛₛ ρ*) (σ >>SS ρ) (ƛ e)
@@ -211,7 +211,7 @@ mutual
       Λ l ⇒ Esub (Tliftₛ σ* l ∘ₛₛ Tliftₛ ρ* l) (Eliftₛ-l σ* σ >>SS Eliftₛ-l ρ* ρ) e
     R.≅⟨ H.cong₂ {B = Expr (l ∷ Δ₃) (l ◁* Γ₃)} (λ _ → Λ l ⇒_)
                  (H.≡-to-≅ (cong (λ σ → Tsub σ T) (sym (sub↑-dist-∘ₛₛ _ σ* ρ*))))
-                 (Eassoc-sub↑-sub↑-l e σ ρ) ⟩
+                 (fusion-Esub-Esub-lift-l e σ ρ) ⟩
       Λ l ⇒ Esub (Tliftₛ (σ* ∘ₛₛ ρ*) l) (Eliftₛ-l (σ* ∘ₛₛ ρ*) (σ >>SS ρ)) e
     R.≅⟨ refl ⟩
       Esub (σ* ∘ₛₛ ρ*) (σ >>SS ρ) (Λ l ⇒ e)
@@ -233,7 +233,7 @@ mutual
     R.≅⟨ H.≡-subst-removable F₅ E₅ _ ⟩
       Esub ρ* ρ (Esub σ* σ e) ∙ Tsub ρ* (Tsub σ* T′)
     R.≅⟨ Hcong₃ {B = λ ■ → Expr Δ₃ Γ₃ (`∀α _ , ■)} {C = λ _ _ → Type Δ₃ _ } (λ _ ■₁ ■₂ → ■₁ ∙ ■₂)
-         (H.≡-to-≅ (assoc-sub↑-sub↑ T σ* ρ*)) (fusion-Esub-Esub' e σ ρ) (H.≡-to-≅ (fusion-Tsub-Tsub T′ σ* ρ*)) ⟩
+         (H.≡-to-≅ (fusion-Tsub-Tsub-lift T σ* ρ*)) (fusion-Esub-Esub' e σ ρ) (H.≡-to-≅ (fusion-Tsub-Tsub T′ σ* ρ*)) ⟩
       Esub (σ* ∘ₛₛ ρ*) (σ >>SS ρ) e ∙ Tsub (σ* ∘ₛₛ ρ*) T′
     R.≅⟨ H.sym (H.≡-subst-removable F₃ E₃ _) ⟩
       sub₃ (Esub (σ* ∘ₛₛ ρ*) (σ >>SS ρ) e ∙ (Tsub (σ* ∘ₛₛ ρ*) T′))
