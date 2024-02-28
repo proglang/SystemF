@@ -109,9 +109,10 @@ module WithPropEq where
     S₁ (Esub σ₁* σ₁ (S₂ (Esub σ₂* σ₂ e ∙ Tsub σ₂* T′)))                  ≡⟨ p₁ ⟩    -- (2)
     S₁ (S₃ (Esub σ₁* σ₁ (Esub σ₂* σ₂ e ∙ Tsub σ₂* T′)))                  ≡⟨ refl ⟩  -- (3)
     S₁ (S₃ (S₄ (Esub σ₁* σ₁ (Esub σ₂* σ₂ e) ∙ Tsub σ₁* (Tsub σ₂* T′))))  ≡⟨ p₂ ⟩    -- (4)
-    S₅ (S₇ (S₆ (Esub σ₁* σ₁ (Esub σ₂* σ₂ e)) ∙ Tsub σ₁* (Tsub σ₂* T′)))  ≡⟨ p₃ ⟩    -- (5)
-    S₅ (Esub (σ₁* ∘Tₛₛ σ₂*) (σ₁ ∘Eₛₛ σ₂) e ∙ Tsub (σ₁* ∘Tₛₛ σ₂*) T′)     ≡⟨ refl ⟩  -- (6)
-    Esub (σ₁* ∘Tₛₛ σ₂*) (σ₁ ∘Eₛₛ σ₂) (e ∙ T′)                            ∎          -- (7)
+    S₅ (S₇ (S₈ (Esub σ₁* σ₁ (Esub σ₂* σ₂ e) ∙ Tsub σ₁* (Tsub σ₂* T′))))  ≡⟨ p₃ ⟩    -- (5)
+    S₅ (S₇ (S₆ (Esub σ₁* σ₁ (Esub σ₂* σ₂ e)) ∙ Tsub σ₁* (Tsub σ₂* T′)))  ≡⟨ p₄ ⟩    -- (6)
+    S₅ (Esub (σ₁* ∘Tₛₛ σ₂*) (σ₁ ∘Eₛₛ σ₂) e ∙ Tsub (σ₁* ∘Tₛₛ σ₂*) T′)     ≡⟨ refl ⟩  -- (7)
+    Esub (σ₁* ∘Tₛₛ σ₂*) (σ₁ ∘Eₛₛ σ₂) (e ∙ T′)                            ∎          -- (8)
 
     where
       F₁ = Expr Δ₃ Γ₃ ; E₁ = fusion-Tsub-Tsub (T [ T′ ]T) σ₁* σ₂*                         ; S₁ = subst F₁ E₁
@@ -121,6 +122,7 @@ module WithPropEq where
       F₅ = Expr Δ₃ Γ₃ ; E₅ = sym (swap-Tsub-[] (σ₁* ∘Tₛₛ σ₂*) T T′)                       ; S₅ = subst F₅ E₅
       F₆ = Expr Δ₃ Γ₃ ; E₆ = fusion-Tsub-Tsub (`∀α _ , T) σ₁* σ₂*                         ; S₆ = subst F₆ E₆
       F₇ = λ ■ → Expr Δ₃ Γ₃ (Tsub (Tliftₛ (σ₁* ∘Tₛₛ σ₂*) l′) T [ ■ ]T) ; E₇ = fusion-Tsub-Tsub T′ σ₁* σ₂* ; S₇ = subst F₇ E₇
+      F₈ = Expr Δ₃ Γ₃ ; E₈ = {!!} ; S₈ = subst F₈ E₈
 
       --! FusionESubESubBodyProofA
       p₁ = cong S₁ (dist-subst F₂ F₃ (Tsub σ₁*) (Esub σ₁* σ₁) E₂ E₃ (Esub σ₂* σ₂ e ∙ Tsub σ₂* T′))
@@ -128,8 +130,11 @@ module WithPropEq where
       --! FusionESubESubBodyProofB
       p₂ = {!!}
 
+      --! FusionESubESubBodyProofB
+      p₃ = {!!}
+
       --! FusionESubESubBodyProofC
-      p₃ = cong S₅ (cong-∙ (fusion-Esub-Esub e σ₁ σ₂) (fusion-Tsub-Tsub T′ σ₁* σ₂*))
+      p₄ = cong S₅ (cong-∙ (fusion-Esub-Esub e σ₁ σ₂) (fusion-Tsub-Tsub T′ σ₁* σ₂*))
 
   fusion-Esub-Esub {Δ₂} {Δ₃} {Δ₁} {l} {σ₁*} {σ₂*} {Γ₁} {Γ₂} {Γ₃} {T} e σ₁ σ₂ = {!!}
 

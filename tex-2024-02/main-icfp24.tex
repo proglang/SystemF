@@ -517,7 +517,6 @@ The {\Asubst}-lemma is defined in Agda's standard library as
 followed:
 \SubstExamplesDef
 
-
 The same type conversion is also necessary in the corresponding fusion lemma:
 \SubstExamplesFusionESubESub
 
@@ -973,7 +972,7 @@ expression substitutions from Section~\ref{sec:substitutions:expr}:
   \SubstExamplesFusionESubESubBody
 \end{AgdaBlock}
 
-This proof contains seven different uses of the {\Asubst} lemma!
+This proof contains eight different uses of the {\Asubst} lemma!
 To increase readability, we replaced each {\Asubst} 
 with an auxilliary definition {\AFun{Sᵢ} = \Asubst~\AFun{Fᵢ}~\AFun{Eᵢ}}.
 As the concrete arguments of the {\AFun{Sᵢ}} are not relevant to the
@@ -1017,6 +1016,25 @@ instantiate {\AFun{dist-subst}} as follows:
 % \SubstExamplesFusionESubESubBodyProofC
 
 % \SubstExamplesFusionESubESubBodyProofB
+
+The rest of the proof requires two more lemmas related to {\Asubst}:
+\begin{enumerate}
+\item the equation between line \ACom{(4)} and \ACom{(5)} states that if
+  different {\Asubst}s are applied to the same term, then the terms are still equal.
+  This is intuitively true, because {\Asubst} behaves like the identity function
+  after it matched on the equality proof;
+\item the equation between line \ACom{(5)} and \ACom{(6)} requires another
+  use of {\AFun{dist-subst}} to pull {\AFun{S₆}} out of the left
+  argument of the type application, which introduces {\AFun{S₈}};
+\item the equation between line \ACom{(6)} and \ACom{(7)} is where
+  the actual meat of the proof is. Here the induction hypothesis is applied to the
+  left side of the type application and the fusion lemma for type substitutions
+  is applied to the right side of the type application. However, changing
+  the right side of the type application, changes the type of the
+  whole type application, so another {\Asubst} lemma is required, which exchanges
+  the right side of the type application and inserts another {\Asubst}
+  {\AFun{S₈}} around it.
+\end{enumerate}
 
 The rest of the proof uses similar techniques, so we take a step back
 to describe a different solution.
