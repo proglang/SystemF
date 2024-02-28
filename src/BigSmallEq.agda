@@ -52,13 +52,44 @@ open import BigStep
 `β-ƛ isV —↠-refl                = —↠-step (β-ƛ isV) —↠-refl
 `β-ƛ isV (—↠-step e₁↪e₂ e₂—↠ƛe) = —↠-step (ξ-·₁ e₁↪e₂) (`β-ƛ isV e₂—↠ƛe)
 
+----------------------------------------------------------------------
+-- big step API
+
+infix 15 _↓_
+_↓_ : ∀ {T : Type [] l} → CExpr T → CValue T → Set
+e ↓ v = e —↠ exp v
+
+↓-n : # n ↓ (# n , V-♯)
+↓-n = —↠-refl
+
+↓-s : e ↓ (# n , V-♯) → `suc e ↓ (# suc n , V-♯)
+↓-s —↠-refl = —↠-step β-suc  —↠-refl
+↓-s (—↠-step e₁↪e₂ e↓n) = —↠-step (ξ-suc e₁↪e₂) (↓-s e↓n)
+
+↓-ƛ : ƛ e ↓ (ƛ e , V-ƛ)
+↓-ƛ = —↠-refl
+
+↓-· : e₁ ↓ (ƛ e , V-ƛ) → e₂ ↓ v₂ → (e [ exp v₂ ]E) ↓ v → (e₁ · e₂) ↓ v
+↓-· {v₂ = v₂} e₁↓ƛe e₂↓v₂ e[v₂]↓v =
+  —↠-trans (`ξ-·₁ e₁↓ƛe) (—↠-trans (`ξ-·₂ e₂↓v₂ V-ƛ) (—↠-step (β-ƛ (prf v₂)) e[v₂]↓v))
+
+↓-Λ : Λ l ⇒ e ↓ (Λ l ⇒ e , V-Λ)
+↓-Λ = —↠-refl
+
+↓-∙ : e₁ ↓ (Λ l ⇒ e , V-Λ) → (e [ T ]ET) ↓ v → (e₁ ∙ T) ↓ v
+↓-∙ e₁↓Λe e₂[T]↓v = —↠-trans (`β-Λ e₁↓Λe) e₂[T]↓v
+
+----------------------------------------------------------------------
+
 ⇓to—↠ :
   e ⇓ v →
   e —↠ exp v
-⇓to—↠ ⇓-n                                 = —↠-refl 
-⇓to—↠ (⇓-s e⇓#n)                          = `β-suc (⇓to—↠ e⇓#n)
-⇓to—↠ ⇓-ƛ = —↠-refl
-⇓to—↠ (⇓-· {v₂ = v₂} e₁⇓ƛe e₂⇓v' e[e₂]⇓v) = —↠-trans (`ξ-·₁ (⇓to—↠ e₁⇓ƛe)) (—↠-trans (`ξ-·₂ (⇓to—↠  e₂⇓v') V-ƛ) (—↠-step (β-ƛ (prf v₂)) (⇓to—↠ e[e₂]⇓v)))
-⇓to—↠ ⇓-Λ                                 = —↠-refl
-⇓to—↠ (⇓-∙ e₁⇓Λe e₂[T]⇓v)                 = —↠-trans (`β-Λ (⇓to—↠ e₁⇓Λe)) (⇓to—↠ e₂[T]⇓v)
-  
+⇓to—↠ ⇓-n        = ↓-n
+⇓to—↠ (⇓-s e⇓#n) = ↓-s (⇓to—↠ e⇓#n)
+⇓to—↠ ⇓-ƛ        = ↓-ƛ
+⇓to—↠ (⇓-· {v₂ = v₂} {v = v} e₁⇓ƛe e₂⇓v' e[e₂]⇓v)
+                  = ↓-· {v₂ = v₂} {v = v} (⇓to—↠ e₁⇓ƛe) (⇓to—↠  e₂⇓v') (⇓to—↠ e[e₂]⇓v)
+⇓to—↠ ⇓-Λ        = ↓-Λ
+⇓to—↠ (⇓-∙ {v = v} e₁⇓Λe e₂[T]⇓v)
+                  = ↓-∙ {v = v} (⇓to—↠ e₁⇓Λe) (⇓to—↠ e₂[T]⇓v)
+
