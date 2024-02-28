@@ -21,17 +21,13 @@ open import TypeSubstitution
 open import TypeSubstProperties
 open import Expressions
 open import ExprSubstitution
+open import BigStep
 
 -- small step call by value semantics
 
-data Val : Expr Δ Γ T → Set where
-  v-n : Val {Δ}{Γ} (# n)
-  v-ƛ : Val (ƛ e)
-  v-Λ : Val (Λ l ⇒ e)
-
 data _↪_ : Expr Δ Γ T → Expr Δ Γ T → Set where
   β-ƛ : 
-    Val e₂ →
+    isValue e₂ →
     ((ƛ e₁) · e₂) ↪ (e₁ [ e₂ ]E)
   β-Λ : ∀  {l l′ : Level} {T : Type Δ l} {T′ : Type (l ∷ Δ) l′} {e : Expr (l ∷ Δ) (l ◁* Γ) T′} →
     ((Λ l ⇒ e) ∙ T) ↪ (e [ T ]ET)
@@ -42,7 +38,7 @@ data _↪_ : Expr Δ Γ T → Expr Δ Γ T → Set where
     (e₁ · e₂) ↪ (e · e₂)
   ξ-·₂ : 
     e₂ ↪ e → 
-    Val e₁ →
+    isValue e₁ →
     (e₁ · e₂) ↪ (e₁ · e)
   ξ-∙ : ∀ {l l′ : Level} {T′ : Type Δ l′} {T : Type (l′ ∷ Δ) l} {e₁ e₂ : Expr Δ Γ (`∀α l′ , T)} →
     e₁ ↪ e₂ →
