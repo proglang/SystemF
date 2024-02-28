@@ -45,11 +45,11 @@ open import BigStep
 `ξ-·₁ (—↠-step e₁↪e₂ e₂—↠e) = —↠-step (ξ-·₁ e₁↪e₂) (`ξ-·₁ e₂—↠e)
 
 `ξ-·₂ : e₂ —↠ e → isValue e₁ → (e₁ · e₂) —↠ (e₁ · e)
-`ξ-·₂ —↠-refl          isV = —↠-refl
+`ξ-·₂ —↠-refl          isV      = —↠-refl
 `ξ-·₂ (—↠-step e₁↪e e₂—↠e₁) isV = —↠-step (ξ-·₂ e₁↪e isV) (`ξ-·₂ e₂—↠e₁ isV)
 
 `β-ƛ : isValue e₂ → (e₁ —↠ (ƛ e)) → (e₁ · e₂) —↠ (e [ e₂ ]E)
-`β-ƛ isV —↠-refl           = —↠-step (β-ƛ isV) —↠-refl
+`β-ƛ isV —↠-refl                = —↠-step (β-ƛ isV) —↠-refl
 `β-ƛ isV (—↠-step e₁↪e₂ e₂—↠ƛe) = —↠-step (ξ-·₁ e₁↪e₂) (`β-ƛ isV e₂—↠ƛe)
 
 ⇓to—↠ :
