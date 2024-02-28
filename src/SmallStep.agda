@@ -24,12 +24,15 @@ open import ExprSubstitution
 open import BigStep
 
 -- small step call by value semantics
+--! SmallStep >
 
+--! SingleReduction
 data _↪_ : Expr Δ Γ T → Expr Δ Γ T → Set where
+
   β-ƛ : 
     isValue e₂ →
     ((ƛ e₁) · e₂) ↪ (e₁ [ e₂ ]E)
-  β-Λ : ∀  {l l′ : Level} {T : Type Δ l} {T′ : Type (l ∷ Δ) l′} {e : Expr (l ∷ Δ) (l ◁* Γ) T′} →
+  β-Λ : ∀ {T : Type Δ l} {T′ : Type (l ∷ Δ) l′} {e : Expr (l ∷ Δ) (l ◁* Γ) T′} →
     ((Λ l ⇒ e) ∙ T) ↪ (e [ T ]ET)
   β-suc :
     `suc {Γ = Γ} (# n) ↪ (# (suc n))
@@ -40,14 +43,16 @@ data _↪_ : Expr Δ Γ T → Expr Δ Γ T → Set where
     e₂ ↪ e → 
     isValue e₁ →
     (e₁ · e₂) ↪ (e₁ · e)
-  ξ-∙ : ∀ {l l′ : Level} {T′ : Type Δ l′} {T : Type (l′ ∷ Δ) l} {e₁ e₂ : Expr Δ Γ (`∀α l′ , T)} →
+  ξ-∙ : ∀ {T′ : Type Δ l′} {T : Type (l′ ∷ Δ) l} {e₁ e₂ : Expr Δ Γ (`∀α l′ , T)} →
     e₁ ↪ e₂ →
     (e₁ ∙ T′) ↪ (e₂ ∙ T′)
   ξ-suc :
     e₁ ↪ e →
     `suc e₁ ↪ `suc e
 
-data _—↠_ : CExpr T → CExpr T → Set where
+--! Reduction
+data _—↠_ : Expr Δ Γ T → Expr Δ Γ T → Set where
+
   —↠-refl :
     e —↠ e
   —↠-step :
@@ -55,6 +60,7 @@ data _—↠_ : CExpr T → CExpr T → Set where
     e₂ —↠ e₃ →
     e₁ —↠ e₃
 
+--! Trans
 —↠-trans : e₁ —↠ e₂ → e₂ —↠ e₃ → e₁ —↠ e₃
 —↠-trans —↠-refl e₂—↠e₃ = e₂—↠e₃
 —↠-trans (—↠-step e₁↪e₂ e₁—↠e₂) e₂—↠e₃ = —↠-step e₁↪e₂ (—↠-trans e₁—↠e₂ e₂—↠e₃)

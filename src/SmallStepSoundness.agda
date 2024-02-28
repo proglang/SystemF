@@ -33,12 +33,19 @@ open import ExprSubstFusion public
 open import SmallStep
 import HeterogeneousEqualityLemmas as HE
 
-soundness : ∀ {e₁ e₂ : Expr Δ Γ T} → e₁ ↪ e₂ → E⟦ e₁ ⟧ η γ ≡ E⟦ e₂ ⟧ η γ
-soundness β-suc = refl
-soundness (ξ-suc e₁↪e₂) = cong ℕ.suc (soundness e₁↪e₂)
-soundness {γ = γ} (β-ƛ {e₂ = e₂} {e₁ = e₁} v₂) = sym (EEsingle-subst-preserves γ e₁ e₂)
-soundness {γ = γ} (β-Λ {T = T} {e = e}) = sym (ETsingle-subst-preserves γ e T)
-soundness {η = η} {γ = γ} (ξ-·₁ {e₂ = e₂} e₁↪e) = cong-app (soundness e₁↪e) (E⟦ e₂ ⟧ η γ)
-soundness {η = η} {γ = γ} (ξ-·₂ {e₁ = e₁} e₂↪e v₁) = cong (E⟦ e₁ ⟧ η γ) (soundness e₂↪e)
-soundness {η = η} {γ = γ} (ξ-∙ {T′ = T′} {T = T} e₁↪e₂) 
-  rewrite Tsingle-subst-preserves η T′ T = cong-app (soundness e₁↪e₂) (⟦ T′ ⟧ η)       
+--! SmallStep >
+
+--! Soundness
+soundness : ∀ {e₁ e₂ : Expr Δ Γ T}
+  → e₁ ↪ e₂
+  → ∀ η γ → E⟦ e₁ ⟧ η γ ≡ E⟦ e₂ ⟧ η γ
+
+--! SoundnessProof
+soundness β-suc η γ = refl
+soundness (ξ-suc e₁↪e₂) η γ = cong ℕ.suc (soundness e₁↪e₂ η γ)
+soundness (β-ƛ {e₂ = e₂} {e₁ = e₁} v₂) η γ = sym (EEsingle-subst-preserves γ e₁ e₂)
+soundness (β-Λ {T = T} {e = e}) η γ = sym (ETsingle-subst-preserves γ e T)
+soundness (ξ-·₁ {e₂ = e₂} e₁↪e) η γ = cong-app (soundness e₁↪e η γ) (E⟦ e₂ ⟧ η γ)
+soundness (ξ-·₂ {e₁ = e₁} e₂↪e v₁) η γ = cong (E⟦ e₁ ⟧ η γ) (soundness e₂↪e η γ)
+soundness (ξ-∙ {T′ = T′} {T = T} e₁↪e₂) η γ
+  rewrite Tsingle-subst-preserves η T′ T = cong-app (soundness e₁↪e₂ η γ) (⟦ T′ ⟧ η)

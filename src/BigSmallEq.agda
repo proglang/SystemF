@@ -24,6 +24,8 @@ open import ExprSubstitution
 open import SmallStep
 open import BigStep
 
+--! SmallStep >
+
 `ξ-suc : e₁ —↠ e → `suc e₁ —↠ `suc e
 `ξ-suc —↠-refl               = —↠-refl
 `ξ-suc (—↠-step e₁↪e₂ e₂—↠e) = —↠-step (ξ-suc e₁↪e₂) (`ξ-suc e₂—↠e)
@@ -56,31 +58,47 @@ open import BigStep
 -- big step API
 
 infix 15 _↓_
+--! BigAPI
 _↓_ : ∀ {T : Type [] l} → CExpr T → CValue T → Set
 e ↓ v = e —↠ exp v
 
+--! BigAPIFunctions
 ↓-n : # n ↓ (# n , V-♯)
+↓-s : e ↓ (# n , V-♯) → `suc e ↓ (# suc n , V-♯)
+↓-ƛ : ƛ e ↓ (ƛ e , V-ƛ)
+↓-· : e₁ ↓ (ƛ e , V-ƛ) → e₂ ↓ v₂ → (e [ exp v₂ ]E) ↓ v → (e₁ · e₂) ↓ v
+↓-Λ : Λ l ⇒ e ↓ (Λ l ⇒ e , V-Λ)
+↓-∙ : e₁ ↓ (Λ l ⇒ e , V-Λ) → (e [ T ]ET) ↓ v → (e₁ ∙ T) ↓ v
+Value-↓ : ∀ {T : Type [] l} → (v : CValue T) → exp v ↓ v
+
+--! BigN
 ↓-n = —↠-refl
 
-↓-s : e ↓ (# n , V-♯) → `suc e ↓ (# suc n , V-♯)
+--! BigS
 ↓-s —↠-refl = —↠-step β-suc  —↠-refl
 ↓-s (—↠-step e₁↪e₂ e↓n) = —↠-step (ξ-suc e₁↪e₂) (↓-s e↓n)
 
-↓-ƛ : ƛ e ↓ (ƛ e , V-ƛ)
+--! BigLam
 ↓-ƛ = —↠-refl
 
-↓-· : e₁ ↓ (ƛ e , V-ƛ) → e₂ ↓ v₂ → (e [ exp v₂ ]E) ↓ v → (e₁ · e₂) ↓ v
+--! BigApp
 ↓-· {v₂ = v₂} e₁↓ƛe e₂↓v₂ e[v₂]↓v =
   —↠-trans (`ξ-·₁ e₁↓ƛe) (—↠-trans (`ξ-·₂ e₂↓v₂ V-ƛ) (—↠-step (β-ƛ (prf v₂)) e[v₂]↓v))
 
-↓-Λ : Λ l ⇒ e ↓ (Λ l ⇒ e , V-Λ)
+--! BigLAM
 ↓-Λ = —↠-refl
 
-↓-∙ : e₁ ↓ (Λ l ⇒ e , V-Λ) → (e [ T ]ET) ↓ v → (e₁ ∙ T) ↓ v
+--! BigAPP
 ↓-∙ e₁↓Λe e₂[T]↓v = —↠-trans (`β-Λ e₁↓Λe) e₂[T]↓v
+
+--! ValueReduceSelf
+Value-↓ ((# n) , V-♯) = ↓-n
+Value-↓ ((ƛ _) , V-ƛ) = ↓-ƛ
+Value-↓ ((Λ l ⇒ _) , V-Λ) = ↓-Λ
 
 ----------------------------------------------------------------------
 
+--! BigToSmall
 ⇓to—↠ :
   e ⇓ v →
   e —↠ exp v
