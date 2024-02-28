@@ -34,7 +34,7 @@ all: $(GOAL).pdf $(ZIPGOAL)
 ### agdatex
 
 runagdatex:
-	$(AGDATEX) -v -r ../src ../src/*.agda
+	$(AGDATEX) -v -r ../src ../src/StratF/*.agda ../src/StratF/Util/*.agda
 
 ### clean up
 
