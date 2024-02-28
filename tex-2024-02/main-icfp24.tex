@@ -356,13 +356,20 @@ quantified type.
 \section{Substitutions}
 \label{sec:substitutions}
 
+In this work, as in \citet{DBLP:journals/jar/BentonHKM12} and
+\citet{DBLP:conf/mpc/ChapmanKNW19}, substitutions arise on two levels:
+on types and on expressions. Type substitutions hold no surprises as
+they are just like substitutions for the simply-typed lambda calculus (see
+\cite{DBLP:journals/scp/KokkeSW20}), but expression substitutions are
+more complicated as they are indexed by type substitutions.
+
 \subsection{Type Substitutions}
 \label{sec:substitutions:type}
 
-The infrastructure for type-substitution is standard for
+The infrastructure for substitutions on types is standard for
 intrinsically-typed terms in de Bruijn
 style, and defines substitutions in terms of renamings
-(cf.~\cite{DBLP:journals/jar/BentonHKM12, DBLP:journals/scp/KokkeSW20}).
+(cf.~\cite{DBLP:journals/jar/BentonHKM12, DBLP:conf/mpc/ChapmanKNW19, DBLP:journals/scp/KokkeSW20}).
 
 % \begin{figure}[tp]
 %   \caption{Simply typed lambda calculus, denotationally}
@@ -429,7 +436,7 @@ type constructor, respectively, and act as neutral elements when applied to a ty
 
 To prove lemmas about the interaction of multiple renamings and substitutions,
 compositions and fusion lemmas are defined for all four combinations
-of renamings and substiutions.
+of renamings and substutions.
 For example, the composition of two type substitutions is defined by
 \SubstExamplesTCompSS
 % \SubDefTCompositionSS
@@ -437,8 +444,8 @@ with the corresponding fusion lemma:
 \SubstExamplesFusionTSubTSub
 % \TFFusionSubSub
 
-With the help of the fusion lemmas, we then prove the usual interaction lemmas
-between renamings and substitutions, e.g. that any substitution
+With the help of the fusion lemmas, we prove interaction lemmas
+between renamings and substitutions, e.g., that any substitution
 \ACode{σ} can be swapped with a weakening \AFun{Twk} by lifting \ACode{σ}:
 \TFSwapTsubTwk
 
@@ -459,7 +466,7 @@ The infrastructure for expression substitution is conceptionally very similar to
 that of type substitution.
 The main difference is that expression substitutions are indexed by
 type substitutions (cf.~\cite{DBLP:conf/mpc/ChapmanKNW19}).
-This allows to reduce redundancy by defining a combined type-in-expression and
+This approach reduces redundancy by defining a combined type-in-expression and
 expression-in-expression substitution operation.
 We only present the definitions for substitutions, because
 the definitions for renamings are analogous.
@@ -503,10 +510,11 @@ In contrast to the composition of type substitutions, the term
 as it has type \ACode{\AExpr~Δ₃~Γ₃~(\ATsub~σ₁*~(\ATsub~σ₂*~T))},
 while a term of the propositionally equivalent type
 \ACode{\AExpr~Δ₃~Γ₃~(\ATsub~(σ₁* ∘Tₛₛ σ₂*)~T)} is expected.
-The required type conversion is achieved with the {\Asubst}-lemma
-using the fusion lemma for type substitutions as a witness.
+The required type conversion is achieved by applying the
+{\Asubst}-lemma with the appropriate fusion lemma for type
+substitutions as a witness. 
 
-The same type-conversion is also necessary in the corresponding fusion lemma:
+The same type conversion is also necessary in the corresponding fusion lemma:
 \SubstExamplesFusionESubESub
 
 The proofs for the expression substitution lemmas are entirely standard with the
