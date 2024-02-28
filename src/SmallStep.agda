@@ -47,7 +47,7 @@ data _↪_ : Expr Δ Γ T → Expr Δ Γ T → Set where
     e₁ ↪ e →
     `suc e₁ ↪ `suc e
 
-data _—↠_ : Expr Δ Γ T → Expr Δ Γ T → Set where
+data _—↠_ : CExpr T → CExpr T → Set where
   —↠-refl :
     e —↠ e
   —↠-step :
@@ -55,3 +55,6 @@ data _—↠_ : Expr Δ Γ T → Expr Δ Γ T → Set where
     e₂ —↠ e₃ →
     e₁ —↠ e₃
 
+—↠-trans : e₁ —↠ e₂ → e₂ —↠ e₃ → e₁ —↠ e₃
+—↠-trans —↠-refl e₂—↠e₃ = e₂—↠e₃
+—↠-trans (—↠-step e₁↪e₂ e₁—↠e₂) e₂—↠e₃ = —↠-step e₁↪e₂ (—↠-trans e₁—↠e₂ e₂—↠e₃)
