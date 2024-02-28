@@ -79,8 +79,9 @@ mutual
   fusion-Tren-Tren (`∀α l , T) ρ₁ ρ₂ = cong (`∀α l ,_) (assoc-ren↑-ren↑ T ρ₁ ρ₂)
   fusion-Tren-Tren `ℕ ρ₁ ρ₂ = refl
 
-swap-Tren-Twk : ∀ (ρ : TRen Δ₁ Δ₂) (T : Type Δ₁ l′) →
-  Tren (Tliftᵣ ρ l) (Twk T) ≡ Twk (Tren ρ T) 
+--! SwapTrenTwk
+swap-Tren-Twk : ∀ (ρ : TRen Δ₁ Δ₂) (T : Type Δ₁ l′) → Tren (Tliftᵣ ρ l) (Twk T) ≡ Twk (Tren ρ T) 
+
 swap-Tren-Twk {l = l} ρ T = 
   begin 
     Tren (Tliftᵣ ρ _) (Tren (Twkᵣ Tidᵣ) T)
@@ -116,8 +117,9 @@ mutual
   fusion-Tren-Tsub (`∀α l , T) ρ σ = cong (`∀α l ,_) (assoc-ren↑-sub↑ T ρ σ)
   fusion-Tren-Tsub `ℕ ρ σ = refl
 
-swap-Tsub-Twk : ∀ {l} (σ : TSub Δ₁ Δ₂) (T : Type Δ₁ l′) →
-  Tsub (Tliftₛ σ _) (Twk {l = l} T) ≡ Twk (Tsub σ T)
+--! SwapTsubTwk
+swap-Tsub-Twk : ∀ (σ : TSub Δ₁ Δ₂) (T : Type Δ₁ l′) → Tsub (Tliftₛ σ l) (Twk T) ≡ Twk (Tsub σ T)
+
 swap-Tsub-Twk σ T = 
   begin 
     Tsub (Tliftₛ σ _) (Twk T) 
@@ -178,8 +180,10 @@ TidᵣT≡T `ℕ = refl
   _ here → refl
   _ (there x) → refl
 
+--! SwapTrenSingle
 swap-Tren-[] : ∀ (ρ : TRen Δ₁ Δ₂) (T : Type (l ∷ Δ₁) l′) (T′ : Type Δ₁ l) →
   Tren ρ (T [ T′ ]T) ≡ Tren (Tliftᵣ ρ _) T [ Tren ρ T′ ]T 
+
 swap-Tren-[] ρ T T′ = begin 
     Tren ρ (T [ T′ ]T)
   ≡⟨ fusion-Tren-Tsub T (Textₛ Tidₛ T′) ρ ⟩
@@ -228,8 +232,10 @@ TSub-id-left {Δ₁} σ* = refl
 TSub-id-right : ∀ (σ* : TSub Δ₁ Δ₂) → (σ* ∘ₛₛ Tidₛ) ≡ σ*
 TSub-id-right {Δ₁ = Δ₁} σ* = fun-ext₂ λ l x → TidₛT≡T (σ* l x)
 
+--! SwapTsubSingle
 swap-Tsub-[] : ∀ (σ : TSub Δ₁ Δ₂) (T : Type (l ∷ Δ₁) l′) (T′ : Type Δ₁ l) →
-  Tsub σ (T [ T′ ]T) ≡ (Tsub (Tliftₛ σ _) T) [ Tsub σ T′ ]T  
+  Tsub σ (T [ T′ ]T) ≡ (Tsub (Tliftₛ σ l) T) [ Tsub σ T′ ]T  
+
 swap-Tsub-[] σ T T′ = 
   begin 
     Tsub σ (T [ T′ ]T) 
