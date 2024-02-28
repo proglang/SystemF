@@ -1118,16 +1118,17 @@ for the type-index of the expression:
 \SubstExamplesFusionESubESubHetProofC
 
 \subsection{Assessment}
+\label{sec:assessment}
 We found that heterogeneous equality significantly simplifies the complications arising from
 using {\Asubst} in definitions and lemma statements. While it completely removes the need for
 {\Asubst} in the statements of equational lemmas, some {\Asubst}
 applications still show up in equality proofs due to the unfolding of definitions, where {\Asubst}
 cannot be avoided in an intrinsically typed setting.
-These {\Asubst} applications need to be removed manually, which with heterogeneous
+These {\Asubst} applications have to be removed manually, which with heterogeneous
 equality behaves much more regular than with homogeneous equality. In
-particular, we started our formalization with homogenous equality,
+fact, we started our formalization with homogenous equality,
 which required us to prove around 20 lemmas in the style of
-\AFun{dist-subst}. Switching to heterogeneous equality, allowed us to
+\AFun{dist-subst}. Switching to heterogeneous equality enabled us to
 replace all of them with a combination of just two ingredients: the {\AFun{≡-subst-removable}}
 lemma and {\AFun{cong}} lemmas of different arities.
 
