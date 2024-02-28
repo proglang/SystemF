@@ -155,12 +155,13 @@ module WithHetEq where
     Esub (σ₁* ∘Tₛₛ σ₂*) (σ₁ ∘Eₛₛ σ₂) (e ∙ T′)                         ∎          -- (8)
 
     where
+      xx = ?
       F₂ = Expr Δ₂ Γ₂ ; E₂ = sym (swap-Tsub-[] σ₂* T T′)                                  ; S₂ = subst F₂ E₂
       F₄ = Expr Δ₃ Γ₃ ; E₄ = sym (swap-Tsub-[] σ₁* (Tsub (Tliftₛ σ₂* _) T) (Tsub σ₂* T′)) ; S₄ = subst F₄ E₄
       F₅ = Expr Δ₃ Γ₃ ; E₅ = sym (swap-Tsub-[] (σ₁* ∘Tₛₛ σ₂*) T T′)                       ; S₅ = subst F₅ E₅
 
       --! FusionESubESubHetProofA
-      p₁ = H.cong₂  {B = Expr Δ₂ Γ₂} (λ _ ■ → Esub σ₁* σ₁ ■)
+      p₁ = H.cong₂  {A = Type Δ₂ l} {B = λ T → Expr Δ₂ Γ₂ T} (λ T e → Esub σ₁* σ₁ e)
                     (H.≡-to-≅ (sym E₂)) (H.≡-subst-removable F₂ E₂ _)
 
       --! FusionESubESubHetProofB
@@ -168,7 +169,8 @@ module WithHetEq where
       p₄ = H.sym (H.≡-subst-removable F₅ E₅ _)  -- recall that S₅ = subst F₅ E₅
 
       --! FusionESubESubHetProofC
-      p₃ = Hcong₃  {B = λ ■ → Expr Δ₃ Γ₃ (`∀α _ , ■)} {C = λ _ _ → Type Δ₃ _ } (λ _ ■₁ ■₂ → ■₁ ∙ ■₂)
+      p₃ = Hcong₃  {A = Type (_ ∷ Δ₃) l} {B = λ T → Expr Δ₃ Γ₃ (`∀α _ , T)} {C = λ _ _ → Type Δ₃ _ }
+                   (λ _ e t → e ∙ t)
                    (H.≡-to-≅ (assoc-sub↑-sub↑ T σ₂* σ₁*))
                    (fusion-Esub-Esub' e σ₁ σ₂)
                    (H.≡-to-≅ (fusion-Tsub-Tsub T′ σ₁* σ₂*))

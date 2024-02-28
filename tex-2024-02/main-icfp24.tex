@@ -1037,18 +1037,44 @@ Consequently, in line \ACom{(1)} there is also no {\AFun{S₁}}.
 However, in line \ACom{(2)}, \ACom{(4)} and \ACom{(7)}, we still get the {\AFun{S₂}} from reducing the {\AESub}.
 This is unavoidable as {\AESub} is a definition, and hence needs to
 produce a term of exactly the type it is checked against.
-In line \ACom{(4)} and \ACom{(7)}, we can use the {\AFun{≡-subst-removal}} lemma
+In line \ACom{(4)} and \ACom{(7)}, we can use the {\AFun{≡-subst-removable}} lemma
 directly to remove {\AFun{S₄}} and {\AFun{S₅}}, respectively:
 \SubstExamplesFusionESubESubHetProofB
 
 In line \ACom{(2)}, the application of {\AFun{S₂}} occurs not on the outside but as an argument to
 \ACode{\AFun{Esub}~σ₁*~σ}. One might expect that a unary {\AFun{cong}} lemma can be used to
-lift the {\AFun{≡-subst-removal~F₂~E₂}~\_} equality under the application.
-
-Interestingly, a unary {\AFun{cong}} lemma is not sufficient to lift the {\AFun{≡-subst-removal}}
-under the \ACode{\AFun{Esub}~σ₁*~σ}, and instead the binary {\AFun{cong₂}} lemma needs to be used:
+lift the {\AFun{≡-subst-removable~F₂~E₂}~\_} equality under the application.
+This is not the case, because a unary {\AFun{cong}} can only replace values of the \emph{same} type.
+To be able to call a function like {\AFun{Esub}} with arguments of two different types,
+those types need to be instances of the same type family \ACode{B},
+i.e.\ the function needs to have a type of the shape
+\ACode{\{x~:~A\}~→~(y~:~B~x)~→~C~x~y}, and we actually want to
+replace an argument of type \ACode{B~a} with one of type \ACode{B~b}.
+In this example, \ACode{\AFun{Esub}~σ₁*~σ} has type
+\ACode{\{T~:~\AFun{Type}~Δ₂~l\}~→~(e~:~\AFun{Expr}~Δ₂~Γ₂~T)~→~\AFun{Expr}~Δ₃~Γ₃~(\AFun{Tsub}~σ₁*~T)}.
+This can be expressed with {\AFun{cong₂}} as followed:
 \SubstExamplesFusionESubESubHetProofA
+
+In line \ACom{(5)} we have a similar situation where want to use the
+induction hypothesis on the left side of the type application and the
+fusion lemma for type substitutions on the right side.  Instead of a
+binary {\AFun{cong₂}}, we need a tertiary {\AFun{cong₃}} to account
+for the type-index of the expression:
 \SubstExamplesFusionESubESubHetProofC
+
+\subsection{Conclusion}
+We found that heterogeneous equality significantly simplifies the complications arising from
+using {\Asubst} in definitions and lemma statements. While it completely removes the need for using
+{\Asubst} in lemma statements, some {\Asubst}
+applications still show up in equality proofs due to definitions, where subst
+cannot be avoided in an intrinsically typed setting.
+These {\Asubst} applications need to be removed manually, which with heterogeneous
+equality behaves much more regular than with homogeneous equality. In
+particular, we started our formalization with homogenous equality,
+which required us to prove around 20 lemmas in the style of
+\AFun{dist-subst}. Switching to heterogeneous equality, allowed us to
+replace all of them with a combination of just two ingredients: the {\AFun{≡-subst-removable}}
+lemma and {\AFun{cong}} lemmas of different arities.
 
 % Consider for example the type \texttt{Vec} -- a list that
 % intrinsically tracks its length -- and its append function \verb/_++_/:
