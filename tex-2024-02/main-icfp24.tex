@@ -1204,10 +1204,14 @@ lemma and {\AFun{cong}} lemmas of different arities.
 A small-step operational semantics completes our picture of finitely
 stratified System~F. Here, we demonstrate that we can wrap the small-step semantics such that the definition of the logical relation as well as the proof of the fundamental theorem adapt without any effort.
 
-We define an intrinsically-typed small-step reduction relation in the usual way.
+We define an intrinsically-typed small-step reduction relation and its
+reflexive transitive closure in the usual way (details omitted).
 \SmallStepSingleReduction
+\SmallStepReduction
 
-The same lemmas as for the big-step semantics serve to prove the soundness of small-step reduction.
+The same lemmas as for the big-step semantics serve to prove the
+soundness of small-step reduction:
+A small-step reduction step does not change the denotational semantics.
 \SmallStepSoundness
 
 The interesting part is the following definition of a ``big-step API'' for the small-step semantics.
@@ -1218,7 +1222,8 @@ Then we define functions analogous to the constructors of the big-step semantics
 We omit their definitions, which amount to the proof that the small-step semantics simulates the big-step semantics.
 
 While the definition of the logical relation and some of the proofs leading up to adequacy make use of the API, but for the big-step evaluation relation, none of them performs pattern matching against its constructors. Hence, replacing them by the API functions for the small-step semantics does not affect any of the proofs.
-In consequence, the identical definitions yield a logical relation for the small-step semantics.
+In consequence, the identical definitions yield a logical relation for
+the small-step semantics with all proofs in place.
 
 
 \section{Related Work}
