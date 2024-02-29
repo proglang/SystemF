@@ -1,3 +1,9 @@
+-- This file contains definitions and lemmas for equality on Setω.
+
+-- The definitions and proofs are identical to those for regular
+-- propositional equality from the standard library, except that they
+-- talk about `Setω` types instead of `Set ℓ` types.
+
 module StratF.Util.PropositionalSetOmegaEquality where
 
 open import Level

@@ -1,3 +1,9 @@
+-- This file contains definitions and lemmas for heterogeneous equality on Setω.
+
+-- The definitions and proofs are identical to those for regular
+-- heterogeneous equality from the standard library, except that they
+-- talk about `Setω` types instead of `Set ℓ` types.
+
 module StratF.Util.HeterogeneousSetOmegaEquality where
 
 open import Level 
@@ -16,8 +22,6 @@ infix 4 _≅ω_
 
 data _≅ω_ {A : Setω} (x : A) : {B : Setω} → B → Setω where
      refl : x ≅ω x
-
-
  
 ≅ω-to-≡ω : ∀ {A : Setω} {x y : A} → x ≅ω y → x ≡ω y
 ≅ω-to-≡ω refl = _≡ω_.refl 

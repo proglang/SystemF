@@ -5,6 +5,8 @@ open import Axiom.Extensionality.Propositional using (∀-extensionality; Extens
 open import Relation.Binary.HeterogeneousEquality as H using (_≅_; refl)
 module R = H.≅-Reasoning
 
+-- Higher arity versions of heterogeneous cong
+
 Hcong₃ :
   ∀ {a b c d}
     {A : Set a} {B : A → Set b} {C : ∀ x → B x → Set c} {D : ∀ x → (y : B x) → C x y → Set d}
@@ -28,6 +30,8 @@ Hcong₄ :
     p ≅ q →
     f x u i p ≅ f y v j q
 Hcong₄ f refl refl refl refl = refl
+
+-- Functional Extensionality specialized for substitutions and renamings 
 
 open import StratF.Util.Extensionality
 open import StratF.Types

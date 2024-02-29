@@ -1,3 +1,5 @@
+-- This file proves that the big step semantics is sound wrt. the denotational semantics.
+
 module StratF.BigStepSoundness where
 
 open import Data.List using (List; []; _∷_; [_])

@@ -1,3 +1,6 @@
+-- This file contains lemmas about homogeneous equalities involving `subst`,
+-- as described in the Section "A Journey to Subst-Hell" in the paper.
+
 module StratF.Util.SubstProperties where
 
 open import Data.Product
@@ -99,7 +102,6 @@ subst-shuffle′′′′ :
   → (A≡A₄ : A₃ ≡ A₄)
   → subst id A≡A₁ (subst id A≡A₂ a) ≡ subst id A≡A₃ (subst id A≡A₄ a)
 subst-shuffle′′′′ _ refl refl refl refl = refl
-
 
 dist-subst' :
   ∀ {ℓ ℓ' ℓ₁ ℓ₂} {A : Set ℓ} {B : Set ℓ'} {a₁ a₂ : A}
@@ -240,7 +242,6 @@ app-subst : ∀ {lz lr}
   → (λ z → h (subst id (sym z₁≡z₂) z)) ≡ subst (λ Z → Z → R) z₁≡z₂ h
 app-subst h refl = refl
 
-
 subst₂→subst : ∀ {l a b}{A : Set a}{B : Set b}
   → {a : A}{b b′ : B}
   → (F : A → B → Set l)
@@ -249,7 +250,6 @@ subst₂→subst : ∀ {l a b}{A : Set a}{B : Set b}
   → subst₂ F refl eq x ≡ subst (F a) eq x
 subst₂→subst F refl x = refl
 
-
 eta-subst₂ : ∀ {lv lz lr}
   → {V₁ V₂ : Set lv} {Z₁ Z₂ : Set lz} {R : Set lr}
   → (h : V₁ → Z₁ → R)
@@ -257,7 +257,6 @@ eta-subst₂ : ∀ {lv lz lr}
   → (z₁≡z₂ : Z₁ ≡ Z₂)
   → subst₂ (λ V Z → V → Z → R) v₁≡v₂ z₁≡z₂ h ≡ λ v₂ z₂ → h (subst id (sym v₁≡v₂) v₂) (subst id (sym z₁≡z₂) z₂)
 eta-subst₂ h refl refl = refl
-
 
 subst₂-subst-subst : ∀ {lv lz lr}
   → {V : Set lv} {Z : Set lz}
@@ -268,7 +267,6 @@ subst₂-subst-subst : ∀ {lv lz lr}
   → (x : F v₁ z₁)
   → subst₂ F v₁≡v₂ z₁≡z₂ x ≡ subst (λ v → F v z₂) v₁≡v₂ (subst (F v₁) z₁≡z₂ x)
 subst₂-subst-subst F refl refl x = refl
-
 
 sigma-subst : ∀ {a}{l}
   → {A A′ : Set a}
@@ -323,7 +321,6 @@ subst-fun : ∀ {ℓ}{ℓa ℓb ℓz}{Z : Set ℓz}{A : Z → Set ℓa}{B : Z �
   → subst (λ (z : Z) → A z → B z → Set ℓ) z₁≡z₂ f ≡ λ a b → f (subst A (sym z₁≡z₂) a) (subst B (sym z₁≡z₂) b)
 subst-fun refl f = refl
 
---
 subst-fun-special : ∀
     {ℓa} {A : Set ℓa}
     {ℓr} {R₁ R₂ : A → Set ℓr}
@@ -333,7 +330,6 @@ subst-fun-special : ∀
   → (x : A)
   → subst id eq1 f x ≡ subst id (cong (λ r → r x) R₁≡R₂) (f x)
 subst-fun-special refl refl f x = refl
-
 
 subst-const : ∀ {a b}{A : Set a}{B : Set b}{x y : A}
   → (x≡y : x ≡ y)
@@ -345,7 +341,6 @@ sym-sym : ∀ {a}{A : Set a}{x₁ x₂ : A}
   → (eq : x₁ ≡ x₂)
   → sym (sym eq) ≡ eq
 sym-sym refl = refl
-
 
 dist-subst* :
   ∀ {ℓ ℓ' ℓ'' ℓ₁ ℓ₂} {Z : Set ℓ''} {B : Set ℓ'} {a₁ a₂ : Z → Set ℓ}
@@ -360,7 +355,6 @@ dist-subst* a→b f a₁≡a₂ b₁≡b₂ x
   with fun-ext a₁≡a₂
 dist-subst* a→b f a₁≡a₂ refl x | refl = refl
 
-
 dist-subst*-sym :
   ∀ {ℓ ℓ' ℓ'' ℓ₁ ℓ₂} {Z : Set ℓ''} {B : Set ℓ'} {a₁ a₂ : Z → Set ℓ}
     {F : Set (ℓ ⊔ ℓ'') → Set ℓ₁} {G : B → Set ℓ₂}
@@ -373,7 +367,6 @@ dist-subst*-sym :
 dist-subst*-sym a→b f a₁≡a₂ b₁≡b₂ x
   with fun-ext a₁≡a₂
 dist-subst*-sym a→b f a₁≡a₂ refl x | refl = refl
-
 
 -- Let's try to build a general subst-irrelevant for multiple substs
 
@@ -397,7 +390,7 @@ module SubstIrrelevantAttempt₁ where
   subst*-irrelevant []                 (⟨ F , refl ⟩∷ S₂) x = subst*-irrelevant [] S₂ x
   subst*-irrelevant (⟨ F , refl ⟩∷ S₁) S₂                 x = subst*-irrelevant S₁ S₂ x
 
-  -- The above works but is not general enough: the argument `x` does not
+  -- The above works but could be more general: the argument `x` does not
   -- need to have the same type on both sides. `x` could also be the same
   -- function applied to different terms, which are equal according to
   -- the equalities used in the substs...

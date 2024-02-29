@@ -1,3 +1,5 @@
+-- This file reexports all the individual fusion lemmas for expression substitutions.
+
 module StratF.ExprSubstFusion where
 
 open import StratF.ExprSubstFusion.RenRen  public
@@ -7,7 +9,7 @@ open import StratF.ExprSubstFusion.RenSub  public
 open import StratF.ExprSubstFusion.SwapSub public
 open import StratF.ExprSubstFusion.SubSub  public
 
--- TODO: The following lemmas are only for backwards-compatibility with HEq
+-- TODO: The following lemmas are only for backwards-compatibility with Homogeneous Equality
 
 open import Relation.Binary.PropositionalEquality
   using (_≡_; refl; sym; trans; cong; cong₂; subst; subst₂; module ≡-Reasoning)
