@@ -6,6 +6,7 @@
 
 % Turn off ligatures ending in "-".
 % Without this Agda Comments "--" are typeset as "–".
+% Drawback: \textemdash{} has to be used instead of --- in the whole Latex document...
 \usepackage[T1]{fontenc}
 \usepackage{microtype}
 \DisableLigatures[-]{encoding=T1}
@@ -552,7 +553,7 @@ It remains to define a compositional function from the expression
 syntax to the semantic domain that we already prepared in
 Section~\ref{sec:types}. We start with value environments.
 \TFVEnv
-Value environments are represented as functions---we could have done
+Value environments are represented as functions \textemdash{} we could have done
 that in the simply-typed interpreter, too. They are indexed by a
 domain environment $\eta$ to be able to calculate the correct return type.
 
@@ -1005,7 +1006,7 @@ Instead, we pull the {\AFun{S₂}} outwards, which transforms it into
 to reduce, leading to another {\Asubst} we call {\AFun{S₄}} in line \ACom{(4)}.
 
 Pulling {\AFun{S₂}} outwards is possible because {\AEsub} is sufficiently polymorphic:
-it is well-typed when called both with and without {\AFun{S₂}} -- it just produces values
+it is well-typed when called both with and without {\AFun{S₂}} \textemdash{} it just produces values
 of different but propositionally equivalent types, which needs to be accounted for with {\AFun{S₃}}.
 The trick for proving this equation, consists in abstraction:
 if we can generalize the equation, such that all equality proofs occuring in {\AFun{S₂}}
@@ -1140,8 +1141,8 @@ which required us to prove around 20 lemmas in the style of
 replace all of them with a combination of just two ingredients: the {\AFun{≡-subst-removable}}
 lemma and {\AFun{cong}} lemmas of different arities.
 
-% Consider for example the type \texttt{Vec} -- a list that
-% intrinsically tracks its length -- and its append function \verb/_++_/:
+% Consider for example the type \texttt{Vec} \textemdash{} a list that
+% intrinsically tracks its length \textemdash{} and its append function \verb/_++_/:
 % \SubstExamplesVec
 % \SubstExamplesAppend
 
@@ -1181,7 +1182,7 @@ lemma and {\AFun{cong}} lemmas of different arities.
 % One would expect \texttt{Eid} to simply map each variable \texttt{x}
 % to its corresponding variable term \texttt{\AgdaInductiveConstructor{`} x}.
 % However, because the type of expression substitutions \texttt{ESub} is
-% indexed by a type-substitution -- in this case \texttt{Tid} -- we need
+% indexed by a type-substitution \textemdash{} in this case \texttt{Tid} \textemdash{} we need
 % to produce a value of type \texttt{Expr Δ Γ (Tsub Tid T)}, while
 % the variable term \texttt{\AgdaInductiveConstructor{`} x} has type \texttt{Expr Δ Γ T}.
 % The two types are obviously equivalent, but only propositionally due
@@ -1325,9 +1326,9 @@ says in its critical summary:
 \begin{quotation}
   We feel that the jury is still out regarding the intrinsic versus
   extrinsic types encoding debate: on one hand, the intrinsic type
-  discipline when it works---and recent results
+  discipline when it works \textemdash{} and recent results
   \cite{DBLP:journals/pacmpl/PoulsenRTKV18} shows that it applies
-  outside the usual suspects---yields very compact and economic
+  outside the usual suspects \textemdash{} yields very compact and economic
   encodings. On the other, extrinsic typing scales more easily to
   dependent types
   \cite{DBLP:conf/types/Danielsson06,DBLP:journals/entcs/Chapman09,DBLP:conf/popl/AltenkirchK16}
