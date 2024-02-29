@@ -110,7 +110,7 @@
 %%
 %% The "title" command has an optional parameter,
 %% allowing the author to define a "short title" to be used in page headers.
-\title{Intrinsically-Typed Syntax, a Logical Relation, and the Scourge of the Transfer Lemma}
+\title{Intrinsically Typed Syntax, a Logical Relation, and the Scourge of the Transfer Lemma}
 
 %%
 %% The "author" command and its associated commands are used to define
@@ -173,13 +173,13 @@
 %% The abstract is a short summary of the work to be presented in the
 %% article.
 \begin{abstract}
-Intrinsically-typed syntax is an important and popular method for
+Intrinsically typed syntax is an important and popular method for
 mechanized reasoning about programming languages.
 We explore the limits of this method in the setting of
 finitely-stratified System F using the Agda proof assistant. This
 system supports elegant definitions of 
 denotational semantics as well as big-step 
-and small-step operational semantics based on intrinsically-typed syntax. While its syntactic
+and small-step operational semantics based on intrinsically typed syntax. While its syntactic
 metatheory (i.e., type soundness) works well,
 we demonstrate that its semantic metatheory poses technical
 challenges, by defining a logical relation and proving its fundamental
@@ -255,22 +255,23 @@ we integrate types with the syntax. This dichotomy goes back to the
 debate of Curry-style vs.\ Church-style presentations of typed lambda
 calculus.
 
-If we opt for intrinsically-typed syntax, some properties are already paid
-for by construction. For instance, a small-step or big-step semantics for intrinsically-typed
+If we opt for intrinsically typed syntax, some properties are already paid
+for by construction. For instance, a small-step or big-step semantics
+for intrinsically typed
 syntax satisfies type preservation by construction. For another
 instance, consider specifying a denotational semantics, which is a
 compositional mapping from syntax to some semantic domain. With 
 untyped syntax, we have to lump the interpretations of
 different types together in a universal semantic domain and distinguish them using type tags. But
-with intrinsically-typed syntax the semantics can map into
+with intrinsically typed syntax the semantics can map into
 type-indexed semantic domains 
 and thus elide type tags. This observation directly translates to tagless interpreters
-on intrinsically-typed syntax, which elide tag checks at run time.
+on intrinsically typed syntax, which elide tag checks at run time.
 
 For concreteness, we show the well-known example of a type-indexed
 denotational semantics for the simply-typed lambda calculus implemented in Agda in
 Figure~\ref{fig:stlc}. 
-We define the intrinsically-typed syntax of expressions as an
+We define the intrinsically typed syntax of expressions as an
 inductive datatype  {\AExpr} parameterized over a typing environment $\Gamma$ and indexed on the return
 type. For variables, we use de Bruijn indices into the typing
 environment modeled by {\AVar}.
@@ -294,7 +295,7 @@ definition as terminating, we know that the meaning of every
 simply-typed lambda term is a total function; a non-trivial semantic property
 of the simply-typed lambda calculus.
 
-Agda-encodings of intrinsically-typed interpreters have been explored
+Agda-encodings of intrinsically typed interpreters have been explored
 quite a lot, but rarely in the context of polymorphic source
 languages (except by \citet{DBLP:conf/mpc/ChapmanKNW19}). One possible
 reason is that the archetypical polymorphic 
@@ -319,7 +320,7 @@ universe stratification.
 
 \begin{itemize}
 \item We construct a denotational semantics of $SF_2$ as a
-  compositional mapping of an intrinsically-typed syntax into Agda; we
+  compositional mapping of an intrinsically typed syntax into Agda; we
   define big-step (Sec.~\ref{sec:big-step-operational}) and small-step
   (Sec.~\ref{sec:excurs-small-step}) semantics and prove their
   soundness with respect to the denotational semantics.
@@ -333,7 +334,7 @@ universe stratification.
 \item We analyse the difficulties coming up in the proofs that
   establish properities of the logical relation. They are
   largely caused by the requirement to provide
-  type-substitution-indexed substitutions on intrinsically-typed
+  type-substitution-indexed substitutions on intrinsically typed
   expressions. Manipulating these substitutions gives rise to type
   mismatches in the indexes such that transfer lemmas already show up in the
   statements of lemmas. Section~\ref{sec:subst-hell} explains two
@@ -349,10 +350,44 @@ gives the types of the statements discussed, but often elides part of
 the definitions or proofs for space reasons. Please refer to
 supplement for full definitions and proofs.
 
+\subsection*{Most Closely Related Work}
+\label{sec:most-closely-related}
 
-% As the construction is more involved than the one for simply-typed
-% lambda calculus, we only give the key definitions and discuss some of
-% the problems arising on the way to tagless interpretation. 
+Two papers are so closely related that they have to be discussed
+upfront.
+
+
+We draw significant inspiration from the program implemented by Benton and coworkers
+\cite{DBLP:journals/jar/BentonHKM12}. They investigate the use of intrinsically typed
+syntax, first, for a simply-typed applied lambda calculus. They define a
+big-step semantics and a set-theoretic denotational semantics. They
+prove soundness of the former semantics with respect to the latter as
+well as adequacy (using a logical relation). They also develop an
+intrinsically typed expression encoding for System~F and discuss the
+definitions of renaming and substitution for types and expressions.
+While their expression encoding is slightly different (their
+expression context does not contain type variable bindings), they run
+into very similar problems with equalities on type substitutions as
+our work. While they propose to lift all reasoning to heterogeneous
+equality, we additionally propose a direct approach to deal with
+equalities. 
+Their paper stops short of discussing the denotational/operational
+semantics of System~F nor does it define a logical relation for it.
+
+Chapman and coworkers \cite{DBLP:conf/mpc/ChapmanKNW19} formalized
+System F$\omega$ in Agda using intrinsically typed encodings for types
+and terms. Our encodings for types, terms, and substitutions are
+simplified versions of their definitions, while their work is
+significantly complicated by the need to normalize types. They
+prove similar results about type substitutions than we do, but they do not
+prove the fusion lemmas for expression substitutions (see
+Section~\ref{sec:substitutions:expr}) and thus narrowly escape the
+sourge of the transfer lemma. We need the latter fusion lemmas to
+prove the fundamental theorem (see
+Section~\ref{sec:technical-lemmas}), but they are not required for
+their executable formalization of System~F$\omega$, which is based on
+a small-step operational semantics.
+
 
 % \input{latex/Tagless-final}
 \section{Types}
@@ -432,7 +467,7 @@ more complicated as they are indexed by type substitutions.
 \label{sec:substitutions:type}
 
 The infrastructure for substitutions on types is standard for
-intrinsically-typed terms in de Bruijn
+intrinsically typed terms in de Bruijn
 style, and defines substitutions in terms of renamings
 (cf.~\cite{DBLP:journals/jar/BentonHKM12, DBLP:conf/mpc/ChapmanKNW19, DBLP:journals/scp/KokkeSW20}).
 
@@ -1137,7 +1172,7 @@ Heterogeneous equality was introduced by
 \citet{DBLP:conf/types/McBride00} as \emph{John Major equality} and
 is defined in Agda as follows:
 \SubstExamplesHetEqDef
-In contrast to homogeneous equality \AFun{\_≡\_}, heterogenous
+In contrast to homogeneous equality \AgdaDatatype{\_≡\_}, heterogenous
 equality expresses equalities between values of different
 types. It is particularly useful to state and prove equalities between
 values of different, but propositionally equal, types.
@@ -1290,7 +1325,7 @@ lemma and {\AFun{cong}} lemmas of different arities.
 A small-step operational semantics completes our picture of finitely
 stratified System~F. Here, we demonstrate that we can wrap the small-step semantics such that the definition of the logical relation as well as the proof of the fundamental theorem adapt without any effort.
 
-We define an intrinsically-typed small-step reduction relation and its
+We define an intrinsically typed small-step reduction relation and its
 reflexive transitive closure in the usual way (details omitted).
 \SmallStepSingleReduction
 \SmallStepReduction
@@ -1339,35 +1374,6 @@ Intrinsically typed encodings are further studied by Allais and others
 \cite{DBLP:conf/cpp/Allais0MM17}, who define a range of tagless
 functions including denotational semantics on intrinsically typed
 terms. 
-
-We draw some inspiration from the program implemented by Benton and coworkers
-\cite{DBLP:journals/jar/BentonHKM12}. Based on intrinsically typed
-syntax for a simply-typed lambda applied calculus, they define a
-big-step semantics and a set-theoretic denotational semantics. They
-prove soundness of the former semantics with respect to the latter as
-well as adequacy (using a logical relation). They also develop an
-intrinsically typed expression encoding for System~F and discuss the
-definitions of renaming and substitution for types and expressions.
-While their expression encoding is slightly different (their
-expression context does not contain type variable bindings), they run
-into very similar problems with equalities on type substitutions than
-our work. While they propose to lift all reasoning to heterogeneous
-equality, we additionally propose a direct approach to deal with
-equalities. 
-The paper stops short of discussing the denotational/operational
-semantics of System~F nor does it define a logical relation for it.
-
-Chapman and coworkers \cite{DBLP:conf/mpc/ChapmanKNW19} formalized
-System F$\omega$ in Agda using intrinsically typed encodings for types
-and terms. Our encodings for types, terms, and substitutions are
-simplified versions of their definitions, while their work is
-significantly complicated by the need to normalize types. While they
-prove similar results about type substitutions than we do, they do not
-prove the fusion lemmas for expression substitutions (see
-Section~\ref{sec:substitutions:expr}). The latter fusion lemmas are needed to
-prove the fundamental theorem (see
-Section~\ref{sec:technical-lemmas}), but they are not required for
-their executable formalization of System~F$\omega$.
 
 The POPLMark reloaded project \cite{DBLP:journals/jfp/AbelAHPMSS19} proposes
 mechanized proofs of strong normalization for a simply typed lambda
