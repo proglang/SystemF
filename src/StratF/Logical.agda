@@ -2,28 +2,23 @@ module StratF.Logical where
 
 open import Level
 open import Data.Product using (_×_; Σ; Σ-syntax; ∃-syntax; _,_; proj₁; proj₂)
-open import Data.Sum using (_⊎_)
-open import Data.Fin using (Fin) renaming (zero to fzero; suc to fsuc)
 open import Data.List using (List; []; _∷_; [_])
 open import Data.Unit.Polymorphic.Base using (⊤; tt)
-open import Data.Empty using (⊥)
-open import Data.Nat using (ℕ)
 open import Function using (_∘_; id; case_of_; _|>_)
 open import Relation.Binary.PropositionalEquality
   using (_≡_; _≢_; refl; sym; trans; cong; cong₂; subst; subst₂; resp₂; cong-app; icong;
         subst-∘; subst-application; subst-application′; subst-subst-sym; subst-sym-subst; subst-subst; -- Properties
         module ≡-Reasoning)
-open import Axiom.Extensionality.Propositional using (∀-extensionality; Extensionality)
 open ≡-Reasoning
 
-open import StratF.Types
-open import StratF.TypeSubstitution
+open import StratF.BigStep
+open import StratF.ExprSubstProperties
+open import StratF.ExprSubstitution
+open import StratF.Expressions
 open import StratF.TypeSubstProperties
 open import StratF.TypeSubstPropertiesSem
-open import StratF.Expressions
-open import StratF.ExprSubstitution
-open import StratF.ExprSubstProperties
-open import StratF.BigStep
+open import StratF.TypeSubstitution
+open import StratF.Types
 open import StratF.Util.Extensionality
 open import StratF.Util.PropositionalSetOmegaEquality
 open import StratF.Util.SubstProperties

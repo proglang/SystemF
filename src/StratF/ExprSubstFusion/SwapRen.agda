@@ -1,18 +1,18 @@
 module StratF.ExprSubstFusion.SwapRen where
 
-open import Level
 open import Data.List using (List; []; _∷_; [_])
 open import Function using (_∘_; id; _$_)
+open import Level
+open import Relation.Binary.HeterogeneousEquality as H using (_≅_; refl)
 open import Relation.Binary.PropositionalEquality
   using (_≡_; refl; sym; trans; cong; cong₂; subst; subst₂; module ≡-Reasoning)
 open ≡-Reasoning
-open import Relation.Binary.HeterogeneousEquality as H using (_≅_; refl)
 
-open import StratF.Types
-open import StratF.TypeSubstitution
-open import StratF.TypeSubstProperties
-open import StratF.Expressions
 open import StratF.ExprSubstitution
+open import StratF.Expressions
+open import StratF.TypeSubstProperties
+open import StratF.TypeSubstitution
+open import StratF.Types
 open import StratF.Util.Extensionality
 open import StratF.Util.HeterogeneousEqualityLemmas
 

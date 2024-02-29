@@ -4,9 +4,9 @@ open import Data.List using (List; []; _∷_; [_])
 open import Data.Nat using (ℕ; suc)
 open import Data.Product using (_×_; Σ; Σ-syntax; ∃-syntax; _,_; proj₁; proj₂)
 
-open import StratF.Types
-open import StratF.Expressions
 open import StratF.ExprSubstitution
+open import StratF.Expressions
+open import StratF.Types
 
 ----------------------------------------------------------------------
 --! BigStep >

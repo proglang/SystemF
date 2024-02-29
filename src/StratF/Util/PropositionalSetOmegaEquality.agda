@@ -3,7 +3,6 @@ module StratF.Util.PropositionalSetOmegaEquality where
 open import Level
 open import Relation.Binary.PropositionalEquality using (_≡_; refl; subst; sym)
 
-
 -- equality for Setω
 
 data _≡ω_ {A : Setω} (x : A) : A → Setω where

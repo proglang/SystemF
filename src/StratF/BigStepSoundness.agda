@@ -2,19 +2,17 @@ module StratF.BigStepSoundness where
 
 open import Data.List using (List; []; _∷_; [_])
 open import Data.Nat using (ℕ; suc)
-open import Data.Product using (_×_; Σ; Σ-syntax; ∃-syntax; _,_; proj₁; proj₂)
-open import Relation.Binary.PropositionalEquality using (_≡_; refl; cong; subst; sym;
-            module ≡-Reasoning)
-open ≡-Reasoning
 open import Function using (id)
+open import Relation.Binary.PropositionalEquality using (_≡_; refl; cong; subst; sym; module ≡-Reasoning)
+open ≡-Reasoning
 
-open import StratF.Types
+open import StratF.BigStep
+open import StratF.ExprSubstPropertiesSem using (EEsingle-subst-preserves; ETsingle-subst-preserves)
+open import StratF.ExprSubstitution
+open import StratF.Expressions
 open import StratF.TypeSubstProperties
 open import StratF.TypeSubstPropertiesSem
-open import StratF.Expressions
-open import StratF.ExprSubstitution
-open import StratF.ExprSubstPropertiesSem using (EEsingle-subst-preserves; ETsingle-subst-preserves)
-open import StratF.BigStep
+open import StratF.Types
 
 --! BigStep >
 
