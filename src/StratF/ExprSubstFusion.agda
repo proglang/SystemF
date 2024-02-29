@@ -9,7 +9,7 @@ open import StratF.ExprSubstFusion.RenSub  public
 open import StratF.ExprSubstFusion.SwapSub public
 open import StratF.ExprSubstFusion.SubSub  public
 
--- TODO: The following lemmas are only for backwards-compatibility with Homogeneous Equality
+-- TODO: The following lemmas are only required for backwards-compatibility with Homogeneous Equality
 
 open import Relation.Binary.PropositionalEquality
   using (_≡_; refl; sym; trans; cong; cong₂; subst; subst₂; module ≡-Reasoning)

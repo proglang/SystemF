@@ -1,3 +1,6 @@
+-- This file contains definitions and lemmas about semantic renamings
+-- and substitutions of expressions.
+
 module StratF.ExprSubstPropertiesSem where
 
 open import Level
@@ -24,10 +27,10 @@ open import StratF.Util.PropositionalSetOmegaEquality
 open import StratF.Util.SubstProperties
 module Rω = Hω.≅ω-Reasoning
 
-
 --! ESPS >
 
 -- semantic renamings on expression
+
 ERen* : {ρ* : TRen Δ₁ Δ₂} (TRen* : TRen* ρ* η₁ η₂) → (ρ : ERen ρ* Γ₁ Γ₂) → (γ₁ : Env Δ₁ Γ₁ η₁) → (γ₂ : Env Δ₂ Γ₂ η₂) → Setω
 ERen* {Δ₁ = Δ₁} {Γ₁ = Γ₁} {ρ*} Tren* ρ γ₁ γ₂ = ∀ {l} {T : Type Δ₁ l} → 
   (x : inn T Γ₁) → γ₂ _ _ (ρ _ _ x) ≡ subst id (sym (Tren*-preserves-semantics Tren* T)) (γ₁ _ _ x)
@@ -163,8 +166,7 @@ Eren*-preserves-semantics {Δ₂ = Δ₂} {Γ₂ = Γ₂} {η₁ = η₁} {η₂
     subst id eq' (E⟦ e ∙ T′ ⟧ η₁ γ₁)  
   ∎
 
--- -- semantic substituions on expressions
-
+-- semantic substituions on expressions
 
 subst-to-env : {σ* : TSub Δ₁ Δ₂} → ESub σ* Γ₁ Γ₂ → Env Δ₂ Γ₂ η₂ → Env Δ₁ Γ₁ (subst-to-env* σ* η₂)
 subst-to-env {η₂ = η₂} {σ* = σ*} σ γ₂ _ T x = subst id (subst-preserves σ* T) (E⟦ σ _ _ x ⟧ η₂ γ₂)

@@ -1,3 +1,6 @@
+-- This file contains the definitions for expression renamings and
+-- substitutions and related operations like lifting and composition.
+
 module StratF.ExprSubstitution where
 
 open import Level

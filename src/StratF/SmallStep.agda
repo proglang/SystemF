@@ -16,6 +16,7 @@ open import StratF.Util.Extensionality
 open import StratF.Util.PropositionalSetOmegaEquality
 
 -- small step call by value semantics
+
 --! SmallStep >
 
 --! SingleReduction

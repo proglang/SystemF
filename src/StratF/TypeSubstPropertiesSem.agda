@@ -1,3 +1,6 @@
+-- This file contains definitions and lemmas about semantic renamings
+-- and substitutions of types.
+
 module StratF.TypeSubstPropertiesSem where
 
 open import Level
@@ -68,7 +71,6 @@ lemma2 σ T T′ = begin
   ≡⟨ cong (λ σ → Tsub σ T) (sym (sublemma σ)) ⟩
     Tsub (Textₛ σ T′) T
   ∎
-   
 
 Tdrop-σ≡Twk∘σ : ∀ (σ* : TSub (l ∷ Δ₁) Δ₂) → Tdropₛ σ* ≡ Twkᵣ Tidᵣ ∘ᵣₛ σ*
 Tdrop-σ≡Twk∘σ σ* = fun-ext₂ (λ x y → refl)

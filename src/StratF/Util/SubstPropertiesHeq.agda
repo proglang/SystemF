@@ -7,7 +7,6 @@
 -- Lemmas used involve exclusively:
 -- - `H.≡-subst-removable`, `≡-subst₂-removable`;
 -- - `H.cong`,  `H.cong₂`, `Hcong₃`, and `Hcong₄`;
--- - `fun-ext-h'` (a stronger form of fun-ext for heterogenous equality. Can be derived from regular `fun-ext`.
 
 module StratF.Util.SubstPropertiesHeq where
 

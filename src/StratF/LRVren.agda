@@ -24,7 +24,6 @@ open import StratF.Util.Extensionality
 open import StratF.Util.PropositionalSetOmegaEquality
 open import StratF.Util.SubstProperties
 
-----------------------------------------------------------------------
 --! LRVren >
 
 --! LRVrenEqType
@@ -38,20 +37,6 @@ LRVren-eq′ :
                   (Tren*-preserves-semantics  {ρ* = τ*} {⟦ π₁ (Tren-act τ* ρ) ⟧* []}
                                                {⟦ ρ* ⟧* []} (τ*∈Ren* τ* ρ*) T) in
   𝓥⟦ T ⟧ (Tren-act τ* ρ) v z ≡ S (𝓥⟦ Tren τ* T ⟧ ρ) v z
-
--- LRVren-eq′ :  ∀ {Δ₁}{Δ₂}{l}
---   → (T : Type Δ₁ l)
---   → (ρ : RelEnv Δ₂)
---   → (τ* : TRen Δ₁ Δ₂)
---   → let ρ* = π₁ ρ
---   in (v : Value (Tsub (τ* ∘ᵣₛ ρ*) T))
---   → (z : ⟦ T ⟧ (⟦ π₁ (Tren-act τ* ρ) ⟧* []))
---   → 𝓥⟦ T ⟧ (Tren-act τ* ρ) v z ≡
---     subst₂ (λ vv zz → Value vv → zz → Set l)
---            (fusion-Tsub-Tren T τ* ρ*)
---            (Tren*-preserves-semantics {ρ* = τ*} {⟦ π₁ (Tren-act τ* ρ) ⟧* []} {⟦ ρ* ⟧* []}
---                                       (τ*∈Ren* τ* ρ*) T)
---            (𝓥⟦ Tren τ* T ⟧ ρ) v z
 
 LRVren-eq′ `ℕ ρ τ* v z = refl
 

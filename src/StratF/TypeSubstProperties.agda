@@ -120,7 +120,6 @@ swap-Tsub-Twk σ T =
     Twk (Tsub σ T)
   ∎
 
-
 sub↑-dist-∘ₛₛ : ∀ l (σ₁ : TSub Δ₁ Δ₂) (σ₂ : TSub Δ₂ Δ₃) →
   Tliftₛ (σ₁ ∘ₛₛ σ₂) _  ≡ (Tliftₛ σ₁ l ∘ₛₛ Tliftₛ σ₂ _)
 sub↑-dist-∘ₛₛ l σ₁ σ₂ = fun-ext₂ λ where 

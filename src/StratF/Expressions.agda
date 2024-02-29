@@ -56,6 +56,7 @@ variable e e₁ e₂ e₃ : Expr Δ Γ T
 variable n : ℕ
 
 -- value environments
+
 --! VEnv
 Env : (Δ : LEnv) → Ctx Δ → Env* Δ → Setω
 Env Δ Γ η = ∀ l (T : Type Δ l) → (x : inn T Γ) → ⟦ T ⟧ η
@@ -85,7 +86,6 @@ E⟦ e₁ · e₂           ⟧ η γ = E⟦ e₁ ⟧ η γ (E⟦ e₂ ⟧ η γ
 E⟦ Λ l ⇒ e           ⟧ η γ = λ ⟦α⟧ → E⟦ e ⟧ (⟦α⟧ ∷ η) (extend-tskip γ)
 E⟦ _∙_ {T = T} e T′  ⟧ η γ = subst id (sym (Tsingle-subst-preserves η T′ T)) (E⟦ e ⟧ η γ (⟦ T′ ⟧ η))
 
-----------------------------------------------------------------------
 -- auxiliary
 
 levelTy : Type Δ l → Level
@@ -96,7 +96,6 @@ levelEnv ∅ = lzero
 levelEnv (T ◁ Γ) = levelTy T ⊔ levelEnv Γ
 levelEnv (l ◁* Γ) = levelEnv Γ
 
-----------------------------------------------------------------------
 -- compatibility
 
 TEnv = Ctx

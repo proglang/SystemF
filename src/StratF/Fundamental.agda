@@ -30,7 +30,6 @@ open import StratF.Util.HeterogeneousEqualityLemmas hiding (module R)
 open import StratF.Util.PropositionalSetOmegaEquality
 open import StratF.Util.SubstProperties
 
-----------------------------------------------------------------------
 --! Fundamental >
 
 Tsub-act-Text :
@@ -95,7 +94,6 @@ Tsub-act-Text ρ T′ l₂ (there x) =
     Tsub-act (Textₛ Tidₛ T′) ρ l₂ (there x)
   ∎
 
--- next one will become obsolete
 Elift-[]≡Cextt : (Γ : Ctx Δ) (ρ : 𝓓⟦ Δ ⟧) (χ : CSub (π₁ ρ) Γ) (l′ l : Level) (T : Type (l ∷ Δ) l′) (e : Expr (l ∷ Δ) (l ◁* Γ) T) (T′ : Type [] l) (R : REL T′)
   → let σ = π₁ ρ in
     let lhs = (Esub (Tliftₛ σ l) (Eliftₛ-l σ (ς₁ χ)) e [ T′ ]ET) in
@@ -137,18 +135,8 @@ Elift-[]≡Cextt Γ ρ χ l′ l T e T′ R =
       e
   ∎
 
--- χ-val-extend :  ∀ (Γ : Ctx Δ)
---   → (ρ : 𝓓⟦ Δ ⟧)
---   → let σ* = π₁ ρ in (χ : CSub σ* Γ)
---   → (w       : CValue (Tsub (π₁ ρ) T₁))
---   → (w ⇓ w)
---   → (∀ {l′} (T′ : Type Δ l′) (x : inn T′ Γ) → χ _ _ x ⇓ χ _ _ x)
---   → ∀ {l′} (T′ : Type Δ l′) (x : inn T′ (T₁ ◁ Γ)) →
---       Cextend χ w l′ T′ x ⇓ Cextend χ w l′ T′ x
--- χ-val-extend Γ ρ χ w w⇓w χ-val T′ here = {!!} -- need w⇓w
--- χ-val-extend Γ ρ χ w w⇓w χ-val T′ (there x₁) = χ-val T′ x₁
-
 -- semantic soundness
+
 --! SemanticSoundness {
 semantic-soundness : ∀ (Γ : Ctx Δ) (T : Type Δ l) (e : Expr Δ Γ T) → Setω
 semantic-soundness {Δ = Δ} Γ T e =
@@ -160,13 +148,6 @@ semantic-soundness {Δ = Δ} Γ T e =
 
 syntax semantic-soundness Γ T e = Γ ⊨ e ⦂ T
 --! }
-
--- semantic-soundness {Δ = Δ} Γ T e =
---   ∀ (ρ : 𝓓⟦ Δ ⟧)
---   → let ρ* = π₁ ρ in (χ : CSub ρ* Γ)
---   → let η = ⟦ ρ* ⟧* [] in (γ : Env Δ Γ η)
---   → 𝓖⟦ Γ ⟧ ρ χ γ
---   → 𝓔⟦ T ⟧ ρ (Csub χ e) (E⟦ e ⟧ η γ)
 
 -- fundamental theorem
 

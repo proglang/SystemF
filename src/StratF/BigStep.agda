@@ -8,7 +8,6 @@ open import StratF.ExprSubstitution
 open import StratF.Expressions
 open import StratF.Types
 
-----------------------------------------------------------------------
 --! BigStep >
 
 -- big step call by value semantics (analogous to Benton et al)
@@ -58,7 +57,6 @@ Value-⇓ (.(# _) ,      V-♯)  = ⇓-n
 Value-⇓ (.(ƛ _) ,      V-ƛ)  = ⇓-ƛ
 Value-⇓ (.(Λ _ ⇒ _) ,  V-Λ)  = ⇓-Λ
 
-----------------------------------------------------------------------
 -- compatibility
 
 Value = CValue

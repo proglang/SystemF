@@ -29,25 +29,7 @@ open import StratF.Util.Extensionality
 open import StratF.Util.PropositionalSetOmegaEquality
 open import StratF.Util.SubstProperties
 
-----------------------------------------------------------------------
 --! LRVsub >
-
--- ext-σ-T′≡σ[T′] :
---   (T′        : Type Δ l′)
---   (T         : Type (l′ ∷ Δ) l)
---   (ρ         : RelEnv Δ)
---   (R′        : REL (Tsub (subst←RE ρ) T′))
---   → Tsub (subst←RE (REext ρ (Tsub (subst←RE ρ) T′ , R′))) T ≡ Tsub (subst←RE ρ) (T [ T′ ]T)
--- ext-σ-T′≡σ[T′] T′ T ρ R′ =
---   begin
---     Tsub (subst←RE (REext ρ (Tsub (subst←RE ρ) T′ , R′))) T
---   ≡⟨ cong (λ τ → Tsub τ T) (subst←RE-ext-ext ρ (Tsub (subst←RE ρ) T′) R′) ⟩
---     Tsub (Textₛ (subst←RE ρ) (Tsub (subst←RE ρ) T′)) T
---   ≡⟨ cong (λ τ → Tsub τ T) (fun-ext₂ (Text-sub-sub (subst←RE ρ) T′)) ⟩
---     Tsub (Textₛ Tidₛ T′ ∘ₛₛ subst←RE ρ) T
---   ≡⟨ sym (fusion-Tsub-Tsub T (Textₛ Tidₛ T′) (subst←RE ρ)) ⟩
---     Tsub (subst←RE ρ) (T [ T′ ]T)
---   ∎ 
 
 -- substitution action on RelEnv by composition
 
@@ -58,7 +40,6 @@ Tsub-act σ* ρ = λ l x →
   let T₂ = σ* l x in
   Tsub ρ* T₂ , subst (λ ⟦x⟧ → (Value (Tsub ρ* T₂) → ⟦x⟧ → Set l)) (sym (subst-preserves (subst←RE ρ) T₂)) (𝓥⟦ T₂ ⟧ ρ)
 
---
 subst-Tsub-act : (ρ : RelEnv Δ₂) (τ* : TSub Δ₁ Δ₂) → subst←RE (Tsub-act τ* ρ) ≡ (τ* ∘ₛₛ subst←RE ρ)
 subst-Tsub-act ρ τ* = fun-ext₂ (helper ρ τ*)
   where
@@ -67,7 +48,6 @@ subst-Tsub-act ρ τ* = fun-ext₂ (helper ρ τ*)
   helper ρ τ* l here = refl
   helper ρ τ* l (there x) = refl
 
---
 Tsub-act-REext-ext : (ρ : RelEnv Δ₂) (τ* : TSub Δ₁ Δ₂) (T′ : Type [] l) (R : REL T′)
   → ∀ l₂ x₂ → (REext (Tsub-act τ* ρ) (T′ , R)) l₂ x₂ ≡ Tsub-act (Tliftₛ τ* l) (REext ρ (T′ , R)) l₂ x₂
 Tsub-act-REext-ext ρ τ* T′ R l₂ here = refl
@@ -144,8 +124,6 @@ Tsub-act-REext : (ρ : RelEnv Δ₂) (τ* : TSub Δ₁ Δ₂) (T′ : Type [] l)
   → (REext (Tsub-act τ* ρ) (T′ , R)) ≡ω Tsub-act (Tliftₛ τ* l) (REext ρ (T′ , R))
 Tsub-act-REext ρ τ* T′ R = relenv-ext (Tsub-act-REext-ext ρ τ* T′ R)
 
-
--- holds definitionally
 subst←RE-sub : ∀ (ρ : RelEnv Δ₂) (τ* : TSub Δ₁ Δ₂)
   → (l′ : Level) (x : l′ ∈ Δ₁) → subst←RE (Tsub-act τ* ρ) l′ x ≡ (τ* ∘ₛₛ subst←RE ρ) l′ x
 subst←RE-sub ρ τ* l′ x = refl

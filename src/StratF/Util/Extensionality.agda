@@ -9,11 +9,10 @@ open import StratF.Util.PropositionalSetOmegaEquality
 
 --! TF >
 
+-- Functional Extensionality for homogeneous equality
+
 postulate
   fun-ext : ∀{a b} → Extensionality a b
-
-fun-ext-h : ∀{a b} → HEq.Extensionality a b
-fun-ext-h = HEq.≡-ext⇒≅-ext fun-ext
 
 fun-ext₂ : ∀ {l₁}{l₂}{l₃} {A₁ : Set l₁} {A₂ : A₁ → Set l₂} {B : (x : A₁) → A₂ x → Set l₃}
              {f g : (x : A₁) → (y : A₂ x) → B x y} →
@@ -21,11 +20,20 @@ fun-ext₂ : ∀ {l₁}{l₂}{l₃} {A₁ : Set l₁} {A₂ : A₁ → Set l₂}
     f ≡ g
 fun-ext₂ h = fun-ext λ x → fun-ext λ y → h x y
 
+-- Functional Extensionality for heterogeneous equality
+
+fun-ext-h : ∀{a b} → HEq.Extensionality a b
+fun-ext-h = HEq.≡-ext⇒≅-ext fun-ext
+
+-- Functional Extensionality for dependent functions
+
 --! DependentExt
 dep-ext : ∀ {a b} {A : Set a} {F G : (α : A) → Set b} →
   (∀ (α : A) → F α ≡ G α) →
   ((α : A) → F α) ≡ ((α : A) → G α) 
 dep-ext = ∀-extensionality fun-ext _ _
+
+-- Functional Extensionalities for Setω-equalities
 
 postulate
   fun-extω : {B : (l : Level) → Set l} {f g : (x : Level) → B x} →

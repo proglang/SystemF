@@ -22,7 +22,6 @@ open import StratF.Util.Extensionality
 open import StratF.Util.PropositionalSetOmegaEquality
 open import StratF.Util.SubstProperties
 
-----------------------------------------------------------------------
 --! Logical >
 --! Variation >
 

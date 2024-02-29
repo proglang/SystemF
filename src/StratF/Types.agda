@@ -32,7 +32,6 @@ data Type Δ : Level → Set where
 
 variable T T′ T₁ T₂ : Type Δ l
 
-
 -- level of type according to Leivant'91
 level : Type Δ l → Level
 level {l = l} T = l

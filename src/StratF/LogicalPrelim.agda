@@ -22,7 +22,6 @@ open import StratF.Util.Extensionality
 open import StratF.Util.PropositionalSetOmegaEquality
 open import StratF.Util.SubstProperties
 
-----------------------------------------------------------------------
 --! Logical >
 
 infixl 10 _∧_
@@ -31,6 +30,7 @@ _∧_ = _×_
 -- logical relation
 
 -- relation between a syntactic value and a semantic value
+
 --! REL
 REL : Type [] l → Set (suc l)
 REL {l} T = CValue T → ⟦ T ⟧ [] → Set l 
@@ -86,7 +86,6 @@ subst←RE-drop-ext ρ = fun-ext₂ (subst←RE-drop ρ)
 REdrop-REext≡id : (ρ : RelEnv Δ) → (T′ : Type [] l) → (R : REL T′) → REdrop (REext ρ (T′ , R)) ≡ω ρ
 REdrop-REext≡id {Δ = Δ} ρ T′ R = refl
 
--- holds definitionally
 subst←RE-ren : ∀ (ρ : RelEnv Δ₂) (τ* : TRen Δ₁ Δ₂)
   → (l′ : Level) (x : l′ ∈ Δ₁) → subst←RE (Tren-act τ* ρ) l′ x ≡ (τ* ∘ᵣₛ subst←RE ρ) l′ x
 subst←RE-ren ρ τ* l′ x = refl
@@ -117,17 +116,6 @@ Tren-act-REext-ext ρ τ* T′ R l₂ (there x₂) = refl
 Tren-act-REext : (ρ : RelEnv Δ₂) (τ* : TRen Δ₁ Δ₂) (T′ : Type [] l) (R : REL T′)
   → (REext (Tren-act τ* ρ) (T′ , R)) ≡ω Tren-act (Tliftᵣ τ* l) (REext ρ (T′ , R))
 Tren-act-REext ρ τ* T′ R = relenv-ext (Tren-act-REext-ext ρ τ* T′ R)
-
--- Tren-act-wk-ext : ∀ (ρ : RelEnv Δ) (T′ : Type [] l) (R : REL T′)
---   → (Tren-act (Twkᵣ Tidᵣ) (REext ρ (T′ , R))) ≡ω ρ
--- Tren-act-wk-ext ρ T′ R =
---   relenv-ext (helper ρ T′ R)
---   where
---   helper :  ∀ (ρ : RelEnv Δ) (T′ : Type [] l) (R : REL T′) l₁ (x : l₁ ∈ Δ)
---     → Tren-act (Twkᵣ Tidᵣ) (REext ρ (T′ , R)) l₁ x ≡ ρ l₁ x
---   helper ρ T′ R l₁ here = refl
---   helper ρ T′ R l₁ (there x) = refl
-
 
 -- auxiliary
 

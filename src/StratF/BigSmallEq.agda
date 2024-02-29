@@ -36,8 +36,7 @@ open import StratF.Types
 `ξ-·₂ —↠-refl          isV      = —↠-refl
 `ξ-·₂ (—↠-step e₁↪e e₂—↠e₁) isV = —↠-step (ξ-·₂ e₁↪e isV) (`ξ-·₂ e₂—↠e₁ isV)
 
-----------------------------------------------------------------------
--- big step API
+-- Big-Step API
 
 infix 15 _↓_
 --! BigAPI

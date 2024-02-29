@@ -28,7 +28,6 @@ open import StratF.Util.SubstProperties
 
 open import StratF.LogicalPrelim
 
-
 --! MCVType
 𝓥⟦_⟧  : (T : Type Δ l) → (ρ : 𝓓⟦ Δ ⟧) → CValue  (Tsub (π₁ ρ) T) → ⟦ T ⟧ (⟦ π₁ ρ ⟧* []) → Set l
 𝓔⟦_⟧  : (T : Type Δ l) → (ρ : 𝓓⟦ Δ ⟧) → CExpr   (Tsub (π₁ ρ) T) → ⟦ T ⟧ (⟦ π₁ ρ ⟧* []) → Set l
@@ -50,7 +49,6 @@ open import StratF.LogicalPrelim
 --! MCE
 𝓔⟦ T ⟧ ρ e z = ∃[ v ] (e ⇓ v) ∧ 𝓥⟦ T ⟧ ρ v z
 
-
 -- extended LR on environments
 
 --! MCG
@@ -58,17 +56,6 @@ open import StratF.LogicalPrelim
 𝓖⟦ ∅       ⟧ ρ χ γ = ⊤
 𝓖⟦ T ◁ Γ   ⟧ ρ χ γ = 𝓥⟦ T ⟧ ρ (χ _ _ here) (γ _ _ here) ∧ 𝓖⟦ Γ ⟧ ρ (Cdrop χ) (Gdrop γ)
 𝓖⟦ l ◁* Γ  ⟧ ρ χ γ = 𝓖⟦ Γ ⟧ (REdrop ρ) (Cdrop-t χ) (Gdrop-t (π₁ ρ) γ)
-
-----------------------------------------
-
--- subst-split-⇓ :
---   ∀ {Tₑ Tᵥ : Type [] l}
---   → (e : CExpr Tₑ)
---   → (v : CValue Tᵥ)
---   → (Tₑ≡Tᵥ : Tₑ ≡ Tᵥ)
---   → subst CExpr Tₑ≡Tᵥ e ⇓ v
---   → e ⇓ subst CValue (sym Tₑ≡Tᵥ) v
--- subst-split-⇓ e v refl x = x
 
 --! substSplitEqEval
 subst-split-eq-⇓ :
@@ -78,24 +65,6 @@ subst-split-eq-⇓ :
   → (Tₑ≡Tᵥ : Tₑ ≡ Tᵥ)
   → subst CExpr Tₑ≡Tᵥ e ⇓ v ≡ e ⇓ subst CValue (sym Tₑ≡Tᵥ) v
 subst-split-eq-⇓ e v refl = refl
-
--- subst-split-⇓′ :
---   ∀ {Tₑ Tᵥ : Type [] l}
---   → (e : CExpr Tₑ)
---   → (v : CValue Tᵥ)
---   → (Tₑ≡Tᵥ : Tₑ ≡ Tᵥ)
---   → e ⇓ subst CValue (sym Tₑ≡Tᵥ) v
---   → subst CExpr Tₑ≡Tᵥ e ⇓ v
--- subst-split-⇓′ e v refl x = x
-
--- subst-split-⇓₂ :
---   ∀ {T T′ : Type [] l}
---   → {e : CExpr T}
---   → {v : CValue T}
---   → (T≡T′ : T ≡ T′)
---   → e ⇓ v
---   → subst CExpr T≡T′ e ⇓ subst CValue T≡T′ v
--- subst-split-⇓₂ refl e⇓v = e⇓v
 
 subst-split-eq-⇓₂ :
   ∀ {T T′ : Type [] l}
@@ -127,15 +96,3 @@ subst-split-[]E″ :
   → (subst₂ (λ T₁ T₂ → Expr [] (T₁ ◁ ∅) T₂) eq₁ eq₂ e [ subst CExpr eq₁ e′ ]E)
   ≡ subst CExpr eq₂ (e [ e′ ]E) 
 subst-split-[]E″ e e′ refl refl = refl
-
--- {- <-- TypeSubstProperties -}
--- σ[T′]≡↑τ*∘ext-ext : (ρ : RelEnv Δ₂) (τ* : TRen Δ₁ Δ₂) (T′ : Type [] l)
---   → ∀ l′ x → Textₛ (τ* ∘ᵣₛ subst←RE ρ) T′ l′ x ≡ (Tliftᵣ τ* l ∘ᵣₛ Textₛ (subst←RE ρ) T′) l′ x
--- σ[T′]≡↑τ*∘ext-ext ρ τ* T′ l′ here = refl
--- σ[T′]≡↑τ*∘ext-ext ρ τ* T′ l′ (there x) = refl
-
--- σ[T′]≡↑τ*∘ext : (ρ : RelEnv Δ₂) (τ* : TRen Δ₁ Δ₂) (T′ : Type [] l)
---   → Textₛ (τ* ∘ᵣₛ subst←RE ρ) T′ ≡ (Tliftᵣ τ* l ∘ᵣₛ Textₛ (subst←RE ρ) T′)
--- σ[T′]≡↑τ*∘ext ρ τ* T′ = fun-ext₂ (σ[T′]≡↑τ*∘ext-ext ρ τ* T′)
--- {- --> TypeSubstProperties -}
-
