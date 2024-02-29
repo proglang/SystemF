@@ -4,7 +4,6 @@ TARGET_MODULES= STLC
 TARGET_FILES= agdamacros.tex unicodeletters.tex $(addprefix $(PREFIX)/, $(addsuffix .tex, $(TARGET_MODULES)))
 PREFIX= latex
 
-ZIPFILES= README.md Makefile $(addsuffix .lagda, $(TARGET_MODULES))
 ZIPGOAL= supplement-icfp24.zip
 
 ARXIVGOAL= $(GOAL).zip
@@ -19,8 +18,16 @@ $(GOAL).pdf: $(GOAL).tex $(TARGET_FILES) $(PREFIX)/agda-generated.sty
 $(PREFIX)/%.tex: %.lagda
 	agda --latex --only-scope-checking $<
 
-$(ZIPGOAL): $(ZIPFILES)
-	zip $@ $^
+supplement:
+	rm -rf "__zip_cache"
+	mkdir "__zip_cache"
+	cp -r ../src/* "__zip_cache/"
+	sed -i '/^ *--!/d' "__zip_cache"/**/*.agda # Remove agdatex comments
+	gawk -i inplace 'BEGIN{RS="";ORS="\n\n"}1' "__zip_cache"/**/*.agda # Replace tripple newlines with double newlines.
+	rm "__zip_cache/StratF/SubstExamples.agda"
+	rm __zip_cache/**/*.agdai
+	cd __zip_cache && zip -r ../$(ZIPGOAL) *
+	rm -rf "__zip_cache/"
 
 $(ARXIVGOAL): $(GOAL).tex $(GOAL).bbl $(TARGET_FILES) acmart.cls agda.sty ACM-Reference-Format.bst
 	zip $@ $^
@@ -28,7 +35,8 @@ $(ARXIVGOAL): $(GOAL).tex $(GOAL).bbl $(TARGET_FILES) acmart.cls agda.sty ACM-Re
 $(SLIDES).pdf: $(SLIDES).tex $(TARGET_FILES)
 	pdflatex  --synctex=1 -interaction=nonstopmode $(SLIDES)
 
-.PHONY: all type-check clean
+.PHONY: all type-check clean $(ZIPGOAL)
+
 all: $(GOAL).pdf $(ZIPGOAL)
 
 ### agdatex
