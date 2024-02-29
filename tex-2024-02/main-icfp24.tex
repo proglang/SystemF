@@ -176,7 +176,8 @@
 Intrinsically-typed syntax is an important and popular method for
 mechanized reasoning about programming languages.
 We explore the limits of this method in the setting of
-finitely-stratified System F. This system supports elegant definitions of
+finitely-stratified System F using the Agda proof assistant. This
+system supports elegant definitions of 
 denotational semantics as well as big-step 
 and small-step operational semantics based on intrinsically-typed syntax. While its syntactic
 metatheory (i.e., type soundness) works well,
@@ -225,7 +226,8 @@ minor issues with universe polymorphism.
 %%
 %% Keywords. The author(s) should pick words that accurately describe
 %% the work being presented. Separate the keywords with commas.
-\keywords{Agda, stratified System F, extensionality}
+\keywords{mechanized metatheory, finitely-stratified System F,
+  denotational semantics, operational semantics, Agda}
 
 % \received{20 February 2007}
 % \received[revised]{12 March 2009}
@@ -242,35 +244,39 @@ minor issues with universe polymorphism.
 Defining semantics is one of the key activities of a programming
 languages researcher. We learn that there are different styles of
 dynamics (small-step, big-step, denotational, just to name the most
-frequently used one), each with different trade-offs. When it comes to
+frequently used ones), each with different trade-offs. When it comes to
 implementing or mechanizing semantics, there are further options to
 choose from, in particular if we are also interested in statics.
 
 One important choice is whether we want to express the statics
 extrinsically or intrinsically, that is, do we want to start with
 untyped syntax and then define the statics as an afterthought, or do
-we integrate types with the syntax.
+we integrate types with the syntax. This dichotomy goes back to the
+debate of Curry-style vs.\ Church-style presentations of typed lambda
+calculus.
 
-If we opt for intrinsically typed syntax, some properties are already paid
-for by construction. For instance, a small-step semantics for intrinsically typed
+If we opt for intrinsically-typed syntax, some properties are already paid
+for by construction. For instance, a small-step or big-step semantics for intrinsically-typed
 syntax satisfies type preservation by construction. For another
-instance, consider specifying a denotational semantics by a
+instance, consider specifying a denotational semantics, which is a
 compositional mapping from syntax to some semantic domain. With 
-untyped syntax, the semantic domain has to lump the interpretations of
-different types together and distinguish them using type tags. But with intrinsically
-typed syntax the semantics can map into type-indexed semantic domains
+untyped syntax, we have to lump the interpretations of
+different types together in a universal semantic domain and distinguish them using type tags. But
+with intrinsically-typed syntax the semantics can map into
+type-indexed semantic domains 
 and thus elide type tags. This observation directly translates to tagless interpreters
-on intrinsically typed syntax, which elide tag checks at run time.
+on intrinsically-typed syntax, which elide tag checks at run time.
 
-For concreteness, we show the well-known example of a tagless
-interpreter for the simply-typed lambda calculus implemented in Agda in
-Figure~\ref{fig:stlc}. We define the syntax as an inductive data type along with
-a compositional mapping to the semantic domain, spanned by Agda's
-natural number type and the function space. 
-We define intrinsically typed syntax of expressions as an inductive datatype
-parameterized over a typing environment and indexed on the return
+For concreteness, we show the well-known example of a type-indexed
+denotational semantics for the simply-typed lambda calculus implemented in Agda in
+Figure~\ref{fig:stlc}. 
+We define the intrinsically-typed syntax of expressions as an
+inductive datatype  {\AExpr} parameterized over a typing environment $\Gamma$ and indexed on the return
 type. For variables, we use de Bruijn indices into the typing
-environment.
+environment modeled by {\AVar}.
+Its denotational semantics is a compositional mapping to the semantic domain, spanned by Agda's
+natural number type and the function space constructor. 
+
 \begin{figure}[tp]
   \input{latex/STLC}
   \caption{Simply typed lambda calculus, denotationally}
@@ -281,27 +287,67 @@ The semantics of a typing environment is a run-time environment in the
 form of a heterogenous list of suitably typed values. With all that,
 we can define the semantics of an expression {\AESem} as a function from
 the semantics of a typing environment {\AGSem} to the semantics of the type
-{\ATSem}. Clearly this definition also serves as a tagless interpreter for
-the simply-typed lambda calculus, which means that type preservation
-is also built into its definition. Moreover, as Agda accepts this
-definition as terminating, we know that evaluation of every
-simply-typed lambda term terminates; a non-trivial semantic property
+{\ATSem}.  This definition can serve as a blue-print for a tagless interpreter for
+the simply-typed lambda calculus, with type preservation
+built into its definition. Moreover, as Agda accepts this
+definition as terminating, we know that the meaning of every
+simply-typed lambda term is a total function; a non-trivial semantic property
 of the simply-typed lambda calculus.
 
 Agda-encodings of intrinsically-typed interpreters have been explored
 quite a lot, but rarely in the context of polymorphic source
-languages. One possible reason is that the archetypical polymorphic
-lambda calculus, System~F, cannot be embedded in Agda because of its
-impredicativity. This begs the question if we can develop a tagless
-interpreter for a predicative version of System~F in Agda.
+languages (except by \citet{DBLP:conf/mpc/ChapmanKNW19}). One possible
+reason is that the archetypical polymorphic 
+lambda calculus, System~F \cite{girard72:_inter,DBLP:conf/programm/Reynolds74}, cannot be embedded in Agda because of
+System~F supports impredicativity, but Agda does not. This discrepancy
+is probably the reason that concepts like logical relations for System~F
+have not been explored in Agda.
+Clearly, this begs the question what we can do if we restrict our
+investigation to a predicative version of System~F.
 
-We answer this question affirmatively for Leivant's stratified version
-of the polymorphic lambda calculus \cite{DBLP:journals/iandc/Leivant91}. The key idea of his
-calculus is to stratify the set of polymorphic types in levels such
-that universal quantification only ranges over strictly smaller
-levels. This restriction literally embodies predicativity and, as we
-will discover, the stratification corresponds directly to Agda's
+\subsection*{Contributions}
+\label{sec:contributions}
+
+We consider Leivant's finitely stratified version $SF_2$ of the second
+order polymorphic
+lambda calculus \cite{DBLP:journals/iandc/Leivant91}. The key idea of
+his calculus is to stratify the set of polymorphic types in levels
+(natural numbers) such that universal quantification only ranges over
+strictly smaller levels. This restriction literally embodies predicativity and, as we
+will see, the finite stratification corresponds directly to Agda's
 universe stratification.
+
+\begin{itemize}
+\item We construct a denotational semantics of $SF_2$ as a
+  compositional mapping of an intrinsically-typed syntax into Agda; we
+  define big-step (Sec.~\ref{sec:big-step-operational}) and small-step
+  (Sec.~\ref{sec:excurs-small-step}) semantics and prove their
+  soundness with respect to the denotational semantics.
+\item We define a logical relation for $SF_2$ that connects the
+  denotational semantics, first with the big-step semantics
+  (Section~\ref{sec:logical-relation}) and subsequently we point out
+  how to retarget the relation to the small-step semantics
+  (Section~\ref{sec:excurs-small-step}). We establish the fundamental
+  theorem (Section~\ref{sec:fundamental}) and prove adequacy
+  (Section~\ref{sec:adequacy}). 
+\item We analyse the difficulties coming up in the proofs that
+  establish properities of the logical relation. They are
+  largely caused by the requirement to provide
+  type-substitution-indexed substitutions on intrinsically-typed
+  expressions. Manipulating these substitutions gives rise to type
+  mismatches in the indexes such that transfer lemmas already show up in the
+  statements of lemmas. Section~\ref{sec:subst-hell} explains two
+  approaches of dealing with this situation, explicit manipulation of
+  transfer lemmas and stylized use of heterogeneous equality.
+\item All of the above is implemented in Agda
+  \cite{norell07:_towar_pract_progr_languag_depen_type_theor} and
+  attached as a supplement. It will be submitted for artifact
+  evaluation.
+\end{itemize}
+This document contains type-checked excerpts of live code. It always
+gives the types of the statements discussed, but often elides part of
+the definitions or proofs for space reasons. Please refer to
+supplement for full definitions and proofs.
 
 
 % As the construction is more involved than the one for simply-typed

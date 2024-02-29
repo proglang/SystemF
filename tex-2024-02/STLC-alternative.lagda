@@ -1,5 +1,5 @@
 \begin{code}
-module STLC where
+module STLC-alternative where
 
 open import Data.Nat  using (ℕ; zero; suc)
 open import Data.List using (List; []; _∷_)
@@ -23,6 +23,22 @@ data Expr (Γ : Env) : Type → Set where
   var : ∀ {T} → Var Γ T → Expr Γ T
   lam : ∀ {S T} → Expr (S ∷ Γ) T → Expr Γ (S ⇒ T)
   app : ∀ {S T} → Expr Γ (S ⇒ T) → Expr Γ S → Expr Γ T
+
+module alt where
+  open import Data.Unit using (⊤; tt)
+  open import Data.Product
+  
+  𝓖⟦_⟧ : Env → Set
+  𝓖⟦ [] ⟧ = ⊤
+  𝓖⟦ T ∷ Γ ⟧ = 𝓣⟦ T ⟧ × 𝓖⟦ Γ ⟧
+
+  extend : ∀ {T}{Γ} → 𝓣⟦ T ⟧ → 𝓖⟦ Γ ⟧ → 𝓖⟦ T ∷ Γ ⟧
+  extend v γ = v , γ
+
+  lookup : ∀ {T Γ} → Var Γ T → 𝓖⟦ Γ ⟧ → 𝓣⟦ T ⟧
+  lookup here (v , _) = v
+  lookup (there x) (_ , γ) = lookup x γ
+    
 
 𝓖⟦_⟧ : Env → Set
 𝓖⟦ Γ ⟧ = ∀ {T} → Var Γ T → 𝓣⟦ T ⟧
