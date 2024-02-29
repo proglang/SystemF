@@ -975,7 +975,7 @@ technical nuisance involving the {\Asubst}-lemma from Agda's standard library:
 \SubstExamplesDef
 
 The {\Asubst}-lemma enables us to use a value of a type at a different,
-but propositionally equivalent, type.
+but propositionally equal, type.
 This lemma becomes relevant when an equality proof cannot be matched
 on, because it witnesses the equality between two non-unifiable
 expressions, e.g. between two function applications: \texttt{f x $\equiv$ g y}.
@@ -1042,7 +1042,7 @@ instantiate {\AFun{dist-subst}} as follows:
 
 % \SubstExamplesFusionESubESubBodyProofB
 
-The rest of the proof requires two more lemmas related to {\Asubst}:
+The rest of the proof proceeds as follows:
 \begin{enumerate}
 \item the equation for {\AFun{p₂}} between line \ACom{(4)} and \ACom{(5)} states that if
   different {\Asubst}s are applied to the same term, then the terms are still equal.
@@ -1056,7 +1056,7 @@ The rest of the proof requires two more lemmas related to {\Asubst}:
   left side of the type application and the fusion lemma for type substitutions
   is applied to the right side of the type application. However, changing
   the right side of the type application, changes the type of the
-  whole type application, so another {\Asubst} lemma is required, which exchanges
+  whole type application, so a specialized {\AFun{cong}} lemma is required, which exchanges
   the right side of the type application and inserts another {\Asubst}
   {\AFun{S₈}} around it:
   \begin{AgdaBlock}
@@ -1066,7 +1066,7 @@ The rest of the proof requires two more lemmas related to {\Asubst}:
 \end{enumerate}
 
 This is a lot of technical proof work for equations that are obviously
-true, because {\Asubst} is semantically just an identity function!
+true as {\Asubst} is semantically just an identity function!
 Let us take a step back to describe a different solution.
 
 % The rest of the proof uses similar techniques, so we take a step back
@@ -1084,7 +1084,7 @@ is defined in Agda as follows:
 In contrast to homogeneous equality \AFun{\_≡\_}, heterogenous
 equality expresses equalities between values of different
 types. It is particularly useful to state and prove equalities between
-values of different but propositionally equal types.
+values of different, but propositionally equal, types.
 
 Before we revisit the proof example from the previous subsection, we take a look
 at three lemmas from Agda's standard library about heterogeneous equality:
@@ -1096,7 +1096,7 @@ at three lemmas from Agda's standard library about heterogeneous equality:
 \item 
   The {\AFun{cong₂}} lemma for heterogeneous equality lifts
   equalities for the arguments of a binary function to an equality 
-  for the function result.
+  for the function result:
   \SubstExamplesHetEqCongII
 \item 
   A homogeneous equality can be converted to a heterogeneous equality:
@@ -1119,16 +1119,34 @@ directly to remove {\AFun{S₄}} and {\AFun{S₅}}, respectively:
 In line \ACom{(2)}, the application of {\AFun{S₂}} does no occur on the outside but as an argument to
 \ACode{\AFun{Esub}~σ₁*~σ}. One might expect that a unary {\AFun{cong}} lemma can be used to
 lift the {\AFun{≡-subst-removable~F₂~E₂}~\_} equality under the application.
-Alas, a unary {\AFun{cong}} can only replace values of the \emph{same} type.
-To be able to call a function like {\AFun{Esub}} with arguments of two different types,
-those types need to be instances of the same type family \ACode{B},
-i.e., the function needs to have a type of the shape
-\ACode{\{x~:~A\}~→~(y~:~B~x)~→~C~x~y}, and we actually want to
-replace an argument of type \ACode{B~a} with one of type \ACode{B~b}.
-In this example, \ACode{\AFun{Esub}~σ₁*~σ} has type
-\ACode{\{T~:~\AFun{Type}~Δ₂~l\}~→~(e~:~\AFun{Expr}~Δ₂~Γ₂~T)~→~\AFun{Expr}~Δ₃~Γ₃~(\AFun{Tsub}~σ₁*~T)}.
-This can be expressed with {\AFun{cong₂}} as followed:
+This is not the case, because a unary function, which can be called with two arguments of
+\emph{different} types, is necessary a binary function in disguise of shape
+\ACode{\{x~:~A\}~→~(y~:~B~x)~→~C~x~y}, where the argument types are two different instances
+of the type family \ACode{B}. In our case the partially applied function \ACode{\AFun{Esub}~σ₁*~σ₁}
+has type
+\begin{quote}
+\ACode{\{T~:~\AFun{Type}~Δ₂~l\}~→~(e~:~\AFun{Expr}~Δ₂~Γ₂~T)~→~\AFun{Expr}~Δ₃~Γ₃~(\AFun{Tsub}~σ₁*~T)}
+\end{quote}
+and {\AFun{S₂}} exchanges the implicit type index \ACode{T} with
+some \ACode{T′} with \ACode{T \AFun{≡} T′}.
+Consequently, we can prove the equation with {\AFun{cong₂}}:
 \SubstExamplesFusionESubESubHetProofA
+% The first two arguments of {\AFun{cong₂}} are the \ACode{A} and
+% \ACode{B} as described above. The third argument specifies the binary
+% function. The fourth argument is the equality on the implicit type
+% index of \ACode{\AFun{Esub}~σ₁*~σ₁}. The fifth argument 
+
+
+% Alas, a unary {\AFun{cong}} can only replace values of the \emph{same} type.
+% To be able to call a function like \ACode{\AFun{Esub}~σ₁*~σ₁} with arguments of two different types,
+% those types need to be instances of the same type family \ACode{B},
+% i.e., the function needs to have a type of the shape
+% \ACode{\{x~:~A\}~→~(y~:~B~x)~→~C~x~y}, and we actually want to
+% replace an argument of type \ACode{B~a} with one of type \ACode{B~b}.
+% In this example, \ACode{\AFun{Esub}~σ₁*~σ₁} has type
+% \ACode{\{T~:~\AFun{Type}~Δ₂~l\}~→~(e~:~\AFun{Expr}~Δ₂~Γ₂~T)~→~\AFun{Expr}~Δ₃~Γ₃~(\AFun{Tsub}~σ₁*~T)}.
+% This can be expressed with {\AFun{cong₂}} as followed:
+% \SubstExamplesFusionESubESubHetProofA
 
 In line \ACom{(5)} we have a similar situation where we want to use the
 induction hypothesis on the left side of the type application and the
