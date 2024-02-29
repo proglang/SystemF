@@ -1,9 +1,28 @@
-{-# OPTIONS --with-K #-}
-
 module StratF.SubstExamples where
 
 -- This file is only used to generate examples for the paper, and is
 -- not part of the actual formalization.
+
+-- This is only here because doing it to the real `Expr` type would
+-- scramble the order of implicits, which would require a larger annoying refactoring.
+module ForThePaper where
+  open import StratF.TypeSubstPropertiesSem
+  open import StratF.TypeSubstitution
+  open import StratF.Types
+  open import StratF.Expressions using (Ctx; inn; _◁_; _◁*_)
+  open import Data.Nat using (ℕ; suc; zero)
+  open import Level
+  open import Data.List using (List; []; _∷_)
+
+  --! TFExpr
+  data Expr (Δ : LEnv) (Γ : Ctx Δ) : Type Δ l → Set where
+    #_    : (n : ℕ) → Expr Δ Γ `ℕ
+    `suc  : Expr Δ Γ `ℕ → Expr Δ Γ `ℕ
+    `_    : inn T Γ → Expr Δ Γ T
+    ƛ_    : Expr Δ (T ◁ Γ) T′ → Expr Δ Γ (T ⇒ T′)
+    _·_   : Expr Δ Γ (T ⇒ T′) → Expr Δ Γ T → Expr Δ Γ T′
+    Λ_⇒_  : ∀ (l : Level) → {T : Type (l ∷ Δ) l′} → Expr (l ∷ Δ) (l ◁* Γ) T → Expr Δ Γ (`∀α l , T)
+    _∙_   : Expr Δ Γ (`∀α l , T) → (T′ : Type Δ l) → Expr Δ Γ (T [ T′ ]T)
 
 open import Relation.Binary.PropositionalEquality using (_≡_; refl; module ≡-Reasoning)
 open import Data.List using (List; []; _∷_)
@@ -191,3 +210,4 @@ module WithHetEq where
                   (≡-to-≅ (fusion-Tsub-Tsub T′ σ₁* σ₂*))
 
   fusion-Esub-Esub = {!!}
+

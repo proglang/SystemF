@@ -30,19 +30,6 @@ data inn : Type Δ l → Ctx Δ → Set where
   there  : inn T Γ → inn T (T′ ◁ Γ)
   tskip  : inn T Γ → inn (Twk T) (l ◁* Γ)
 
--- This is only here because doing it to the real `Expr` type would
--- scramble the order of implicits, which would require a larger annoying refactoring.
-module ForThePaper where
-  --! Expr
-  data Expr (Δ : LEnv) (Γ : Ctx Δ) : Type Δ l → Set where
-    #_    : (n : ℕ) → Expr Δ Γ `ℕ
-    `suc  : Expr Δ Γ `ℕ → Expr Δ Γ `ℕ
-    `_    : inn T Γ → Expr Δ Γ T
-    ƛ_    : Expr Δ (T ◁ Γ) T′ → Expr Δ Γ (T ⇒ T′)
-    _·_   : Expr Δ Γ (T ⇒ T′) → Expr Δ Γ T → Expr Δ Γ T′
-    Λ_⇒_  : ∀ (l : Level) → {T : Type (l ∷ Δ) l′} → Expr (l ∷ Δ) (l ◁* Γ) T → Expr Δ Γ (`∀α l , T)
-    _∙_   : Expr Δ Γ (`∀α l , T) → (T′ : Type Δ l) → Expr Δ Γ (T [ T′ ]T)
-
 data Expr (Δ : LEnv) (Γ : Ctx Δ) : Type Δ l → Set where
   #_    : (n : ℕ) → Expr Δ Γ `ℕ
   `suc  : Expr Δ Γ `ℕ → Expr Δ Γ `ℕ
