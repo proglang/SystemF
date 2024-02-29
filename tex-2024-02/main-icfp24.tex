@@ -407,10 +407,11 @@ is implemented as advocated by Benton and coworkers \cite{DBLP:journals/jar/Bent
 
 The type of expressions is now given as follows.
 \TFExpr
-We add numeric values and the successor function as examples of observables.
+Numeric values and the successor function serve as observables.
 Variables, lambda abstractions, and application are encoded just like
 for the simply-typed lambda calculus.
-Type abstraction \texttt{\ACon{Λ} $l$ \ACon{⇒} $e$} takes a level $l$ and a body where the new type
+Type abstraction \texttt{\ACon{Λ} $l$ \ACon{⇒} $e$} takes a level $l$
+and a body $e$ where the new type
 variable is bound to $l$. 
 Type application \texttt{$e$ \ACon{∙} $T'$} takes an expression with universal quantification at
 level $l$ and a type $T'$ of level $l$. It constructs an expression
@@ -574,18 +575,17 @@ In contrast to the composition of type substitutions, the term
 as it has type \ACode{\AExpr~Δ₃~Γ₃~(\ATsub~σ₁*~(\ATsub~σ₂*~T))},
 while a term of the propositionally equivalent type
 \ACode{\AExpr~Δ₃~Γ₃~(\ATsub~(σ₁* ∘Tₛₛ σ₂*)~T)} is expected.
-The required type conversion is achieved by applying the
-{\Asubst}-lemma with the appropriate fusion lemma for type
-substitutions as a witness. 
-The {\Asubst}-lemma is defined in Agda's standard library as
-followed:
+The required type conversion is achieved by applying a transfer lemma
+with the appropriate fusion lemma for type substitutions as a witness. 
+The required lemma is defined in Agda's standard library under the
+name {\Asubst}.
 \SubstExamplesDef
 
 The same type conversion is also necessary in the corresponding fusion lemma:
 \SubstExamplesFusionESubESub
 
 The proofs for the expression substitution lemmas are entirely standard with the
-exception that the use of {\Asubst} introduces annoying technical problems.
+exception that the use of the transfer lemma introduces annoying technical problems.
 We defer the discussion of these problems to Section~\ref{sec:subst-hell}.
 % \EFFusionSubSub
 
@@ -612,7 +612,7 @@ Section~\ref{sec:types}. We start with value environments.
 \TFVEnv
 Value environments are represented as functions \textemdash{} we could have done
 that in the simply-typed interpreter, too. They are indexed by a
-domain environment $\eta$ to be able to calculate the correct return type.
+domain environment $\eta$ to calculate the correct return type.
 
 The definition of the interpretation function follows.
 \TFExprSem
@@ -707,8 +707,8 @@ The proof of this theorem is remarkably simple, mostly by appealing to the
 inductive hypotheses. The cases for function application and type
 application require two lemmas {\AEEsingleSubstPreserves} and
 {\AETsingleSubstPreserves} that relate semantic substitution with
-expression-in-expression substitution and type-in-expression
-substitution, respectively.
+expression-in-expression substitution (marked with \verb!_[_]E!) and type-in-expression
+substitution (marked with \verb!_[_]ET!), respectively.
 \ESPSEEsingleSubstPreserves
 \ESPSETsingleSubstPreserves
 These lemmas have similar problems with equalities as the fusion
@@ -765,8 +765,16 @@ semantic environment that interprets each substituted type according
 to $\eta$.
 \TFsubstToEnv
 
-With these definitions in place, we can state the type of the logical relation.
-\LogicalMCVType
+\begin{figure}[tp]
+  \begin{flushleft}
+    \LogicalMCVType \LogicalMCVBody \LogicalMCE
+  \end{flushleft}
+\caption{The logical relation}
+  \label{fig:logical-relation}
+\end{figure}
+With these definitions in place, we can state the type of the logical
+relation shown in Figure~\ref{fig:logical-relation}.
+
 The  relation {\AVSem} on values is defined by induction on the type $T$ and the parameter
 $\rho$ contains the relation environment. The intention is to define a
 relation on objects of type $T$ after closing $T$ with the relation
@@ -775,16 +783,16 @@ the syntactic value and interpret $T$ in the environment created from
 the relation environment.
 The value relation is mutually recursive with the expression relation
 {\AESem}, which interposes evaluation.
-\LogicalMCVBody
+
 The definition itself is an extension of the logical relation for the
 simply-typed lambda calculus by
 \citet{DBLP:journals/jar/BentonHKM12}. It is straightforward
-except for the type adjustments using the {\Asubst} function. We
+except for the type adjustments using the transfer lemma. We
 discuss those type adjustments after explaining the relations.
 
-At the number type, values are constants equal to their semantic
+At the number type, {\AVSem} relates values which are constants equal to their semantic
 interpretation. 
- At function type $T_1 \Rightarrow T_2$ we relate a lambda expression
+At function type $T_1 \Rightarrow T_2$ we relate a lambda expression
 to a semantic function $f$ in
 the usual way: given arguments $w$ and $z$ related at type $T_1$, we ask that the
 application of the lambda to $w$ evaluates to a syntactic value $v$ that is
@@ -798,10 +806,10 @@ we find that this $v$ is related at type $T$ to the
 function $F$ applied to the semantics of $T'$, but in an extended
 relation environment that binds the type variable to $(T', R)$.
 
-The expression relation extends the value relation by interposing
+The expression relation {\AESem}  extends the value relation by interposing
 evaluation on the syntactic side. The denotation $z$ remains the
 same, which is the essence of denotational semantics. 
-\LogicalMCE
+
 
 The definitions of {\AVSem} and {\AESem} are terminating because their
 recursive invocations strictly refer to subterms of the argument type.
@@ -823,7 +831,7 @@ The reader may wonder if these two type mismatches are an
 artifact of our definition. For example, we might have chosen a
 different type for the value relation:
 \LogicalVariationMCVType
-Alas, this choice gets rid of the {\Asubst} in the case for type
+Alas, this choice gets rid of the transfer lemma in the case for type
 variables, but an additional {\Asubst} is needed in the case for type
 application. We show the relevant part of the definition, but will not go further into this matter.
 \LogicalVariationMCVBodyUniversal
@@ -831,7 +839,7 @@ application. We show the relevant part of the definition, but will not go furthe
 We close with a usability aspect.
 In the definition of {\AVSem} it is crucial that we only pattern match
 against the type and enforce the structure of values by equations on
-the right hand side of the definitions. This choice ensures that {\AVSem}
+the right hand side of the definitions. This design ensures that {\AVSem}
 reduces as soon as the type is sufficiently known.
 
 \subsection{Semantic soundness}
@@ -911,7 +919,7 @@ from {\AGSem} and construct the result from $w$, the proof that $w$
 evaluates to itself, and the value relation. We have to rely on
 {\AValueDown} for the proof because there is no way to infer the shape
 of $w$ from $T$ (which might be a type variable, for instance).
-We will have a closer look at some technicalities involving
+We have a closer look at some technicalities involving
 {\AGLookup} in Section~\ref{sec:technical-lemmas}  
 
 \FundamentalFundamentalLambda
@@ -970,10 +978,12 @@ environment of type \texttt{Env [] {\Anull} []}.
 This theorem follows immediately from the semantic soundness that we proved with the
 fundamental theorem.
 \FundamentalAdequacyBody
-We just invoke the fundamental theorem with empty context and empty
+We just invoke the fundamental theorem with the empty context and empty
 environments and analyze the result. The auxiliary lemma
 {\ACsubClosed} proves that applying the empty substitution acts like
-the identity substitution on a closed expression.
+the identity substitution on a closed expression, at the price of a
+transfer lemma that uses {\ATsubClosed}, which is the same result
+but for type substitutions.
 \FundamentalCsubClosed
 
 
@@ -1008,7 +1018,7 @@ The proof of the renaming lemma is the one place where we refer to the
 lemma {\AFusionESubESub} for expression substitutions.
 
 There is also a version {\ALRVsub} of the above lemma where a type substitution
-(instead of a type renaming) acts on a logical relation. This
+(instead of a type renaming) acts on the logical relation. This
 adaptation is needed to prove the case for type application of the
 fundamental lemma.
 
@@ -1016,7 +1026,7 @@ fundamental lemma.
 \label{sec:subst-hell}
 
 The largest difficulty in the formalization is caused by an unfortunate
-technical nuisance involving the {\Asubst}-lemma from Agda's standard library:
+technical nuisance involving the transfer lemma {\Asubst} from Agda's standard library:
 
 \SubstExamplesDef
 
@@ -1124,7 +1134,7 @@ Let us take a step back to describe a different solution.
 \label{sec:subst-hell:het}
 
 Heterogeneous equality was introduced by
-\cite{DBLP:conf/types/McBride00} as \emph{John Major equality} and
+\citet{DBLP:conf/types/McBride00} as \emph{John Major equality} and
 is defined in Agda as follows:
 \SubstExamplesHetEqDef
 In contrast to homogeneous equality \AFun{\_≡\_}, heterogenous
