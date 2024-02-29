@@ -1,5 +1,3 @@
-{-# OPTIONS --allow-unsolved-metas #-}
-
 module StratF.LogicalVariation where
 
 open import Level
