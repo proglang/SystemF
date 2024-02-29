@@ -16,6 +16,7 @@ open import StratF.ExprSubstitution
 open import StratF.Expressions
 open import StratF.TypeSubstProperties
 open import StratF.TypeSubstitution
+open import StratF.TypeSubstPropertiesSem
 open import StratF.Types
 open import StratF.Util.Extensionality
 open import StratF.Util.PropositionalSetOmegaEquality
@@ -29,13 +30,24 @@ open import StratF.LogicalPrelim
 
 -- stratified logical relation
 
-postulate
-  π₁∘ext≡ext∘↑π₁ : ∀ (T : Type (l ∷ Δ) l′) (ρ : 𝓓⟦ Δ ⟧) (T′ : Type [] l) (R : REL T′)
-    → let ρ′ = REext ρ (T′ , R)
-    in Tsub (π₁ ρ′) T ≡ Tsub (Tliftₛ (π₁ ρ) l) T [ T′ ]T
-  ⟦⟧∘ext≡ext∘⟦⟧ : ∀ (T : Type [ l ] l′) → (T′ : Type [] l)
-    → ⟦ T [ T′ ]T ⟧ [] ≡ ⟦ T ⟧ (⟦ T′ ⟧ [] ∷ [])
-  -- prove using: Tsingle-subst-preserves [] T′ T
+π₁∘ext≡ext∘↑π₁ : ∀ (T : Type (l ∷ Δ) l′) (ρ : 𝓓⟦ Δ ⟧) (T′ : Type [] l) (R : REL T′)
+    → let ρ′ = REext ρ (T′ , R) in 
+    Tsub (π₁ ρ′) T ≡ Tsub (Tliftₛ (π₁ ρ) l) T [ T′ ]T
+π₁∘ext≡ext∘↑π₁ T ρ T′ R = begin 
+    Tsub (λ l₁ x → proj₁ (REext ρ (T′ , R) l₁ x)) T
+  ≡⟨ cong (λ ■ → Tsub ■ T) (fun-ext λ l → fun-ext λ where
+      here → refl
+      (there x) → refl) ⟩ 
+    Tsub (Textₛ (λ l₁ x → proj₁ (ρ l₁ x)) T′) T
+  ≡⟨⟩ 
+    Tsub (Textₛ (π₁ ρ) T′) T
+  ≡⟨ sym (lemma2 (π₁ ρ) T T′) ⟩
+    Tsub (Textₛ Tidₛ T′) (Tsub (Tliftₛ (π₁ ρ) _) T)
+  ∎
+
+⟦⟧∘ext≡ext∘⟦⟧ : ∀ (T : Type [ l ] l′) → (T′ : Type [] l)
+  → ⟦ T [ T′ ]T ⟧ [] ≡ ⟦ T ⟧ (⟦ T′ ⟧ [] ∷ [])
+⟦⟧∘ext≡ext∘⟦⟧ T T′ = Tsingle-subst-preserves [] T′ T
 
 --! MCVType
 𝓥′⟦_⟧ : (T : Type Δ l) → (ρ : 𝓓⟦ Δ ⟧) → REL (Tsub (π₁ ρ) T)
