@@ -6,7 +6,7 @@ open import Relation.Binary.PropositionalEquality
   using (_≡_; _≢_; refl; sym; trans; cong; cong₂; subst; subst₂; resp₂; cong-app; icong; module ≡-Reasoning)
 open ≡-Reasoning
 
-open import StratF.BigStep
+open import StratF.Evaluation
 open import StratF.ExprSubstitution
 open import StratF.Expressions
 open import StratF.TypeSubstProperties

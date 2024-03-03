@@ -6,9 +6,10 @@ open import Data.List using (List; []; _∷_)
 open import Data.Nat using (ℕ; zero; suc)
 open import Data.Product using (_×_; Σ; Σ-syntax; ∃-syntax; _,_; proj₁; proj₂)
 
-open import StratF.BigStep
+open import StratF.Evaluation
 open import StratF.ExprSubstitution
 open import StratF.Expressions
+open import StratF.BigStep
 open import StratF.SmallStep
 open import StratF.Types
 
@@ -92,3 +93,17 @@ Value-↓ ((Λ l ⇒ _) , V-Λ) = ↓-Λ
 ⇓to—↠ (⇓-∙ {v = v} e₁⇓Λe e₂[T]⇓v)
                   = ↓-∙ {v = v} (⇓to—↠ e₁⇓Λe) (⇓to—↠ e₂[T]⇓v)
 
+
+----------------------------------------------------------------------
+
+evalSmall : Eval
+evalSmall = record
+            { _↓_ = _↓_
+            ; ↓-n = ↓-n
+            ; ↓-s = ↓-s
+            ; ↓-ƛ = ↓-ƛ
+            ; ↓-· = λ {_}{_}{_}{_}{_}{_}{_}{v₂}{v} → ↓-· {v₂ = v₂} {v = v}
+            ; ↓-Λ = ↓-Λ
+            ; ↓-∙ = λ {_}{_}{_}{_}{_}{_}{v} → ↓-∙ {v = v}
+            ; Value-↓ = Value-↓
+            }

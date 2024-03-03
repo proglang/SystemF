@@ -9,6 +9,7 @@ open import StratF.ExprSubstitution
 open import StratF.ExprSubstProperties
 open import StratF.ExprSubstPropertiesSem
 
+open import StratF.Evaluation
 open import StratF.SmallStep
 open import StratF.SmallStepSoundness
 open import StratF.BigStep

@@ -11,6 +11,7 @@ open import Relation.Binary.PropositionalEquality
         module ≡-Reasoning)
 open ≡-Reasoning
 
+open import StratF.Evaluation
 open import StratF.BigStep
 open import StratF.ExprSubstProperties
 open import StratF.ExprSubstitution

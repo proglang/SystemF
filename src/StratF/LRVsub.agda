@@ -14,6 +14,7 @@ open ≡-Reasoning
 open import Relation.Binary.HeterogeneousEquality as H using (_≅_; refl)
 -- module R = H.≅-Reasoning
 
+open import StratF.Evaluation
 open import StratF.BigStep
 open import StratF.ExprSubstProperties
 open import StratF.ExprSubstitution

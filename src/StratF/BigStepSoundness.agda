@@ -8,6 +8,7 @@ open import Function using (id)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl; cong; subst; sym; module ≡-Reasoning)
 open ≡-Reasoning
 
+open import StratF.Evaluation
 open import StratF.BigStep
 open import StratF.ExprSubstPropertiesSem using (EEsingle-subst-preserves; ETsingle-subst-preserves)
 open import StratF.ExprSubstitution

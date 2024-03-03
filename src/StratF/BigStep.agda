@@ -7,34 +7,11 @@ open import Data.Product using (_×_; Σ; Σ-syntax; ∃-syntax; _,_; proj₁; p
 open import StratF.ExprSubstitution
 open import StratF.Expressions
 open import StratF.Types
+open import StratF.Evaluation
 
 --! BigStep >
 
--- big step call by value semantics (analogous to Benton et al)
-
---! CExpr
-CExpr : Type [] l → Set
-CExpr T = Expr [] ∅ T
-
---! isValue
-data isValue : Expr Δ Γ T → Set where
-  V-♯  : isValue {Δ} {Γ} (# n)
-  V-ƛ  : isValue (ƛ e)
-  V-Λ  : isValue (Λ l ⇒ e)
-
-
---! Value
-record CValue (T : Type [] l) : Set where
-  constructor _,_
-  field
-    exp : CExpr T
-    prf : isValue exp
-
-open CValue public
-
 -- big step semantics
-
-variable v v₂ : CValue T
 infix 15 _⇓_
 --! Semantics
 data _⇓_ : CExpr T → CValue T → Set where
@@ -57,6 +34,16 @@ Value-⇓ (.(# _) ,      V-♯)  = ⇓-n
 Value-⇓ (.(ƛ _) ,      V-ƛ)  = ⇓-ƛ
 Value-⇓ (.(Λ _ ⇒ _) ,  V-Λ)  = ⇓-Λ
 
--- compatibility
-
-Value = CValue
+-- evaluation API
+--! evalBig
+evalBig : Eval
+evalBig = record
+            { _↓_ = _⇓_
+            ; ↓-n = ⇓-n
+            ; ↓-s = ⇓-s
+            ; ↓-ƛ = ⇓-ƛ
+            ; ↓-· = ⇓-·
+            ; ↓-Λ = ⇓-Λ
+            ; ↓-∙ = ⇓-∙
+            ; Value-↓ = Value-⇓
+            }
