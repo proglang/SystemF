@@ -718,6 +718,7 @@ open import StratF.Logical hiding (
   subst-split-eq-⇓; subst-split-eq-⇓₂; subst-split-[]E;
   subst-split-[]E′; subst-split-[]E″
   )
+open import StratF.Evaluation
 
 subst-split-eq-⇓ :
   ∀ {Tₑ Tᵥ : Type [] l}
