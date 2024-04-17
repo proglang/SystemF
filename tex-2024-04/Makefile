@@ -1,6 +1,6 @@
 GOAL= slides-gi24
-TARGET_MODULES= STLC Tagless-final
-TARGET_FILES= agdamacros.tex unicodeletters.tex $(addprefix $(PREFIX)/, $(addsuffix .tex, $(TARGET_MODULES)))
+
+TARGET_FILES= agdamacros.tex unicodeletters.tex
 PREFIX= latex
 
 AGDATEX= ../../agdatex/agdatex.py

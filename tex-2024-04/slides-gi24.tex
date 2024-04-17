@@ -6,7 +6,7 @@
 
 \usetheme{Madrid}
 
-\title{Semantics of System F in Agda}
+\title{Intrinsically Typed Syntax, a Logical Relation, and the Scourge of the Transfer Lemma}
 
 \author[Saffrich, Thiemann, Weidner]
 {
@@ -27,12 +27,70 @@ Hannes Saffrich \and Peter Thiemann \and
 }
 
 \input{unicodeletters}
-\input{latex/Tagless-final}
+\input{agdamacros}
+
+%% listings
+\lstset{
+  language=haskell,
+  basicstyle=\ttfamily,
+  morekeywords={send,recv,close,send_on_,receive,End,Int,Chan},
+  captionpos=b,
+  literate=
+  {-o}{${\multimap}$}1
+  {ex}{$\exists$}1
+  {all}{$\forall$}1
+  {\\x}{$\times$}1
+  %{(x)}{$\otimes$}1
+  {fresh}{$\lozenge$}1
+  {~~}{$\approx$}1
+}
+
+
+\usepackage{agda-generated}
+
+
+\newenvironment{AgdaBlock}{%
+  \vspace{\AgdaEmptySkip}%
+  \AgdaNoSpaceAroundCode{}%
+}{%
+  \AgdaSpaceAroundCode{}
+  % \vspace{\AgdaEmptySkip}
+}
+
+\input{unicodeletters}
 
 \begin{document}
 \begin{frame}{\null}
   \titlepage 
 \end{frame}
+
+\begin{frame}
+  \frametitle{Intrinsic STLC - Types}
+  \STLCType
+\end{frame}
+
+\begin{frame}
+  \frametitle{Intrinsic STLC - Expressions}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Intrinsic STLC - Denotational Semantics}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Intrinsic STLC - Small Step Semantics}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Intrinsic STLC - Big Step Semantics}
+\end{frame}
+
+% - STLC, denotational, big, small
+% - -> system f
+% - relating different semantics
+% - logical relation (?)
+% - difficulties with indexed substitutions -> homo vs hetero
+
 % \begin{frame}
 %   \frametitle{Types of System F}
 %   \framesubtitle{Intrinsically scoped encoding}
