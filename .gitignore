@@ -12,6 +12,7 @@ auto
 *.nav
 *.snm
 *.toc
+*.vrb
 _region_.tex
 .DS_Store
 **/latex

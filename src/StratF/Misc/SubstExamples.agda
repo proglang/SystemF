@@ -1,4 +1,4 @@
-module StratF.SubstExamples where
+module StratF.Misc.SubstExamples where
 
 -- This file is only used to generate examples for the paper, and is
 -- not part of the actual formalization.
@@ -23,6 +23,92 @@ module ForThePaper where
     _·_   : Expr Δ Γ (T ⇒ T′) → Expr Δ Γ T → Expr Δ Γ T′
     Λ_⇒_  : ∀ (l : Level) → {T : Type (l ∷ Δ) l′} → Expr (l ∷ Δ) (l ◁* Γ) T → Expr Δ Γ (`∀α l , T)
     _∙_   : Expr Δ Γ (`∀α l , T) → (T′ : Type Δ l) → Expr Δ Γ (T [ T′ ]T)
+
+module ForTheSlides where
+  open import StratF.TypeSubstPropertiesSem
+  open import StratF.TypeSubstitution
+  open import StratF.Types
+  open import StratF.Expressions using (Ctx; inn; _◁_; _◁*_)
+  open import Data.Nat using (ℕ; suc; zero)
+  open import Level
+  open import Data.List using (List; []; _∷_)
+  --! TFExprExcerpt
+  data Expr (Δ : LEnv) (Γ : Ctx Δ) : Type Δ l → Set where
+    `_    : inn T Γ → Expr Δ Γ T
+    `suc  : Expr Δ Γ `ℕ → Expr Δ Γ `ℕ
+    Λ_⇒_  : ∀ (l : Level) → {T : Type (l ∷ Δ) l′} → Expr (l ∷ Δ) (l ◁* Γ) T → Expr Δ Γ (`∀α l , T)
+    _∙_   : ∀ {T : Type (l ∷ Δ) l′ } → Expr Δ Γ (`∀α l , T) → (T′ : Type Δ l) → Expr Δ Γ (T [ T′ ]T)
+    -- ...
+
+    #_    : (n : ℕ) → Expr Δ Γ `ℕ
+    ƛ_    : Expr Δ (T ◁ Γ) T′ → Expr Δ Γ (T ⇒ T′)
+    _·_   : Expr Δ Γ (T ⇒ T′) → Expr Δ Γ T → Expr Δ Γ T′
+
+module ForTheSlides2 where
+  open import Relation.Binary.PropositionalEquality
+    using (_≡_; _≢_; refl; sym; trans; cong; cong₂; subst; subst₂; resp₂; cong-app; icong; module ≡-Reasoning)
+  open ≡-Reasoning
+  open import Data.List using (List; []; _∷_; [_])
+  open import Data.Nat using (ℕ; suc)
+  open import Data.Product using (_×_; Σ; Σ-syntax; ∃-syntax; _,_; proj₁; proj₂)
+
+  
+  open import StratF.Evaluation
+  open import StratF.ExprSubstitution
+  open import StratF.Expressions
+  open import StratF.TypeSubstProperties
+  open import StratF.TypeSubstitution
+  open import StratF.Types
+  open import StratF.Util.Extensionality
+  open import StratF.Util.PropositionalSetOmegaEquality
+  open import StratF.ExprSubstitution
+  
+  -- small step call by value semantics
+  
+  --! SmallStep >
+  
+  --! SingleReductionExcerpt
+  data _↪_ : Expr Δ Γ T → Expr Δ Γ T → Set where
+    ξ-·₁ :
+      e₁ ↪ e →
+      (e₁ · e₂) ↪ (e · e₂)
+    β-Λ : ∀ {T : Type Δ l} {T′ : Type (l ∷ Δ) l′} {e : Expr (l ∷ Δ) (l ◁* Γ) T′} →
+      ((Λ l ⇒ e) ∙ T) ↪ (e [ T ]ET)
+    -- ...
+
+    β-ƛ : 
+      isValue e₂ →
+      ((ƛ e₁) · e₂) ↪ (e₁ [ e₂ ]E)
+    β-suc :
+      `suc {Γ = Γ} (# n) ↪ (# (suc n))
+    ξ-·₂ : 
+      e₂ ↪ e → 
+      isValue e₁ →
+      (e₁ · e₂) ↪ (e₁ · e)
+    ξ-∙ : ∀ {T′ : Type Δ l′} {T : Type (l′ ∷ Δ) l} {e₁ e₂ : Expr Δ Γ (`∀α l′ , T)} →
+      e₁ ↪ e₂ →
+      (e₁ ∙ T′) ↪ (e₂ ∙ T′)
+    ξ-suc :
+      e₁ ↪ e →
+      `suc e₁ ↪ `suc e
+
+  infix 15 _⇓_
+  --! SemanticsExcerpt
+  data _⇓_ : CExpr T → CValue T → Set where
+    ⇓-Λ  :  Λ l ⇒ e ⇓ (Λ l ⇒ e , V-Λ)
+    ⇓-∙  :  e₁ ⇓ (Λ l ⇒ e , V-Λ) →
+            (e [ T ]ET) ⇓ v →
+            (e₁ ∙ T) ⇓ v
+    -- ...
+
+    ⇓-n  :  # n ⇓ (# n , V-♯)
+    ⇓-s  :  e ⇓ (# n , V-♯) →
+            `suc e ⇓ (# suc n , V-♯)
+    ⇓-ƛ  :  ƛ e ⇓ (ƛ e , V-ƛ)
+    ⇓-·  :  e₁ ⇓ (ƛ e , V-ƛ) →
+            e₂ ⇓ v₂ →
+            (e [ exp v₂ ]E) ⇓ v →
+            (e₁ · e₂) ⇓ v
 
 open import Relation.Binary.PropositionalEquality using (_≡_; refl; module ≡-Reasoning)
 open import Data.List using (List; []; _∷_)

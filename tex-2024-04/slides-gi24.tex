@@ -3,20 +3,22 @@
 \usepackage{stmaryrd}
 \usepackage{xcolor}
 \usepackage{txfonts}
+\usepackage{tikz}
+\usetikzlibrary{cd}
+\usepackage{agda-generated}
+\input{unicodeletters}
+\input{agdamacros}
 
 \usetheme{Madrid}
 
-\title{Intrinsically Typed Syntax, a Logical Relation, and the Scourge of the Transfer Lemma}
-
-\author[Saffrich, Thiemann, Weidner]
-{
-Hannes Saffrich \and Peter Thiemann \and
-{Marius Weidner} 
+\title{Relating System F Semantics in Agda}
+\author[Saffrich, Thiemann, Weidner] {
+  Hannes Saffrich \and 
+  Peter Thiemann \and
+  Marius Weidner
 }
-\institute{University of Freiburg
-}
+\institute{University of Freiburg}
 \date{April 28, 2024 (40. GI Workshop, Bad Honnef)}
-
 
 \AtBeginSection[]{%
   \begin{frame}<beamer>
@@ -26,64 +28,86 @@ Hannes Saffrich \and Peter Thiemann \and
   \addtocounter{framenumber}{-1}% If you don't want them to affect the slide number
 }
 
-\input{unicodeletters}
-\input{agdamacros}
-
-%% listings
-\lstset{
-  language=haskell,
-  basicstyle=\ttfamily,
-  morekeywords={send,recv,close,send_on_,receive,End,Int,Chan},
-  captionpos=b,
-  literate=
-  {-o}{${\multimap}$}1
-  {ex}{$\exists$}1
-  {all}{$\forall$}1
-  {\\x}{$\times$}1
-  %{(x)}{$\otimes$}1
-  {fresh}{$\lozenge$}1
-  {~~}{$\approx$}1
-}
-
-
-\usepackage{agda-generated}
-
-
-\newenvironment{AgdaBlock}{%
-  \vspace{\AgdaEmptySkip}%
-  \AgdaNoSpaceAroundCode{}%
-}{%
+\newenvironment{AgdaBlock}{
+  \vspace{\AgdaEmptySkip}
+  \AgdaNoSpaceAroundCode{}
+}{
   \AgdaSpaceAroundCode{}
-  % \vspace{\AgdaEmptySkip}
 }
-
-\input{unicodeletters}
 
 \begin{document}
 \begin{frame}{\null}
   \titlepage 
 \end{frame}
 
-\begin{frame}
-  \frametitle{Intrinsic STLC - Types}
-  \STLCType
+\begin{frame}[fragile]
+  \frametitle{Overview}
+  \begin{itemize}
+    \item We consider Leivant's [cite] finitely stratified System F $SF_2$.
+    \item We define an intrinsically typed syntax for $SF_2$.
+    \item We define big-step, small-step \& denotational semantics for $SF_2$
+    \item .. and relate those three semantics with each other
+    \item .. in Agda
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Relating Semantics}
+  \framesubtitle{Birds eye view on the theorems}
+  \begin{tikzcd}
+    small step \arrow[rr, "simulates"] \arrow[rdd, bend left] &                                                                  & big step \arrow[ldd, "soundness \ "', bend right] \\
+                                                              &                                                                  &                                                   \\
+                                                              & denotational \arrow[ruu, "adequacy \ (using \ LR)"', bend right] &                                                  
+  \end{tikzcd}
+  \vspace{5mm}
+  \begin{itemize} 
+    \item Soundness requires fusion of expression \& type substitutions
+    \item Adequacy additionally requires logical relation
+  \end{itemize}
 \end{frame}
 
 \begin{frame}
-  \frametitle{Intrinsic STLC - Expressions}
+  \frametitle{Intrinsic $SF_2$}
+  \framesubtitle{Types}
+  \TFType
+  \begin{itemize}
+    \item Polymorphic lambda calculus [cite]
+    \item Each type has a level
+    \item Quantification only possible over types at lower level
+    \item Predicativity is retained
+    \item .. to allow for set theoretic semantics
+  \end{itemize}
 \end{frame}
 
 \begin{frame}
-  \frametitle{Intrinsic STLC - Denotational Semantics}
+  \frametitle{Intrinsic $SF_2$}
+  \framesubtitle{Type Contexts}
+  \TFTVEnv
+  \TFinn
+  \begin{itemize}
+    \item Single environment for type and expression variables [cite]
+  \end{itemize}
 \end{frame}
 
 \begin{frame}
-  \frametitle{Intrinsic STLC - Small Step Semantics}
+  \frametitle{Intrinsic $SF_2$}
+  \framesubtitle{Expressions}
+  \TFExprExcerpt
 \end{frame}
 
 \begin{frame}
-  \frametitle{Intrinsic STLC - Big Step Semantics}
+  \frametitle{Semantics of $SF_2$}
+  \framesubtitle{Operational}
+  \SmallStepSingleReductionExcerpt
+  \SmallStepSemanticsExcerpt
 \end{frame}
+
+% denotational 
+% soundness
+% adequacy + log rel (cite ahmed et al)
+% subst hell
+% sources
+
 
 % - STLC, denotational, big, small
 % - -> system f
