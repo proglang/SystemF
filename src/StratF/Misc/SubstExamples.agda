@@ -32,6 +32,15 @@ module ForTheSlides where
   open import Data.Nat using (ℕ; suc; zero)
   open import Level
   open import Data.List using (List; []; _∷_)
+
+  --! NormalEqDef
+  data _≡_ {l} {A : Set l} (x : A) : A → Set l where
+     refl : x ≡ x
+  
+  --! OmegaEqDef
+  data _≡ω_ {A : Setω} (x : A) : A → Setω where
+    refl : x ≡ω x
+
   --! TFExprExcerpt
   data Expr (Δ : LEnv) (Γ : Ctx Δ) : Type Δ l → Set where
     `_    : inn T Γ → Expr Δ Γ T
@@ -53,7 +62,6 @@ module ForTheSlides2 where
   open import Data.List using (List; []; _∷_; [_])
   open import Data.Nat using (ℕ; suc)
   open import Data.Product using (_×_; Σ; Σ-syntax; ∃-syntax; _,_; proj₁; proj₂)
-
   
   open import StratF.Evaluation
   open import StratF.ExprSubstitution
@@ -66,8 +74,6 @@ module ForTheSlides2 where
   open import StratF.ExprSubstitution
   
   -- small step call by value semantics
-  
-  --! SmallStep >
   
   --! SingleReductionExcerpt
   data _↪_ : Expr Δ Γ T → Expr Δ Γ T → Set where
@@ -111,6 +117,7 @@ module ForTheSlides2 where
             e₂ ⇓ v₂ →
             (e [ exp v₂ ]E) ⇓ v →
             (e₁ · e₂) ⇓ v
+
 
 open import Relation.Binary.PropositionalEquality using (_≡_; refl; module ≡-Reasoning)
 open import Data.List using (List; []; _∷_)
