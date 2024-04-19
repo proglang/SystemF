@@ -54,7 +54,7 @@ private variable
 -- impl eq : ∀α. [eq : α → α → Bool] => ∀β. [eq : β → β → Bool] => (α, β) → (α, β) → Bool
  
 
--- eq Bool true false
+-- eq true false
 -- eq (Maybe Bool) (some true) (some false)
 -- -> eq_mb Bool (some true) (some false)
 -- eq (Bool, Bool) (true, true) (true, true)
@@ -145,7 +145,7 @@ _⋯_ : ∀ ⦃ K : Kit _∋/⊢_ ⦄ → S₁ ⊢ s → S₁ –[ K ]→ S₂ �
 (ref o)                  ⋯ σ = ref o
 (ƛ[ o ∶ t ] e)           ⋯ σ = ƛ[ o ∶ t ⋯ σ ] e ⋯ σ
 (e •)                    ⋯ σ = e ⋯ σ •
-([ o ∶ t' ]⇒ t)           ⋯ σ = [ o ∶ t' ⋯ σ ]⇒ t ⋯ σ
+([ o ∶ t' ]⇒ t)          ⋯ σ = [ o ∶ t' ⋯ σ ]⇒ t ⋯ σ
 true                     ⋯ σ = true
 false                    ⋯ σ = false
 (e₁ ↓ e₂)                ⋯ σ = e₁ ⋯ σ ↓ e₂ ⋯ σ

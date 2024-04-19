@@ -19,8 +19,8 @@ open import StratF.Types
 --! TVEnv 
 data Ctx : LEnv → Set where
   ∅     : Ctx []
-  _◁_   : Type Δ l → Ctx Δ → Ctx Δ          -- term variable
-  _◁*_  : (l : Level) → Ctx Δ → Ctx (l ∷ Δ) -- type variable
+  _◁_   : Type Δ l → Ctx Δ → Ctx Δ          
+  _◁*_  : (l : Level) → Ctx Δ → Ctx (l ∷ Δ) 
 
 variable Γ Γ₁ Γ₂ Γ₂₁ Γ₂₂ : Ctx Δ
 
@@ -71,7 +71,8 @@ E⟦ ` x               ⟧ η γ = γ _ _ x
 E⟦ ƛ_ e              ⟧ η γ = λ v → E⟦ e ⟧ η (extend γ v)
 E⟦ e₁ · e₂           ⟧ η γ = E⟦ e₁ ⟧ η γ (E⟦ e₂ ⟧ η γ)
 E⟦ Λ l ⇒ e           ⟧ η γ = λ ⟦α⟧ → E⟦ e ⟧ (⟦α⟧ ∷ η) (extend-tskip γ)
-E⟦ _∙_ {T = T} e T′  ⟧ η γ = subst id (sym (Tsingle-subst-preserves η T′ T)) (E⟦ e ⟧ η γ (⟦ T′ ⟧ η))
+E⟦ _∙_ {T = T} e T′  ⟧ η γ = subst id (sym (Tsingle-subst-preserves η T′ T))
+                               (E⟦ e ⟧ η γ (⟦ T′ ⟧ η))
 
 -- auxiliary
 

@@ -16,3 +16,4 @@ auto
 _region_.tex
 .DS_Store
 **/latex
+*.pyg

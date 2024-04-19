@@ -3,9 +3,14 @@
 \usepackage{stmaryrd}
 \usepackage{xcolor}
 \usepackage{txfonts}
+\usepackage[T1]{fontenc}
+\usepackage{microtype}
+\DisableLigatures[-]{encoding=T1}
 \usepackage{tikz}
 \usetikzlibrary{cd}
 \usepackage{agda-generated}
+
+
 \input{unicodeletters}
 \input{agdamacros}
 
@@ -19,6 +24,10 @@
 }
 \institute{University of Freiburg}
 \date{April 28, 2024 (40. GI Workshop, Bad Honnef)}
+
+\newcommand{\SubItem}[1]{
+    {\setlength\itemindent{15pt} \item[-] #1}
+}
 
 \AtBeginSection[]{%
   \begin{frame}<beamer>
@@ -43,35 +52,21 @@
 \begin{frame}[fragile]
   \frametitle{Overview}
   \begin{itemize}
-    \item We consider Leivant's [cite] finitely stratified System F $SF_2$.
-    \item We define an intrinsically typed syntax for $SF_2$.
-    \item We define big-step, small-step \& denotational semantics for $SF_2$
+    \item We consider Leivant's finitely stratified System F $SF_2$ \cite{DBLP:journals/iandc/Leivant91}
+    \item We define an intrinsically typed syntax for $SF_2$
+    \item We define small-step, big-step \& denotational semantics for $SF_2$
     \item .. and relate those three semantics with each other
     \item .. in Agda
   \end{itemize}
 \end{frame}
 
-\begin{frame}[fragile]
-  \frametitle{Relating Semantics}
-  \framesubtitle{Birds eye view on the theorems}
-  \begin{tikzcd}
-    small step \arrow[rr, "simulates"] \arrow[rdd, bend left] &                                                                  & big step \arrow[ldd, "soundness \ "', bend right] \\
-                                                              &                                                                  &                                                   \\
-                                                              & denotational \arrow[ruu, "adequacy \ (using \ LR)"', bend right] &                                                  
-  \end{tikzcd}
-  \vspace{5mm}
-  \begin{itemize} 
-    \item Soundness requires fusion of expression \& type substitutions
-    \item Adequacy additionally requires logical relation
-  \end{itemize}
-\end{frame}
-
 \begin{frame}
-  \frametitle{Intrinsic $SF_2$}
+  \frametitle{Intrinsically Typed Syntax for $SF_2$}
   \framesubtitle{Types}
+  \TFLEnv
   \TFType
   \begin{itemize}
-    \item Polymorphic lambda calculus [cite]
+    \item Polymorphic lambda calculus \cite{girard72:_inter,DBLP:conf/programm/Reynolds74}
     \item Each type has a level
     \item Quantification only possible over types at lower level
     \item Predicativity is retained
@@ -80,138 +75,131 @@
 \end{frame}
 
 \begin{frame}
-  \frametitle{Intrinsic $SF_2$}
+  \frametitle{Intrinsically Typed Syntax for $SF_2$}
   \framesubtitle{Type Contexts}
   \TFTVEnv
   \TFinn
   \begin{itemize}
-    \item Single environment for type and expression variables [cite]
+    \item Single environment for type and expression variables inspired by \cite{DBLP:conf/mpc/ChapmanKNW19}
   \end{itemize}
 \end{frame}
 
 \begin{frame}
-  \frametitle{Intrinsic $SF_2$}
+  \frametitle{Intrinsically Typed Syntax for $SF_2$}
   \framesubtitle{Expressions}
   \TFExprExcerpt
 \end{frame}
 
 \begin{frame}
-  \frametitle{Semantics of $SF_2$}
-  \framesubtitle{Operational}
+  \frametitle{Operational Semantics of $SF_2$}
+  \framesubtitle{Small \& Big Step Semantics}
   \SmallStepSingleReductionExcerpt
   \SmallStepSemanticsExcerpt
 \end{frame}
 
-% denotational 
-% soundness
-% adequacy + log rel (cite ahmed et al)
-% subst hell
-% sources
+\begin{frame}
+  \frametitle{Denotational Semantics of $SF_2$}
+  \framesubtitle{Types}
+  \TFTEnv
+  \TFTSem
+  \begin{itemize}
+    \item Leivant’s levels correspond to Agda’s universe levels
+    \item .. and thus \AgdaFunction{Env*} need to live in \AgdaFunction{Setω}!
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Problem \#1: $Set \omega$ Equality}
+  % \begin{itemize}
+  %   \item \AgdaFunction{Setω} is Agda’s sort that contains \AgdaFunction{Set} $\ell$ for all $\ell :$ \AgdaFunction{Level}
+  %   \item Some proofs argue about equality in types of sort \AgdaFunction{Setω}:
+  %     \TFSingleSubstPreserves
+  %   \item 
+  % \end{itemize}
+  \begin{exampleblock}{Proposal}
+    Extend the level hierarchy in Agda from $\omega$ to $\epsilon_0$.
+  \end{exampleblock}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Denotational Semantics of $SF_2$}
+  \framesubtitle{Expressions}
+  \TFVEnv
+  \TFExprSem
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Relating Operational and Denotational Semantics}
+  \framesubtitle{Birds eye view on the theorems}
+  \begin{tikzcd}
+    small step \arrow[rr, "simulates", dashed] \arrow[rdd, bend left] &                                                                  & big step \arrow[ldd, "soundness \ "', bend right] \\
+                                                                      &                                                                  &                                                   \\
+                                                                      & denotational \arrow[ruu, "adequacy \ (using \ LR)"', bend right] &                                                  
+    \end{tikzcd}
+    \vspace{5mm}
+    \begin{itemize}
+      \item Simulation is easy: the reflexive transitive closure of the small-step relation corresponds to big-step semantics
+      \item Soundness can be proven by induction
+      \item .. but adequacy requires a binary logical relation 
+    \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Soundness}
+  \BigStepSoundnessType
+  \SmallStepSoundness
+  \vspace{-12.5mm} 
+  \SmallStepSoundnessProofExcerpt
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Problem \#2: Subst Hell}
+  \begin{exampleblock}{Proposal}
+    Build a solver for equality reasoning over \AgdaFunction{subst} terms. 
+  \end{exampleblock}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Adequacy}
+  \FundamentalAdequacyType
+  \vspace{-12.5mm} 
+  \FundamentalAdequacyBody
+  \begin{itemize}
+    \item The \AgdaFunction{adequacy} theorem directly follows from the \AgdaFunction{fundamental} theorem that itself is mostly based on \cite{DBLP:journals/corr/abs-1907-11133,ahmed23:_oplss}
+    \item .. and also suffers from `subst hell'
+  \end{itemize}
+\end{frame}
 
 
-% - STLC, denotational, big, small
-% - -> system f
-% - relating different semantics
-% - logical relation (?)
-% - difficulties with indexed substitutions -> homo vs hetero
+\begin{frame}[fragile]
+  \frametitle{Conclusion}
+  \framesubtitle{}
+  \begin{itemize}
+    \item We mechanized the following theorems in Agda: 
+  \end{itemize}
+  \begin{tikzcd}
+    small step \arrow[rr, "simulates", dashed] \arrow[rdd, bend left] &                                                                  & big step \arrow[ldd, "soundness \ "', bend right] \\
+                                                                      &                                                                  &                                                   \\
+                                                                      & denotational \arrow[ruu, "adequacy \ (using \ LR)"', bend right] &                                                  
+  \end{tikzcd}
+  \begin{itemize} 
+    \item On paper those theorems are well studied
+    \item .. but mechanizing them opens up technical challenges:
+    \begin{itemize} 
+      \item Soundness and adequacy (i.e. the logical relation) theorems require fusion lemmas for type substitution indexed expression substitutions, leading to `subst hell'
+      \item Denotational semantics for languages with level quantification make use of \AgdaFunction{Setω} and require reasoning about hetero- \& homogeneous `$\omega$ equality'
+    \end{itemize}
+  \end{itemize}
+  \begin{verbatim} 
+  >> find . -name '*.agda' -print0 | xargs -0 cat | wc -l
+  10889
+  \end{verbatim}
+\end{frame}
 
-% \begin{frame}
-%   \frametitle{Types of System F}
-%   \framesubtitle{Intrinsically scoped encoding}
-%   \SFType
-%   \begin{itemize}
-%   \item Polymorphic lambda calculus (Girard, Reynolds)
-%   \item Impredicative: quantification extends over all types
-%   \item In $T = \forall \alpha.S$, $\alpha$ ranges over all types including $T$
-%   \item Precludes a set-theoretic semantics
-%   \end{itemize}
-% \end{frame}
-% \begin{frame}
-%   \begin{center}
-%     \includegraphics[scale=0.25]{images/FinitelyStratifiedPolymorphism.png}
-%   \end{center}
-% \end{frame}
-% \begin{frame}
-%   \frametitle{Finite Stratification}
-%   \framesubtitle{Intrinsically leveled encoding}
-%   \begin{itemize}
-%   \item Each type has a level (i.e., a natural number)
-%   \item Quantification is only possible over types at lower level
-%   \item Predicativity is retained
-%   \item Simple set-theoretic semantics
-%   \end{itemize}
-%   \pause
-%   \TFType
-%   \pause\vspace{-2\baselineskip}
-%   \TFlevel
-% \end{frame}
-% \begin{frame}
-%   \frametitle{Semantics of Types}
-%   \begin{itemize}
-%   \item Leivant's levels correspond to Agda's universe levels, so \dots
-%   \end{itemize}
-%   \pause
-%   \TFTEnvP
-%   \pause\vspace{-2\baselineskip}
-%   \TFTSemP
-%   \begin{itemize}
-%   \item Works because we're using \AgdaFunction{Level} in the syntax!
-%   \end{itemize}
-% \end{frame}
-% \begin{frame}
-%   \frametitle{Type Environments and Variables}
-%   \begin{itemize}
-%   \item A single environment for type and term variables
-%   \item Encoding inspired by \emph{System F in Agda, for fun and profit} (Chapman et al, MPC 2019)
-%   \end{itemize}
-%   \TFTVEnv
-%   \pause\vspace{-2\baselineskip}
-%   \TFCleanerinn
-% \end{frame}
-% \begin{frame}
-%   \frametitle{Syntax of Expressions (Excerpt)}
-%   \framesubtitle{Intrinsically typed encoding}
-%   \TFCleanExpr
-% \end{frame}
-% \begin{frame}
-%   \frametitle{Set-Theoretic Semantics of Expressions}
-%   \TFExprSem
-%   where
-%   \TFVEnv
-% \end{frame}
-% \begin{frame}
-%   \frametitle{Set woes}
-%   \begin{itemize}
-%   \item \AgdaFunction{Setω} is Agda's sort that contains \AgdaFunction{Set ℓ}, for all \AgdaFunction{ℓ}.
-%   \item Some proofs argue about equality in types of sort \AgdaFunction{Setω}:
-%     \TFSingleSubstPreserves
-%   \item This equality is easy to define, but leads to a proliferation of uninteresting copies of library functions like \AgdaFunction{cong}, \AgdaFunction{subst}, \dots; equational reasoning; extensionality axioms, and so on.
-%   \end{itemize}
-% \end{frame}
-% \begin{frame}
-%   \frametitle{Set woes II}
-%   \begin{itemize}
-%   \item Consider extending the calculus with level-polymorphism.
-%   \item Can be modeled in Agda, but forces a departure from the simple semantics of types.
-%   \item A level-polymorphic function is a member of \AgdaFunction{Setω}, but that means the semantics of a type can no longer be in  \AgdaFunction{Setω}!
-%   \item It must be in \AgdaFunction{Setω₁} $\Longrightarrow$ can't index types by levels, need more equalities, and so on.
-%   \end{itemize}
-%   \begin{exampleblock}{Wish to the  Agda maintainers}
-%     \begin{itemize}
-%     \item Extend \AgdaFunction{Level} to include a larger subset of ordinals.
-%     \item Leivant's 1989 paper \emph{Stratified Polymorphism} suggests
-%       a useful subset.
-%     \item Recent work by Bezem, Coquand, Dybjer, Escardo (TYPES 2022)
-%     \end{itemize}
-%   \end{exampleblock}
-% \end{frame}
-% \begin{frame}
-%   \frametitle{Where do we go from here?}
-%   \begin{itemize}
-%   \item All results for Stratified System F apply directly to subsystems like ML.
-%   \item Intrinsically typed small-step and big-step semantics.
-%   \item Soundness with respect to denotational semantics (stratification required).
-%   \item Logical relation and adequacy (stratification required).
-%   \end{itemize}
-% \end{frame}
+\begin{frame}[fragile]
+  \frametitle{Sources}  
+  \bibliographystyle{ACM-Reference-Format} 
+  \bibliography{references}
+\end{frame}
+
 \end{document}

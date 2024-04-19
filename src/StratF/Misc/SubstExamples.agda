@@ -36,8 +36,10 @@ module ForTheSlides where
   data Expr (Δ : LEnv) (Γ : Ctx Δ) : Type Δ l → Set where
     `_    : inn T Γ → Expr Δ Γ T
     `suc  : Expr Δ Γ `ℕ → Expr Δ Γ `ℕ
-    Λ_⇒_  : ∀ (l : Level) → {T : Type (l ∷ Δ) l′} → Expr (l ∷ Δ) (l ◁* Γ) T → Expr Δ Γ (`∀α l , T)
-    _∙_   : ∀ {T : Type (l ∷ Δ) l′ } → Expr Δ Γ (`∀α l , T) → (T′ : Type Δ l) → Expr Δ Γ (T [ T′ ]T)
+    Λ_⇒_  : ∀ (l : Level) → {T : Type (l ∷ Δ) l′} → 
+              Expr (l ∷ Δ) (l ◁* Γ) T → Expr Δ Γ (`∀α l , T)
+    _∙_   : ∀ {T : Type (l ∷ Δ) l′ } → 
+              Expr Δ Γ (`∀α l , T) → (T′ : Type Δ l) → Expr Δ Γ (T [ T′ ]T)
     -- ...
 
     #_    : (n : ℕ) → Expr Δ Γ `ℕ
@@ -69,9 +71,9 @@ module ForTheSlides2 where
   
   --! SingleReductionExcerpt
   data _↪_ : Expr Δ Γ T → Expr Δ Γ T → Set where
-    ξ-·₁ :
-      e₁ ↪ e →
-      (e₁ · e₂) ↪ (e · e₂)
+    ξ-∙ : ∀ {T′ : Type Δ l′} {T : Type (l′ ∷ Δ) l} {e₁ e₂ : Expr Δ Γ (`∀α l′ , T)} →
+      e₁ ↪ e₂ →
+      (e₁ ∙ T′) ↪ (e₂ ∙ T′)
     β-Λ : ∀ {T : Type Δ l} {T′ : Type (l ∷ Δ) l′} {e : Expr (l ∷ Δ) (l ◁* Γ) T′} →
       ((Λ l ⇒ e) ∙ T) ↪ (e [ T ]ET)
     -- ...
@@ -81,13 +83,13 @@ module ForTheSlides2 where
       ((ƛ e₁) · e₂) ↪ (e₁ [ e₂ ]E)
     β-suc :
       `suc {Γ = Γ} (# n) ↪ (# (suc n))
+    ξ-·₁ :
+      e₁ ↪ e →
+      (e₁ · e₂) ↪ (e · e₂)
     ξ-·₂ : 
       e₂ ↪ e → 
       isValue e₁ →
       (e₁ · e₂) ↪ (e₁ · e)
-    ξ-∙ : ∀ {T′ : Type Δ l′} {T : Type (l′ ∷ Δ) l} {e₁ e₂ : Expr Δ Γ (`∀α l′ , T)} →
-      e₁ ↪ e₂ →
-      (e₁ ∙ T′) ↪ (e₂ ∙ T′)
     ξ-suc :
       e₁ ↪ e →
       `suc e₁ ↪ `suc e
