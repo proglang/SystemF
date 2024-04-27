@@ -68,10 +68,10 @@ open import StratF.LogicalPrelim
   π₂ ρ _ α v z
 𝓥′⟦ `∀α l , T ⟧ ρ u F =
   ∃[ e ] (exp u ≡ Λ l ⇒ e) ∧
-  ∀ T′ R → let ρ′ = REext ρ (T′ , R) in 
-  ∃[ v ] (subst CExpr (sym (π₁∘ext≡ext∘↑π₁ T ρ T′ R)) (e [ T′ ]ET) ⇓ v)
-       ∧ 𝓥′⟦ T ⟧ ρ′ v (subst id (sym (trans (cong (λ t → ⟦ t ⟧ []) (π₁∘ext≡ext∘↑π₁ T ρ T′ R))
-                                            (⟦⟧∘ext≡ext∘⟦⟧ (Tsub (Tliftₛ (π₁ ρ) l) T) T′)))
+  ∀ T′ R → let ρ′ = REext ρ (T′ , R) in
+  𝓔′⟦ T ⟧ ρ′ (subst CExpr (sym (π₁∘ext≡ext∘↑π₁ T ρ T′ R)) (e [ T′ ]ET))
+             (subst id (sym (trans (cong (λ t → ⟦ t ⟧ []) (π₁∘ext≡ext∘↑π₁ T ρ T′ R))
+                                   (⟦⟧∘ext≡ext∘⟦⟧ (Tsub (Tliftₛ (π₁ ρ) l) T) T′)))
                                (F (⟦ T′ ⟧ [])))
 
 --! MCE

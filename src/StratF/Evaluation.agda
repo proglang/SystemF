@@ -37,6 +37,7 @@ variable v v₂ : CValue T
 
 
 record Eval : Set₁ where
+  infix 15 _↓_ 
   field
     _↓_ : ∀ {T : Type [] l} → CExpr T → CValue T → Set
     ↓-n : (# n) ↓ ((# n) , V-♯)
