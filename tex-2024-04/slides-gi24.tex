@@ -52,10 +52,10 @@
 \begin{frame}[fragile]
   \frametitle{Overview}
   \begin{itemize}
-    \item We consider finitely stratified System F $SF_2$ \cite{DBLP:journals/iandc/Leivant91}
-    \item We define an intrinsically typed syntax for $SF_2$
-    \item We define small-step, big-step \& denotational semantics for $SF_2$
-    \item .. and relate those three semantics with each other
+    \item What is finitely stratified System F $SF_2$ \cite{DBLP:journals/iandc/Leivant91}
+    \item $SF_2$ is amenable to intrinsically typed syntax
+    \item Three semantics for $SF_2$: small-step, big-step \& denotational
+    \item .. connected via logical relation
     \item .. in Agda
   \end{itemize}
 \end{frame}
@@ -70,7 +70,7 @@
     \item Each type has a level
     \item Quantification only possible over types at lower level
     \item Predicativity is retained
-    \item .. to allow for set theoretic semantics
+    \item \dots{} enables a set-based semantics
   \end{itemize}
 \end{frame}
 
@@ -177,7 +177,9 @@
   \vspace{-12.5mm} 
   \FundamentalAdequacyBody
   \begin{itemize}
-    \item The \AgdaFunction{adequacy} theorem directly follows from the \AgdaFunction{fundamental} theorem that itself is mostly based on \cite{DBLP:journals/corr/abs-1907-11133,ahmed23:_oplss}
+    \item The \AgdaFunction{adequacy} theorem follows directly from
+      the \AgdaFunction{fundamental} theorem of the logical relation
+      % that itself is mostly based on \cite{DBLP:journals/corr/abs-1907-11133,ahmed23:_oplss}
     \item .. and also suffers from `subst hell'
   \end{itemize}
 \end{frame}
