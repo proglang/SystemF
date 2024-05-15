@@ -64,7 +64,9 @@
   \frametitle{Intrinsically Typed Syntax for $SF_2$}
   \framesubtitle{Types}
   \TFLEnv
+  \vspace{-5mm}
   \TFType
+  \vspace{-5mm}
   \begin{itemize}
     \item Polymorphic lambda calculus \cite{girard72:_inter,DBLP:conf/programm/Reynolds74}
     \item Each type has a level
@@ -104,7 +106,7 @@
   \TFTSem
   \begin{itemize}
     \item Leivant’s levels correspond to Agda’s universe levels
-    \item .. and thus \AgdaFunction{Env*} need to live in \AgdaFunction{Setω}!
+    \item .. and thus \AgdaFunction{Env*} needs to live in \AgdaFunction{Setω}!
   \end{itemize}
 \end{frame}
 
@@ -115,9 +117,9 @@
   \OmegaEqDef
   \vspace{-7.5mm} 
   \begin{itemize}
-    \item \AgdaFunction{Setω} is Agda’s sort that contains \AgdaFunction{Set} $ℓ$, for all $ℓ$.
+    \item \AgdaFunction{Setω} is Agda’s sort that contains \AgdaFunction{Set} $ℓ$, for all $ℓ$
     \item .. but equality in Agda is only defined for terms of type \AgdaFunction{Set} $ℓ$, for all $ℓ$.
-    \item .. thus we need copies for all lemmas reasoning about equality between terms of type \AgdaFunction{Setω} 
+    \item .. Thus we need copies for all lemmas that include reasoning about \AgdaFunction{Setω} equality
     \item Even worse, we need the same for heterogeneous equality
   \end{itemize}
   \begin{exampleblock}{Proposal}
@@ -158,13 +160,13 @@
 
 \begin{frame}[fragile]
   \frametitle{Problem \#2: Subst Hell}
-  \SubstExamplesDef
+  \SubDefESub
   \vspace{-7.5mm} 
   \SubstExamplesFusionESubESub
   \vspace{-7.5mm} 
   \begin{itemize}
     \item When \AgdaFunction{subst} appears in the \emph{type} of a proof, things get complicated
-    \item There exists a somewhat `mechanical' but tedious way to still prove these lemmas involving heterogeneous equality
+    \item There exists a somewhat `mechanical' but tedious way to prove these lemmas involving heterogeneous equality
   \end{itemize}
   \begin{exampleblock}{Proposal}
     Build a solver for equality reasoning over \AgdaFunction{subst} terms using heterogeneous equality. 

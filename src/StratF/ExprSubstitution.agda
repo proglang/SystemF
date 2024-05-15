@@ -65,7 +65,8 @@ Ewk-l e = Eren _ (Ewkᵣ-l _) e
 
 --! DefESub
 ESub : TSub Δ₁ Δ₂ → TEnv Δ₁ → TEnv Δ₂ → Set
-ESub {Δ₁ = Δ₁} {Δ₂ = Δ₂} σ* Γ₁ Γ₂ = ∀ l (T : Type Δ₁ l) → inn T Γ₁ → Expr Δ₂ Γ₂ (Tsub σ* T)
+ESub {Δ₁ = Δ₁} {Δ₂ = Δ₂} σ* Γ₁ Γ₂ = ∀ l (T : Type Δ₁ l) → 
+  inn T Γ₁ → Expr Δ₂ Γ₂ (Tsub σ* T)
 
 --! DefEidS
 Eidₛ : ESub Tidₛ Γ Γ
