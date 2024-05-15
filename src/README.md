@@ -2,7 +2,7 @@
 
 This directory contains the supplementary material for the paper
 *Intrinsic Types, a Logical Relation, and the Scourge of the Transfer Lemma*
-submitted to the conference ICFP'24.
+submitted to tyde'24.
 
 The material consists of a formalization of Stratified System F in the
 proof assistant Agda.
@@ -21,7 +21,3 @@ versions are *not* supported.
 While Agda can be run from the commandline, we recommend using it with
 the emacs mode or the vscode plugin. More information can be found on:
 https://agda.readthedocs.io/en/v2.6.3.20230914/getting-started/installation.html
-
-## Contents
-
-TODO

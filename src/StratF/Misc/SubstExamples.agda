@@ -21,8 +21,10 @@ module ForThePaper where
     `_    : inn T Γ → Expr Δ Γ T
     ƛ_    : Expr Δ (T ◁ Γ) T′ → Expr Δ Γ (T ⇒ T′)
     _·_   : Expr Δ Γ (T ⇒ T′) → Expr Δ Γ T → Expr Δ Γ T′
-    Λ_⇒_  : ∀ (l : Level) → {T : Type (l ∷ Δ) l′} → Expr (l ∷ Δ) (l ◁* Γ) T → Expr Δ Γ (`∀α l , T)
-    _∙_   : Expr Δ Γ (`∀α l , T) → (T′ : Type Δ l) → Expr Δ Γ (T [ T′ ]T)
+    Λ_⇒_  : ∀ (l : Level) → {T : Type (l ∷ Δ) l′} → 
+      Expr (l ∷ Δ) (l ◁* Γ) T → Expr Δ Γ (`∀α l , T)
+    _∙_   : Expr Δ Γ (`∀α l , T) → 
+      (T′ : Type Δ l) → Expr Δ Γ (T [ T′ ]T)
 
 module ForTheSlides where
   open import StratF.TypeSubstPropertiesSem
@@ -175,7 +177,8 @@ module _ where
 
 
   --! FusionTSubTSub
-  fusion-Tsub-Tsub : ∀ (T : Type Δ₁ l) (σ₁ : TSub Δ₂ Δ₃) (σ₂ : TSub Δ₁ Δ₂) →
+  fusion-Tsub-Tsub : ∀ (T : Type Δ₁ l) 
+    (σ₁ : TSub Δ₂ Δ₃) (σ₂ : TSub Δ₁ Δ₂) →
     Tsub σ₁ (Tsub σ₂ T) ≡ Tsub (σ₁ ∘Tₛₛ σ₂) T
 
   fusion-Tsub-Tsub = {!!}

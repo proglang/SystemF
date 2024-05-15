@@ -109,7 +109,8 @@ mutual
   fusion-Tren-Tsub `ℕ ρ σ = refl
 
 --! SwapTsubTwk
-swap-Tsub-Twk : ∀ (σ : TSub Δ₁ Δ₂) (T : Type Δ₁ l′) → Tsub (Tliftₛ σ l) (Twk T) ≡ Twk (Tsub σ T)
+swap-Tsub-Twk : ∀ (σ : TSub Δ₁ Δ₂) (T : Type Δ₁ l′) → 
+  Tsub (Tliftₛ σ l) (Twk T) ≡ Twk (Tsub σ T)
 
 swap-Tsub-Twk σ T = 
   begin 
