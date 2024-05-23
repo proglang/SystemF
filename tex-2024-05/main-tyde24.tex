@@ -12,6 +12,8 @@
 \DisableLigatures[-]{encoding=T1}
 \usepackage{adjustbox}
 
+\AgdaNoSpaceAroundCode{}
+
 %% There is a limit of 25 pages for a full paper or Functional Pearl
 %% and 12 pages for an Experience Report; in either case, the
 %% bibliography and an optional clearly marked appendix will not be
@@ -180,7 +182,7 @@ We explore the limits of this method in the setting of
 finitely-stratified System F using the Agda proof assistant. This
 system supports elegant definitions of 
 denotational semantics as well as big-step 
-and small-step operational semantics based on intrinsically typed syntax. While its syntactic
+operational semantics based on intrinsically typed syntax. While its syntactic
 metatheory (i.e., type soundness) works well,
 we demonstrate that its semantic metatheory poses technical
 challenges, by defining a logical relation and proving its fundamental
@@ -322,14 +324,11 @@ universe stratification.
 \begin{itemize}
 \item We construct a denotational semantics of $SF_2$ as a
   compositional mapping of an intrinsically typed syntax into Agda; we
-  define big-step (Sec.~\ref{sec:big-step-operational}) and small-step
-  (Sec.~\ref{sec:excurs-small-step}) semantics and prove their
-  soundness with respect to the denotational semantics.
+  define big-step (Sec.~\ref{sec:big-step-operational})
+  and prove its soundness with respect to the denotational semantics.
 \item We define a logical relation for $SF_2$ that connects the
-  denotational semantics, first with the big-step semantics
-  (Section~\ref{sec:logical-relation}) and subsequently we point out
-  how to retarget the relation to the small-step semantics
-  (Section~\ref{sec:excurs-small-step}). We establish the fundamental
+  denotational semantics with the big-step semantics.
+  We establish the fundamental
   theorem (Section~\ref{sec:fundamental}) and prove adequacy
   (Section~\ref{sec:adequacy}). 
 \item We analyse the difficulties coming up in the proofs that
@@ -493,11 +492,8 @@ style, and defines substitutions in terms of renamings
 
 Renamings {\ATRen} and substitutions {\ATSub} are defined as
 functions mapping type variables to type variables and types, respectively.
-\begin{AgdaBlock}
-  \SubDefTRen
-  \vspace{-2.5mm}
-  \SubDefTSub
-\end{AgdaBlock}
+\SubDefTRen
+\SubDefTSub
 % \noindent\hspace{-\fboxsep} 
 % \begin{minipage}{0.5\linewidth}
 %   \SubDefTRen
@@ -511,11 +507,8 @@ and {\ATsub}, are defined by induction over the type. When the
 operations need to go under a binder, they lift the renaming and
 substitution with {\ATliftR} and {\ATliftS}, respectively.
 
-\begin{AgdaBlock}
-  \SubDefTren
-  \vspace{-2.5mm}
-  \SubDefTsub
-\end{AgdaBlock}
+\SubDefTren
+\SubDefTsub
 % \noindent\hspace{-\fboxsep}
 % \begin{minipage}{0.5\linewidth}
 %   \SubDefTren
@@ -528,13 +521,10 @@ The identity renaming {\ATidR} and substitution
 {\ATidS} behave like identity function and variable
 type constructor, respectively, and act as neutral elements when applied to a type:
 
-\begin{AgdaBlock}
-  \SubDefTidR
-  \TFTidRNeutral
-  \vspace{-2.5mm}
-  \SubDefTidS
-  \TFTidSNeutral
-\end{AgdaBlock}
+\SubDefTidR
+\TFTidRNeutral
+\SubDefTidS
+\TFTidSNeutral
 % \noindent\hspace{-\fboxsep}
 % \begin{minipage}{0.5\linewidth}
 %   \begin{AgdaBlock}
@@ -948,8 +938,8 @@ found in the supplemental material.
 \subsection{Fundamental theorem}
 \label{sec:fundamental}
 
-The fundamental theorem of the logical relation tells us that we can
-prove semantic soundness for a well-typed expression.
+The fundamental theorem of the logical relation states that well-typed
+expressions are semantically sound.
 \FundamentalFundamentalType
 
 This proof is very easy for constants and for the successor.

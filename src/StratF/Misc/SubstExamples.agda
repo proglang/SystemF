@@ -302,43 +302,45 @@ module WithHetEq where
   open ≅-Reasoning
   open import StratF.Util.HeterogeneousEqualityLemmas renaming (Hcong₃ to cong₃)
 
-  --! FusionESubESubHet
-  fusion-Esub-Esub : 
-    ∀ {σ₁* : TSub Δ₂ Δ₃} {σ₂* : TSub Δ₁ Δ₂} {Γ₁ : TEnv Δ₁} {Γ₂ : TEnv Δ₂} {Γ₃ : TEnv Δ₃}
-      {T : Type Δ₁ l} (e : Expr Δ₁ Γ₁ T) (σ₁ : ESub σ₁* Γ₂ Γ₃) (σ₂ : ESub σ₂* Γ₁ Γ₂) →
-    Esub σ₁* σ₁ (Esub σ₂* σ₂ e) ≅ Esub (σ₁* ∘Tₛₛ σ₂*) (σ₁ ∘Eₛₛ σ₂) e
-  fusion-Esub-Esub {Δ₂} {Δ₃} {Δ₁} {l} {σ₁*} {σ₂*} {Γ₁} {Γ₂} {Γ₃} {_} (_∙_ {T = T} e T′) σ₁ σ₂ = begin
-    Esub σ₁* σ₁ (Esub σ₂* σ₂ (e ∙ T′))                                ≅⟨ refl ⟩  -- (1)
-    Esub σ₁* σ₁ (S₂ (Esub σ₂* σ₂ e ∙ Tsub σ₂* T′))                    ≅⟨ p₁ ⟩    -- (2)
-    Esub σ₁* σ₁ (Esub σ₂* σ₂ e ∙ Tsub σ₂* T′)                         ≅⟨ refl ⟩  -- (3)
-    S₄ (Esub σ₁* σ₁ (Esub σ₂* σ₂ e) ∙ Tsub σ₁* (Tsub σ₂* T′))         ≅⟨ p₂ ⟩    -- (4)
-    Esub σ₁* σ₁ (Esub σ₂* σ₂ e) ∙ Tsub σ₁* (Tsub σ₂* T′)              ≅⟨ p₃ ⟩    -- (5)
-    Esub (σ₁* ∘Tₛₛ σ₂*) (σ₁ ∘Eₛₛ σ₂) e ∙ Tsub (σ₁* ∘Tₛₛ σ₂*) T′       ≅⟨ p₄ ⟩    -- (6)
-    S₅ (Esub (σ₁* ∘Tₛₛ σ₂*) (σ₁ ∘Eₛₛ σ₂) e ∙ Tsub (σ₁* ∘Tₛₛ σ₂*) T′)  ≅⟨ refl ⟩  -- (7)
-    Esub (σ₁* ∘Tₛₛ σ₂*) (σ₁ ∘Eₛₛ σ₂) (e ∙ T′)                         ∎          -- (8)
+  module _ where
+    private variable
+      σ₁* : TSub Δ₂ Δ₃
+      σ₂* : TSub Δ₁ Δ₂
+      Γ₃  : Ctx Δ
 
-    where
-      F₂ = Expr Δ₂ Γ₂ ; E₂ = ≡.sym (swap-Tsub-[] σ₂* T T′)                                  ; S₂ = subst F₂ E₂
-      F₄ = Expr Δ₃ Γ₃ ; E₄ = ≡.sym (swap-Tsub-[] σ₁* (Tsub (Tliftₛ σ₂* _) T) (Tsub σ₂* T′)) ; S₄ = subst F₄ E₄
-      F₅ = Expr Δ₃ Γ₃ ; E₅ = ≡.sym (swap-Tsub-[] (σ₁* ∘Tₛₛ σ₂*) T T′)                       ; S₅ = subst F₅ E₅
+    --! FusionESubESubHet
+    fusion-Esub-Esub : ∀ (e : Expr Δ₁ Γ₁ T) (σ₁ : ESub σ₁* Γ₂ Γ₃) (σ₂ : ESub σ₂* Γ₁ Γ₂) →
+      Esub σ₁* σ₁ (Esub σ₂* σ₂ e) ≅ Esub (σ₁* ∘Tₛₛ σ₂*) (σ₁ ∘Eₛₛ σ₂) e
+    fusion-Esub-Esub {σ₁* = σ₁*} {Γ₂ = Γ₂} {Γ₃ = Γ₃} {σ₂* = σ₂*} (_∙_ {T = T} e T′) σ₁ σ₂ = begin
+      Esub σ₁* σ₁ (Esub σ₂* σ₂ (e ∙ T′))                                ≅⟨ refl ⟩  -- (1)
+      Esub σ₁* σ₁ (S₂ (Esub σ₂* σ₂ e ∙ Tsub σ₂* T′))                    ≅⟨ p₁ ⟩    -- (2)
+      Esub σ₁* σ₁ (Esub σ₂* σ₂ e ∙ Tsub σ₂* T′)                         ≅⟨ refl ⟩  -- (3)
+      S₄ (Esub σ₁* σ₁ (Esub σ₂* σ₂ e) ∙ Tsub σ₁* (Tsub σ₂* T′))         ≅⟨ p₂ ⟩    -- (4)
+      Esub σ₁* σ₁ (Esub σ₂* σ₂ e) ∙ Tsub σ₁* (Tsub σ₂* T′)              ≅⟨ p₃ ⟩    -- (5)
+      Esub (σ₁* ∘Tₛₛ σ₂*) (σ₁ ∘Eₛₛ σ₂) e ∙ Tsub (σ₁* ∘Tₛₛ σ₂*) T′       ≅⟨ p₄ ⟩    -- (6)
+      S₅ (Esub (σ₁* ∘Tₛₛ σ₂*) (σ₁ ∘Eₛₛ σ₂) e ∙ Tsub (σ₁* ∘Tₛₛ σ₂*) T′)  ≅⟨ refl ⟩  -- (7)
+      Esub (σ₁* ∘Tₛₛ σ₂*) (σ₁ ∘Eₛₛ σ₂) (e ∙ T′)                         ∎          -- (8)
 
-      --! FusionESubESubHetProofA
-      p₁ = cong₂  {A = Type Δ₂ l} {B = λ T → Expr Δ₂ Γ₂ T}
-                  (λ T e → Esub σ₁* σ₁ e)
-                  (sym (≡-to-≅ E₂)) (≡-subst-removable F₂ E₂ _)
+      where
+        F₂ = Expr _ Γ₂ ; E₂ = ≡.sym (swap-Tsub-[] σ₂* T T′)                                  ; S₂ = subst F₂ E₂
+        F₄ = Expr _ Γ₃ ; E₄ = ≡.sym (swap-Tsub-[] σ₁* (Tsub (Tliftₛ σ₂* _) T) (Tsub σ₂* T′)) ; S₄ = subst F₄ E₄
+        F₅ = Expr _ Γ₃ ; E₅ = ≡.sym (swap-Tsub-[] (σ₁* ∘Tₛₛ σ₂*) T T′)                       ; S₅ = subst F₅ E₅
 
-      --! FusionESubESubHetProofB
-      p₂ = ≡-subst-removable F₄ E₄ _        -- S₄ = subst F₄ E₄
-      p₄ = sym (≡-subst-removable F₅ E₅ _)  -- S₅ = subst F₅ E₅
+        --! FusionESubESubHetProofA
+        p₁ = cong₂  {A = Type _ _} {B = λ T → Expr _ Γ₂ T}
+                    (λ T e → Esub σ₁* σ₁ e)
+                    (sym (≡-to-≅ E₂)) (≡-subst-removable F₂ E₂ _)
 
-      --! FusionESubESubHetProofC
-      p₃ = cong₃  {A = Type (_ ∷ Δ₃) l}
-                  {B = λ T → Expr Δ₃ Γ₃ (`∀α _ , T)}
-                  {C = λ _ _ → Type Δ₃ _ }
-                  (λ _ e T′ → e ∙ T′)
-                  (≡-to-≅ (fusion-Tsub-Tsub-lift T σ₁* σ₂*))
-                  (fusion-Esub-Esub e σ₁ σ₂)
-                  (≡-to-≅ (fusion-Tsub-Tsub T′ σ₁* σ₂*))
+        --! FusionESubESubHetProofB
+        p₂ = ≡-subst-removable F₄ E₄ _        -- S₄ = subst F₄ E₄
+        p₄ = sym (≡-subst-removable F₅ E₅ _)  -- S₅ = subst F₅ E₅
 
-  fusion-Esub-Esub = {!!}
+        --! FusionESubESubHetProofC
+        p₃ = cong₃  {A = Type _ _} {B = λ T → Expr _ Γ₃ (`∀α _ , T)}
+                    {C = λ _ _ → Type _ _ } (λ _ e T′ → e ∙ T′)
+                    (≡-to-≅ (fusion-Tsub-Tsub-lift T σ₁* σ₂*))
+                    (fusion-Esub-Esub e σ₁ σ₂)
+                    (≡-to-≅ (fusion-Tsub-Tsub T′ σ₁* σ₂*))
+
+    fusion-Esub-Esub = {!!}
 
