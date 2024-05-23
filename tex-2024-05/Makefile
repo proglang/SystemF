@@ -11,6 +11,7 @@ AGDATEX= ../../agdatex/agdatex.py
 
 $(GOAL).pdf: $(GOAL).tex $(TARGET_FILES)
 	$(AGDATEX) -v -r ../src ../src/StratF/*.agda ../src/StratF/Util/*.agda ../src/StratF/Misc/*.agda
+	agda --latex --only-scope-checking STLC.lagda
 	TEXINPUTS=$(PREFIX)/:$(TEXINPUTS) pdflatex --synctex=1 -interaction=nonstopmode $(GOAL)
 	bibtex $(GOAL)
 	TEXINPUTS=$(PREFIX)/:$(TEXINPUTS) pdflatex --synctex=1 -interaction=nonstopmode $(GOAL)
