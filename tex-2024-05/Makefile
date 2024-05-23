@@ -25,7 +25,6 @@ supplement:
 	sed -i '/^ *--!/d' "__zip_cache"/**/*.agda # Remove agdatex comments
 	gawk -i inplace 'BEGIN{RS="";ORS="\n\n"}1' "__zip_cache"/**/*.agda # Replace tripple newlines with double newlines.
 	rm "__zip_cache/StratF/Misc/SubstExamples.agda"
-	rm "__zip_cache/StratF/Misc/STLC.agda"
 	rm __zip_cache/**/*.agdai
 	cd __zip_cache && zip -r ../$(ZIPGOAL) *
 	rm -rf "__zip_cache/"
