@@ -10,7 +10,6 @@ ARXIVGOAL= $(GOAL).zip
 AGDATEX= ../../agdatex/agdatex.py
 
 $(GOAL).pdf: $(GOAL).tex $(TARGET_FILES) latex/STLC.tex
-	$(AGDATEX) -v -r ../src ../src/StratF/*.agda ../src/StratF/Util/*.agda ../src/StratF/Misc/*.agda
 	TEXINPUTS=$(PREFIX)/:$(TEXINPUTS) pdflatex --synctex=1 -interaction=nonstopmode $(GOAL)
 	bibtex $(GOAL)
 	TEXINPUTS=$(PREFIX)/:$(TEXINPUTS) pdflatex --synctex=1 -interaction=nonstopmode $(GOAL)

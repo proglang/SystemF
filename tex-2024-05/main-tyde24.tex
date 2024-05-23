@@ -10,6 +10,7 @@
 \usepackage[T1]{fontenc}
 \usepackage{microtype}
 \DisableLigatures[-]{encoding=T1}
+\usepackage{adjustbox}
 
 %% There is a limit of 25 pages for a full paper or Functional Pearl
 %% and 12 pages for an Experience Report; in either case, the
@@ -1085,9 +1086,9 @@ technical nuisance involving the transfer lemma {\Asubst} from Agda's standard l
 
 The {\Asubst}-lemma enables us to use a value of a type at a different,
 but propositionally equal, type.
-This lemma becomes relevant when an equality proof cannot be matched
+{\Asubst} becomes relevant when an equality proof cannot be matched
 on, because it witnesses the equality between two non-unifiable
-expressions, e.g. between two function applications: \texttt{f x $\equiv$ g y}.
+expressions, e.g. between two function applications: \texttt{f~x~$\equiv$~g~y}.
 
 It is harmless to use {\Asubst} in a proof, but if a {\Asubst} appears
 in the \emph{type} of a proof, then often complications arise.
@@ -1099,14 +1100,21 @@ Section~\ref{sec:substitutions:expr}.
 \subsection{Homogeneous Equality}
 \label{sec:subst-hell:hom}
 
-The following shows our first version of the type application case
-{\ACon{\_∙\_}} of the fusion lemma:
+\begin{figure*}
+  \begin{adjustbox}{minipage=0.72\textwidth,margin=0pt \smallskipamount,center}
+    \begin{minipage}{1.0\linewidth}
+    \begin{AgdaBlock}
+      \SubstExamplesFusionESubESubAlt
+      \SubstExamplesFusionESubESubBody
+    \end{AgdaBlock}
+    \end{minipage}
+  \end{adjustbox}
+  \caption{Proof of Expression Substitution Fusion with Homogeneous Equality}
+  \label{fig:subst-hell-hom}
+\end{figure*}
 
-\begin{AgdaBlock}
-  \SubstExamplesFusionESubESub
-  \SubstExamplesFusionESubESubBody
-\end{AgdaBlock}
-
+Figure~\ref{fig:subst-hell-hom} shows our first version of the type application case
+{\ACon{\_∙\_}} of the fusion lemma.
 This proof contains eight different uses of the {\Asubst} lemma!
 To increase readability, we replaced each {\Asubst} 
 with an auxilliary definition {\AFun{Sᵢ} = \Asubst~\AFun{Fᵢ}~\AFun{Eᵢ}}.
@@ -1158,8 +1166,8 @@ The rest of the proof proceeds as follows:
   This is intuitively true, because {\Asubst} behaves like the identity function
   after it matched on the equality proof;
 \item the equation for {\AFun{p₃}} between line \ACom{(5)} and \ACom{(6)} requires another
-  use of {\AFun{dist-subst}} to pull {\AFun{S₆}} out of the left
-  argument of the type application, which introduces {\AFun{S₈}};
+  use of {\AFun{dist-subst}} to pull out {\AFun{S₆}} of the left
+  argument of the type application, introducing {\AFun{S₈}};
 \item the equation for {\AFun{p₄}} between line \ACom{(6)} and \ACom{(7)} is where
   the actual meat of the proof is. Here the induction hypothesis is applied to the
   left side of the type application and the fusion lemma for type substitutions
@@ -1170,6 +1178,7 @@ The rest of the proof proceeds as follows:
   {\AFun{S₈}} around it:
   \begin{AgdaBlock}
     \SubstExamplesCongTApp
+    \vspace{2.5mm}
     \SubstExamplesFusionESubESubBodyProofD
   \end{AgdaBlock}
 \end{enumerate}
@@ -1211,9 +1220,19 @@ at three lemmas from Agda's standard library about heterogeneous equality:
   A homogeneous equality can be converted to a heterogeneous equality:
   \SubstExamplesHetEqConv
 \end{enumerate}
-
-Equipped with these lemmas, we turn back to our proof example:
-\SubstExamplesFusionESubESubHet
+\begin{figure*}
+  \begin{adjustbox}{minipage=0.72\textwidth,margin=0pt \smallskipamount,center}
+    \begin{minipage}{1.0\linewidth}
+    \begin{AgdaBlock}
+      \SubstExamplesFusionESubESubHet
+    \end{AgdaBlock}
+    \end{minipage}
+  \end{adjustbox}
+  \caption{Proof of Expression Substitution Fusion with Heterogeneous Equality}
+  \label{fig:subst-hell-het}
+\end{figure*}
+Equipped with these lemmas, we turn back to our proof example.
+Figure~\ref{fig:subst-hell-het} displays the proof using heterogeneous equality.
 Now that we can equate terms of different types, the lemma can be
 stated without using {\Asubst}.
 Consequently, the {\AFun{S₁}} in line \ACom{(1)} disappears.
@@ -1232,10 +1251,8 @@ This is not the case, because a unary function, which can be called with two arg
 \emph{different} types, is necessary a binary function in disguise of shape
 \ACode{\{x~:~A\}~→~(y~:~B~x)~→~C~x~y}, where the argument types are two different instances
 of the type family \ACode{B}. In our case the partially applied function \ACode{\AFun{Esub}~σ₁*~σ₁}
-has type
-\begin{quote}
-\ACode{\{T~:~\AFun{Type}~Δ₂~l\}~→~(e~:~\AFun{Expr}~Δ₂~Γ₂~T)~→~\AFun{Expr}~Δ₃~Γ₃~(\AFun{Tsub}~σ₁*~T)}
-\end{quote}
+has type\\
+\ACode{\{T~:~\AFun{Type}~Δ₂~l\}~→~\AFun{Expr}~Δ₂~Γ₂~T~→~\AFun{Expr}~Δ₃~Γ₃~(\AFun{Tsub}~σ₁*~T)}\\
 and {\AFun{S₂}} exchanges the implicit type index \ACode{T} with
 some \ACode{T′} with \ACode{T \AFun{≡} T′}.
 Consequently, we can prove the equation with {\AFun{cong₂}}:
@@ -1337,32 +1354,32 @@ lemma and {\AFun{cong}} lemmas of different arities.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Excursion: Small-Step Operational Semantics}
-\label{sec:excurs-small-step}
+% \section{Excursion: Small-Step Operational Semantics}
+% \label{sec:excurs-small-step}
 
-A small-step operational semantics completes our picture of finitely
-stratified System~F. Here, we demonstrate that we can wrap the small-step semantics such that the definition of the logical relation as well as the proof of the fundamental theorem adapt without any effort.
+% A small-step operational semantics completes our picture of finitely
+% stratified System~F. Here, we demonstrate that we can wrap the small-step semantics such that the definition of the logical relation as well as the proof of the fundamental theorem adapt without any effort.
 
-We define an intrinsically typed small-step reduction relation and its
-reflexive transitive closure in the usual way (details omitted).
-\SmallStepSingleReduction
-\SmallStepReduction
+% We define an intrinsically typed small-step reduction relation and its
+% reflexive transitive closure in the usual way (details omitted).
+% \SmallStepSingleReduction
+% \SmallStepReduction
 
-The same lemmas as for the big-step semantics serve to prove the
-soundness of small-step reduction:
-A small-step reduction step does not change the denotational semantics.
-\SmallStepSoundness
+% The same lemmas as for the big-step semantics serve to prove the
+% soundness of small-step reduction:
+% A small-step reduction step does not change the denotational semantics.
+% \SmallStepSoundness
 
-The interesting part is the following definition of a ``big-step API'' for the small-step semantics.
-First we define an evaluation judgment based on the small-step semantics.
-\SmallStepBigAPI
-Then we define functions analogous to the constructors of the big-step semantics as well as the function stating that values do not reduce.
-\SmallStepBigAPIFunctions
-We omit their definitions, which amount to the proof that the small-step semantics simulates the big-step semantics.
+% The interesting part is the following definition of a ``big-step API'' for the small-step semantics.
+% First we define an evaluation judgment based on the small-step semantics.
+% \SmallStepBigAPI
+% Then we define functions analogous to the constructors of the big-step semantics as well as the function stating that values do not reduce.
+% \SmallStepBigAPIFunctions
+% We omit their definitions, which amount to the proof that the small-step semantics simulates the big-step semantics.
 
-While the definition of the logical relation and some of the proofs leading up to adequacy make use of the API, but for the big-step evaluation relation, none of them performs pattern matching against its constructors. Hence, replacing them by the API functions for the small-step semantics does not affect any of the proofs.
-In consequence, the identical definitions yield a logical relation for
-the small-step semantics with all proofs in place.
+% While the definition of the logical relation and some of the proofs leading up to adequacy make use of the API, but for the big-step evaluation relation, none of them performs pattern matching against its constructors. Hence, replacing them by the API functions for the small-step semantics does not affect any of the proofs.
+% In consequence, the identical definitions yield a logical relation for
+% the small-step semantics with all proofs in place.
 
 
 \section{Related Work}

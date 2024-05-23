@@ -137,17 +137,20 @@ module Subst where
   subst P refl Px = Px  
 
   --! HetEqDef
-  data _≅_ {A : Set ℓ₁} (x : A) : ∀ {B : Set ℓ₂} → B → Set ℓ₁ where
+  data _≅_ {A : Set ℓ₁} (x : A) : {B : Set ℓ₂} → B → Set ℓ₁ where
     refl : x ≅ x
 
   --! HetEqSubstRemovable
-  ≡-subst-removable : ∀ {A : Set ℓ₁} (P : A → Set ℓ₂) {x y} (eq : x ≡ y) (z : P x) →
+  ≡-subst-removable : ∀ {A : Set ℓ₁} {x y} →
+    (P : A → Set ℓ₂) (eq : x ≡ y) (z : P x) →
     subst P eq z ≅ z
   ≡-subst-removable P refl z = refl
 
   --! HetEqCongII
-  cong₂ : ∀ {A : Set ℓ₁} {B : A → Set ℓ₂} {C : ∀ x → B x → Set ℓ₃} {x y u v}
-          (f : (x : A) (y : B x) → C x y) → x ≅ y → u ≅ v → f x u ≅ f y v
+  cong₂ : ∀  {A : Set ℓ₁} {B : A → Set ℓ₂}
+             {C : ∀ x → B x → Set ℓ₃} {x y u v}
+             (f : (x : A) (y : B x) → C x y) →
+             x ≅ y → u ≅ v → f x u ≅ f y v
   cong₂ f refl refl = refl
 
   --! HetEqConv
@@ -200,11 +203,14 @@ module WithPropEq where
   open import Relation.Binary.PropositionalEquality using (subst; sym; trans; cong; cong₂)
   open ≡-Reasoning
 
+  private variable
+    ℓ ℓ' ℓ₁ ℓ₂ : Level
+
   --! DistSubst
   dist-subst :
-    ∀ {ℓ ℓ' ℓ₁ ℓ₂} {A : Set ℓ} {B : Set ℓ'} {a₁ a₂ : A} (F : A → Set ℓ₁) (G : B → Set ℓ₂) →
-      (a→b : A → B) (f : ∀ {a} → F a → G (a→b a)) (a₁≡a₂ : a₁ ≡ a₂) (b₁≡b₂ : a→b a₁ ≡ a→b a₂)
-      (x : F a₁) →
+    ∀ {A : Set ℓ} {B : Set ℓ'} {a₁ a₂ : A} (F : A → Set ℓ₁)
+      (G : B → Set ℓ₂) (a→b : A → B) (f : ∀ {a} → F a → G (a→b a))
+      (a₁≡a₂ : a₁ ≡ a₂) (b₁≡b₂ : a→b a₁ ≡ a→b a₂) (x : F a₁) →
     f {a₂} (subst F a₁≡a₂ x) ≡ subst G b₁≡b₂ (f {a₁} x)
   dist-subst _ _ _ _ refl refl _ = refl
 
@@ -219,7 +225,8 @@ module WithPropEq where
   Eidₛe≡e = {!!}
 
   --! CongTApp
-  cong-∙ : ∀ {T : Type (l ∷ Δ) l′} {e₁ e₂ : Expr Δ Γ (`∀α l , T)} (e₁≡e₂ : e₁ ≡ e₂) (T₁≡T₂ : T₁ ≡ T₂) →
+  cong-∙ : ∀  {T : Type (l ∷ Δ) l′} {e₁ e₂ : Expr Δ Γ (`∀α l , T)}
+              (e₁≡e₂ : e₁ ≡ e₂) (T₁≡T₂ : T₁ ≡ T₂) →
     let S = subst (λ T′ → Expr Δ Γ (T [ T′ ]T)) T₁≡T₂ in
     S (e₁ ∙ T₁) ≡ (e₂ ∙ T₂)
   cong-∙ refl refl = refl
@@ -230,12 +237,20 @@ module WithPropEq where
       σ₂* : TSub Δ₁ Δ₂
       Γ₃ : TEnv Δ₃
 
-    --! FusionESubESub
-    fusion-Esub-Esub : ∀  (e : Expr Δ₁ Γ₁ T) (σ₁ : ESub σ₁* Γ₂ Γ₃) 
-                          (σ₂ : ESub σ₂* Γ₁ Γ₂) →
+    module A where
+      --! FusionESubESub
+      fusion-Esub-Esub : ∀  (e : Expr Δ₁ Γ₁ T) (σ₁ : ESub σ₁* Γ₂ Γ₃) 
+                            (σ₂ : ESub σ₂* Γ₁ Γ₂) →
+        let S₁ = subst (Expr Δ₃ Γ₃) (fusion-Tsub-Tsub T σ₁* σ₂*) in  
+        S₁ (Esub σ₁* σ₁ (Esub σ₂* σ₂ e)) ≡ 
+        Esub (σ₁* ∘Tₛₛ σ₂*) (σ₁ ∘Eₛₛ σ₂) e 
+
+      fusion-Esub-Esub = {!!}
+
+    --! FusionESubESubAlt
+    fusion-Esub-Esub : ∀  (e : Expr Δ₁ Γ₁ T) (σ₁ : ESub σ₁* Γ₂ Γ₃) (σ₂ : ESub σ₂* Γ₁ Γ₂) →
       let S₁ = subst (Expr Δ₃ Γ₃) (fusion-Tsub-Tsub T σ₁* σ₂*) in  
-      S₁ (Esub σ₁* σ₁ (Esub σ₂* σ₂ e)) ≡ 
-      Esub (σ₁* ∘Tₛₛ σ₂*) (σ₁ ∘Eₛₛ σ₂) e 
+      S₁ (Esub σ₁* σ₁ (Esub σ₂* σ₂ e)) ≡ Esub (σ₁* ∘Tₛₛ σ₂*) (σ₁ ∘Eₛₛ σ₂) e 
 
     --! FusionESubESubBody
     fusion-Esub-Esub {σ₁* = σ₁*} {Γ₂ = Γ₂} {Γ₃ = Γ₃} {σ₂* = σ₂*} (_∙_ {l = l} {T = T} e T′) σ₁ σ₂ = 
@@ -259,7 +274,8 @@ module WithPropEq where
         F₈ = Expr _ Γ₃ ; E₈ = {!!} ; S₈ = subst F₈ E₈
   
         --! FusionESubESubBodyProofA
-        p₁ = cong S₁ (dist-subst F₂ F₃ (Tsub σ₁*) (Esub σ₁* σ₁) E₂ E₃ (Esub σ₂* σ₂ e ∙ Tsub σ₂* T′))
+        p₁ = cong S₁ (dist-subst  F₂ F₃ (Tsub σ₁*) (Esub σ₁* σ₁) E₂ E₃
+                                  (Esub σ₂* σ₂ e ∙ Tsub σ₂* T′))
   
         --! FusionESubESubBodyProofB
         p₂ = {!!}
@@ -268,7 +284,8 @@ module WithPropEq where
         p₃ = {!!}
   
         --! FusionESubESubBodyProofD
-        p₄ = cong S₅ (cong-∙ (fusion-Esub-Esub e σ₁ σ₂) (fusion-Tsub-Tsub T′ σ₁* σ₂*))
+        p₄ = cong S₅ (cong-∙  (fusion-Esub-Esub e σ₁ σ₂)
+                              (fusion-Tsub-Tsub T′ σ₁* σ₂*))
   
     fusion-Esub-Esub {Δ₂} {Δ₃} {Δ₁} {l} {σ₁*} {σ₂*} {Γ₁} {Γ₂} {Γ₃} {T} e σ₁ σ₂ = {!!}
 
@@ -306,15 +323,18 @@ module WithHetEq where
       F₅ = Expr Δ₃ Γ₃ ; E₅ = ≡.sym (swap-Tsub-[] (σ₁* ∘Tₛₛ σ₂*) T T′)                       ; S₅ = subst F₅ E₅
 
       --! FusionESubESubHetProofA
-      p₁ = cong₂  {A = Type Δ₂ l} {B = λ T → Expr Δ₂ Γ₂ T} (λ T e → Esub σ₁* σ₁ e)
+      p₁ = cong₂  {A = Type Δ₂ l} {B = λ T → Expr Δ₂ Γ₂ T}
+                  (λ T e → Esub σ₁* σ₁ e)
                   (sym (≡-to-≅ E₂)) (≡-subst-removable F₂ E₂ _)
 
       --! FusionESubESubHetProofB
-      p₂ = ≡-subst-removable F₄ E₄ _        -- recall that S₄ = subst F₄ E₄
-      p₄ = sym (≡-subst-removable F₅ E₅ _)  -- recall that S₅ = subst F₅ E₅
+      p₂ = ≡-subst-removable F₄ E₄ _        -- S₄ = subst F₄ E₄
+      p₄ = sym (≡-subst-removable F₅ E₅ _)  -- S₅ = subst F₅ E₅
 
       --! FusionESubESubHetProofC
-      p₃ = cong₃  {A = Type (_ ∷ Δ₃) l} {B = λ T → Expr Δ₃ Γ₃ (`∀α _ , T)} {C = λ _ _ → Type Δ₃ _ }
+      p₃ = cong₃  {A = Type (_ ∷ Δ₃) l}
+                  {B = λ T → Expr Δ₃ Γ₃ (`∀α _ , T)}
+                  {C = λ _ _ → Type Δ₃ _ }
                   (λ _ e T′ → e ∙ T′)
                   (≡-to-≅ (fusion-Tsub-Tsub-lift T σ₁* σ₂*))
                   (fusion-Esub-Esub e σ₁ σ₂)

@@ -29,14 +29,14 @@ open import StratF.Util.SubstProperties
 
 --! LRVrenEqType
 LRVren-eq′ :
-  ∀ {Δ₁} {Δ₂} {l} (T : Type Δ₁ l) (ρ : RelEnv Δ₂) (τ* : TRen Δ₁ Δ₂) →
-  let ρ* = π₁ ρ in
-  (v : Value (Tsub (τ* ∘ᵣₛ ρ*) T)) →
-  (z : ⟦ T ⟧ (⟦ π₁ (Tren-act τ* ρ) ⟧* [])) →
+  ∀ (T : Type Δ₁ l) (ρ : RelEnv Δ₂) (τ* : TRen Δ₁ Δ₂) →
+  let ρ* = π₁ ρ in  (v : Value (Tsub (τ* ∘ᵣₛ ρ*) T)) →
+                    (z : ⟦ T ⟧ (⟦ π₁ (Tren-act τ* ρ) ⟧* [])) →
   let S = subst₂  (λ vv zz → Value vv → zz → Set l)
                   (fusion-Tsub-Tren T τ* ρ*)
-                  (Tren*-preserves-semantics  {ρ* = τ*} {⟦ π₁ (Tren-act τ* ρ) ⟧* []}
-                                               {⟦ ρ* ⟧* []} (τ*∈Ren* τ* ρ*) T) in
+                  (Tren*-preserves-semantics
+                    {ρ* = τ*} {⟦ π₁ (Tren-act τ* ρ) ⟧* []}
+                    {⟦ ρ* ⟧* []} (τ*∈Ren* τ* ρ*) T) in
   𝓥⟦ T ⟧ (Tren-act τ* ρ) v z ≡ S (𝓥⟦ Tren τ* T ⟧ ρ) v z
 
 LRVren-eq′ `ℕ ρ τ* v z = refl
@@ -1713,13 +1713,13 @@ LRVren-eq :  ∀ {Δ₁}{Δ₂}{l}
 LRVren-eq T ρ τ* = fun-ext (λ v → fun-ext (λ z → LRVren-eq′ T ρ τ* v z))
 
 --! LRVwk
-LRVwk-eq :
-  ∀ {Δ} {l} {l₁} (T : Type Δ l) (ρ : RelEnv (l₁ ∷ Δ)) →
-  let ρ* = π₁ ρ in
-  ∀ (v : Value (Tsub (Tdropₛ ρ*) T)) (z : ⟦ T ⟧ (⟦ Tdropₛ ρ* ⟧* [])) →
-  let S₁ = subst Value (sym (fusion-Tsub-Tren T (Twkᵣ Tidᵣ) ρ*)) in
-  let S₂ = subst id (sym (Tren*-preserves-semantics {ρ* = Twkᵣ Tidᵣ} {⟦ Tdropₛ ρ* ⟧* []} {⟦ ρ* ⟧* []}
-                            (wkᵣ∈Ren* (⟦ Tdropₛ ρ* ⟧* []) (⟦ ρ* _ here ⟧ [])) T)) in
+LRVwk-eq : ∀ {Δ} {l} {l₁} (T : Type Δ l) (ρ : RelEnv (l₁ ∷ Δ)) →
+  let ρ* = π₁ ρ in ∀  (v : Value (Tsub (Tdropₛ ρ*) T))
+                      (z : ⟦ T ⟧ (⟦ Tdropₛ ρ* ⟧* [])) →
+  let S₁ =  subst Value
+            (sym (fusion-Tsub-Tren T (Twkᵣ Tidᵣ) ρ*)) in
+  let S₂ =  subst id (sym (Tren*-preserves-semantics
+            (wkᵣ∈Ren* (⟦ Tdropₛ ρ* ⟧* []) (⟦ ρ* _ here ⟧ [])) T)) in
   𝓥⟦ T ⟧ (REdrop ρ) v z ≡ 𝓥⟦ Twk T ⟧ ρ (S₁ v) (S₂ z)
 
 -- LRVwk-eq : ∀ {Δ} {l} {l₁}
@@ -1853,9 +1853,11 @@ LRVwk-eq T ρ v z =
 
 --! MCGLookupBody
 𝓖-lookup .(T ◁ _) ρ χ γ T (𝓥 , 𝓖) here = 𝓥
-𝓖-lookup (_ ◁ Γ) ρ χ γ T (𝓥 , 𝓖) (there x) = 𝓖-lookup Γ ρ (Cdrop χ) (Gdrop γ) T 𝓖 x
+𝓖-lookup (_ ◁ Γ) ρ χ γ T (𝓥 , 𝓖) (there x) =
+  𝓖-lookup Γ ρ (Cdrop χ) (Gdrop γ) T 𝓖 x
 𝓖-lookup (_ ◁* Γ) ρ χ γ .(Twk _) 𝓖 (tskip {T = T} x) =
-  let ih = 𝓖-lookup Γ (REdrop ρ) (Cdrop-t χ) (Gdrop-t (π₁ ρ) γ) T 𝓖 x in
+  let ih = 𝓖-lookup  Γ (REdrop ρ) (Cdrop-t χ)
+                     (Gdrop-t (π₁ ρ) γ) T 𝓖 x in
 
   let v = χ _ (Twk T) (tskip x) in
   let z = γ _ (Twk T) (tskip x) in

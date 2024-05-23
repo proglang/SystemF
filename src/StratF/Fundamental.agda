@@ -580,7 +580,7 @@ Csub-closed' {T = T} χ e =
 χ₀ l T ()
 
 --! CsubClosed
-Csub-closed : {T : Type [] l} (χ : CSub (π₁ ρ₀) ∅) → (e : CExpr T) →
+Csub-closed : ∀ (χ : CSub (π₁ ρ₀) ∅) (e : CExpr T) →
   Csub χ e ≡ subst CExpr Tsub-closed e
 
 Csub-closed χ e = 
@@ -595,12 +595,13 @@ Csub-closed χ e =
   )
 
 --! AdequacyType
-adequacy : (e : CExpr `ℕ) → (n : ℕ) → E⟦ e ⟧ [] γ₀ ≡ n → e ⇓ (# n , V-♯)
+adequacy : ∀ (e : CExpr `ℕ) (n : ℕ) →
+  E⟦ e ⟧ [] γ₀ ≡ n → e ⇓ (# n , V-♯)
 
 --! AdequacyBody
-adequacy e n ⟦e⟧≡n
-  with fundamental ∅ `ℕ e ρ₀ χ₀ γ₀ tt
+adequacy e n ⟦e⟧≡n with fundamental ∅ `ℕ e ρ₀ χ₀ γ₀ tt
 ... | ((# .(E⟦ e ⟧ [] γ₀)) , V-♯) , e⇓v , (.(E⟦ e ⟧ [] γ₀) , refl , refl) =
-  subst₂ _⇓_ (Csub-closed χ₀ e) (cong (λ n → (# n) , V-♯) ⟦e⟧≡n) e⇓v
+  subst₂ _⇓_ (Csub-closed χ₀ e)
+             (cong (λ n → (# n) , V-♯) ⟦e⟧≡n) e⇓v
 
  
