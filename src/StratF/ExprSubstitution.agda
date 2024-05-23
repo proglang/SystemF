@@ -65,7 +65,8 @@ Ewk-l e = Eren _ (Ewkᵣ-l _) e
 
 --! DefESub
 ESub : TSub Δ₁ Δ₂ → TEnv Δ₁ → TEnv Δ₂ → Set
-ESub {Δ₁ = Δ₁} {Δ₂ = Δ₂} σ* Γ₁ Γ₂ = ∀ l (T : Type Δ₁ l) → inn T Γ₁ → Expr Δ₂ Γ₂ (Tsub σ* T)
+ESub {Δ₁ = Δ₁} {Δ₂ = Δ₂} σ* Γ₁ Γ₂ = 
+  ∀ l (T : Type Δ₁ l) → inn T Γ₁ → Expr Δ₂ Γ₂ (Tsub σ* T)
 
 --! DefEidS
 Eidₛ : ESub Tidₛ Γ Γ
@@ -79,9 +80,12 @@ Edropₛ : (σ* : TSub Δ₁ Δ₂) → ESub σ* (T ◁ Γ₁) Γ₂ → ESub σ
 Edropₛ σ* σ _ _ x = σ _ _ (there x)
 
 --! DefEsub
-Esub      : (σ* : TSub Δ₁ Δ₂) → ESub σ* Γ₁ Γ₂ → Expr Δ₁ Γ₁ T → Expr Δ₂ Γ₂ (Tsub σ* T)
-Eliftₛ    : (σ* : TSub Δ₁ Δ₂) → ESub σ* Γ₁ Γ₂ → ESub σ* (T ◁ Γ₁) (Tsub σ* T ◁ Γ₂)
-Eliftₛ-l  : (σ* : TSub Δ₁ Δ₂) → ESub σ* Γ₁ Γ₂ → ESub (Tliftₛ σ* l) (l ◁* Γ₁) (l ◁* Γ₂)
+Esub      :  (σ* : TSub Δ₁ Δ₂) → ESub σ* Γ₁ Γ₂ → 
+             Expr Δ₁ Γ₁ T → Expr Δ₂ Γ₂ (Tsub σ* T)
+Eliftₛ    :  (σ* : TSub Δ₁ Δ₂) → ESub σ* Γ₁ Γ₂ → 
+             ESub σ* (T ◁ Γ₁) (Tsub σ* T ◁ Γ₂)
+Eliftₛ-l  :  (σ* : TSub Δ₁ Δ₂) → ESub σ* Γ₁ Γ₂ → 
+             ESub (Tliftₛ σ* l) (l ◁* Γ₁) (l ◁* Γ₂)
 
 Eliftₛ _ σ _ _ here = ` here
 Eliftₛ _ σ _ _ (there x) = Ewk (σ _ _ x)

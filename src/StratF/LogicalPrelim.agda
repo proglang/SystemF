@@ -91,7 +91,8 @@ subst←RE-ren : ∀ (ρ : RelEnv Δ₂) (τ* : TRen Δ₁ Δ₂)
 subst←RE-ren ρ τ* l′ x = refl
 
 --! lemmaOne
-RE-ext∘lift : ∀ (ρ : 𝓓⟦ Δ ⟧) (T : Type (l ∷ Δ) l′) (T′ : Type [] l) (R : REL T′) →
+RE-ext∘lift : 
+  ∀ (ρ : 𝓓⟦ Δ ⟧) (T : Type (l ∷ Δ) l′) (T′ : Type [] l) (R : REL T′) →
   Tsub (Tliftₛ (π₁ ρ) l) T [ T′ ]T ≡ Tsub (π₁ (REext ρ (T′ , R))) T
 
 RE-ext∘lift {l = l} ρ T T′ R =
@@ -144,7 +145,8 @@ Gdrop-extend {l = l} {Δ = Δ} {Γ = Γ}{T = T}{η = η} γ z = fun-extω (λ l�
 
 --! CSub
 CSub : TSub Δ [] → Ctx Δ → Set
-CSub {Δ} σ* Γ = ∀ l (T : Type Δ l) → inn T Γ → CValue (Tsub σ* T)
+CSub {Δ = Δ} σ* Γ = 
+    ∀ l (T : Type Δ l) → inn T Γ → CValue (Tsub σ* T)
 
 --! ESSC
 ς₁ : CSub σ* Γ → ESub σ* Γ ∅

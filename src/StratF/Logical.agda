@@ -30,22 +30,20 @@ open import StratF.Util.SubstProperties
 open import StratF.LogicalPrelim
 
 --! MCVType
-𝓥⟦_⟧  : (T : Type Δ l) → (ρ : 𝓓⟦ Δ ⟧) → CValue  (Tsub (π₁ ρ) T) → ⟦ T ⟧ (⟦ π₁ ρ ⟧* []) → Set l
-𝓔⟦_⟧  : (T : Type Δ l) → (ρ : 𝓓⟦ Δ ⟧) → CExpr   (Tsub (π₁ ρ) T) → ⟦ T ⟧ (⟦ π₁ ρ ⟧* []) → Set l
+𝓥⟦_⟧  :  (T : Type Δ l) → (ρ : 𝓓⟦ Δ ⟧) → 
+         CValue (Tsub (π₁ ρ) T) → ⟦ T ⟧ (⟦ π₁ ρ ⟧* []) → Set l
+𝓔⟦_⟧  :  (T : Type Δ l) → (ρ : 𝓓⟦ Δ ⟧) → 
+         CExpr (Tsub (π₁ ρ) T) → ⟦ T ⟧ (⟦ π₁ ρ ⟧* []) → Set l
 
 --! MCVBody
-𝓥⟦ `ℕ ⟧ ρ u z =
-  ∃[ n ] (exp u ≡ # n) ∧ (n ≡ z)
-𝓥⟦ T₁ ⇒ T₂ ⟧ ρ u f =
-  ∃[ e ] (exp u ≡ ƛ e) ∧
+𝓥⟦ `ℕ ⟧ ρ u z = ∃[ n ] (exp u ≡ # n) ∧ (n ≡ z)
+𝓥⟦ T₁ ⇒ T₂ ⟧ ρ u f =  ∃[ e ] (exp u ≡ ƛ e) ∧
   ∀ w z → 𝓥⟦ T₁ ⟧ ρ w z → 𝓔⟦ T₂ ⟧ ρ (e [ exp w ]E) (f z)
 𝓥⟦ ` α ⟧ ρ v z =
   π₂ ρ _ α v (subst id (subst-var-preserves α (π₁ ρ) []) z)
-𝓥⟦ `∀α l , T ⟧ ρ u F =
-  ∃[ e ] (exp u ≡ Λ l ⇒ e) ∧
-  ∀ T′ R →
-  ∃[ v ] (e [ T′ ]ET ⇓ v)
-       ∧ 𝓥⟦ T ⟧ (REext ρ (T′ , R)) (subst CValue (RE-ext∘lift ρ T T′ R) v) (F (⟦ T′ ⟧ []))
+𝓥⟦ `∀α l , T ⟧ ρ u F = ∃[ e ] (exp u ≡ Λ l ⇒ e) ∧ ∀ T′ R →
+  ∃[ v ] (e [ T′ ]ET ⇓ v) ∧ 𝓥⟦ T ⟧ (REext ρ (T′ , R)) 
+    (subst CValue (RE-ext∘lift ρ T T′ R) v) (F (⟦ T′ ⟧ []))
 
 --! MCE
 𝓔⟦ T ⟧ ρ e z = ∃[ v ] (e ⇓ v) ∧ 𝓥⟦ T ⟧ ρ v z
@@ -53,10 +51,13 @@ open import StratF.LogicalPrelim
 -- extended LR on environments
 
 --! MCG
-𝓖⟦_⟧ : (Γ : Ctx Δ) (ρ : RelEnv Δ) → CSub (π₁ ρ) Γ → Env Δ Γ (⟦ π₁ ρ ⟧* []) → Set (levelEnv Γ)
-𝓖⟦ ∅       ⟧ ρ χ γ = ⊤
-𝓖⟦ T ◁ Γ   ⟧ ρ χ γ = 𝓥⟦ T ⟧ ρ (χ _ _ here) (γ _ _ here) ∧ 𝓖⟦ Γ ⟧ ρ (Cdrop χ) (Gdrop γ)
-𝓖⟦ l ◁* Γ  ⟧ ρ χ γ = 𝓖⟦ Γ ⟧ (REdrop ρ) (Cdrop-t χ) (Gdrop-t (π₁ ρ) γ)
+𝓖⟦_⟧ :  (Γ : Ctx Δ) (ρ : RelEnv Δ) → CSub (π₁ ρ) Γ → 
+        Env Δ Γ (⟦ π₁ ρ ⟧* []) → Set (levelEnv Γ)
+𝓖⟦ ∅      ⟧ ρ χ γ = ⊤
+𝓖⟦ T ◁ Γ  ⟧ ρ χ γ =  𝓥⟦ T ⟧ ρ (χ _ _ here) (γ _ _ here) ∧ 
+                     𝓖⟦ Γ ⟧ ρ (Cdrop χ) (Gdrop γ)
+𝓖⟦ l ◁* Γ ⟧ ρ χ γ = 𝓖⟦ Γ ⟧  (REdrop ρ) (Cdrop-t χ) 
+                            (Gdrop-t (π₁ ρ) γ)
 
 --! substSplitEqEval
 subst-split-eq-⇓ :

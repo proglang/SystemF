@@ -139,11 +139,10 @@ Elift-[]≡Cextt Γ ρ χ l′ l T e T′ R =
 -- semantic soundness
 
 --! SemanticSoundness {
-semantic-soundness : ∀ (Γ : Ctx Δ) (T : Type Δ l) (e : Expr Δ Γ T) → Setω
-semantic-soundness {Δ = Δ} Γ T e =
-  (ρ : 𝓓⟦ Δ ⟧) →
-  let ρ* = π₁ ρ in
-  let η = ⟦ ρ* ⟧* [] in
+semantic-soundness : 
+  ∀ (Γ : Ctx Δ) (T : Type Δ l) (e : Expr Δ Γ T) → Setω
+semantic-soundness {Δ = Δ} Γ T e = (ρ : 𝓓⟦ Δ ⟧) → 
+  let ρ* = π₁ ρ ; η = ⟦ ρ* ⟧* [] in
   (χ : CSub ρ* Γ) (γ : Env Δ Γ η) →
   𝓖⟦ Γ ⟧ ρ χ γ → 𝓔⟦ T ⟧ ρ (Csub χ e) (E⟦ e ⟧ η γ)
 
@@ -153,10 +152,11 @@ syntax semantic-soundness Γ T e = Γ ⊨ e ⦂ T
 -- fundamental theorem
 
 --! FundamentalType
-fundamental : ∀ (Γ : Ctx Δ) → (T : Type Δ l) → (e : Expr Δ Γ T) → Γ ⊨ e ⦂ T
+fundamental :  ∀ (Γ : Ctx Δ) (T : Type Δ l) (e : Expr Δ Γ T) → 
+               Γ ⊨ e ⦂ T
 
 --! FundamentalConstant
-fundamental Γ .`ℕ (# n) ρ χ γ 𝓖⟦Γ⟧ =
+fundamental Γ .`ℕ (# n) ρ χ γ 𝓖⟦Γ⟧ = 
   (# n , V-♯) , ⇓-n , (n , (refl , refl))
 
 --! FundamentalSuccessor
@@ -167,27 +167,24 @@ fundamental Γ .`ℕ (`suc e) ρ χ γ 𝓖⟦Γ⟧
 
 --! FundamentalVariable
 fundamental Γ T (` x) ρ χ γ 𝓖⟦Γ⟧ =
-  let w = χ _ _ x in
-  let 𝓥⟦T⟧wz = 𝓖-lookup Γ ρ χ γ T 𝓖⟦Γ⟧ x in
+  let w = χ _ _ x ; 𝓥⟦T⟧wz = 𝓖-lookup Γ ρ χ γ T 𝓖⟦Γ⟧ x in
   w , Value-⇓ w , 𝓥⟦T⟧wz
 
 --! FundamentalLambda
 fundamental Γ (T₁ ⇒ T₂) (ƛ e) ρ χ γ 𝓖⟦Γ⟧ =
-  (Csub χ (ƛ e), V-ƛ) ,
-  ⇓-ƛ ,
-  Esub _ (Eliftₛ _ (ς₁ χ)) e ,
-  refl ,
+  (Csub χ (ƛ e), V-ƛ) , ⇓-ƛ , Esub _ (Eliftₛ _ (ς₁ χ)) e , refl ,
   (λ w z 𝓥⟦T₁⟧wz →
-    let eq₁  : χ ≡ Cdrop {T = T₁} (Cextend χ w)
-        eq₁  = Cdrop-Cextend {T = T₁} χ w
-        eqω₁ : γ ≡ω Gdrop {T = T₁} (extend γ z)
-        eqω₁ = Gdrop-extend {T = T₁} γ z
-        𝓖⟦T₁◁Γ⟧ = (𝓥⟦T₁⟧wz , substlω (𝓖⟦ Γ ⟧ ρ) eq₁ eqω₁ 𝓖⟦Γ⟧)
-        eq₂ : Csub (Cextend χ w) e ≡ (Esub (π₁ ρ) (Eliftₛ (π₁ ρ) (ς₁ χ)) e [ exp w ]E)
-        eq₂ = Cextend-Elift χ w e
-        (v , ew⇓v , 𝓥⟦T₂⟧vy) = fundamental (T₁ ◁ Γ) T₂ e ρ (Cextend χ w) (extend γ z) 𝓖⟦T₁◁Γ⟧
-    in
-        v , subst (_⇓ v) eq₂ ew⇓v , 𝓥⟦T₂⟧vy)
+    let eq₁      :  χ ≡ Cdrop {T = T₁} (Cextend χ w)
+        eq₁      =  Cdrop-Cextend {T = T₁} χ w
+        eqω₁     :  γ ≡ω Gdrop {T = T₁} (extend γ z)
+        eqω₁     =  Gdrop-extend {T = T₁} γ z
+        𝓖⟦T₁◁Γ⟧  =  (𝓥⟦T₁⟧wz , substlω (𝓖⟦ Γ ⟧ ρ) eq₁ eqω₁ 𝓖⟦Γ⟧)
+        eq₂      :  Csub (Cextend χ w) e ≡ 
+                    Esub (π₁ ρ) (Eliftₛ (π₁ ρ) (ς₁ χ)) e [ exp w ]E
+        eq₂      =  Cextend-Elift χ w e
+        (v , ew⇓v , 𝓥⟦T₂⟧vy) = fundamental (T₁ ◁ Γ) T₂ e ρ 
+          (Cextend χ w) (extend γ z) 𝓖⟦T₁◁Γ⟧
+    in v , subst (_⇓ v) eq₂ ew⇓v , 𝓥⟦T₂⟧vy)
 
 --! FundamentalApplication
 fundamental Γ T (_·_ {T = T₂} {T′ = .T} e₁ e₂) ρ χ γ 𝓖⟦Γ⟧

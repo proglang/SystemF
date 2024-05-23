@@ -101,7 +101,7 @@
   \AgdaNoSpaceAroundCode{}%
 }{%
   \AgdaSpaceAroundCode{}
-  % \vspace{\AgdaEmptySkip}
+  \vspace{-\AgdaEmptySkip}
 }
 
 
@@ -492,9 +492,11 @@ style, and defines substitutions in terms of renamings
 
 Renamings {\ATRen} and substitutions {\ATSub} are defined as
 functions mapping type variables to type variables and types, respectively.
-
-\SubDefTRen
-\SubDefTSub
+\begin{AgdaBlock}
+  \SubDefTRen
+  \vspace{-2.5mm}
+  \SubDefTSub
+\end{AgdaBlock}
 % \noindent\hspace{-\fboxsep} 
 % \begin{minipage}{0.5\linewidth}
 %   \SubDefTRen
@@ -508,8 +510,11 @@ and {\ATsub}, are defined by induction over the type. When the
 operations need to go under a binder, they lift the renaming and
 substitution with {\ATliftR} and {\ATliftS}, respectively.
 
-\SubDefTren
-\SubDefTsub
+\begin{AgdaBlock}
+  \SubDefTren
+  \vspace{-2.5mm}
+  \SubDefTsub
+\end{AgdaBlock}
 % \noindent\hspace{-\fboxsep}
 % \begin{minipage}{0.5\linewidth}
 %   \SubDefTren
@@ -519,13 +524,16 @@ substitution with {\ATliftR} and {\ATliftS}, respectively.
 % \end{minipage}
 
 The identity renaming {\ATidR} and substitution
-{\ATidS} behave like the identity function and the variable
+{\ATidS} behave like identity function and variable
 type constructor, respectively, and act as neutral elements when applied to a type:
 
-\SubDefTidR
-\TFTidRNeutral
-\SubDefTidS
-\TFTidSNeutral
+\begin{AgdaBlock}
+  \SubDefTidR
+  \TFTidRNeutral
+  \vspace{-2.5mm}
+  \SubDefTidS
+  \TFTidSNeutral
+\end{AgdaBlock}
 % \noindent\hspace{-\fboxsep}
 % \begin{minipage}{0.5\linewidth}
 %   \begin{AgdaBlock}
@@ -543,7 +551,7 @@ type constructor, respectively, and act as neutral elements when applied to a ty
 
 To prove lemmas about the interaction of multiple renamings and substitutions,
 compositions and fusion lemmas are defined for all four combinations
-of renamings and substutions.
+of renamings and substitutions.
 For example, the composition of two type substitutions is defined by
 \SubstExamplesTCompSS
 % \SubDefTCompositionSS
@@ -551,8 +559,8 @@ with the corresponding fusion lemma:
 \SubstExamplesFusionTSubTSub
 % \TFFusionSubSub
 
-With the help of the fusion lemmas, we prove interaction lemmas
-between renamings and substitutions, e.g., that any substitution
+With the fusion lemmas, we prove interaction lemmas
+between renamings and substitutions, e.g., that a substitution
 \ACode{σ} can be swapped with a weakening \AFun{Twk} by lifting \ACode{σ}:
 \TFSwapTsubTwk
 
@@ -652,8 +660,7 @@ It remains to define a compositional function from the expression
 syntax to the semantic domain that we already prepared in
 Section~\ref{sec:types}. We start with value environments.
 \TFVEnv
-Value environments are represented as functions \textemdash{} we could have done
-that in the simply-typed interpreter, too. They are indexed by a
+Value environments are represented as functions. They are indexed by a
 domain environment $\eta$ to calculate the correct return type.
 
 The definition of the interpretation function follows.
@@ -673,7 +680,7 @@ Semantically, all we need is $(\gamma\ \_\ \_\ x)$, but it does not have
 the expected type. The {\Asubst} function enables us to apply a lemma
 to the type. It establishes that interpreting a
 weakened type in an extended domain environment gives the same result
-as interpreting the type in the orginal domain environment.
+as interpreting the type in the domain environment.
 The actual statement of this lemma is for arbitrary
 renamings. This added generality is needed to prove it.
 \TFRenPreservesSemanticsType
@@ -710,7 +717,7 @@ reference point for the logical relation. We discuss it here because
 it contains a design choice that is crucial for proving the
 fundamental theorem in Section~\ref{sec:fundamental}.
 
-We start by defining the
+We start with the
 standard notions of closed expressions {\ACExpr} and values {\AValue}, the latter being
 pairs of a closed expression and evidence {\AisValue} that it is a syntactic value.
 \BigStepCExpr
@@ -749,8 +756,8 @@ The proof of this theorem is remarkably simple, mostly by appealing to the
 inductive hypotheses. The cases for function application and type
 application require two lemmas {\AEEsingleSubstPreserves} and
 {\AETsingleSubstPreserves} that relate semantic substitution with
-expression-in-expression substitution (marked with \verb!_[_]E!) and type-in-expression
-substitution (marked with \verb!_[_]ET!), respectively.
+expression-in-expression substitution (marked with \AgdaFunction{\_[\_]E}) and type-in-expression
+substitution (marked with \AgdaFunction{\_[\_]ET}), respectively.
 \ESPSEEsingleSubstPreserves
 \ESPSETsingleSubstPreserves
 These lemmas have similar problems with equalities as the fusion
@@ -807,15 +814,19 @@ semantic environment that interprets each substituted type according
 to $\eta$.
 \TFsubstToEnv
 
-\begin{figure}[tp]
-  \begin{flushleft}
-    \LogicalMCVType \LogicalMCVBody \LogicalMCE
-  \end{flushleft}
-\caption{The logical relation}
-  \label{fig:logical-relation}
-\end{figure}
+% \begin{figure}[tp]
+%   \begin{flushleft}
+%     \LogicalMCVType \LogicalMCVBody \LogicalMCE
+%   \end{flushleft}
+% \caption{The logical relation}
+%   \label{fig:logical-relation}
+% \end{figure}
 With these definitions in place, we can state the type of the logical
-relation shown in Figure~\ref{fig:logical-relation}.
+relation:
+
+\LogicalMCVType 
+\LogicalMCVBody 
+\LogicalMCE
 
 The  relation {\AVSem} on values is defined by induction on the type $T$ and the parameter
 $\rho$ contains the relation environment. The intention is to define a

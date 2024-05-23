@@ -25,9 +25,8 @@ data isValue : Expr Δ Γ T → Set where
 --! Value
 record CValue (T : Type [] l) : Set where
   constructor _,_
-  field
-    exp : CExpr T
-    prf : isValue exp
+  field  exp : CExpr T
+         prf : isValue exp
 
 open CValue public
 

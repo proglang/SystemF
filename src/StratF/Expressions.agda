@@ -57,22 +57,22 @@ extend γ v _ _ here = v
 extend γ v _ _ (there x) = γ _ _ x
 
 --! ExtendTskip
-extend-tskip : ∀ {Δ : LEnv} {Γ : Ctx Δ} {η : Env* Δ} {⟦α⟧ : Set l} →
-  Env Δ Γ η → Env (l ∷ Δ) (l ◁* Γ) (⟦α⟧ ∷ η)
-extend-tskip {η = η} {⟦α⟧ = ⟦α⟧} γ _ _ (tskip {T = T} x) =
-  subst id  (sym (Tren*-preserves-semantics {ρ* = Twkᵣ Tidᵣ} {η} {⟦α⟧ ∷ η} (wkᵣ∈Ren* η ⟦α⟧) T))
-            (γ _ _ x)
+extend-tskip :  ∀ {⟦α⟧ : Set l} → Env Δ Γ η → 
+                Env (l ∷ Δ) (l ◁* Γ) (⟦α⟧ ∷ η)
+extend-tskip {⟦α⟧ = ⟦α⟧} γ _ _ (tskip {T = T} x) = subst 
+  id (sym (Tren*-preserves-semantics (wkᵣ∈Ren* _ ⟦α⟧) T)) 
+  (γ _ _ x)
 
 --! ExprSem
-E⟦_⟧ : ∀ {T : Type Δ l}{Γ : Ctx Δ} → Expr Δ Γ T → (η : Env* Δ) → Env Δ Γ η → ⟦ T ⟧ η
-E⟦ # n               ⟧ η γ = n
-E⟦ `suc e            ⟧ η γ = suc (E⟦ e ⟧ η γ)
-E⟦ ` x               ⟧ η γ = γ _ _ x
-E⟦ ƛ_ e              ⟧ η γ = λ v → E⟦ e ⟧ η (extend γ v)
-E⟦ e₁ · e₂           ⟧ η γ = E⟦ e₁ ⟧ η γ (E⟦ e₂ ⟧ η γ)
-E⟦ Λ l ⇒ e           ⟧ η γ = λ ⟦α⟧ → E⟦ e ⟧ (⟦α⟧ ∷ η) (extend-tskip γ)
-E⟦ _∙_ {T = T} e T′  ⟧ η γ = subst id (sym (Tsingle-subst-preserves η T′ T))
-                               (E⟦ e ⟧ η γ (⟦ T′ ⟧ η))
+E⟦_⟧ : Expr Δ Γ T → (η : Env* Δ) → Env Δ Γ η → ⟦ T ⟧ η
+E⟦ # n ⟧ η γ = n
+E⟦ `suc e ⟧ η γ = suc (E⟦ e ⟧ η γ)
+E⟦ ` x ⟧ η γ = γ _ _ x
+E⟦ ƛ_ e ⟧ η γ = λ v → E⟦ e ⟧ η (extend γ v)
+E⟦ e₁ · e₂ ⟧ η γ = E⟦ e₁ ⟧ η γ (E⟦ e₂ ⟧ η γ)
+E⟦ Λ l ⇒ e ⟧ η γ = λ ⟦α⟧ → E⟦ e ⟧ (⟦α⟧ ∷ η) (extend-tskip γ)
+E⟦ _∙_ {T = T} e T′ ⟧ η γ = subst id 
+  (sym (Tsingle-subst-preserves η T′ T)) (E⟦ e ⟧ η γ (⟦ T′ ⟧ η))
 
 -- auxiliary
 

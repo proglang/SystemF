@@ -29,8 +29,7 @@ fun-ext-h = HEq.≡-ext⇒≅-ext fun-ext
 
 --! DependentExt
 dep-ext : ∀ {a b} {A : Set a} {F G : (α : A) → Set b} →
-  (∀ (α : A) → F α ≡ G α) →
-  ((α : A) → F α) ≡ ((α : A) → G α) 
+  ((α : A) → F α ≡ G α) → ((α : A) → F α) ≡ ((α : A) → G α) 
 dep-ext = ∀-extensionality fun-ext _ _
 
 -- Functional Extensionalities for Setω-equalities

@@ -16,17 +16,12 @@ infix 15 _⇓_
 --! Semantics
 data _⇓_ : CExpr T → CValue T → Set where
   ⇓-n  :  # n ⇓ (# n , V-♯)
-  ⇓-s  :  e ⇓ (# n , V-♯) →
-          `suc e ⇓ (# suc n , V-♯)
+  ⇓-s  :  e ⇓ (# n , V-♯) → `suc e ⇓ (# suc n , V-♯)
   ⇓-ƛ  :  ƛ e ⇓ (ƛ e , V-ƛ)
-  ⇓-·  :  e₁ ⇓ (ƛ e , V-ƛ) →
-          e₂ ⇓ v₂ →
-          (e [ exp v₂ ]E) ⇓ v →
+  ⇓-·  :  e₁ ⇓ (ƛ e , V-ƛ) → e₂ ⇓ v₂ → (e [ exp v₂ ]E) ⇓ v →
           (e₁ · e₂) ⇓ v
   ⇓-Λ  :  Λ l ⇒ e ⇓ (Λ l ⇒ e , V-Λ)
-  ⇓-∙  :  e₁ ⇓ (Λ l ⇒ e , V-Λ) →
-          (e [ T ]ET) ⇓ v →
-          (e₁ ∙ T) ⇓ v
+  ⇓-∙  :  e₁ ⇓ (Λ l ⇒ e , V-Λ) → (e [ T ]ET) ⇓ v → (e₁ ∙ T) ⇓ v
 
 --! ValueReduceSelf
 Value-⇓ : ∀ {l} {T : Type [] l} → (v : CValue T) → exp v ⇓ v

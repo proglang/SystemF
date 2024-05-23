@@ -24,8 +24,7 @@ open import StratF.Types
 
 --! SoundnessType
 soundness : ∀ {T : Type [] l} {e : CExpr T} {v : CValue T} →
-  e ⇓ v →
-  E⟦ e ⟧ [] γ₀ ≡ E⟦ exp v ⟧ [] γ₀
+  e ⇓ v → E⟦ e ⟧ [] γ₀ ≡ E⟦ exp v ⟧ [] γ₀
 
 --! Soundness
 soundness ⇓-n = refl
