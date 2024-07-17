@@ -342,8 +342,7 @@ universe stratification.
   transfer lemmas and stylized use of heterogeneous equality.
 \item All of the above is implemented in Agda
   \cite{norell07:_towar_pract_progr_languag_depen_type_theor} and
-  attached as a supplement. It will be submitted for artifact
-  evaluation.
+    available online: \url{https://github.com/proglang/SystemF}
 \end{itemize}
 This document contains type-checked excerpts of live code. It always
 gives the types of the statements discussed, but often elides part of
@@ -379,7 +378,7 @@ System F$\omega$ in Agda using intrinsically typed encodings for types
 and terms. Our encodings for types, terms, and substitutions are
 simplified versions of their definitions, while their work is
 significantly complicated by the need to normalize types. They
-prove similar results about type substitutions than we do, but they do not
+prove similar results about type substitutions as we do, but they do not
 prove the fusion lemmas for expression substitutions (see
 Section~\ref{sec:substitutions:expr}) and thus narrowly escape the
 scourge of the transfer lemma. We need the latter fusion lemmas to
@@ -902,7 +901,7 @@ a corresponding semantic environment \texttt{γ : Env Δ Γ η} that maps
 free variables of $e$ to their denotations. Finally, the closing
 substitution and the semantic environment need to send variables to
 items related by {\AVSem}. To this end, we extend {\AVSem} to a
-relation {\AGSem} on environments.
+relation {\AGSemNew} on environments.
 
 Taken together, these assumptions enable the definition of semantic soundness.
 \FundamentalSemanticSoundness
@@ -917,7 +916,7 @@ fundamental lemma. There is a projection function to obtain the
 underlying expression substitution analogous to $\pi_1$.
 \LogicalESSC
 
-The relation {\AGSem} extends {\AVSem} to relate closing substitutions
+The relation {\AGSemNew} extends {\AVSem} to relate closing substitutions
 with semantic environments. The {\AlevelEnv} function (omitted) calculates the universe level
 of the resulting conjunction from the levels of the types in the
 context.
@@ -925,7 +924,7 @@ context.
 The empty environments are related in the empty context.
 If the context starts with a variable binding, then the head entries of
 the environments are related by {\AVSem} and their tails are
-related by {\AGSem}.
+related by {\AGSemNew}.
 The various \texttt{drop} functions pop the head entry from the
 respective environments.
 If the context starts with a type variable binding, then this binding
@@ -959,7 +958,7 @@ hypothesis for $e$ to the successor.
 The case for variables relies on the machinery we built up so
 far. We obtain the syntactic value of the variable from the
 substitution $\chi$. Then we obtain the value relation for this value
-from {\AGSem} and construct the result from $w$, the proof that $w$
+from {\AGSemNew} and construct the result from $w$, the proof that $w$
 evaluates to itself, and the value relation. We have to rely on
 {\AValueDown} for the proof because there is no way to infer the shape
 of $w$ from $T$ (which might be a type variable, for instance).
@@ -1007,7 +1006,7 @@ If the denotational semantics of $e$ is the number $n$, then the big-step
 semantics applied to $e$ terminates and yields the syntactic value for
 $n$.
 To state adequacy we first have to construct an empty
-environment of type \texttt{Env [] {\Anull} []}.
+environment of type \ACode{\AFun{Env} \ACon{[]} {\Anull} \ACon{[]}}.
 
 \begin{minipage}{0.3\linewidth}
   \FundamentalEmptyEnv
